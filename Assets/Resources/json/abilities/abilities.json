@@ -1,0 +1,40 @@
+[
+	{
+		"id": 0,
+		"name": "Fireball",
+		"abilityType": "SPELL",
+		"abilityShotType": "PROJECTILE",
+		"baseCooldown": 0.5,
+		"baseTargetRange": 3,
+		"baseProjectileSpeed": 5,
+		"baseProjectileSize": 0.5,
+		"baseWeaponMultiplier": 0,
+		"weaponMultiplierScaling": 0,
+		"baseDamage": [
+			{
+				"elementType": "FIRE",
+				"baseMin": 8,
+				"baseMax": 15
+			}
+		]
+	},
+	{
+		"id": 1,
+		"name": "Ice Needle",
+		"abilityType": "SPELL",
+		"abilityShotType": "PROJECTILE",
+		"baseCooldown": 0.5,
+		"baseTargetRange": 8,
+		"baseProjectileSpeed": 10,
+		"baseProjectileSize": 0.25,
+		"baseWeaponMultiplier": 0,
+		"weaponMultiplierScaling": 0,
+		"baseDamage": [
+			{
+				"elementType": "COLD",
+				"baseMin": 8,
+				"baseMax": 15
+			}
+		]
+	},
+]
