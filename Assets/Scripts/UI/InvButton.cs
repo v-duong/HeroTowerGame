@@ -6,8 +6,8 @@ using UnityEngine.Events;
 
 public class InvButton : MonoBehaviour
 {
-    public void OnClickTEST()
+    public void OnClickInvToggle()
     {
-        Debug.Log("TEST");
+        
     }
 }
