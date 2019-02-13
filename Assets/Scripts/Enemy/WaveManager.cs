@@ -5,12 +5,12 @@ using System;
 using System.Linq;
 
 public class WaveManager : MonoBehaviour {
-    private List<Spawner> m_spawnerList;
-    private List<Goal> m_goalList;
+    private List<Spawner> spawnerList;
+    private List<Goal> goalList;
     public List<EnemyWave> waves;
     public List<EnemyActor> currentEnemyList;
-    private int m_currentWave;
-    private bool m_clearedAll;
+    private int currentWave;
+    private bool clearedAll;
     public int enemiesSpawned;
 
 	// Use this for initialization
@@ -21,8 +21,8 @@ public class WaveManager : MonoBehaviour {
 
     public void SpawnWave()
     {
-        StartCoroutine(SpawnWaveCo(m_currentWave));
-        m_currentWave++;
+        StartCoroutine(SpawnWaveCo(currentWave));
+        currentWave++;
     }
 
     private IEnumerator SpawnWaveCo(int currentWave)
@@ -47,34 +47,34 @@ public class WaveManager : MonoBehaviour {
     {
         get
         {
-            if (m_goalList == null)
+            if (goalList == null)
             {
-                m_goalList = new List<Goal>();
+                goalList = new List<Goal>();
                 foreach (var g in FindObjectsOfType<Goal>())
                 {
                     g.transform.position = Helpers.ReturnCenterOfCell(g.transform.position);
-                    m_goalList.Add(g);
+                    goalList.Add(g);
                 }
-                m_goalList = m_goalList.OrderBy(x => x.goalIndex).ToList();
+                goalList = goalList.OrderBy(x => x.goalIndex).ToList();
             }
-            return m_goalList;
+            return goalList;
         }
     }
     public List<Spawner> SpawnerList
     {
         get
         {
-            if (m_spawnerList == null)
+            if (spawnerList == null)
             {
-                m_spawnerList = new List<Spawner>();
+                spawnerList = new List<Spawner>();
                 foreach (var s in FindObjectsOfType<Spawner>())
                 {
                     s.transform.position = Helpers.ReturnCenterOfCell(s.transform.position);
-                    m_spawnerList.Add(s);
+                    spawnerList.Add(s);
                 }
-                m_spawnerList = m_spawnerList.OrderBy(x => x.spawnerIndex).ToList();
+                spawnerList = spawnerList.OrderBy(x => x.spawnerIndex).ToList();
             }
-            return m_spawnerList;
+            return spawnerList;
         }
     }
 }

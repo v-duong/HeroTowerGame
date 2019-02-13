@@ -1,9 +1,6 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.Events;
-using UnityEngine.EventSystems;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
@@ -32,6 +29,8 @@ public class AbilityBase
     public readonly float weaponMultiplierScaling;
     [JsonProperty]
     public readonly List<AbilityBaseDamageEntry> baseDamage;
+    [JsonProperty]
+    public readonly List<GroupType> groupTypes;
 }
 
 [Serializable]

@@ -1,6 +1,5 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
@@ -31,5 +30,7 @@ public class EquipmentBase
     [JsonProperty] 
     public readonly int willReq;
     [JsonProperty]
-    public readonly int equipSlot;
+    public readonly GroupType equipSlot;
+    [JsonProperty]
+    public readonly GroupType group;
 }

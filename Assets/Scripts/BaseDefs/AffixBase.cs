@@ -1,6 +1,5 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
@@ -10,16 +9,18 @@ public class AffixBase
     public readonly int id;
     [JsonProperty]
     public readonly string name;
-    [JsonProperty]
-    public readonly string description;
     [JsonConverter(typeof(StringEnumConverter))][JsonProperty]
     public readonly AffixType affixType;
     [JsonProperty]
     public readonly int tier;
     [JsonProperty]
+    public readonly int spawnLevel;
+    [JsonProperty]
     public readonly List<AffixBonus> affixBonuses;
     [JsonProperty]
-    public readonly int weight;
+    public readonly Dictionary<GroupType, int> spawnWeight;
+    [JsonProperty]
+    public readonly List<GroupType> groupTypes;
 }
 
 public class AffixBonus

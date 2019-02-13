@@ -41,15 +41,15 @@ public abstract class Actor : MonoBehaviour {
 
     public float actorTimeScale = 1f;
     [SerializeField]
-    protected UIHealthBar m_healthBar;
+    protected UIHealthBar healthBar;
     [SerializeField]
-    protected List<ActorAbility> m_abilitiesList;
+    protected List<ActorAbility> abilitiesList;
     public List<Actor> targetList;
 
     public virtual void Awake()
     {
-        if (m_abilitiesList == null)
-            m_abilitiesList = new List<ActorAbility>();
+        if (abilitiesList == null)
+            abilitiesList = new List<ActorAbility>();
         if (targetList == null)
             targetList = new List<Actor>();
         currentHealth = maximumHealth;
@@ -62,8 +62,8 @@ public abstract class Actor : MonoBehaviour {
     
     public void InitializeHealthBar()
     {
-        m_healthBar = GetComponentInChildren<UIHealthBar>();
-        m_healthBar.Initialize(this.maximumHealth, this.currentHealth, this.transform);
+        healthBar = GetComponentInChildren<UIHealthBar>();
+        healthBar.Initialize(this.maximumHealth, this.currentHealth, this.transform);
     }
 
     public float GetCurrentHealth()
@@ -96,7 +96,7 @@ public abstract class Actor : MonoBehaviour {
     public void ApplyDamage(float damage)
     {
         ModifyCurrentHealth(damage);
-        m_healthBar.UpdateHealthBar(maximumHealth, currentHealth);
+        healthBar.UpdateHealthBar(maximumHealth, currentHealth);
     }
 
 

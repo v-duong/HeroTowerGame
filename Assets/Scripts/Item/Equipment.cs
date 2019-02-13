@@ -11,6 +11,7 @@ public class Equipment : Item
     public int magicDodge;
     public float regen;
     public bool isEquipped;
+    public Affix innate;
 
     public Equipment(EquipmentBase e, int ilvl)
     {

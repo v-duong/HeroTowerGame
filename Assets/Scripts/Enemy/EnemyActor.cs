@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class EnemyActor : Actor {
-    private int m_nextMovementNode;
+    private int nextMovementNode;
     [SerializeField]
     public int spawnerOriginIndex;
     [SerializeField]
@@ -14,29 +14,29 @@ public class EnemyActor : Actor {
 
 	// Use this for initialization
 	public override void Start () {
-        m_nextMovementNode = 1;
+        nextMovementNode = 1;
         InitializeHealthBar();
     }
 	
 	// Update is called once per frame
 	public void Update () {
         Move();
-        m_healthBar.UpdatePosition(this.transform);
+        healthBar.UpdatePosition(this.transform);
     }
 
     private void Move()
     {
         var dt = Time.deltaTime;
         var nodes = ParentSpawner.GetNodesToGoal(indexOfGoal);
-        if (nodes != null && m_nextMovementNode < nodes.Count)
+        if (nodes != null && nextMovementNode < nodes.Count)
         {
-            float dist = Vector3.Distance(nodes[m_nextMovementNode], this.transform.position);
+            float dist = Vector3.Distance(nodes[nextMovementNode], this.transform.position);
 
-            this.transform.position = Vector3.MoveTowards(this.transform.position, nodes[m_nextMovementNode], movementSpeed * dt * actorTimeScale);
+            this.transform.position = Vector3.MoveTowards(this.transform.position, nodes[nextMovementNode], movementSpeed * dt * actorTimeScale);
 
             if (dist <= 1.5f * movementSpeed * dt)
             {
-                m_nextMovementNode++;
+                nextMovementNode++;
             }
         }
     }
@@ -45,7 +45,7 @@ public class EnemyActor : Actor {
     {
         StageManager.Instance.WaveManager.enemiesSpawned -= 1;
         StageManager.Instance.WaveManager.currentEnemyList.Remove(this);
-        this.m_healthBar.transform.gameObject.SetActive(false);
+        this.healthBar.transform.gameObject.SetActive(false);
         this.transform.gameObject.SetActive(false);
     }
 

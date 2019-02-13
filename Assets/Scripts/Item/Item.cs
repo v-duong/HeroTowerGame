@@ -9,8 +9,10 @@ public abstract class Item
     public string name;
     public RarityType rarity;
     public int itemLevel;
+    
     public List<Affix> prefixes;
     public List<Affix> suffixes;
+    
 
     public int ItemLevel => itemLevel;
 
