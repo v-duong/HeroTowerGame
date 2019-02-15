@@ -1,0 +1,1 @@
+[{"Id":0,"Name":"FireEnchant1","AffixType":"ENCHANTMENT","Tier":1,"SpawnLevel":0,"AffixBonuses":[{"BonusType":"FIRE_DAMAGE","ModifyType":"ADDITIVE","MinValue":15,"MaxValue":15}],"SpawnWeight":[],"GroupTypes":[]},{"Id":1,"Name":"UNTITLED NEW","AffixType":"ENCHANTMENT","Tier":1,"SpawnLevel":0,"AffixBonuses":[],"SpawnWeight":[],"GroupTypes":[]}]

@@ -12,11 +12,11 @@ public class InventorySlot : MonoBehaviour
     void Start()
     {
         item = new Equipment(ResourceManager.Instance.GetEquipmentBase(0), 1);
-        slotImage.color = Helpers.ReturnRarityColor(item.rarity);
+        slotImage.color = Helpers.ReturnRarityColor(item.Rarity);
     }
 
     public void UpdateSlot()
     {
-        slotImage.color = Helpers.ReturnRarityColor(item.rarity);
+        slotImage.color = Helpers.ReturnRarityColor(item.Rarity);
     }
 }

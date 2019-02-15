@@ -1,0 +1,1 @@
+[{"Id":0,"Name":"InnateCritical1","AffixType":"SUFFIX","Tier":1,"SpawnLevel":1,"AffixBonuses":[{"BonusType":"CRITICAL_DEFENSE","ModifyType":"FLAT_ADDITION","MinValue":15,"MaxValue":15}],"SpawnWeight":[{"type":"NO_GROUP","weight":0}],"GroupTypes":["RESISTANCE","ELEMENTAL","COLD"]}]

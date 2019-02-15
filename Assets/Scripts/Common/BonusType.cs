@@ -1,4 +1,5 @@
-﻿public enum BonusType
+﻿
+public enum BonusType
 {
     MAX_HEALTH,
     MAX_SHIELD,
@@ -28,5 +29,9 @@
     TOXIC_DAMAGE,
     VOID_DAMAGE,
     ATTACK_SPEED,
-    CAST_SPEED
+    CAST_SPEED,
+    CRITICAL_CHANCE,
+    CRITICAL_DAMAGE,
+    CRITICAL_DEFENSE,
 }
+

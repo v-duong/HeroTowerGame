@@ -6,15 +6,15 @@ using System.Linq;
 public abstract class Item
 {
     public int id;
-    public string name;
-    public RarityType rarity;
-    public int itemLevel;
+    public string Name { get; protected set; }
+    public RarityType Rarity { get; protected set; }
+    public int ItemLevel { get; protected set; }
+    public GroupType ItemType { get; protected set; }
     
     public List<Affix> prefixes;
     public List<Affix> suffixes;
-    
 
-    public int ItemLevel => itemLevel;
+    public virtual void SetRarity(RarityType rarity) => Rarity = rarity;
 
     public void RerollValues()
     {
@@ -65,7 +65,7 @@ public abstract class Item
         prefixes.Clear();
         suffixes.Clear();
         if (setRarityToNormal)
-            rarity = RarityType.NORMAL;
+            Rarity = RarityType.NORMAL;
     }
 
     public virtual void InitializeAtRarity(RarityType rarity)
@@ -75,21 +75,25 @@ public abstract class Item
 
     public virtual void AddRandomAffix()
     {
-
+        int i = Random.Range(0, 2);
     }
 
-    public virtual void AddAffix(Affix affix)
+    public virtual void AddAffix(AffixBase affix)
     {
-
+        if (affix.affixType == AffixType.PREFIX)
+        {
+            prefixes.Add(new Affix(affix));
+        }
+        else if (affix.affixType == AffixType.SUFFIX)
+        {
+            suffixes.Add(new Affix(affix));
+        }
+        else
+            return;
     }
 
-    public virtual void SetRarity(RarityType rarity)
-    {
+    
 
-    }
-
-
-   
 }
 
 public enum RarityType

@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using UnityEngine;
+using System.Collections;
 using System.Collections.Generic;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
@@ -18,9 +19,29 @@ public class AffixBase
     [JsonProperty]
     public readonly List<AffixBonus> affixBonuses;
     [JsonProperty]
-    public readonly Dictionary<GroupType, int> spawnWeight;
-    [JsonProperty]
+    public readonly List<AffixWeight> spawnWeight;
+    [JsonProperty(ItemConverterType = typeof(StringEnumConverter))]
     public readonly List<GroupType> groupTypes;
+    public string BonusTagType { get; private set; }
+
+    public void SetBonusTagType()
+    {
+        int i = 0;
+        string temp = "";
+        foreach (AffixBonus x in affixBonuses)
+        {
+            temp += x.bonusType.ToString();
+            temp += "_";
+            temp += x.modifyType.ToString();
+            if (i+1 != affixBonuses.Count)
+            {
+                temp += "_";
+                i++;
+            }
+        }
+        BonusTagType = temp;
+        Debug.Log(temp);
+    }
 }
 
 public class AffixBonus
@@ -35,16 +56,27 @@ public class AffixBonus
     public readonly int maxValue;
 }
 
+public class AffixWeight
+{
+    [JsonConverter(typeof(StringEnumConverter))]
+    [JsonProperty]
+    public readonly GroupType groupType;
+    [JsonProperty]
+    public readonly int weight;
+}
+
 public enum AffixType
 {
     PREFIX,
     SUFFIX,
-    ENCHANTMENT
+    ENCHANTMENT,
+    INNATE
 }
 
 public enum ModifyType
 {
-    ADDITIVE,
-    MULTIPLY,
-    SET
+    ADDITIVE,       //all sources add together before modifying
+    MULTIPLY,       //all sources multiply together before modifying
+    SET,            //sets value to modifier value, ignores all other increases
+    FLAT_ADDITION   //adds to base before any other calculation
 }

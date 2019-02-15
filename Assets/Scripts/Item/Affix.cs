@@ -4,16 +4,18 @@ using UnityEngine;
 
 public class Affix
 {
-    public AffixBase Base;
-    public List<int> affixValue;
-    public AffixType AffixType => Base.affixType;
+    public AffixBase Base { get { return ResourceManager.Instance.GetAffixBase(BaseId, AffixType); } }
+    public int BaseId { get; private set; }
+    private List<int> affixValue;
+    public AffixType AffixType { get; private set; }
 
 
-    Affix(AffixBase a)
+    public Affix(AffixBase a)
     {
-        Base = a;
+        BaseId = a.id;
         affixValue = new List<int>();
-        foreach (AffixBonus mod in Base.affixBonuses)
+        AffixType = a.affixType;
+        foreach (AffixBonus mod in a.affixBonuses)
         {
             affixValue.Add(Random.Range(mod.minValue, mod.maxValue + 1));
         }
@@ -28,7 +30,11 @@ public class Affix
         }
     }
 
-    
+    public List<int> GetAffixValues()
+    {
+        return new List<int>(affixValue);
+    }
+
 }
 
 

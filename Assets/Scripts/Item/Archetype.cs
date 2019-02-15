@@ -12,4 +12,13 @@ public class Archetype : Item
     public int archetypeLevel;
 
     public List<Affix> enchantments;
+
+
+    public Archetype()
+    {
+        ItemType = GroupType.ARCHETYPE;
+        prefixes = new List<Affix>();
+        suffixes = new List<Affix>();
+        enchantments = new List<Affix>();
+    }
 }

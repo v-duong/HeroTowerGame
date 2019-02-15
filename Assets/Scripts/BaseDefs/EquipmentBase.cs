@@ -10,7 +10,7 @@ public class EquipmentBase
     [JsonProperty] 
     public readonly string name;
     [JsonProperty] 
-    public int dropLevel;
+    public readonly int dropLevel;
     [JsonProperty] 
     public readonly int armor;
     [JsonProperty] 
@@ -21,6 +21,14 @@ public class EquipmentBase
     public readonly int magicDodge;
     [JsonProperty] 
     public readonly float regen;
+    [JsonProperty]
+    public readonly int minDamage;
+    [JsonProperty]
+    public readonly int maxDamage;
+    [JsonProperty]
+    public readonly float criticalChance;
+    [JsonProperty]
+    public readonly float weaponRange;
     [JsonProperty] 
     public readonly int strengthReq;
     [JsonProperty] 
@@ -30,7 +38,27 @@ public class EquipmentBase
     [JsonProperty] 
     public readonly int willReq;
     [JsonProperty]
-    public readonly GroupType equipSlot;
+    [JsonConverter(typeof(StringEnumConverter))]
+    public readonly EquipSlotType equipSlot;
     [JsonProperty]
+    [JsonConverter(typeof(StringEnumConverter))]
     public readonly GroupType group;
+    [JsonProperty]
+    public readonly bool hasInnate;
+    [JsonProperty]
+    public readonly int innateAffixId;
 }
+
+public enum EquipSlotType
+{
+    WEAPON,
+    OFF_HAND,
+    BODY_ARMOR,
+    HEADGEAR,
+    GLOVES,
+    BOOTS,
+    BELT,
+    RING,
+    NECKLACE
+}
+

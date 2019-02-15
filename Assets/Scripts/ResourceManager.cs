@@ -6,11 +6,15 @@ using Newtonsoft.Json;
 public class ResourceManager : MonoBehaviour
 {
     public static ResourceManager Instance { get; private set; }
+    private readonly static int PrefixOffset = 10000;
+    private readonly static int SuffixOffset = 20000;
+    private readonly static int EnchantmentOffset = 30000;
+    private readonly static int InnateOffset = 40000;
 
     private Dictionary<int, AbilityBase> abilities;
     private Dictionary<int, EquipmentBase> equipment;
-    private Dictionary<int, Affix> prefixes;
-    private Dictionary<int, Affix> suffixes;
+    private Dictionary<int, AffixBase> prefixes;
+    private Dictionary<int, AffixBase> suffixes;
 
     public AbilityBase GetAbilityBase(int id)
     {
@@ -30,6 +34,23 @@ public class ResourceManager : MonoBehaviour
             return equipment[id];
         else
             return null;
+    }
+
+    public AffixBase GetAffixBase(int id, AffixType type)
+    {
+        switch(type)
+        {
+            case AffixType.PREFIX:
+                if (prefixes == null)
+                    prefixes = LoadAffixes(type);
+                return prefixes[id];
+            case AffixType.SUFFIX:
+                if (suffixes == null)
+                    suffixes = LoadAffixes(type);
+                return suffixes[id];
+            default:
+                return null;
+        }
     }
 
     private int LoadAbilities()
@@ -58,6 +79,37 @@ public class ResourceManager : MonoBehaviour
         return equipment.Count;
     }
 
+    private Dictionary<int,AffixBase> LoadAffixes(AffixType type, int offset = 0)
+    {
+        string s;
+        Dictionary<int, AffixBase>  affixes = new Dictionary<int, AffixBase>();
+
+        switch(type)
+        {
+            case AffixType.PREFIX:
+                s = "prefix";
+                break;
+            case AffixType.SUFFIX:
+                s = "suffix";
+                break;
+            default:
+                return null;
+        }
+
+        List<AffixBase> temp = DeserializeFromPath<List<AffixBase>>("json/affixes/" + s);
+        foreach (AffixBase affix in temp)
+        {
+            affix.SetBonusTagType();
+            affixes.Add(affix.id + offset, affix);
+        }
+        return affixes;
+    }
+
+    private T DeserializeFromPath<T>(string path)
+    {
+        return JsonConvert.DeserializeObject<T>(Resources.Load<TextAsset>( path ).text);
+    }
+
     private void Awake()
     {
         Instance = this;
@@ -67,6 +119,8 @@ public class ResourceManager : MonoBehaviour
     {
         LoadAbilities();
         LoadEquipment();
+        prefixes = LoadAffixes(AffixType.PREFIX);
+        suffixes = LoadAffixes(AffixType.SUFFIX);
     }
 
     // Start is called before the first frame update
