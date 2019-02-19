@@ -11,27 +11,32 @@ public class ResourceManager : MonoBehaviour
     private readonly static int EnchantmentOffset = 30000;
     private readonly static int InnateOffset = 40000;
 
-    private Dictionary<int, AbilityBase> abilities;
-    private Dictionary<int, EquipmentBase> equipment;
-    private Dictionary<int, AffixBase> prefixes;
-    private Dictionary<int, AffixBase> suffixes;
+    private Dictionary<int, AbilityBase> abilityList;
+    private Dictionary<int, EquipmentBase> equipmentList;
+    private Dictionary<int, AffixBase> prefixList;
+    private Dictionary<int, AffixBase> suffixList;
+
+    public int AbilityCount { get; private set; }
+    public int EquipmentCount { get; private set; }
+    public int PrefixCount { get; private set; }
+    public int SuffixCount { get; private set; }
 
     public AbilityBase GetAbilityBase(int id)
     {
-        if (abilities == null)
+        if (abilityList == null)
             LoadAbilities();
-        if (abilities.ContainsKey(id))
-            return abilities[id];
+        if (abilityList.ContainsKey(id))
+            return abilityList[id];
         else
             return null;
     }
 
     public EquipmentBase GetEquipmentBase(int id)
     {
-        if (equipment == null)
+        if (equipmentList == null)
             LoadEquipment();
-        if (equipment.ContainsKey(id))
-            return equipment[id];
+        if (equipmentList.ContainsKey(id))
+            return equipmentList[id];
         else
             return null;
     }
@@ -41,42 +46,85 @@ public class ResourceManager : MonoBehaviour
         switch(type)
         {
             case AffixType.PREFIX:
-                if (prefixes == null)
-                    prefixes = LoadAffixes(type);
-                return prefixes[id];
+                if (prefixList == null)
+                    prefixList = LoadAffixes(type);
+                return prefixList[id];
             case AffixType.SUFFIX:
-                if (suffixes == null)
-                    suffixes = LoadAffixes(type);
-                return suffixes[id];
+                if (suffixList == null)
+                    suffixList = LoadAffixes(type);
+                return suffixList[id];
             default:
                 return null;
         }
     }
 
-    private int LoadAbilities()
+    public AffixBase GetRandomAffixBase(AffixType type, int ilvl = 0, GroupType tag = GroupType.NO_GROUP, List<string> bonusTagList = null)
     {
-        abilities = new Dictionary<int, AbilityBase>();
+        Dictionary<int, AffixBase> affixList;
+        switch (type)
+        {
+            case AffixType.PREFIX:
+                affixList = prefixList;
+                break;
+            case AffixType.SUFFIX:
+                affixList = suffixList;
+                break;
+            default:
+                affixList = null;
+                break;
+        }
+
+        List<Helpers.WeightListItem<AffixBase>> possibleAffixList = new List<Helpers.WeightListItem<AffixBase>>();
+        int sum = 0;
+
+        foreach(AffixBase affixBase in affixList.Values)
+        {
+            if (bonusTagList != null && bonusTagList.Count > 0)
+                if (bonusTagList.Contains(affixBase.BonusTagType))
+                    continue;
+            if (affixBase.spawnLevel <= ilvl)
+            {
+                foreach( AffixWeight affixWeight in affixBase.spawnWeight)
+                {
+                    if (tag == affixWeight.groupType || affixWeight.groupType == GroupType.NO_GROUP)
+                    {
+                        if (affixWeight.weight == 0)
+                            break;
+                        sum += affixWeight.weight;
+                        possibleAffixList.Add(new Helpers.WeightListItem<AffixBase>(affixBase, affixWeight.weight));
+                        continue;
+                    }
+                }
+            }
+        }
+        if (possibleAffixList.Count == 0)
+            return null;
+        return Helpers.ReturnWeightedRandom<AffixBase>(possibleAffixList, sum);
+
+    }
+
+    private void LoadAbilities()
+    {
+        abilityList = new Dictionary<int, AbilityBase>();
 
         var j = Resources.Load<TextAsset>("json/abilities/abilities");
         List<AbilityBase> temp = JsonConvert.DeserializeObject<List<AbilityBase>>(j.text);
         foreach (AbilityBase ability in temp)
         {
-            abilities.Add(ability.id, ability);
+            abilityList.Add(ability.id, ability);
         }
-        return abilities.Count;
     }
 
-    private int LoadEquipment()
+    private void LoadEquipment()
     {
-        equipment = new Dictionary<int, EquipmentBase>();
+        equipmentList = new Dictionary<int, EquipmentBase>();
 
-        var j = Resources.Load<TextAsset>("json/items/item_bases_body");
+        var j = Resources.Load<TextAsset>("json/items/armor");
         List<EquipmentBase> temp = JsonConvert.DeserializeObject<List<EquipmentBase>>(j.text);
         foreach (EquipmentBase equip in temp)
         {
-            equipment.Add(equip.id, equip);
+            equipmentList.Add(equip.id, equip);
         }
-        return equipment.Count;
     }
 
     private Dictionary<int,AffixBase> LoadAffixes(AffixType type, int offset = 0)
@@ -119,8 +167,13 @@ public class ResourceManager : MonoBehaviour
     {
         LoadAbilities();
         LoadEquipment();
-        prefixes = LoadAffixes(AffixType.PREFIX);
-        suffixes = LoadAffixes(AffixType.SUFFIX);
+        prefixList = LoadAffixes(AffixType.PREFIX);
+        suffixList = LoadAffixes(AffixType.SUFFIX);
+
+        AbilityCount = abilityList.Count;
+        EquipmentCount = equipmentList.Count;
+        PrefixCount = prefixList.Count;
+        SuffixCount = suffixList.Count;
     }
 
     // Start is called before the first frame update
@@ -129,9 +182,4 @@ public class ResourceManager : MonoBehaviour
         Initialize();
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
 }

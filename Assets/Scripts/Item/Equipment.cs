@@ -27,6 +27,8 @@ public class Equipment : Item
         ItemLevel = ilvl;
         prefixes = new List<Affix>();
         suffixes = new List<Affix>();
+        Group = e.group;
     }
+
 
 }

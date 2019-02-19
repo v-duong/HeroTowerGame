@@ -6,35 +6,38 @@ public class Affix
 {
     public AffixBase Base { get { return ResourceManager.Instance.GetAffixBase(BaseId, AffixType); } }
     public int BaseId { get; private set; }
-    private List<int> affixValue;
+    private Dictionary<BonusType, int> affixValues;
     public AffixType AffixType { get; private set; }
 
 
     public Affix(AffixBase a)
     {
         BaseId = a.id;
-        affixValue = new List<int>();
+        affixValues = new Dictionary<BonusType, int>();
         AffixType = a.affixType;
-        foreach (AffixBonus mod in a.affixBonuses)
+        foreach (AffixBonusBase mod in a.affixBonuses)
         {
-            affixValue.Add(Random.Range(mod.minValue, mod.maxValue + 1));
+            affixValues.Add(mod.bonusType, Random.Range(mod.minValue, mod.maxValue + 1));
         }
     }
 
     public void RerollValue()
     {
-        List<AffixBonus> temp = Base.affixBonuses;
-        for (int i = 0; i < temp.Count; i++)
+        List<AffixBonusBase> temp = Base.affixBonuses;
+        foreach (AffixBonusBase mod in temp)
         {
-            affixValue[i] = Random.Range(temp[i].minValue, temp[i].maxValue + 1);
+            affixValues[mod.bonusType] = Random.Range(mod.minValue, mod.maxValue + 1);
         }
     }
 
-    public List<int> GetAffixValues()
+    public Dictionary<BonusType, int> GetAffixValues()
     {
-        return new List<int>(affixValue);
+        return new Dictionary<BonusType, int>(affixValues);
     }
 
+    public int GetAffixValue(BonusType type)
+    {
+        return affixValues[type];
+    }
 }
-
 

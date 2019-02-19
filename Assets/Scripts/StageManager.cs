@@ -11,11 +11,11 @@ public class StageManager : MonoBehaviour
     {
         get
         {
-            if (m_pathTilemap == null)
+            if (_pathTilemap == null)
             {
-                m_pathTilemap = GameObject.FindGameObjectWithTag("PathMap").GetComponent<Tilemap>();
+                _pathTilemap = GameObject.FindGameObjectWithTag("PathMap").GetComponent<Tilemap>();
             }
-            return m_pathTilemap;
+            return _pathTilemap;
         }
     }
 
@@ -23,24 +23,24 @@ public class StageManager : MonoBehaviour
     {
         get
         {
-            if (m_waveManager == null)
-                m_waveManager = GameObject.FindGameObjectWithTag("WaveManager").GetComponent<WaveManager>();
+            if (_waveManager == null)
+                _waveManager = GameObject.FindGameObjectWithTag("WaveManager").GetComponent<WaveManager>();
 
-            return m_waveManager;
+            return _waveManager;
         }
     }
     public GameObject WorldCanvas
     {
         get
         {
-            if (m_worldCanvas == null)
-                m_worldCanvas = GameObject.Find("WorldCanvas");
-            return m_worldCanvas;
+            if (_worldCanvas == null)
+                _worldCanvas = GameObject.Find("WorldCanvas");
+            return _worldCanvas;
         }
     }
-    private WaveManager m_waveManager;
-    private Tilemap m_pathTilemap;
-    private GameObject m_worldCanvas;
+    private WaveManager _waveManager;
+    private Tilemap _pathTilemap;
+    private GameObject _worldCanvas;
 
     void Awake()
     {

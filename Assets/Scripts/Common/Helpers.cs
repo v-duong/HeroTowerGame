@@ -31,6 +31,30 @@ public static class Helpers {
                 return Color.black;
         }
     }
+
+    public static T ReturnWeightedRandom<T>(List<WeightListItem<T>> list, int sum)
+    {
+        int weight = UnityEngine.Random.Range(1, sum + 1);
+        foreach(WeightListItem<T> x in list)
+        {
+            weight -= x.weight;
+            if (weight <= 0)
+                return x.item;
+        }
+        return default(T);
+    }
+
+    public class WeightListItem<T> {
+        public T item;
+        public int weight;
+
+        public WeightListItem(T i, int w)
+        {
+            item = i;
+            weight = w;
+        }
+    }
+
     
 }
 

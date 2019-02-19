@@ -27,6 +27,7 @@ public class GameManager : MonoBehaviour {
         Application.targetFrameRate = 30;
         ProjectilePool = new ProjectilePool(projectilePrefab);
         SceneManager.LoadScene("mainMenu", LoadSceneMode.Additive);
+        PlayerStats = new PlayerStats();
     }
 
 }

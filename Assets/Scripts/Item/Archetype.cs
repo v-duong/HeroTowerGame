@@ -16,7 +16,7 @@ public class Archetype : Item
 
     public Archetype()
     {
-        ItemType = GroupType.ARCHETYPE;
+        Group = GroupType.ARCHETYPE;
         prefixes = new List<Affix>();
         suffixes = new List<Affix>();
         enchantments = new List<Affix>();

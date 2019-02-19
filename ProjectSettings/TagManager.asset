@@ -6,6 +6,7 @@ TagManager:
   tags:
   - WaveManager
   - PathMap
+  - InventoryCanvas
   layers:
   - Default
   - TransparentFX

@@ -8,15 +8,17 @@ public class InventorySlot : MonoBehaviour
     public Item item;
     public Image slotImage;
 
-    // Start is called before the first frame update
-    void Start()
-    {
-        item = new Equipment(ResourceManager.Instance.GetEquipmentBase(0), 1);
-        slotImage.color = Helpers.ReturnRarityColor(item.Rarity);
-    }
-
     public void UpdateSlot()
     {
         slotImage.color = Helpers.ReturnRarityColor(item.Rarity);
+    }
+
+    public void OnItemSlotClick()
+    {
+        ItemDetailWindow itemWindow = UIManager.Instance.ItemWindow;
+        itemWindow.gameObject.SetActive(true);
+        itemWindow.item = item;
+        itemWindow.inventorySlot = this;
+        itemWindow.UpdateWindowEquipment();
     }
 }
