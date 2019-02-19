@@ -86,10 +86,11 @@ public class ResourceManager : MonoBehaviour
             {
                 foreach( AffixWeight affixWeight in affixBase.spawnWeight)
                 {
-                    if (tag == affixWeight.groupType || affixWeight.groupType == GroupType.NO_GROUP)
+                    if (tag == affixWeight.type || affixWeight.type == GroupType.NO_GROUP)
                     {
                         if (affixWeight.weight == 0)
                             break;
+                        Debug.Log(affixBase.name + " " + affixWeight.type + " " + affixWeight.weight);
                         sum += affixWeight.weight;
                         possibleAffixList.Add(new Helpers.WeightListItem<AffixBase>(affixBase, affixWeight.weight));
                         continue;

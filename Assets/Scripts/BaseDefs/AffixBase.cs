@@ -40,7 +40,6 @@ public class AffixBase
             }
         }
         BonusTagType = temp;
-        Debug.Log(temp);
     }
 }
 
@@ -58,9 +57,8 @@ public class AffixBonusBase
 
 public class AffixWeight
 {
-    [JsonConverter(typeof(StringEnumConverter))]
-    [JsonProperty]
-    public readonly GroupType groupType;
+    [JsonConverter(typeof(StringEnumConverter))][JsonProperty]
+    public readonly GroupType type;
     [JsonProperty]
     public readonly int weight;
 }
