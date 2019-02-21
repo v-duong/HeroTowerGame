@@ -9,13 +9,28 @@ public class ItemDetailWindow : MonoBehaviour
     private Text nameText;
     [SerializeField]
     private Text affixText;
-    public Item item;
+    [SerializeField]
+    private Text infoText;
+    public Equipment item;
     public InventorySlot inventorySlot;
 
     public void UpdateWindowEquipment()
     {
         this.GetComponent<Image>().color = Helpers.ReturnRarityColor(item.Rarity);
         nameText.text = item.Name;
+
+        infoText.text = "";
+        infoText.text += item.Base.group + "\n";
+        if (item.armor != 0)
+            infoText.text += "Armor: " + item.armor + "\n";
+        if (item.shield != 0)
+            infoText.text += "Shield: " + item.shield + "\n";
+        if (item.dodgeRating != 0)
+            infoText.text += "Dodge Rating: " + item.dodgeRating + "\n";
+        if (item.resolveRating != 0)
+            infoText.text += "Resolve: " + item.resolveRating + "\n";
+
+
         affixText.text = "";
 
         if (item.prefixes.Count > 0)
@@ -74,6 +89,12 @@ public class ItemDetailWindow : MonoBehaviour
     public void OnRerollClick()
     {
         item.RerollValues();
+        UpdateWindowEquipment();
+    }
+
+    public void OnRerollAffixClick()
+    {
+        item.RerollAffixesAtRarity();
         UpdateWindowEquipment();
     }
 }

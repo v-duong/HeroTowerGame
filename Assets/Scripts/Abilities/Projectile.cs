@@ -7,7 +7,7 @@ public class Projectile : MonoBehaviour {
     public float currentSpeed;
     public bool canHitEnemies = false;
     public bool canHitAllies = false;
-    public float projectileDamage;
+    public int projectileDamage;
     public float timeToLive = 1.5f;
 
     public List<AbilityEffect> attachedEffects;

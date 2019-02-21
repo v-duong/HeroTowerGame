@@ -11,6 +11,7 @@ public class Archetype : Item
 
     public int archetypeLevel;
 
+    public List<Affix> innate;
     public List<Affix> enchantments;
 
 
@@ -20,5 +21,6 @@ public class Archetype : Item
         prefixes = new List<Affix>();
         suffixes = new List<Affix>();
         enchantments = new List<Affix>();
+        innate = new List<Affix>();
     }
 }

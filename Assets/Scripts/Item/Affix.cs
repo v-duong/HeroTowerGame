@@ -40,4 +40,3 @@ public class Affix
         return affixValues[type];
     }
 }
-

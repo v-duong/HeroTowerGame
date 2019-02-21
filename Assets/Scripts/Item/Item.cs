@@ -14,7 +14,7 @@ public abstract class Item
     public List<Affix> prefixes;
     public List<Affix> suffixes;
 
-    public virtual void SetRarity(RarityType rarity) => Rarity = rarity;
+    public void SetRarity(RarityType rarity) => Rarity = rarity;
 
     public bool RerollValues()
     {
@@ -87,9 +87,49 @@ public abstract class Item
         return true;
     }
 
-    public virtual void InitializeAtRarity(RarityType rarity)
+    public bool RerollAffixesAtRarity()
     {
-        
+        if (Rarity == RarityType.NORMAL)
+            return false;
+        if (Rarity == RarityType.UNCOMMON)
+        {
+            ClearAffixes(false);
+            AddRandomAffix();
+            if (Random.Range(0, 2) == 0)
+                AddRandomAffix();
+            return true;
+        } else if (Rarity == RarityType.RARE)
+        {
+            ClearAffixes(false);
+            AddRandomAffix();
+            AddRandomAffix();
+            AddRandomAffix();
+            AddRandomAffix();
+            int i = 0;
+            while ((Random.Range(0, 2) == 0) && i < 2)
+            {
+                AddRandomAffix();
+                i++;
+            }
+            return true;
+        } else if (Rarity == RarityType.EPIC)
+        {
+            ClearAffixes(false);
+            AddRandomAffix();
+            AddRandomAffix();
+            AddRandomAffix();
+            AddRandomAffix();
+            AddRandomAffix();
+            int i = 0;
+            while ((Random.Range(0, 2) == 0) && i < 3)
+            {
+                AddRandomAffix();
+                i++;
+            }
+            return true;
+        }
+        return false;
+
     }
 
     public virtual bool AddRandomAffix()
@@ -156,7 +196,7 @@ public abstract class Item
             
     }
 
-    public virtual bool AddAffix(AffixBase affix)
+    public bool AddAffix(AffixBase affix)
     {
         if (affix == null)
             return false;

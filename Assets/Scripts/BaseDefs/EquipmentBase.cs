@@ -16,11 +16,11 @@ public class EquipmentBase
     [JsonProperty] 
     public readonly int shield;
     [JsonProperty] 
-    public readonly int dodge;
+    public readonly int dodgeRating;
     [JsonProperty] 
-    public readonly int magicDodge;
+    public readonly int resolveRating;
     [JsonProperty] 
-    public readonly float regen;
+    public readonly int sellValue;
     [JsonProperty]
     public readonly int minDamage;
     [JsonProperty]
@@ -59,6 +59,8 @@ public enum EquipSlotType
     BOOTS,
     BELT,
     RING,
-    NECKLACE
+    NECKLACE,
+    RING_SLOT_1,
+    RING_SLOT_2
 }
 

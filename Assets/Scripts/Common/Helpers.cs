@@ -5,10 +5,10 @@ using UnityEngine;
 using UnityEngine.Tilemaps;
 
 public static class Helpers {
-    public static Color EPIC_COLOR = new Color(1,0,1);
-    public static Color UNCOMMON_COLOR = new Color(0.2f, 0.4f, 0.8f);
-    public static Color RARE_COLOR = new Color(0.8f, 0.8f, 0.25f);
-    public static Color NORMAL_COLOR = new Color(0.7f, 0.7f, 0.7f);
+    public static readonly Color EPIC_COLOR = new Color(1,0,1);
+    public static readonly Color UNCOMMON_COLOR = new Color(0.2f, 0.4f, 0.8f);
+    public static readonly Color RARE_COLOR = new Color(0.8f, 0.8f, 0.25f);
+    public static readonly Color NORMAL_COLOR = new Color(0.7f, 0.7f, 0.7f);
 
     public static Vector3 ReturnCenterOfCell(Vector3 v)
     {

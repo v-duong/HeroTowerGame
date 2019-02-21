@@ -8,8 +8,8 @@ public enum ElementType
     COLD,
     LIGHTNING,
     EARTH,
-    TOXIC,
-    VOID
+    DIVINE,
+    VOID,
 }
 
 public enum DebuffEffectType

@@ -90,7 +90,7 @@ public class ResourceManager : MonoBehaviour
                     {
                         if (affixWeight.weight == 0)
                             break;
-                        Debug.Log(affixBase.name + " " + affixWeight.type + " " + affixWeight.weight);
+                        //Debug.Log(affixBase.name + " " + affixWeight.type + " " + affixWeight.weight);
                         sum += affixWeight.weight;
                         possibleAffixList.Add(new Helpers.WeightListItem<AffixBase>(affixBase, affixWeight.weight));
                         continue;

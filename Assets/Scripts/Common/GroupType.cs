@@ -1,5 +1,4 @@
 ﻿
-
 public enum GroupType
 {
     NO_GROUP = 0,
@@ -31,6 +30,7 @@ public enum GroupType
     STR_WILL_ARMOR,
     INT_AGI_ARMOR,
     INT_WILL_ARMOR,
+    AGI_WILL_ARMOR,
     ONE_HANDED_SWORD,
     ONE_HANDED_AXE,
     ONE_HANDED_MACE,
@@ -53,7 +53,7 @@ public enum GroupType
     EARTH,
     ELEMENTAL,
     NON_ELEMENTAL,
-    TOXIC,
+    DIVINE,
     VOID,
     PHYSICAL,
     ATTACK,
@@ -72,8 +72,8 @@ public enum GroupType
     DEFENSES,
     ARMOR,
     SHIELD,
-    DODGE,
-    MAGICDODGE,
+    DODGERATING,
+    RESOLVERATING,
     REGEN,
     CRITICAL_CHANCE,
     CRITICAL_DAMAGE,

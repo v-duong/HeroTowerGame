@@ -30,7 +30,7 @@ public class UIHealthBar : MonoBehaviour {
 
     public void UpdateHealthBar(float maxHealth, float currentHealth)
     {
-        m_cachedHealthPercent.x = 1 - (currentHealth / maxHealth);
+        m_cachedHealthPercent.x = 1 - (float)(currentHealth / maxHealth);
         m_healthBarFill.anchorMax = m_cachedHealthPercent;
 
         if (m_cachedHealthPercent.x == 0.0f)

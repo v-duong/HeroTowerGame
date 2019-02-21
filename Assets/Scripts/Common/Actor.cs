@@ -4,46 +4,31 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public abstract class Actor : MonoBehaviour {
-    protected int minimumHealth; //for cases of invincible/phased actors
+    public int Id { get; }
+    public int MinimumHealth { get; protected set; } //for cases of invincible/phased actors
     [SerializeField]
-    protected int maximumHealth;
-    public float maximumHealthModifier = 1f;
+    public int MaximumHealth {get; protected set; }
     [SerializeField]
-    protected float currentHealth;
-    [SerializeField]
-    protected int maximumMana;
-    public float maximumManaModifier = 1f;
-    [SerializeField]
-    protected float currentMana;
-    [SerializeField]
+    public float CurrentHealth {get; protected set; }
 
-    public bool healthIsHitsToKill; //health is number of hits to kill
+    public bool HealthIsHitsToKill { get; protected set; } //health is number of hits to kill
 
-    protected int maximumShield;
-    protected float currentShield;
-    protected int baseArmor;
-    protected int baseEvasion;
-    protected float baseRegen;
-    protected int baseDodge;
-    protected int baseMagicDodge;
+    public int MaximumShield { get; protected set; }
+    public float CurrentShield { get; protected set; }
+    public int BaseShield { get; protected set; }
+    public int BaseArmor { get; protected set; }
+    public int BaseDodgeRating { get; protected set; }
+    public int BaseAttackPhasing { get; protected set; }
+    public int BaseMagicPhasing { get; protected set; }
+    public int BaseResolveRating { get; protected set; }
 
-    protected int baseFireResistance;
-    protected int baseColdResistance;
-    protected int baseLightningResistance;
-    protected int baseEarthResistance;
-    protected int baseToxicResistance;
-    protected int baseVoidResistance;
-
-    protected int baseStrength;
-    protected int baseIntelligence;
-    protected int baseAgility;
-    protected int baseWill;
-
+    public Dictionary<ElementType, int> BaseResistances { get; protected set; }
+    public float movementSpeed;
     public float actorTimeScale = 1f;
-    [SerializeField]
+
     protected UIHealthBar healthBar;
-    [SerializeField]
     protected List<ActorAbility> abilitiesList;
+
     public List<Actor> targetList;
 
     public virtual void Awake()
@@ -52,7 +37,7 @@ public abstract class Actor : MonoBehaviour {
             abilitiesList = new List<ActorAbility>();
         if (targetList == null)
             targetList = new List<Actor>();
-        currentHealth = maximumHealth;
+        CurrentHealth = MaximumHealth;
     }
 
     public virtual void Start()
@@ -63,21 +48,21 @@ public abstract class Actor : MonoBehaviour {
     public void InitializeHealthBar()
     {
         healthBar = GetComponentInChildren<UIHealthBar>();
-        healthBar.Initialize(this.maximumHealth, this.currentHealth, this.transform);
+        healthBar.Initialize(this.MaximumHealth, this.CurrentHealth, this.transform);
     }
 
     public float GetCurrentHealth()
     {
-        return currentHealth;
+        return CurrentHealth;
     }
 
-    public void ModifyCurrentHealth(float mod)
+    public void ModifyCurrentHealth(int mod)
     {
-        if (currentHealth - mod > maximumHealth * maximumHealthModifier)
-            currentHealth = maximumHealth * maximumManaModifier;
+        if (CurrentHealth - mod > MaximumHealth)
+            CurrentHealth = MaximumHealth;
         else
-            currentHealth -= mod;
-        if (currentHealth <= 0)
+            CurrentHealth -= mod;
+        if (CurrentHealth <= 0)
         {
             Death();
         }
@@ -93,10 +78,10 @@ public abstract class Actor : MonoBehaviour {
 
     }
 
-    public void ApplyDamage(float damage)
+    public void ApplyDamage(int damage)
     {
         ModifyCurrentHealth(damage);
-        healthBar.UpdateHealthBar(maximumHealth, currentHealth);
+        healthBar.UpdateHealthBar(MaximumHealth, CurrentHealth);
     }
 
 

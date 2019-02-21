@@ -20,11 +20,11 @@ public class ActorAbility {
         contactFilter.useLayerMask = true;
     }
 
-    public float CalculateAbilityDamage()
+    public int CalculateAbilityDamage()
     {
         int sum = 0;
         foreach (AbilityBaseDamageEntry x in abilityBase.baseDamage) {
-            sum += UnityEngine.Random.Range(x.baseMin, x.baseMax);
+            sum += UnityEngine.Random.Range(x.baseMin, x.baseMax + 1);
         }
         return sum;
     }

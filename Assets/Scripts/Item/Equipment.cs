@@ -8,11 +8,11 @@ public class Equipment : Item
     public int BaseId { get; private set; }
     public int armor;
     public int shield;
-    public int dodge;
-    public int magicDodge;
-    public float regen;
-    public bool isEquipped;
-    public Affix innate;
+    public int dodgeRating;
+    public int resolveRating;
+    public float costModifier;
+    public int equippedHeroId;
+    public List<Affix> innate;
 
     public Equipment(EquipmentBase e, int ilvl)
     {
@@ -20,14 +20,16 @@ public class Equipment : Item
         Name = e.name;
         armor = e.armor;
         shield = e.shield;
-        dodge = e.dodge;
-        magicDodge = e.magicDodge;
-        regen = e.regen;
+        dodgeRating = e.dodgeRating;
+        resolveRating = e.resolveRating;
+        costModifier = e.sellValue;
         Rarity = RarityType.NORMAL;
         ItemLevel = ilvl;
         prefixes = new List<Affix>();
         suffixes = new List<Affix>();
+        innate = new List<Affix>();
         Group = e.group;
+        equippedHeroId = -1;
     }
 
 

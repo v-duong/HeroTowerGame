@@ -8,8 +8,7 @@ public class EnemyActor : Actor {
     public int spawnerOriginIndex;
     [SerializeField]
     public int indexOfGoal;
-    [SerializeField]
-    public float movementSpeed;
+
     public bool isBoss = false;
 
 	// Use this for initialization
