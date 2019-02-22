@@ -7,6 +7,9 @@ public class PlayerStats
     public readonly static int maxEquipInventory = 500;
     public readonly static int maxArchetypeInventory = 100;
 
+    public int gold;
+    public int domainData;
+
     public int catalyst_NormaltoMagic; 
     public int catalyst_MagicReroll; 
     public int catalyst_NormalToRare;
@@ -20,9 +23,12 @@ public class PlayerStats
 
     public List<Equipment> equipmentInventory;
     public List<Archetype> archetypeInventory;
+    public List<HeroActor> heroList;
 
     public PlayerStats()
     {
+        gold = 0;
+        domainData = 0;
         catalyst_NormaltoMagic = 0;
         catalyst_MagicReroll = 0;
         catalyst_NormalToRare = 0;

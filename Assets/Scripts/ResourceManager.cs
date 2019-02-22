@@ -6,20 +6,22 @@ using Newtonsoft.Json;
 public class ResourceManager : MonoBehaviour
 {
     public static ResourceManager Instance { get; private set; }
-    private readonly static int PrefixOffset = 10000;
-    private readonly static int SuffixOffset = 20000;
-    private readonly static int EnchantmentOffset = 30000;
-    private readonly static int InnateOffset = 40000;
+    //private readonly static int PrefixOffset = 10000;
+    //private readonly static int SuffixOffset = 20000;
+    //private readonly static int EnchantmentOffset = 30000;
+    //private readonly static int InnateOffset = 40000;
 
     private Dictionary<int, AbilityBase> abilityList;
     private Dictionary<int, EquipmentBase> equipmentList;
     private Dictionary<int, AffixBase> prefixList;
     private Dictionary<int, AffixBase> suffixList;
+    private Dictionary<int, ArchetypeBase> archetypeList;
 
     public int AbilityCount { get; private set; }
     public int EquipmentCount { get; private set; }
     public int PrefixCount { get; private set; }
     public int SuffixCount { get; private set; }
+    public int ArchetypeCount { get; private set; }
 
     public AbilityBase GetAbilityBase(int id)
     {
@@ -27,6 +29,16 @@ public class ResourceManager : MonoBehaviour
             LoadAbilities();
         if (abilityList.ContainsKey(id))
             return abilityList[id];
+        else
+            return null;
+    }
+
+    public ArchetypeBase GetArchetypeBase(int id)
+    {
+        if (archetypeList == null)
+            LoadArchetypes();
+        if (archetypeList.ContainsKey(id))
+            return archetypeList[id];
         else
             return null;
     }
@@ -108,8 +120,7 @@ public class ResourceManager : MonoBehaviour
     {
         abilityList = new Dictionary<int, AbilityBase>();
 
-        var j = Resources.Load<TextAsset>("json/abilities/abilities");
-        List<AbilityBase> temp = JsonConvert.DeserializeObject<List<AbilityBase>>(j.text);
+        List<AbilityBase> temp = DeserializeFromPath<List<AbilityBase>>("json/abilities/abilities");
         foreach (AbilityBase ability in temp)
         {
             abilityList.Add(ability.id, ability);
@@ -120,11 +131,21 @@ public class ResourceManager : MonoBehaviour
     {
         equipmentList = new Dictionary<int, EquipmentBase>();
 
-        var j = Resources.Load<TextAsset>("json/items/armor");
-        List<EquipmentBase> temp = JsonConvert.DeserializeObject<List<EquipmentBase>>(j.text);
+        List<EquipmentBase> temp = DeserializeFromPath<List<EquipmentBase>>("json/items/armor");
         foreach (EquipmentBase equip in temp)
         {
             equipmentList.Add(equip.id, equip);
+        }
+    }
+
+    private void LoadArchetypes()
+    {
+        archetypeList = new Dictionary<int, ArchetypeBase>();
+
+        List<ArchetypeBase> temp = DeserializeFromPath<List<ArchetypeBase>>("json/items/archetype");
+        foreach (ArchetypeBase equip in temp)
+        {
+            archetypeList.Add(equip.id, equip);
         }
     }
 

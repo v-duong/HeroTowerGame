@@ -5,11 +5,11 @@ using System.Linq;
 
 public abstract class Item
 {
-    public int id;
+    public int Id { get; protected set; }
     public string Name { get; protected set; }
     public RarityType Rarity { get; protected set; }
     public int ItemLevel { get; protected set; }
-    public GroupType Group { get; protected set; }
+    public GroupType itemType { get; protected set; }
     
     public List<Affix> prefixes;
     public List<Affix> suffixes;
@@ -138,7 +138,7 @@ public abstract class Item
         if (affixType == null)
             return false;
 
-        return AddAffix(ResourceManager.Instance.GetRandomAffixBase((AffixType)affixType, ItemLevel, Group, GetBonusTagTypeList((AffixType)affixType)));
+        return AddAffix(ResourceManager.Instance.GetRandomAffixBase((AffixType)affixType, ItemLevel, itemType, GetBonusTagTypeList((AffixType)affixType)));
 
     }
 

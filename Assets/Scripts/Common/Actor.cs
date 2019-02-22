@@ -4,7 +4,10 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public abstract class Actor : MonoBehaviour {
-    public int Id { get; }
+    public int Id { get; protected set; }
+    public int Level { get; protected set; }
+    public int Experience { get; protected set; }
+
     public int MinimumHealth { get; protected set; } //for cases of invincible/phased actors
     [SerializeField]
     public int MaximumHealth {get; protected set; }
@@ -22,13 +25,12 @@ public abstract class Actor : MonoBehaviour {
     public int BaseMagicPhasing { get; protected set; }
     public int BaseResolveRating { get; protected set; }
 
-    public Dictionary<ElementType, int> BaseResistances { get; protected set; }
+    public ElementResistances Resistances { get; protected set; }
+
     public float movementSpeed;
     public float actorTimeScale = 1f;
-
     protected UIHealthBar healthBar;
     protected List<ActorAbility> abilitiesList;
-
     public List<Actor> targetList;
 
     public virtual void Awake()
