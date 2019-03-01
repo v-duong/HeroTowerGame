@@ -32,5 +32,13 @@ public class Equipment : Item
         equippedToHero = null;
     }
 
-
+    public override bool UpgradeRarity()
+    {
+        if (Rarity == RarityType.EPIC)
+            return false;
+        else
+            Rarity++;
+        AddRandomAffix();
+        return true;
+    }
 }

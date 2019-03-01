@@ -1,7 +1,6 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 
 public abstract class Item
 {
@@ -10,7 +9,7 @@ public abstract class Item
     public RarityType Rarity { get; protected set; }
     public int ItemLevel { get; protected set; }
     public GroupType itemType { get; protected set; }
-    
+
     public List<Affix> prefixes;
     public List<Affix> suffixes;
 
@@ -98,7 +97,8 @@ public abstract class Item
             if (Random.Range(0, 2) == 0)
                 AddRandomAffix();
             return true;
-        } else if (Rarity == RarityType.RARE)
+        }
+        else if (Rarity == RarityType.RARE)
         {
             ClearAffixes(false);
             AddRandomAffix();
@@ -112,7 +112,8 @@ public abstract class Item
                 i++;
             }
             return true;
-        } else if (Rarity == RarityType.EPIC)
+        }
+        else if (Rarity == RarityType.EPIC)
         {
             ClearAffixes(false);
             AddRandomAffix();
@@ -129,7 +130,6 @@ public abstract class Item
             return true;
         }
         return false;
-
     }
 
     public virtual bool AddRandomAffix()
@@ -139,7 +139,6 @@ public abstract class Item
             return false;
 
         return AddAffix(ResourceManager.Instance.GetRandomAffixBase((AffixType)affixType, ItemLevel, itemType, GetBonusTagTypeList((AffixType)affixType)));
-
     }
 
     public List<string> GetBonusTagTypeList(AffixType type)
@@ -150,7 +149,7 @@ public abstract class Item
             list = prefixes;
         else
             list = suffixes;
-        foreach(Affix affix in list)
+        foreach (Affix affix in list)
         {
             returnList.Add(affix.Base.BonusTagType);
         }
@@ -165,12 +164,15 @@ public abstract class Item
             case RarityType.EPIC:
                 affixCap = 4;
                 break;
+
             case RarityType.RARE:
                 affixCap = 3;
                 break;
+
             case RarityType.UNCOMMON:
                 affixCap = 1;
                 break;
+
             case RarityType.NORMAL:
             default:
                 return null;
@@ -193,14 +195,13 @@ public abstract class Item
         }
         else
             return null;
-            
     }
 
     public bool AddAffix(AffixBase affix)
     {
         if (affix == null)
             return false;
-    
+
         if (affix.affixType == AffixType.PREFIX)
         {
             prefixes.Add(new Affix(affix));
@@ -215,16 +216,7 @@ public abstract class Item
             return false;
     }
 
-    public virtual bool UpgradeRarity()
-    {
-        if (Rarity == RarityType.EPIC)
-            return false;
-        else
-            Rarity++;
-        AddRandomAffix();
-        return true;
-    }
-
+    public abstract bool UpgradeRarity();
 }
 
 public enum RarityType
@@ -232,5 +224,7 @@ public enum RarityType
     NORMAL,
     UNCOMMON,
     RARE,
-    EPIC
+    EPIC,
+    PERFECT,
+    UNIQUE
 }

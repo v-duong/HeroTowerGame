@@ -1,14 +1,13 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using System.Collections.Generic;
 
 public class Archetype : Item
 {
     public ArchetypeBase Base { get { return ResourceManager.Instance.GetArchetypeBase(BaseId); } }
     private int BaseId { get; set; }
-    
+
     public int level;
     public int experience;
+    public int skillPoints;
     public HeroActor equippedToHero;
     public List<Affix> innate;
     public List<Affix> enchantments;
@@ -35,6 +34,33 @@ public class Archetype : Item
         }
     }
 
+    public int GetMaxLevel()
+    {
+        switch (Rarity)
+        {
+            case RarityType.EPIC:
+                return 50;
+
+            case RarityType.RARE:
+                return 40;
+
+            case RarityType.UNCOMMON:
+                return 30;
+
+            case RarityType.NORMAL:
+            default:
+                return 20;
+        }
+    }
+
+    public override bool UpgradeRarity()
+    {
+        if (Rarity == RarityType.EPIC)
+            return false;
+        Rarity++;
+        return true;
+    }
+
     public bool LevelUpNode(ArchetypeSkillNode node)
     {
         NodeLevel nodeLevel = nodeLevels[node];
@@ -42,7 +68,7 @@ public class Archetype : Item
             return false;
         nodeLevel.level++;
 
-       foreach(var bonus in node.bonuses)
+        foreach (var bonus in node.bonuses)
         {
             if (nodeLevel.level == 1)
             {
@@ -102,22 +128,4 @@ public class Archetype : Item
             if (nodeLevel.level >= 1)
                 equippedToHero.RemoveStatBonus(bonus.growthValue * value, bonus.bonusType, bonus.modifyType);
     }
-
-    public bool IsNodeRequirementMet(ArchetypeSkillNode node)
-    {
-        foreach (var req in node.requirements)
-        {
-            if (nodeLevels[node].level < req.requiredLevel)
-            {
-                return false;
-            }
-        }
-        return true;
-    }
-}
-
-public class NodeLevel
-{
-    public int level;
-    public int bonusLevels;
 }

@@ -1,10 +1,9 @@
-﻿using System.Collections;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
-using System;
-using System.Linq;
 
-public class HeroActor : Actor {
+public class HeroActor : Actor
+{
     public float BaseHealth { get; private set; }
 
     public float BaseSoulPoints { get; private set; }
@@ -16,7 +15,6 @@ public class HeroActor : Actor {
     public float BaseIntelligence { get; private set; }
     public float BaseAgility { get; private set; }
     public float BaseWill { get; private set; }
-    
 
     public int Strength { get; private set; }
     public int Intelligence { get; private set; }
@@ -42,6 +40,7 @@ public class HeroActor : Actor {
     private Equipment mainHand;
     private Equipment offHand;
     private Archetype archetype;
+    private Archetype subArchetype;
 
     public HeroActor()
     {
@@ -64,7 +63,8 @@ public class HeroActor : Actor {
     }
 
     // Use this for initialization
-    public override void Start () {
+    public override void Start()
+    {
         ActorAbility a = new ActorAbility
         {
             abilityBase = ResourceManager.Instance.GetAbilityBase(0)
@@ -78,14 +78,15 @@ public class HeroActor : Actor {
         b.InitializeActorAbility();
         AddAbilityToList(b);
     }
-	
-	// Update is called once per frame
-	public void Update () {
-        foreach(var x in abilitiesList)
+
+    // Update is called once per frame
+    public void Update()
+    {
+        foreach (var x in abilitiesList)
         {
             x.StartFiring(this);
         }
-	}
+    }
 
     public override void Death()
     {
@@ -122,44 +123,55 @@ public class HeroActor : Actor {
         {
             if (equip.Base.equipSlot != slot)
                 return false;
-        } else
+        }
+        else
         {
             if (slot != EquipSlotType.RING_SLOT_1 && slot != EquipSlotType.RING_SLOT_2)
                 return false;
         }
 
-        switch(slot)
+        switch (slot)
         {
             case EquipSlotType.HEADGEAR:
                 headgear = equip;
                 break;
+
             case EquipSlotType.BODY_ARMOR:
                 bodyArmor = equip;
                 break;
+
             case EquipSlotType.BOOTS:
                 boots = equip;
                 break;
+
             case EquipSlotType.GLOVES:
                 gloves = equip;
                 break;
+
             case EquipSlotType.BELT:
                 belt = equip;
                 break;
+
             case EquipSlotType.NECKLACE:
                 necklace = equip;
                 break;
+
             case EquipSlotType.WEAPON:
                 mainHand = equip;
                 break;
+
             case EquipSlotType.OFF_HAND:
                 offHand = equip;
                 break;
+
             case EquipSlotType.RING_SLOT_1:
                 ring1 = equip;
                 break;
+
             case EquipSlotType.RING_SLOT_2:
                 ring2 = equip;
                 break;
+
             default:
                 return false;
         }
@@ -174,7 +186,7 @@ public class HeroActor : Actor {
     {
         foreach (Affix affix in affixes)
         {
-            foreach(AffixBonusBase b in affix.Base.affixBonuses)
+            foreach (AffixBonusBase b in affix.Base.affixBonuses)
             {
                 if (b.bonusType < (BonusType)0x600)
                     AddStatBonus(affix.GetAffixValue(b.bonusType), b.bonusType, b.modifyType);
@@ -203,12 +215,15 @@ public class HeroActor : Actor {
             case ModifyType.FLAT_ADDITION:
                 statBonuses[type].AddToFlat(value);
                 break;
+
             case ModifyType.ADDITIVE:
                 statBonuses[type].AddToAdditive(value);
                 break;
+
             case ModifyType.MULTIPLY:
                 statBonuses[type].AddToMultiply(value);
                 break;
+
             default:
                 return;
         }
@@ -221,12 +236,15 @@ public class HeroActor : Actor {
             case ModifyType.FLAT_ADDITION:
                 statBonuses[type].AddToFlat(-value);
                 break;
+
             case ModifyType.ADDITIVE:
                 statBonuses[type].AddToAdditive(-value);
                 break;
+
             case ModifyType.MULTIPLY:
                 statBonuses[type].RemoveFromMultiply(value);
                 break;
+
             default:
                 return;
         }
@@ -254,33 +272,33 @@ public class HeroActor : Actor {
     {
         if (statBonuses.ContainsKey(BonusType.STRENGTH) && statBonuses[BonusType.STRENGTH].isStatOutdated)
         {
-            Strength = HeroStatCalculation((int)Math.Floor(BaseStrength), statBonuses[BonusType.STRENGTH]);
+            Strength = HeroStatCalculation((int)Math.Round( BaseStrength, MidpointRounding.AwayFromZero), statBonuses[BonusType.STRENGTH]);
         }
         ApplyStrengthBonuses();
 
         if (statBonuses.ContainsKey(BonusType.INTELLIGENCE) && statBonuses[BonusType.INTELLIGENCE].isStatOutdated)
         {
-            Intelligence = HeroStatCalculation((int)Math.Floor(BaseIntelligence), statBonuses[BonusType.INTELLIGENCE]);
+            Intelligence = HeroStatCalculation((int)Math.Round( BaseIntelligence, MidpointRounding.AwayFromZero), statBonuses[BonusType.INTELLIGENCE]);
         }
         ApplyIntelligenceBonuses();
 
         if (statBonuses.ContainsKey(BonusType.AGILITY) && statBonuses[BonusType.AGILITY].isStatOutdated)
         {
-            Agility = HeroStatCalculation((int)Math.Floor(BaseAgility), statBonuses[BonusType.AGILITY]);
-        } 
+            Agility = HeroStatCalculation((int)Math.Round( BaseAgility, MidpointRounding.AwayFromZero), statBonuses[BonusType.AGILITY]);
+        }
         ApplyAgilityBonuses();
 
         if (statBonuses.ContainsKey(BonusType.WILL) && statBonuses[BonusType.WILL].isStatOutdated)
         {
-            Will = HeroStatCalculation((int)Math.Floor(BaseWill), statBonuses[BonusType.WILL]);
+            Will = HeroStatCalculation((int)Math.Round( BaseWill, MidpointRounding.AwayFromZero), statBonuses[BonusType.WILL]);
         }
         ApplyWillBonuses();
     }
 
     public void ApplyStrengthBonuses()
     {
-        int armorMod = (int)Math.Floor( (float)Strength / 5 );
-        int attackDamageMod = (int)Math.Floor((float)Strength / 10);
+        int armorMod = (int)Math.Round( (double)Strength / 5,  MidpointRounding.AwayFromZero);
+        int attackDamageMod = (int)Math.Round( (double)Strength / 10,  MidpointRounding.AwayFromZero);
 
         if (!statBonuses.ContainsKey(BonusType.GLOBAL_ARMOR))
             statBonuses.Add(BonusType.GLOBAL_ARMOR, new HeroStatBonus());
@@ -295,8 +313,8 @@ public class HeroActor : Actor {
 
     public void ApplyIntelligenceBonuses()
     {
-        int shieldMod = (int)Math.Floor( (float)Intelligence / 5 );
-        int spellDamageMod = (int)Math.Floor((float)Intelligence / 10);
+        int shieldMod = (int)Math.Round( (double)Intelligence / 5,  MidpointRounding.AwayFromZero);
+        int spellDamageMod = (int)Math.Round( (double)Intelligence / 10,  MidpointRounding.AwayFromZero);
 
         if (!statBonuses.ContainsKey(BonusType.GLOBAL_MAX_SHIELD))
             statBonuses.Add(BonusType.GLOBAL_MAX_SHIELD, new HeroStatBonus());
@@ -311,9 +329,9 @@ public class HeroActor : Actor {
 
     public void ApplyAgilityBonuses()
     {
-        int dodgeRatingMod = (int)Math.Floor((float)Agility / 5);
-        int attackSpeedMod = (int)Math.Floor((float)Agility / 25);
-        int castSpeedMod = (int)Math.Floor((float)Agility / 25);
+        int dodgeRatingMod = (int)Math.Round( (double)Agility / 5,  MidpointRounding.AwayFromZero);
+        int attackSpeedMod = (int)Math.Round( (double)Agility / 25,  MidpointRounding.AwayFromZero);
+        int castSpeedMod = (int)Math.Round( (double)Agility / 25,  MidpointRounding.AwayFromZero);
 
         if (!statBonuses.ContainsKey(BonusType.GLOBAL_DODGE_RATING))
             statBonuses.Add(BonusType.GLOBAL_DODGE_RATING, new HeroStatBonus());
@@ -332,8 +350,8 @@ public class HeroActor : Actor {
 
     public void ApplyWillBonuses()
     {
-        int resolveRatingMod = (int)Math.Floor((float)Will / 5);
-        int auraEffectMod = (int)Math.Floor((float)Will / 20);
+        int resolveRatingMod = (int)Math.Round( (double)Will / 5,  MidpointRounding.AwayFromZero);
+        int auraEffectMod = (int)Math.Round( (double)Will / 20,  MidpointRounding.AwayFromZero);
 
         if (!statBonuses.ContainsKey(BonusType.GLOBAL_RESOLVE_RATING))
             statBonuses.Add(BonusType.GLOBAL_RESOLVE_RATING, new HeroStatBonus());
@@ -349,17 +367,17 @@ public class HeroActor : Actor {
     public void ApplyHealthBonuses()
     {
         if (statBonuses.ContainsKey(BonusType.MAX_HEALTH))
-            MaximumHealth = HeroStatCalculation((int)Math.Floor(BaseHealth), statBonuses[BonusType.MAX_HEALTH]);
+            MaximumHealth = HeroStatCalculation((int)Math.Round( BaseHealth, MidpointRounding.AwayFromZero), statBonuses[BonusType.MAX_HEALTH]);
         else
-            MaximumHealth = (int)Math.Floor(BaseHealth);
+            MaximumHealth = (int)Math.Round( BaseHealth,  MidpointRounding.AwayFromZero);
     }
 
     public void ApplySoulPointBonuses()
     {
         if (statBonuses.ContainsKey(BonusType.MAX_SOULPOINTS))
-            MaximumSoulPoints = HeroStatCalculation((int)Math.Floor(BaseSoulPoints), statBonuses[BonusType.MAX_SOULPOINTS]);
+            MaximumSoulPoints = HeroStatCalculation((int)Math.Round( BaseSoulPoints, MidpointRounding.AwayFromZero), statBonuses[BonusType.MAX_SOULPOINTS]);
         else
-            MaximumSoulPoints = (int)Math.Floor(BaseSoulPoints);
+            MaximumSoulPoints = (int)Math.Round( BaseSoulPoints,  MidpointRounding.AwayFromZero);
     }
 
     public void ApplyShieldBonuses()
@@ -418,10 +436,9 @@ public class HeroActor : Actor {
             return bonuses.setModifier;
         }
         bonuses.isStatOutdated = false;
-        return (int)Math.Round((stat + bonuses.FlatModifier + bonuses.FlatModifierFromAttributes) * (1 + (float)(bonuses.AdditiveModifier + bonuses.AdditiveModifierFromAttributes)/100) * bonuses.CurrentMultiplier);
+        return (int)Math.Round((stat + bonuses.FlatModifier + bonuses.FlatModifierFromAttributes) * (1 + (double)(bonuses.AdditiveModifier + bonuses.AdditiveModifierFromAttributes) / 100) * bonuses.CurrentMultiplier);
     }
 }
-
 
 public class HeroStatBonus
 {
@@ -488,8 +505,9 @@ public class HeroStatBonus
 
     public void UpdateCurrentMultiply()
     {
-        CurrentMultiplier = 1.0f;
+        double mult = 1.0d;
         foreach (int i in MultiplyModifiers)
-            CurrentMultiplier *= (1 + (float)i/100);
+            mult *= (1d + i / 100d);
+        CurrentMultiplier = (float)mult;
     }
 }

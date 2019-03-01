@@ -1,6 +1,5 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 
@@ -32,55 +31,3 @@ public class ArchetypeBase
     public readonly List<ArchetypeSkillNode> nodeList;
 }
 
-
-public class ArchetypeSkillNode
-{
-    [JsonProperty]
-    public readonly int id;
-    [JsonProperty]
-    public readonly string name;
-    [JsonProperty]
-    public readonly string desc;
-    [JsonProperty]
-    public readonly int initialLevel;
-    [JsonProperty]
-    public readonly int maxLevel;
-    [JsonConverter(typeof(StringEnumConverter))]
-    [JsonProperty]
-    public readonly NodeType type;
-    [JsonProperty]
-    public readonly List<ArchetypeNodeBonus> bonuses;
-    [JsonProperty]
-    public Vector2 nodePosition;
-    [JsonProperty]
-    public List<ArchetypeNodeRequirements> requirements;
-}
-
-public class ArchetypeNodeBonus
-{
-    [JsonConverter(typeof(StringEnumConverter))]
-    [JsonProperty]
-    public readonly BonusType bonusType;
-    [JsonConverter(typeof(StringEnumConverter))]
-    [JsonProperty]
-    public readonly ModifyType modifyType;
-    [JsonProperty]
-    public readonly int intialValue;
-    [JsonProperty]
-    public readonly int growthValue;
-}
-
-public class ArchetypeNodeRequirements
-{
-    [JsonProperty]
-    public readonly ArchetypeSkillNode node;
-    [JsonProperty]
-    public readonly int requiredLevel;
-}
-
-public enum NodeType
-{
-    LESSER,
-    GREATER,
-    MASTER
-}

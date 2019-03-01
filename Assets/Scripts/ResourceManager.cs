@@ -142,10 +142,10 @@ public class ResourceManager : MonoBehaviour
     {
         archetypeList = new Dictionary<int, ArchetypeBase>();
 
-        List<ArchetypeBase> temp = DeserializeFromPath<List<ArchetypeBase>>("json/items/archetype");
-        foreach (ArchetypeBase equip in temp)
+        List<ArchetypeBase> temp = DeserializeFromPath<List<ArchetypeBase>>("json/archetypes/archetypes");
+        foreach (ArchetypeBase arche in temp)
         {
-            archetypeList.Add(equip.id, equip);
+            archetypeList.Add(arche.id, arche);
         }
     }
 
@@ -191,11 +191,13 @@ public class ResourceManager : MonoBehaviour
         LoadEquipment();
         prefixList = LoadAffixes(AffixType.PREFIX);
         suffixList = LoadAffixes(AffixType.SUFFIX);
+        LoadArchetypes();
 
         AbilityCount = abilityList.Count;
         EquipmentCount = equipmentList.Count;
         PrefixCount = prefixList.Count;
         SuffixCount = suffixList.Count;
+        ArchetypeCount = archetypeList.Count;
     }
 
     // Start is called before the first frame update

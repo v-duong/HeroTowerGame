@@ -1,29 +1,28 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
-public class Projectile : MonoBehaviour {
-    public Vector3 currentHeading;
-    public float currentSpeed;
-    public bool canHitEnemies = false;
+public class Projectile : MonoBehaviour
+{
     public bool canHitAllies = false;
-    public int projectileDamage;
+    public bool canHitEnemies = false;
+    public float currentSpeed;
     public float timeToLive = 1.5f;
+    public int projectileDamage;
+    public Vector3 currentHeading;
 
     public List<AbilityEffect> attachedEffects;
 
     // Update is called once per frame
-    void Update () {
+    private void Update()
+    {
         Move();
         timeToLive -= Time.deltaTime;
-
     }
 
     public void OnTriggerEnter2D(Collider2D collision)
     {
         collision.gameObject.GetComponent<Actor>().ApplyDamage(projectileDamage);
         this.gameObject.SetActive(false);
-
     }
 
     public void Move()
@@ -33,6 +32,4 @@ public class Projectile : MonoBehaviour {
         this.transform.Translate(currentHeading.normalized * currentSpeed * dt);
         return;
     }
-
-
 }

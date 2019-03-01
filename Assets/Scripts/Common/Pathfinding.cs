@@ -1,11 +1,10 @@
-﻿using System.Collections;
+﻿using Priority_Queue;
 using System.Collections.Generic;
 using UnityEngine;
-using Priority_Queue;
 using UnityEngine.Tilemaps;
 
-
-public static class Pathfinding {
+public static class Pathfinding
+{
     private class QueueNode : FastPriorityQueueNode
     {
         public Vector3 data;
@@ -25,7 +24,7 @@ public static class Pathfinding {
         Vector3 current;
         int newcost = 0;
 
-        FastPriorityQueue<QueueNode> queue = new FastPriorityQueue<QueueNode>(9);
+        FastPriorityQueue<QueueNode> queue = new FastPriorityQueue<QueueNode>(16);
         queue.Enqueue(new QueueNode(start), 0);
         cost.Add(start, 0);
 
@@ -37,7 +36,6 @@ public static class Pathfinding {
 
             foreach (Vector3 neighbor in GetTileNeighbor(t, current))
             {
-
                 newcost = cost[current] + 1;
                 if (!cost.ContainsKey(neighbor) || newcost < cost[neighbor])
                 {
@@ -64,12 +62,10 @@ public static class Pathfinding {
         r.Add(v);
     }
 
-
     public static List<Vector3> GetTileNeighbor(Tilemap t, Vector3 v)
     {
         List<Vector3> ret = new List<Vector3>();
         Vector3Int v2 = t.WorldToCell(v);
-        
 
         if (t.GetTile(v2 + Vector3Int.up) != null)
             ret.Add(v + Vector3.up);
@@ -82,5 +78,4 @@ public static class Pathfinding {
 
         return ret;
     }
-
 }
