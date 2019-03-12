@@ -10,7 +10,7 @@ public class Projectile : MonoBehaviour
     public int projectileDamage;
     public Vector3 currentHeading;
 
-    public List<AbilityEffect> attachedEffects;
+    //public List<AbilityEffect> attachedEffects;
 
     // Update is called once per frame
     private void Update()

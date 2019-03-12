@@ -7,6 +7,8 @@ public class EquipmentBase
 {
     [JsonProperty] 
     public readonly int id;
+    [JsonProperty]
+    public readonly string idName;
     [JsonProperty] 
     public readonly string name;
     [JsonProperty] 
@@ -46,7 +48,9 @@ public class EquipmentBase
     [JsonProperty]
     public readonly bool hasInnate;
     [JsonProperty]
-    public readonly int innateAffixId;
+    public readonly string innateAffixId;
+    [JsonProperty]
+    public readonly int spawnWeight;
 }
 
 public enum EquipSlotType
@@ -58,8 +62,8 @@ public enum EquipSlotType
     GLOVES,
     BOOTS,
     BELT,
-    RING,
     NECKLACE,
+    RING,
     RING_SLOT_1,
     RING_SLOT_2
 }

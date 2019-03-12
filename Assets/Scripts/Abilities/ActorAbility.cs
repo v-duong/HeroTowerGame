@@ -21,11 +21,7 @@ public class ActorAbility {
 
     public int CalculateAbilityDamage()
     {
-        int sum = 0;
-        foreach (AbilityBaseDamageEntry x in abilityBase.baseDamage) {
-            sum += UnityEngine.Random.Range(x.baseMin, x.baseMax + 1);
-        }
-        return sum;
+        return 0;
     }
 
     public bool StartFiring(Actor parent)
@@ -65,7 +61,7 @@ public class ActorAbility {
                 p.transform.position = this.collider.transform.position;
                 p.currentHeading = results[0].transform.position - this.collider.transform.position;
                 p.currentHeading.z = 0;
-                p.currentSpeed = abilityBase.baseProjectileSpeed;
+                p.currentSpeed = abilityBase.projectileSpeed;
                 
                 p.projectileDamage = CalculateAbilityDamage();
                 fired = true;
@@ -73,7 +69,7 @@ public class ActorAbility {
             if (fired)
             {
                 fired = false;
-                yield return new WaitForSeconds(abilityBase.baseCooldown);
+                yield return new WaitForSeconds(abilityBase.cooldown);
             } else
             {
                 yield return null;

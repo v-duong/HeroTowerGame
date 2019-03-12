@@ -88,6 +88,8 @@ public abstract class Item
 
     public bool RerollAffixesAtRarity()
     {
+        int affixCap = GetAffixCap();
+
         if (Rarity == RarityType.NORMAL)
             return false;
         if (Rarity == RarityType.UNCOMMON)
@@ -98,31 +100,13 @@ public abstract class Item
                 AddRandomAffix();
             return true;
         }
-        else if (Rarity == RarityType.RARE)
+        else if (Rarity == RarityType.RARE || Rarity == RarityType.EPIC)
         {
             ClearAffixes(false);
-            AddRandomAffix();
-            AddRandomAffix();
-            AddRandomAffix();
-            AddRandomAffix();
-            int i = 0;
-            while ((Random.Range(0, 2) == 0) && i < 2)
-            {
+            for(int j = 0; j < affixCap+1; j++)
                 AddRandomAffix();
-                i++;
-            }
-            return true;
-        }
-        else if (Rarity == RarityType.EPIC)
-        {
-            ClearAffixes(false);
-            AddRandomAffix();
-            AddRandomAffix();
-            AddRandomAffix();
-            AddRandomAffix();
-            AddRandomAffix();
             int i = 0;
-            while ((Random.Range(0, 2) == 0) && i < 3)
+            while ((Random.Range(0, 2) == 0) && i < (affixCap - 1))
             {
                 AddRandomAffix();
                 i++;
@@ -156,27 +140,29 @@ public abstract class Item
         return returnList;
     }
 
-    public AffixType? GetRandomOpenAffixType()
+    public virtual int GetAffixCap()
     {
-        int affixCap = 0;
         switch (Rarity)
         {
             case RarityType.EPIC:
-                affixCap = 4;
-                break;
+                return 4;
 
             case RarityType.RARE:
-                affixCap = 3;
-                break;
+                return 3;
 
             case RarityType.UNCOMMON:
-                affixCap = 1;
-                break;
+                return 1;
 
             case RarityType.NORMAL:
             default:
-                return null;
+                return 0;
         }
+    }
+
+    public AffixType? GetRandomOpenAffixType()
+    {
+        int affixCap = GetAffixCap();
+
         if (prefixes.Count < affixCap && suffixes.Count < affixCap)
         {
             int i = Random.Range(0, 2);

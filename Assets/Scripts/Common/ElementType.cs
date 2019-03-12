@@ -13,17 +13,6 @@ public enum ElementType
     VOID,
 }
 
-public enum DebuffEffectType
-{
-    BLEED,          //physical dot, increased damage over distance
-    BURNING,        //fire dot
-    CHILL,          //slow, reduced regen
-    ELECTROCUTE,    //periodic ministun
-    FRACTURE,       //reduced defenses (armor, shield, block/phasing)
-    PACIFY,         //reduced damage
-    RADIATION,     //dot to target + nearby enemies
-}
-
 public class ElementResistances
 {
     private readonly Dictionary<ElementType, int> dict;

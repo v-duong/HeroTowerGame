@@ -17,7 +17,7 @@ public class InvButton : MonoBehaviour
 
     public void AddItem()
     {
-        Equipment equipment = new Equipment( ResourceManager.Instance.GetEquipmentBase(Random.Range(0, ResourceManager.Instance.EquipmentCount-1)), 10 );
+        Armor equipment = new Armor( ResourceManager.Instance.GetRandomEquipmentBase(100) , 100 );
         GameManager.Instance.PlayerStats.AddEquipmentToInventory(equipment);
     }
 }

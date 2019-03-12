@@ -3,7 +3,7 @@
 public class Archetype : Item
 {
     public ArchetypeBase Base { get { return ResourceManager.Instance.GetArchetypeBase(BaseId); } }
-    private int BaseId { get; set; }
+    private string BaseId { get; set; }
 
     public int level;
     public int experience;
@@ -16,7 +16,7 @@ public class Archetype : Item
 
     public Archetype(ArchetypeBase b)
     {
-        BaseId = b.id;
+        BaseId = b.idName;
         itemType = GroupType.ARCHETYPE;
         prefixes = new List<Affix>();
         suffixes = new List<Affix>();
@@ -59,6 +59,25 @@ public class Archetype : Item
             return false;
         Rarity++;
         return true;
+    }
+
+    public override int GetAffixCap()
+    {
+        switch (Rarity)
+        {
+            case RarityType.EPIC:
+                return 3;
+
+            case RarityType.RARE:
+                return 2;
+
+            case RarityType.UNCOMMON:
+                return 1;
+
+            case RarityType.NORMAL:
+            default:
+                return 0;
+        }
     }
 
     public bool LevelUpNode(ArchetypeSkillNode node)

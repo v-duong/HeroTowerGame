@@ -11,11 +11,11 @@ public class ResourceManager : MonoBehaviour
     //private readonly static int EnchantmentOffset = 30000;
     //private readonly static int InnateOffset = 40000;
 
-    private Dictionary<int, AbilityBase> abilityList;
-    private Dictionary<int, EquipmentBase> equipmentList;
-    private Dictionary<int, AffixBase> prefixList;
-    private Dictionary<int, AffixBase> suffixList;
-    private Dictionary<int, ArchetypeBase> archetypeList;
+    private Dictionary<string, AbilityBase> abilityList;
+    private Dictionary<string, EquipmentBase> equipmentList;
+    private Dictionary<string, AffixBase> prefixList;
+    private Dictionary<string, AffixBase> suffixList;
+    private Dictionary<string, ArchetypeBase> archetypeList;
 
     public int AbilityCount { get; private set; }
     public int EquipmentCount { get; private set; }
@@ -23,7 +23,7 @@ public class ResourceManager : MonoBehaviour
     public int SuffixCount { get; private set; }
     public int ArchetypeCount { get; private set; }
 
-    public AbilityBase GetAbilityBase(int id)
+    public AbilityBase GetAbilityBase(string id)
     {
         if (abilityList == null)
             LoadAbilities();
@@ -33,7 +33,7 @@ public class ResourceManager : MonoBehaviour
             return null;
     }
 
-    public ArchetypeBase GetArchetypeBase(int id)
+    public ArchetypeBase GetArchetypeBase(string id)
     {
         if (archetypeList == null)
             LoadArchetypes();
@@ -43,7 +43,7 @@ public class ResourceManager : MonoBehaviour
             return null;
     }
 
-    public EquipmentBase GetEquipmentBase(int id)
+    public EquipmentBase GetEquipmentBase(string id)
     {
         if (equipmentList == null)
             LoadEquipment();
@@ -53,7 +53,31 @@ public class ResourceManager : MonoBehaviour
             return null;
     }
 
-    public AffixBase GetAffixBase(int id, AffixType type)
+    public EquipmentBase GetRandomEquipmentBase(int ilvl, GroupType? group = null)
+    {
+        if (equipmentList == null)
+            LoadEquipment();
+
+        List<WeightListItem<EquipmentBase>> possibleEquipList = new List<WeightListItem<EquipmentBase>>();
+        int sum = 0;
+
+        foreach (EquipmentBase equipment in equipmentList.Values)
+        {
+            if (group != null && equipment.group != group)
+                continue;
+
+            if (equipment.dropLevel <= ilvl)
+            {
+                possibleEquipList.Add(new WeightListItem<EquipmentBase>(equipment, equipment.spawnWeight));
+                sum += equipment.spawnWeight;
+            }
+        }
+        if (possibleEquipList.Count == 0)
+            return null;
+        return Helpers.ReturnWeightedRandom(possibleEquipList, sum);
+    }
+
+    public AffixBase GetAffixBase(string id, AffixType type)
     {
         switch(type)
         {
@@ -72,7 +96,7 @@ public class ResourceManager : MonoBehaviour
 
     public AffixBase GetRandomAffixBase(AffixType type, int ilvl = 0, GroupType tag = GroupType.NO_GROUP, List<string> bonusTagList = null)
     {
-        Dictionary<int, AffixBase> affixList;
+        Dictionary<string, AffixBase> affixList;
         switch (type)
         {
             case AffixType.PREFIX:
@@ -86,7 +110,7 @@ public class ResourceManager : MonoBehaviour
                 break;
         }
 
-        List<Helpers.WeightListItem<AffixBase>> possibleAffixList = new List<Helpers.WeightListItem<AffixBase>>();
+        List<WeightListItem<AffixBase>> possibleAffixList = new List<WeightListItem<AffixBase>>();
         int sum = 0;
 
         foreach(AffixBase affixBase in affixList.Values)
@@ -104,8 +128,8 @@ public class ResourceManager : MonoBehaviour
                             break;
                         //Debug.Log(affixBase.name + " " + affixWeight.type + " " + affixWeight.weight);
                         sum += affixWeight.weight;
-                        possibleAffixList.Add(new Helpers.WeightListItem<AffixBase>(affixBase, affixWeight.weight));
-                        continue;
+                        possibleAffixList.Add(new WeightListItem<AffixBase>(affixBase, affixWeight.weight));
+                        break;
                     }
                 }
             }
@@ -118,41 +142,44 @@ public class ResourceManager : MonoBehaviour
 
     private void LoadAbilities()
     {
-        abilityList = new Dictionary<int, AbilityBase>();
+        abilityList = new Dictionary<string, AbilityBase>();
 
         List<AbilityBase> temp = DeserializeFromPath<List<AbilityBase>>("json/abilities/abilities");
         foreach (AbilityBase ability in temp)
         {
-            abilityList.Add(ability.id, ability);
+            if (ability.idName != null)
+             abilityList.Add(ability.idName, ability);
+            else
+                abilityList.Add(ability.name, ability);
         }
     }
 
     private void LoadEquipment()
     {
-        equipmentList = new Dictionary<int, EquipmentBase>();
+        equipmentList = new Dictionary<string, EquipmentBase>();
 
         List<EquipmentBase> temp = DeserializeFromPath<List<EquipmentBase>>("json/items/armor");
         foreach (EquipmentBase equip in temp)
         {
-            equipmentList.Add(equip.id, equip);
+            equipmentList.Add(equip.idName, equip);
         }
     }
 
     private void LoadArchetypes()
     {
-        archetypeList = new Dictionary<int, ArchetypeBase>();
+        archetypeList = new Dictionary<string, ArchetypeBase>();
 
         List<ArchetypeBase> temp = DeserializeFromPath<List<ArchetypeBase>>("json/archetypes/archetypes");
         foreach (ArchetypeBase arche in temp)
         {
-            archetypeList.Add(arche.id, arche);
+            archetypeList.Add(arche.idName, arche);
         }
     }
 
-    private Dictionary<int,AffixBase> LoadAffixes(AffixType type, int offset = 0)
+    private Dictionary<string,AffixBase> LoadAffixes(AffixType type, int offset = 0)
     {
         string s;
-        Dictionary<int, AffixBase>  affixes = new Dictionary<int, AffixBase>();
+        Dictionary<string, AffixBase>  affixes = new Dictionary<string, AffixBase>();
 
         switch(type)
         {
@@ -170,7 +197,7 @@ public class ResourceManager : MonoBehaviour
         foreach (AffixBase affix in temp)
         {
             affix.SetBonusTagType();
-            affixes.Add(affix.id + offset, affix);
+            affixes.Add(affix.idName, affix);
         }
         return affixes;
     }

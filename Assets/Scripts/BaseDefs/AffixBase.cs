@@ -9,6 +9,8 @@ public class AffixBase
     [JsonProperty]
     public readonly int id;
     [JsonProperty]
+    public readonly string idName;
+    [JsonProperty]
     public readonly string name;
     [JsonConverter(typeof(StringEnumConverter))][JsonProperty]
     public readonly AffixType affixType;
@@ -17,7 +19,7 @@ public class AffixBase
     [JsonProperty]
     public readonly int spawnLevel;
     [JsonProperty]
-    public readonly List<AffixBonusBase> affixBonuses;
+    public readonly List<AffixBonusProperty> affixBonuses;
     [JsonProperty]
     public readonly List<AffixWeight> spawnWeight;
     [JsonProperty(ItemConverterType = typeof(StringEnumConverter))]
@@ -28,7 +30,7 @@ public class AffixBase
     {
         int i = 0;
         string temp = "";
-        foreach (AffixBonusBase x in affixBonuses)
+        foreach (AffixBonusProperty x in affixBonuses)
         {
             temp += x.bonusType.ToString();
             temp += "_";
@@ -43,7 +45,7 @@ public class AffixBase
     }
 }
 
-public class AffixBonusBase
+public struct AffixBonusProperty
 {
     [JsonConverter(typeof(StringEnumConverter))][JsonProperty]
     public readonly BonusType bonusType;
@@ -55,7 +57,7 @@ public class AffixBonusBase
     public readonly int maxValue;
 }
 
-public class AffixWeight
+public struct AffixWeight
 {
     [JsonConverter(typeof(StringEnumConverter))][JsonProperty]
     public readonly GroupType type;

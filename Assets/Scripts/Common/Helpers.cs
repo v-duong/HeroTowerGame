@@ -44,17 +44,19 @@ public static class Helpers {
         return default(T);
     }
 
-    public class WeightListItem<T> {
-        public T item;
-        public int weight;
-
-        public WeightListItem(T i, int w)
-        {
-            item = i;
-            weight = w;
-        }
-    }
+    
 
     
 }
 
+public class WeightListItem<T>
+{
+    public T item;
+    public int weight;
+
+    public WeightListItem(T i, int w)
+    {
+        item = i;
+        weight = w;
+    }
+}

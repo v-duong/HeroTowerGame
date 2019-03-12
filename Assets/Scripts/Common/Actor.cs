@@ -1,24 +1,32 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
-public abstract class Actor : MonoBehaviour {
+public abstract class Actor : MonoBehaviour
+{
     public int Id { get; protected set; }
     public int Level { get; protected set; }
     public int Experience { get; protected set; }
 
+    public float BaseHealth { get; protected set; }
+
+    [SerializeField]
+    public int MaximumHealth { get; protected set; }
+
+    [SerializeField]
+    public float CurrentHealth { get; protected set; }
+
     public int MinimumHealth { get; protected set; } //for cases of invincible/phased actors
-    [SerializeField]
-    public int MaximumHealth {get; protected set; }
-    [SerializeField]
-    public float CurrentHealth {get; protected set; }
 
     public bool HealthIsHitsToKill { get; protected set; } //health is number of hits to kill
 
+    public float BaseSoulPoints { get; protected set; }
+    public int MaximumSoulPoints { get; protected set; }
+    public float CurrentSoulPoints { get; protected set; }
+
+    public int BaseShield { get; protected set; }
     public int MaximumShield { get; protected set; }
     public float CurrentShield { get; protected set; }
-    public int BaseShield { get; protected set; }
+
     public int BaseArmor { get; protected set; }
     public int BaseDodgeRating { get; protected set; }
     public int BaseAttackPhasing { get; protected set; }
@@ -44,9 +52,8 @@ public abstract class Actor : MonoBehaviour {
 
     public virtual void Start()
     {
-
     }
-    
+
     public void InitializeHealthBar()
     {
         healthBar = GetComponentInChildren<UIHealthBar>();
@@ -72,12 +79,10 @@ public abstract class Actor : MonoBehaviour {
 
     public virtual void Death()
     {
-
     }
 
     public void Shoot(Actor target, AbilityBase ability)
     {
-
     }
 
     public void ApplyDamage(int damage)
@@ -86,15 +91,13 @@ public abstract class Actor : MonoBehaviour {
         healthBar.UpdateHealthBar(MaximumHealth, CurrentHealth);
     }
 
-
     public bool IsAlive
     {
-        get { return GetCurrentHealth() > 0.0f;  }
+        get { return GetCurrentHealth() > 0.0f; }
     }
 
     public bool IsDead
     {
         get { return GetCurrentHealth() <= 0.0f; }
     }
-
 }

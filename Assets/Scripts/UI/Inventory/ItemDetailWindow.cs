@@ -16,19 +16,21 @@ public class ItemDetailWindow : MonoBehaviour
 
     public void UpdateWindowEquipment()
     {
-        this.GetComponent<Image>().color = Helpers.ReturnRarityColor(item.Rarity);
-        nameText.text = item.Name;
+        Armor armorItem = (Armor)item;
+
+        this.GetComponent<Image>().color = Helpers.ReturnRarityColor(armorItem.Rarity);
+        nameText.text = armorItem.Name;
 
         infoText.text = "";
-        infoText.text += item.Base.group + "\n";
-        if (item.armor != 0)
-            infoText.text += "Armor: " + item.armor + "\n";
-        if (item.shield != 0)
-            infoText.text += "Shield: " + item.shield + "\n";
-        if (item.dodgeRating != 0)
-            infoText.text += "Dodge Rating: " + item.dodgeRating + "\n";
-        if (item.resolveRating != 0)
-            infoText.text += "Resolve: " + item.resolveRating + "\n";
+        infoText.text += armorItem.Base.group + "\n";
+        if (armorItem.armor != 0)
+            infoText.text += "Armor: " + armorItem.armor + "\n";
+        if (armorItem.shield != 0)
+            infoText.text += "Shield: " + armorItem.shield + "\n";
+        if (armorItem.dodgeRating != 0)
+            infoText.text += "Dodge Rating: " + armorItem.dodgeRating + "\n";
+        if (armorItem.resolveRating != 0)
+            infoText.text += "Resolve: " + armorItem.resolveRating + "\n";
 
 
         affixText.text = "";
@@ -38,7 +40,7 @@ public class ItemDetailWindow : MonoBehaviour
             affixText.text += "Prefix\n";
             foreach (Affix a in item.prefixes)
             {
-                foreach (AffixBonusBase b in a.Base.affixBonuses)
+                foreach (AffixBonusProperty b in a.Base.affixBonuses)
                 {
                     affixText.text += "\t" + a.Base.name + " " + b.bonusType + " " + a.GetAffixValue(b.bonusType) + " [" + b.minValue + ", " + b.maxValue + "]" + "\n";
                 }
@@ -52,7 +54,7 @@ public class ItemDetailWindow : MonoBehaviour
             affixText.text += "Suffix\n";
             foreach (Affix a in item.suffixes)
             {
-                foreach (AffixBonusBase b in a.Base.affixBonuses)
+                foreach (AffixBonusProperty b in a.Base.affixBonuses)
                 {
                     affixText.text += "\t" + a.Base.name + " " + b.bonusType + " " + a.GetAffixValue(b.bonusType)  +" [" + b.minValue + ", " + b.maxValue + "]" + "\n";
                 }

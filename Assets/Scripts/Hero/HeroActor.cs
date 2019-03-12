@@ -4,13 +4,6 @@ using UnityEngine;
 
 public class HeroActor : Actor
 {
-    public float BaseHealth { get; private set; }
-
-    public float BaseSoulPoints { get; private set; }
-
-    public int MaximumSoulPoints { get; private set; }
-    public float CurrentSoulPoints { get; private set; }
-
     public float BaseStrength { get; private set; }
     public float BaseIntelligence { get; private set; }
     public float BaseAgility { get; private set; }
@@ -28,7 +21,7 @@ public class HeroActor : Actor
     public int MagicPhasing { get; private set; }
 
     protected Dictionary<BonusType, HeroStatBonus> statBonuses;
-
+    /*
     private Equipment headgear;
     private Equipment bodyArmor;
     private Equipment gloves;
@@ -41,6 +34,9 @@ public class HeroActor : Actor
     private Equipment offHand;
     private Archetype archetype;
     private Archetype subArchetype;
+    */
+    private List<Equipment> equipList;
+    private List<Archetype> archetypeList;
 
     public HeroActor()
     {
@@ -60,6 +56,9 @@ public class HeroActor : Actor
         BaseMagicPhasing = 0;
         Resistances = new ElementResistances();
         abilitiesList = new List<ActorAbility>();
+        equipList = new List<Equipment>(10);
+        archetypeList = new List<Archetype>(2);
+        statBonuses = new Dictionary<BonusType, HeroStatBonus>();
     }
 
     // Use this for initialization
@@ -67,13 +66,13 @@ public class HeroActor : Actor
     {
         ActorAbility a = new ActorAbility
         {
-            abilityBase = ResourceManager.Instance.GetAbilityBase(0)
+            //abilityBase = ResourceManager.Instance.GetAbilityBase(0)
         };
         a.InitializeActorAbility();
         AddAbilityToList(a);
         ActorAbility b = new ActorAbility
         {
-            abilityBase = ResourceManager.Instance.GetAbilityBase(1)
+            //abilityBase = ResourceManager.Instance.GetAbilityBase(1)
         };
         b.InitializeActorAbility();
         AddAbilityToList(b);
@@ -95,7 +94,7 @@ public class HeroActor : Actor
 
     public void LevelUp()
     {
-        ArchetypeBase a = archetype.Base;
+        ArchetypeBase a = archetypeList[0].Base;
         BaseHealth += a.healthGrowth;
         BaseSoulPoints += a.soulPointGrowth;
         BaseStrength += a.strengthGrowth;
@@ -112,7 +111,7 @@ public class HeroActor : Actor
     {
         abilitiesList.Add(ability);
         var collider = this.transform.gameObject.AddComponent<CircleCollider2D>();
-        collider.radius = ability.abilityBase.baseTargetRange;
+        collider.radius = ability.abilityBase.targetRange;
         ability.collider = collider;
         collider.isTrigger = true;
     }
@@ -133,43 +132,16 @@ public class HeroActor : Actor
         switch (slot)
         {
             case EquipSlotType.HEADGEAR:
-                headgear = equip;
-                break;
-
             case EquipSlotType.BODY_ARMOR:
-                bodyArmor = equip;
-                break;
-
             case EquipSlotType.BOOTS:
-                boots = equip;
-                break;
-
             case EquipSlotType.GLOVES:
-                gloves = equip;
-                break;
-
             case EquipSlotType.BELT:
-                belt = equip;
-                break;
-
             case EquipSlotType.NECKLACE:
-                necklace = equip;
-                break;
-
             case EquipSlotType.WEAPON:
-                mainHand = equip;
-                break;
-
             case EquipSlotType.OFF_HAND:
-                offHand = equip;
-                break;
-
             case EquipSlotType.RING_SLOT_1:
-                ring1 = equip;
-                break;
-
             case EquipSlotType.RING_SLOT_2:
-                ring2 = equip;
+                equipList[(int)slot] = equip;
                 break;
 
             default:
@@ -186,7 +158,7 @@ public class HeroActor : Actor
     {
         foreach (Affix affix in affixes)
         {
-            foreach (AffixBonusBase b in affix.Base.affixBonuses)
+            foreach (AffixBonusProperty b in affix.Base.affixBonuses)
             {
                 if (b.bonusType < (BonusType)0x600)
                     AddStatBonus(affix.GetAffixValue(b.bonusType), b.bonusType, b.modifyType);
@@ -198,7 +170,7 @@ public class HeroActor : Actor
     {
         foreach (Affix affix in affixes)
         {
-            foreach (AffixBonusBase b in affix.Base.affixBonuses)
+            foreach (AffixBonusProperty b in affix.Base.affixBonuses)
             {
                 if (b.bonusType < (BonusType)0x600)
                     RemoveStatBonus(affix.GetAffixValue(b.bonusType), b.bonusType, b.modifyType);
@@ -272,33 +244,33 @@ public class HeroActor : Actor
     {
         if (statBonuses.ContainsKey(BonusType.STRENGTH) && statBonuses[BonusType.STRENGTH].isStatOutdated)
         {
-            Strength = HeroStatCalculation((int)Math.Round( BaseStrength, MidpointRounding.AwayFromZero), statBonuses[BonusType.STRENGTH]);
+            Strength = HeroStatCalculation((int)Math.Round(BaseStrength, MidpointRounding.AwayFromZero), statBonuses[BonusType.STRENGTH]);
         }
         ApplyStrengthBonuses();
 
         if (statBonuses.ContainsKey(BonusType.INTELLIGENCE) && statBonuses[BonusType.INTELLIGENCE].isStatOutdated)
         {
-            Intelligence = HeroStatCalculation((int)Math.Round( BaseIntelligence, MidpointRounding.AwayFromZero), statBonuses[BonusType.INTELLIGENCE]);
+            Intelligence = HeroStatCalculation((int)Math.Round(BaseIntelligence, MidpointRounding.AwayFromZero), statBonuses[BonusType.INTELLIGENCE]);
         }
         ApplyIntelligenceBonuses();
 
         if (statBonuses.ContainsKey(BonusType.AGILITY) && statBonuses[BonusType.AGILITY].isStatOutdated)
         {
-            Agility = HeroStatCalculation((int)Math.Round( BaseAgility, MidpointRounding.AwayFromZero), statBonuses[BonusType.AGILITY]);
+            Agility = HeroStatCalculation((int)Math.Round(BaseAgility, MidpointRounding.AwayFromZero), statBonuses[BonusType.AGILITY]);
         }
         ApplyAgilityBonuses();
 
         if (statBonuses.ContainsKey(BonusType.WILL) && statBonuses[BonusType.WILL].isStatOutdated)
         {
-            Will = HeroStatCalculation((int)Math.Round( BaseWill, MidpointRounding.AwayFromZero), statBonuses[BonusType.WILL]);
+            Will = HeroStatCalculation((int)Math.Round(BaseWill, MidpointRounding.AwayFromZero), statBonuses[BonusType.WILL]);
         }
         ApplyWillBonuses();
     }
 
     public void ApplyStrengthBonuses()
     {
-        int armorMod = (int)Math.Round( (double)Strength / 5,  MidpointRounding.AwayFromZero);
-        int attackDamageMod = (int)Math.Round( (double)Strength / 10,  MidpointRounding.AwayFromZero);
+        int armorMod = (int)Math.Round((double)Strength / 5, MidpointRounding.AwayFromZero);
+        int attackDamageMod = (int)Math.Round((double)Strength / 10, MidpointRounding.AwayFromZero);
 
         if (!statBonuses.ContainsKey(BonusType.GLOBAL_ARMOR))
             statBonuses.Add(BonusType.GLOBAL_ARMOR, new HeroStatBonus());
@@ -313,8 +285,8 @@ public class HeroActor : Actor
 
     public void ApplyIntelligenceBonuses()
     {
-        int shieldMod = (int)Math.Round( (double)Intelligence / 5,  MidpointRounding.AwayFromZero);
-        int spellDamageMod = (int)Math.Round( (double)Intelligence / 10,  MidpointRounding.AwayFromZero);
+        int shieldMod = (int)Math.Round((double)Intelligence / 5, MidpointRounding.AwayFromZero);
+        int spellDamageMod = (int)Math.Round((double)Intelligence / 10, MidpointRounding.AwayFromZero);
 
         if (!statBonuses.ContainsKey(BonusType.GLOBAL_MAX_SHIELD))
             statBonuses.Add(BonusType.GLOBAL_MAX_SHIELD, new HeroStatBonus());
@@ -329,9 +301,9 @@ public class HeroActor : Actor
 
     public void ApplyAgilityBonuses()
     {
-        int dodgeRatingMod = (int)Math.Round( (double)Agility / 5,  MidpointRounding.AwayFromZero);
-        int attackSpeedMod = (int)Math.Round( (double)Agility / 25,  MidpointRounding.AwayFromZero);
-        int castSpeedMod = (int)Math.Round( (double)Agility / 25,  MidpointRounding.AwayFromZero);
+        int dodgeRatingMod = (int)Math.Round((double)Agility / 5, MidpointRounding.AwayFromZero);
+        int attackSpeedMod = (int)Math.Round((double)Agility / 25, MidpointRounding.AwayFromZero);
+        int castSpeedMod = (int)Math.Round((double)Agility / 25, MidpointRounding.AwayFromZero);
 
         if (!statBonuses.ContainsKey(BonusType.GLOBAL_DODGE_RATING))
             statBonuses.Add(BonusType.GLOBAL_DODGE_RATING, new HeroStatBonus());
@@ -350,8 +322,8 @@ public class HeroActor : Actor
 
     public void ApplyWillBonuses()
     {
-        int resolveRatingMod = (int)Math.Round( (double)Will / 5,  MidpointRounding.AwayFromZero);
-        int auraEffectMod = (int)Math.Round( (double)Will / 20,  MidpointRounding.AwayFromZero);
+        int resolveRatingMod = (int)Math.Round((double)Will / 5, MidpointRounding.AwayFromZero);
+        int auraEffectMod = (int)Math.Round((double)Will / 20, MidpointRounding.AwayFromZero);
 
         if (!statBonuses.ContainsKey(BonusType.GLOBAL_RESOLVE_RATING))
             statBonuses.Add(BonusType.GLOBAL_RESOLVE_RATING, new HeroStatBonus());
@@ -366,26 +338,32 @@ public class HeroActor : Actor
 
     public void ApplyHealthBonuses()
     {
+        double percentage = CurrentHealth / MaximumHealth;
         if (statBonuses.ContainsKey(BonusType.MAX_HEALTH))
-            MaximumHealth = HeroStatCalculation((int)Math.Round( BaseHealth, MidpointRounding.AwayFromZero), statBonuses[BonusType.MAX_HEALTH]);
+            MaximumHealth = HeroStatCalculation((int)Math.Round(BaseHealth, MidpointRounding.AwayFromZero), statBonuses[BonusType.MAX_HEALTH]);
         else
-            MaximumHealth = (int)Math.Round( BaseHealth,  MidpointRounding.AwayFromZero);
+            MaximumHealth = (int)Math.Round(BaseHealth, MidpointRounding.AwayFromZero);
+        CurrentHealth = (float)(MaximumHealth * percentage);
     }
 
     public void ApplySoulPointBonuses()
     {
+        double percentage = CurrentSoulPoints / MaximumSoulPoints;
         if (statBonuses.ContainsKey(BonusType.MAX_SOULPOINTS))
-            MaximumSoulPoints = HeroStatCalculation((int)Math.Round( BaseSoulPoints, MidpointRounding.AwayFromZero), statBonuses[BonusType.MAX_SOULPOINTS]);
+            MaximumSoulPoints = HeroStatCalculation((int)Math.Round(BaseSoulPoints, MidpointRounding.AwayFromZero), statBonuses[BonusType.MAX_SOULPOINTS]);
         else
-            MaximumSoulPoints = (int)Math.Round( BaseSoulPoints,  MidpointRounding.AwayFromZero);
+            MaximumSoulPoints = (int)Math.Round(BaseSoulPoints, MidpointRounding.AwayFromZero);
+        CurrentSoulPoints = (float)(MaximumSoulPoints * percentage);
     }
 
     public void ApplyShieldBonuses()
     {
+        double percentage = CurrentShield / MaximumShield;
         if (statBonuses.ContainsKey(BonusType.GLOBAL_MAX_SHIELD))
             MaximumShield = HeroStatCalculation(BaseShield, statBonuses[BonusType.GLOBAL_MAX_SHIELD]);
         else
             MaximumShield = BaseShield;
+        CurrentShield = (float)(MaximumShield * percentage);
     }
 
     public void ApplyArmorBonuses()

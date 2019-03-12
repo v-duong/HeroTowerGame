@@ -8,6 +8,8 @@ public class ArchetypeBase
     [JsonProperty]
     public readonly int id;
     [JsonProperty]
+    public readonly string idName;
+    [JsonProperty]
     public readonly string name;
     [JsonProperty]
     public readonly string text;
@@ -27,6 +29,8 @@ public class ArchetypeBase
     public readonly float agilityGrowth;
     [JsonProperty]
     public readonly float willGrowth;
+    [JsonProperty]
+    public readonly int spawnWeight;
     [JsonProperty]
     public readonly List<ArchetypeSkillNode> nodeList;
 }
