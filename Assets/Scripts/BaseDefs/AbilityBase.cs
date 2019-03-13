@@ -25,7 +25,7 @@ public class AbilityBase
     public readonly float targetRange;
     [JsonConverter(typeof(StringEnumConverter))]
     [JsonProperty]
-    public readonly AbilityTargetType targetsAllies;
+    public readonly AbilityTargetType targetType;
     [JsonProperty]
     public readonly float projectileSpeed;
     [JsonProperty]
@@ -43,7 +43,7 @@ public class AbilityBase
     [JsonProperty]
     public readonly float weaponMultiplierScaling;
     [JsonProperty]
-    public readonly List<AbilityDamageBase> damageLevels;
+    public readonly Dictionary<ElementType, AbilityDamageBase> damageLevels;
     [JsonProperty]
     public readonly float flatDamageMultiplier;
     [JsonProperty(ItemConverterType = typeof(StringEnumConverter))]
@@ -61,10 +61,17 @@ public class AbilityBase
 [Serializable]
 public class AbilityDamageBase
 {
-    [JsonConverter(typeof(StringEnumConverter))][JsonProperty]
-    public readonly ElementType elementType;
     [JsonProperty]
-    public readonly List<Vector2> damage;
+    public readonly List<Damage> damage;
+
+    [Serializable]
+    public class Damage
+    {
+        [JsonProperty]
+        public readonly int min;
+        [JsonProperty]
+        public readonly int max;
+    }
 }
 
 [Serializable]

@@ -35,8 +35,8 @@ public class HeroActor : Actor
     private Archetype archetype;
     private Archetype subArchetype;
     */
-    private List<Equipment> equipList;
-    private List<Archetype> archetypeList;
+    private Equipment[] equipList;
+    private Archetype[] archetypeList;
 
     public HeroActor()
     {
@@ -56,8 +56,8 @@ public class HeroActor : Actor
         BaseMagicPhasing = 0;
         Resistances = new ElementResistances();
         abilitiesList = new List<ActorAbility>();
-        equipList = new List<Equipment>(10);
-        archetypeList = new List<Archetype>(2);
+        equipList = new Equipment[10];
+        archetypeList = new Archetype[2];
         statBonuses = new Dictionary<BonusType, HeroStatBonus>();
     }
 
