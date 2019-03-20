@@ -38,13 +38,13 @@ public abstract class Actor : MonoBehaviour
     public float movementSpeed;
     public float actorTimeScale = 1f;
     protected UIHealthBar healthBar;
-    protected List<ActorAbility> abilitiesList;
+    protected List<ActorAbility> instancedAbilitiesList;
     public List<Actor> targetList;
 
     public virtual void Awake()
     {
-        if (abilitiesList == null)
-            abilitiesList = new List<ActorAbility>();
+        if (instancedAbilitiesList == null)
+            instancedAbilitiesList = new List<ActorAbility>();
         if (targetList == null)
             targetList = new List<Actor>();
         CurrentHealth = MaximumHealth;
@@ -77,9 +77,7 @@ public abstract class Actor : MonoBehaviour
         }
     }
 
-    public virtual void Death()
-    {
-    }
+    public abstract void Death();
 
     public void Shoot(Actor target, AbilityBase ability)
     {

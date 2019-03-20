@@ -32,21 +32,7 @@ public static class Helpers {
         }
     }
 
-    public static T ReturnWeightedRandom<T>(List<WeightListItem<T>> list, int sum)
-    {
-        int weight = UnityEngine.Random.Range(1, sum + 1);
-        foreach(WeightListItem<T> x in list)
-        {
-            weight -= x.weight;
-            if (weight <= 0)
-                return x.item;
-        }
-        return default(T);
-    }
 
-    
-
-    
 }
 
 public class WeightListItem<T>
@@ -58,5 +44,41 @@ public class WeightListItem<T>
     {
         item = i;
         weight = w;
+    }
+}
+
+public class WeightList<T>
+{
+    private List<WeightListItem<T>> list;
+    public int Sum { get; private set; }
+    public int Count { get => list.Count; }
+
+    public WeightList() {
+        list = new List<WeightListItem<T>>();
+    }
+
+    public T ReturnWeightedRandom()
+    {
+        int weight = UnityEngine.Random.Range(1, Sum + 1);
+        foreach (WeightListItem<T> x in list)
+        {
+            weight -= x.weight;
+            if (weight <= 0)
+                return x.item;
+        }
+        Debug.Log("Did not return proper item. Error in sum?");
+        return default;
+    }
+
+    public void Add(T item, int value)
+    {
+        list.Add(new WeightListItem<T>(item, value));
+        Sum += value;
+    }
+
+    public void Clear()
+    {
+        list.Clear();
+        Sum = 0;
     }
 }

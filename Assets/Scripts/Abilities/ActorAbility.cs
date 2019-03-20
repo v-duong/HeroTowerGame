@@ -1,16 +1,25 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 
 [Serializable]
 public class ActorAbility {
     public int abilityLevel;
-    public AbilityBase abilityBase;
+    public readonly AbilityBase abilityBase;
     public Collider2D collider;
     private bool firingRoutineRunning;
     private IEnumerator firingRoutine;
     private ContactFilter2D contactFilter;
+    public readonly int slotNum;
+
+    public ActorAbility(AbilityBase ability, int level = 1, int slot = 0)
+    {
+        abilityBase = ability;
+        abilityLevel = level;
+        slotNum = slot;
+    }
 
     public void InitializeActorAbility()
     {
@@ -19,9 +28,18 @@ public class ActorAbility {
         contactFilter.useLayerMask = true;
     }
 
-    public int CalculateAbilityDamage()
+    public void CalculateAbilityDamage(Dictionary<ElementType, int> dict)
     {
-        return 0;
+        var values = Enum.GetValues(typeof(ElementType));
+        int d = 0;
+        foreach (ElementType e in values)
+        {
+            if (abilityBase.damageLevels.ContainsKey(e))
+            {
+                d = UnityEngine.Random.Range(abilityBase.damageLevels[e].damage[abilityLevel].min, abilityBase.damageLevels[e].damage[abilityLevel].max + 1);
+                dict.Add(e, d);
+            }
+        }
     }
 
     public bool StartFiring(Actor parent)
@@ -51,6 +69,7 @@ public class ActorAbility {
 
     private IEnumerator FiringRoutine()
     {
+        
         bool fired = false;
         Collider2D[] results = new Collider2D[10];
         while (true)
@@ -62,8 +81,8 @@ public class ActorAbility {
                 p.currentHeading = results[0].transform.position - this.collider.transform.position;
                 p.currentHeading.z = 0;
                 p.currentSpeed = abilityBase.projectileSpeed;
-                
-                p.projectileDamage = CalculateAbilityDamage();
+
+                CalculateAbilityDamage(p.projectileDamage);
                 fired = true;
             }
             if (fired)
@@ -80,3 +99,8 @@ public class ActorAbility {
 
 }
 
+
+public interface IAbilitySource
+{
+    int GetAbilityLevel();
+}

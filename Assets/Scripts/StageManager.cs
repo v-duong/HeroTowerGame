@@ -6,6 +6,7 @@ using UnityEngine.Tilemaps;
 public class StageManager : MonoBehaviour
 {
     public static StageManager Instance { get; private set; }
+    public int accumulatedConsumables;
 
     public Tilemap PathTilemap
     {

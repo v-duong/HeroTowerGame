@@ -1,32 +1,35 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
-public class Spawner : MonoBehaviour {
+public class Spawner : MonoBehaviour
+{
     [SerializeField]
     public int spawnerIndex;
+
     private List<List<Vector3>> nodesToGoal;
     public bool nodesAreOutdated;
 
-	// Use this for initialization
-	void Start () {
+    // Use this for initialization
+    private void Start()
+    {
         nodesToGoal = new List<List<Vector3>>();
-        Debug.Log(StageManager.Instance);
+
         if (StageManager.Instance.WaveManager.GoalList.Count == 0)
         {
             nodesAreOutdated = true;
             return;
         }
         UpdateNodes();
-	}
-	
-	// Update is called once per frame
-	void Update () {
-		if (nodesAreOutdated)
+    }
+
+    // Update is called once per frame
+    private void Update()
+    {
+        if (nodesAreOutdated)
         {
             UpdateNodes();
         }
-	}
+    }
 
     public List<Vector3> GetNodesToGoal(int index)
     {
@@ -43,6 +46,4 @@ public class Spawner : MonoBehaviour {
         }
         nodesAreOutdated = false;
     }
-
-
 }

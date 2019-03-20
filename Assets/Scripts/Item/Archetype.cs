@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-public class Archetype : Item
+public class Archetype : Item, IAbilitySource
 {
     public ArchetypeBase Base { get { return ResourceManager.Instance.GetArchetypeBase(BaseId); } }
     private string BaseId { get; set; }
@@ -12,7 +12,7 @@ public class Archetype : Item
     public List<Affix> innate;
     public List<Affix> enchantments;
 
-    private Dictionary<ArchetypeSkillNode, NodeLevel> nodeLevels;
+    private Dictionary<int, NodeLevel> nodeLevels;
 
     public Archetype(ArchetypeBase b)
     {
@@ -22,7 +22,7 @@ public class Archetype : Item
         suffixes = new List<Affix>();
         enchantments = new List<Affix>();
         innate = new List<Affix>();
-        nodeLevels = new Dictionary<ArchetypeSkillNode, NodeLevel>();
+        nodeLevels = new Dictionary<int, NodeLevel>();
         foreach (var node in b.nodeList)
         {
             NodeLevel n = new NodeLevel
@@ -30,7 +30,7 @@ public class Archetype : Item
                 level = node.initialLevel,
                 bonusLevels = 0
             };
-            nodeLevels.Add(node, n);
+            nodeLevels.Add(node.id, n);
         }
     }
 
@@ -39,17 +39,15 @@ public class Archetype : Item
         switch (Rarity)
         {
             case RarityType.EPIC:
+            case RarityType.RARE:
                 return 50;
 
-            case RarityType.RARE:
-                return 40;
-
             case RarityType.UNCOMMON:
-                return 30;
+                return 45;
 
             case RarityType.NORMAL:
             default:
-                return 20;
+                return 40;
         }
     }
 
@@ -82,7 +80,7 @@ public class Archetype : Item
 
     public bool LevelUpNode(ArchetypeSkillNode node)
     {
-        NodeLevel nodeLevel = nodeLevels[node];
+        NodeLevel nodeLevel = nodeLevels[node.id];
         if (nodeLevel.level == node.maxLevel)
             return false;
         nodeLevel.level++;
@@ -106,7 +104,7 @@ public class Archetype : Item
 
     public bool DelevelNode(ArchetypeSkillNode node)
     {
-        NodeLevel nodeLevel = nodeLevels[node];
+        NodeLevel nodeLevel = nodeLevels[node.id];
         if (nodeLevel.level == node.initialLevel)
             return false;
         nodeLevel.level--;
@@ -130,7 +128,7 @@ public class Archetype : Item
 
     public void AddBonusLevels(ArchetypeSkillNode node, int value)
     {
-        NodeLevel nodeLevel = nodeLevels[node];
+        NodeLevel nodeLevel = nodeLevels[node.id];
         nodeLevel.bonusLevels += value;
 
         foreach (var bonus in node.bonuses)
@@ -140,11 +138,22 @@ public class Archetype : Item
 
     public void AddRemoveLevels(ArchetypeSkillNode node, int value)
     {
-        NodeLevel nodeLevel = nodeLevels[node];
+        NodeLevel nodeLevel = nodeLevels[node.id];
         nodeLevel.bonusLevels -= value;
 
         foreach (var bonus in node.bonuses)
             if (nodeLevel.level >= 1)
                 equippedToHero.RemoveStatBonus(bonus.growthValue * value, bonus.bonusType, bonus.modifyType);
     }
+
+    public bool ContainsAbility(string id)
+    {
+        return true;
+    }
+
+    public int GetAbilityLevel()
+    {
+        return this.level;
+    }
+   
 }

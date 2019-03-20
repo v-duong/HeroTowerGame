@@ -58,7 +58,7 @@ public class ResourceManager : MonoBehaviour
         if (equipmentList == null)
             LoadEquipment();
 
-        List<WeightListItem<EquipmentBase>> possibleEquipList = new List<WeightListItem<EquipmentBase>>();
+        WeightList<EquipmentBase> possibleEquipList = new WeightList<EquipmentBase>();
         int sum = 0;
 
         foreach (EquipmentBase equipment in equipmentList.Values)
@@ -68,13 +68,13 @@ public class ResourceManager : MonoBehaviour
 
             if (equipment.dropLevel <= ilvl)
             {
-                possibleEquipList.Add(new WeightListItem<EquipmentBase>(equipment, equipment.spawnWeight));
+                possibleEquipList.Add(equipment, equipment.spawnWeight);
                 sum += equipment.spawnWeight;
             }
         }
         if (possibleEquipList.Count == 0)
             return null;
-        return Helpers.ReturnWeightedRandom(possibleEquipList, sum);
+        return possibleEquipList.ReturnWeightedRandom();
     }
 
     public AffixBase GetAffixBase(string id, AffixType type)
@@ -110,7 +110,7 @@ public class ResourceManager : MonoBehaviour
                 break;
         }
 
-        List<WeightListItem<AffixBase>> possibleAffixList = new List<WeightListItem<AffixBase>>();
+        WeightList<AffixBase> possibleAffixList = new WeightList<AffixBase>();
         int sum = 0;
 
         foreach(AffixBase affixBase in affixList.Values)
@@ -128,7 +128,7 @@ public class ResourceManager : MonoBehaviour
                             break;
                         //Debug.Log(affixBase.name + " " + affixWeight.type + " " + affixWeight.weight);
                         sum += affixWeight.weight;
-                        possibleAffixList.Add(new WeightListItem<AffixBase>(affixBase, affixWeight.weight));
+                        possibleAffixList.Add(affixBase, affixWeight.weight);
                         break;
                     }
                 }
@@ -136,7 +136,7 @@ public class ResourceManager : MonoBehaviour
         }
         if (possibleAffixList.Count == 0)
             return null;
-        return Helpers.ReturnWeightedRandom<AffixBase>(possibleAffixList, sum);
+        return possibleAffixList.ReturnWeightedRandom();
 
     }
 

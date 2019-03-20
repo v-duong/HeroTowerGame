@@ -7,10 +7,15 @@ public class Projectile : MonoBehaviour
     public bool canHitEnemies = false;
     public float currentSpeed;
     public float timeToLive = 1.5f;
-    public int projectileDamage;
+    public Dictionary<ElementType, int> projectileDamage;
     public Vector3 currentHeading;
 
     //public List<AbilityEffect> attachedEffects;
+
+    public Projectile()
+    {
+        projectileDamage = new Dictionary<ElementType, int>();
+    }
 
     // Update is called once per frame
     private void Update()
@@ -21,8 +26,11 @@ public class Projectile : MonoBehaviour
 
     public void OnTriggerEnter2D(Collider2D collision)
     {
-        collision.gameObject.GetComponent<Actor>().ApplyDamage(projectileDamage);
-        this.gameObject.SetActive(false);
+        int damage = 0;
+        foreach (int d in projectileDamage.Values)
+            damage += d;
+        collision.gameObject.GetComponent<Actor>().ApplyDamage(damage);
+        GameManager.Instance.ProjectilePool.ReturnToPool(this);
     }
 
     public void Move()

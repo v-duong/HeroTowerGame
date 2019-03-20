@@ -37,11 +37,13 @@ public class HeroActor : Actor
     */
     private Equipment[] equipList;
     private Archetype[] archetypeList;
+    private List<AbilitySlot> abilityList;
 
     public HeroActor()
     {
         Id = 0;
         Level = 1;
+        Experience = 0;
         BaseHealth = 100;
         BaseSoulPoints = 50;
         BaseShield = 0;
@@ -55,33 +57,26 @@ public class HeroActor : Actor
         BaseAttackPhasing = 0;
         BaseMagicPhasing = 0;
         Resistances = new ElementResistances();
-        abilitiesList = new List<ActorAbility>();
+        instancedAbilitiesList = new List<ActorAbility>();
         equipList = new Equipment[10];
         archetypeList = new Archetype[2];
         statBonuses = new Dictionary<BonusType, HeroStatBonus>();
+        abilityList = new List<AbilitySlot>();
     }
 
     // Use this for initialization
     public override void Start()
     {
-        ActorAbility a = new ActorAbility
-        {
-            //abilityBase = ResourceManager.Instance.GetAbilityBase(0)
-        };
+        ActorAbility a = new ActorAbility(ResourceManager.Instance.GetAbilityBase("Fireball"));
         a.InitializeActorAbility();
         AddAbilityToList(a);
-        ActorAbility b = new ActorAbility
-        {
-            //abilityBase = ResourceManager.Instance.GetAbilityBase(1)
-        };
-        b.InitializeActorAbility();
-        AddAbilityToList(b);
+
     }
 
     // Update is called once per frame
     public void Update()
     {
-        foreach (var x in abilitiesList)
+        foreach (var x in instancedAbilitiesList)
         {
             x.StartFiring(this);
         }
@@ -109,11 +104,27 @@ public class HeroActor : Actor
 
     public void AddAbilityToList(ActorAbility ability)
     {
-        abilitiesList.Add(ability);
+        instancedAbilitiesList.Add(ability);
         var collider = this.transform.gameObject.AddComponent<CircleCollider2D>();
         collider.radius = ability.abilityBase.targetRange;
         ability.collider = collider;
         collider.isTrigger = true;
+    }
+
+    public bool EquipAbility(AbilityBase ability, int slot, IAbilitySource source)
+    {
+        if (slot >= 3)
+            return false;
+        abilityList[slot].SetAbilityToSlot(ability.idName, source);
+        return true;
+    }
+
+    public bool RemoveAbility(int slot)
+    {
+        if (slot >= 3)
+            return false;
+        abilityList[slot] = null;
+        return true;
     }
 
     public bool EquipToSlot(Equipment equip, EquipSlotType slot)
@@ -418,74 +429,15 @@ public class HeroActor : Actor
     }
 }
 
-public class HeroStatBonus
+
+public class AbilitySlot
 {
-    public int FlatModifier { get; private set; }
-    public int FlatModifierFromAttributes { get; private set; }
-    public int AdditiveModifier { get; private set; }
-    public int AdditiveModifierFromAttributes { get; private set; }
-    public List<int> MultiplyModifiers { get; private set; }
-    public float CurrentMultiplier { get; private set; }
-    public bool hasSetModifier;
-    public int setModifier;
-    public bool isStatOutdated;
+    public string AbilityId { get; private set; }
+    public IAbilitySource Source { get; private set; }
 
-    public HeroStatBonus()
+    public void SetAbilityToSlot(string id , IAbilitySource s)
     {
-        FlatModifier = 0;
-        FlatModifierFromAttributes = 0;
-        AdditiveModifier = 0;
-        AdditiveModifierFromAttributes = 0;
-        MultiplyModifiers = new List<int>();
-        CurrentMultiplier = 1.00f;
-        hasSetModifier = false;
-        setModifier = 0;
-        isStatOutdated = true;
-    }
-
-    public void AddToFlat(int value)
-    {
-        FlatModifier += value;
-        isStatOutdated = true;
-    }
-
-    public void SetFlatAttributes(int value)
-    {
-        FlatModifierFromAttributes = value;
-        isStatOutdated = true;
-    }
-
-    public void AddToAdditive(int value)
-    {
-        AdditiveModifier += value;
-        isStatOutdated = true;
-    }
-
-    public void SetAdditiveAttributes(int value)
-    {
-        AdditiveModifierFromAttributes = value;
-        isStatOutdated = true;
-    }
-
-    public void AddToMultiply(int value)
-    {
-        MultiplyModifiers.Add(value);
-        UpdateCurrentMultiply();
-        isStatOutdated = true;
-    }
-
-    public void RemoveFromMultiply(int value)
-    {
-        MultiplyModifiers.Remove(value);
-        UpdateCurrentMultiply();
-        isStatOutdated = true;
-    }
-
-    public void UpdateCurrentMultiply()
-    {
-        double mult = 1.0d;
-        foreach (int i in MultiplyModifiers)
-            mult *= (1d + i / 100d);
-        CurrentMultiplier = (float)mult;
+        AbilityId = id;
+        Source = s;
     }
 }

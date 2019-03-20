@@ -62,6 +62,8 @@ public enum GroupType
     DEBUFF,
     BUFF,
     AURA,
+    MELEE_ATTACK,
+    RANGED_ATTACK,
     HEALTH = 0x200,
     ATTRIBUTES,
     STRENGTH,

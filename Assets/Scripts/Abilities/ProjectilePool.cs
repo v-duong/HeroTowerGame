@@ -2,20 +2,23 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ProjectilePool : PollingPool<Projectile>
+public class ProjectilePool : ObjectPool<Projectile>
 {
 
-    public ProjectilePool(Projectile prefab) : base(prefab, 50)
+    public ProjectilePool(Projectile prefab) : base(prefab, 1)
     { 
     }
 
-    protected override bool IsActive(Projectile component)
-    {
-        return component.isActiveAndEnabled;
-    }
 
     public Projectile GetProjectile()
     {
-        return Get();
+        Projectile p = Get();
+        p.projectileDamage.Clear();
+        return p;
+    }
+
+    public override void ReturnToPool(Projectile p)
+    {
+        Return(p);
     }
 }

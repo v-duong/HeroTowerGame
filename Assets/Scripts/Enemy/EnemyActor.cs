@@ -1,24 +1,30 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
-public class EnemyActor : Actor {
+public class EnemyActor : Actor
+{
     private int nextMovementNode;
+
     [SerializeField]
     public int spawnerOriginIndex;
+
     [SerializeField]
     public int indexOfGoal;
 
     public bool isBoss = false;
 
-	// Use this for initialization
-	public override void Start () {
+    // Use this for initialization
+    public override void Start()
+    {
+        MaximumHealth = 40;
+        CurrentHealth = MaximumHealth;
+
         nextMovementNode = 1;
         InitializeHealthBar();
     }
-	
-	// Update is called once per frame
-	public void Update () {
+
+    // Update is called once per frame
+    public void Update()
+    {
         Move();
         healthBar.UpdatePosition(this.transform);
     }

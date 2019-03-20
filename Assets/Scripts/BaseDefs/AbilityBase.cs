@@ -56,6 +56,8 @@ public class AbilityBase
     public readonly string effectSprite;
     [JsonProperty]
     public readonly LinkedAbilityData linkedAbility;
+
+    
 }
 
 [Serializable]

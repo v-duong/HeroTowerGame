@@ -191,6 +191,7 @@ MonoBehaviour:
     type: 3}
   enemyPrefab: {fileID: 114675168251884226, guid: 27d98af55284370498d47dd2e66fd1ff,
     type: 3}
+  isInBattle: 0
 --- !u!4 &1063661410
 Transform:
   m_ObjectHideFlags: 0
@@ -345,6 +346,7 @@ GameObject:
   - component: {fileID: 2073078191}
   - component: {fileID: 2073078190}
   - component: {fileID: 2073078189}
+  - component: {fileID: 2073078192}
   m_Layer: 0
   m_Name: Main Camera
   m_TagString: MainCamera
@@ -380,7 +382,7 @@ Camera:
     serializedVersion: 2
     x: 0
     y: 0
-    width: 1
+    width: 7
     height: 1
   near clip plane: 0.3
   far clip plane: 1000
@@ -416,3 +418,15 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2073078192
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2073078188}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 2e15dc51fa7c11d47844d9d9438bedf3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
