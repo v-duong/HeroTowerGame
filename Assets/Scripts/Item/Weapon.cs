@@ -12,4 +12,9 @@
         criticalChance = e.criticalChance;
         weaponRange = e.weaponRange;
     }
+
+    public override ItemType GetItemType()
+    {
+        return ItemType.WEAPON;
+    }
 }

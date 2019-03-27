@@ -29,12 +29,17 @@ public class GameManager : MonoBehaviour
         Application.targetFrameRate = 30;
         ProjectilePool = new ProjectilePool(projectilePrefab);
         isInBattle = false;
+        Debug.Log(SystemInfo.supportsComputeShaders);
 #if !UNITY_EDITOR
         SceneManager.LoadScene("mainMenu", LoadSceneMode.Additive);
 
 #endif
         PlayerStats = new PlayerStats();
-
+        for (int i = 0; i < 20; i ++)
+        {
+            Equipment equipment = ResourceManager.Instance.CreateRandomEquipment(100);
+            PlayerStats.equipmentInventory.Add(equipment);
+        }
     }
 
     public ConsumableType GetRandomConsumable()

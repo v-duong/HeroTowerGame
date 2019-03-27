@@ -12,4 +12,9 @@
         dodgeRating = e.dodgeRating;
         resolveRating = e.resolveRating;
     }
+
+    public override ItemType GetItemType()
+    {
+        return ItemType.ARMOR;
+    }
 }

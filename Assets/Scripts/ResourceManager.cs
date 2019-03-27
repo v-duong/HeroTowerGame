@@ -77,6 +77,24 @@ public class ResourceManager : MonoBehaviour
         return possibleEquipList.ReturnWeightedRandom();
     }
 
+    public static Equipment CreateEquipmentFromBase(EquipmentBase equipmentBase, int ilvl)
+    {
+        Equipment e;
+        if (equipmentBase.equipSlot == EquipSlotType.WEAPON)
+        {
+            e = new Weapon(equipmentBase, ilvl);
+        } else
+        {
+            e = new Armor(equipmentBase, ilvl);
+        }
+        return e;
+    }
+
+    public Equipment CreateRandomEquipment(int ilvl, GroupType? group = null)
+    {
+        return CreateEquipmentFromBase(GetRandomEquipmentBase(ilvl, group), ilvl);
+    }
+
     public AffixBase GetAffixBase(string id, AffixType type)
     {
         switch(type)
@@ -159,6 +177,18 @@ public class ResourceManager : MonoBehaviour
         equipmentList = new Dictionary<string, EquipmentBase>();
 
         List<EquipmentBase> temp = DeserializeFromPath<List<EquipmentBase>>("json/items/armor");
+        foreach (EquipmentBase equip in temp)
+        {
+            equipmentList.Add(equip.idName, equip);
+        }
+
+        temp = DeserializeFromPath<List<EquipmentBase>>("json/items/weapon");
+        foreach (EquipmentBase equip in temp)
+        {
+            equipmentList.Add(equip.idName, equip);
+        }
+
+        temp = DeserializeFromPath<List<EquipmentBase>>("json/items/accessory");
         foreach (EquipmentBase equip in temp)
         {
             equipmentList.Add(equip.idName, equip);

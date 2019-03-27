@@ -8,7 +8,7 @@ public class Archetype : Item, IAbilitySource
     public int level;
     public int experience;
     public int skillPoints;
-    public HeroActor equippedToHero;
+    public HeroData equippedToHero;
     public List<Affix> innate;
     public List<Affix> enchantments;
 
@@ -155,5 +155,10 @@ public class Archetype : Item, IAbilitySource
     {
         return this.level;
     }
-   
+
+    public override ItemType GetItemType()
+    {
+        return ItemType.ARCHETYPE;
+    }
+
 }

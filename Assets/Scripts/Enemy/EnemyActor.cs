@@ -2,6 +2,7 @@
 
 public class EnemyActor : Actor
 {
+
     private int nextMovementNode;
 
     [SerializeField]
@@ -15,8 +16,8 @@ public class EnemyActor : Actor
     // Use this for initialization
     public override void Start()
     {
-        MaximumHealth = 40;
-        CurrentHealth = MaximumHealth;
+        Data.MaximumHealth = 40;
+        Data.CurrentHealth = Data.MaximumHealth;
 
         nextMovementNode = 1;
         InitializeHealthBar();
@@ -37,9 +38,9 @@ public class EnemyActor : Actor
         {
             float dist = Vector3.Distance(nodes[nextMovementNode], this.transform.position);
 
-            this.transform.position = Vector3.MoveTowards(this.transform.position, nodes[nextMovementNode], movementSpeed * dt * actorTimeScale);
+            this.transform.position = Vector3.MoveTowards(this.transform.position, nodes[nextMovementNode], Data.movementSpeed * dt * actorTimeScale);
 
-            if (dist <= 1.5f * movementSpeed * dt)
+            if (dist <= 1.5f * Data.movementSpeed * dt)
             {
                 nextMovementNode++;
             }

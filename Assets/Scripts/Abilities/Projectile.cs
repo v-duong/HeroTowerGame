@@ -30,7 +30,9 @@ public class Projectile : MonoBehaviour
         foreach (int d in projectileDamage.Values)
             damage += d;
         collision.gameObject.GetComponent<Actor>().ApplyDamage(damage);
-        GameManager.Instance.ProjectilePool.ReturnToPool(this);
+        
+        var m_Collider = GetComponent<Collider2D>();
+        m_Collider.enabled = false;
     }
 
     public void Move()

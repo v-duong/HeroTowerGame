@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Equipment : Item
+public abstract class Equipment : Item
 {
     public EquipmentBase Base { get { return ResourceManager.Instance.GetEquipmentBase(BaseId); } }
     private string BaseId { get; set; }
@@ -12,7 +12,7 @@ public class Equipment : Item
     public int intRequirement;
     public int agiRequirement;
     public int willRequirement;
-    public HeroActor equippedToHero;
+    public HeroData equippedToHero;
     public List<Affix> innate;
 
     public Equipment(EquipmentBase e, int ilvl)

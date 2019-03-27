@@ -203,14 +203,5 @@ public abstract class Item
     }
 
     public abstract bool UpgradeRarity();
-}
-
-public enum RarityType
-{
-    NORMAL,
-    UNCOMMON,
-    RARE,
-    EPIC,
-    PERFECT,
-    UNIQUE
+    public abstract ItemType GetItemType();
 }

@@ -15,7 +15,7 @@ public class PlayerStats
 
     public List<Equipment> equipmentInventory;
     public List<Archetype> archetypeInventory;
-    public List<HeroActor> heroList;
+    public List<HeroData> heroList;
 
     public PlayerStats()
     {
@@ -29,16 +29,20 @@ public class PlayerStats
         }
         equipmentInventory = new List<Equipment>();
         archetypeInventory = new List<Archetype>();
+        heroList = new List<HeroData>();
     }
 
     public void AddEquipmentToInventory(Equipment newEquipment)
     {
         equipmentInventory.Add(newEquipment);
-        UIManager.Instance.AddEquipmentSlot(newEquipment);
+        UIManager.Instance.InvScrollContent.AddEquipmentSlot(newEquipment);
+     }
+
+    internal void AddHeroToList(HeroData hero)
+    {
+        heroList.Add(hero);
+        UIManager.Instance.HeroScrollContent.AddHeroSlot(hero);
     }
-
-
-
 }
 
 public enum ConsumableType

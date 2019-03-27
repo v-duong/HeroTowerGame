@@ -8,8 +8,6 @@ public abstract class ObjectPool<T> where T : Component
 
     private readonly Queue<T> pool = new Queue<T>();
 
-    private int lastCheckFrame = -1;
-
     protected ObjectPool(T prefab, int preWarm = 0)
     {
         this.prefab = prefab;

@@ -7,6 +7,8 @@ TagManager:
   - WaveManager
   - PathMap
   - InventoryCanvas
+  - HeroCanvas
+  - ArchetypeCanvas
   layers:
   - Default
   - TransparentFX

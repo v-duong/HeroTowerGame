@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class ItemDetailWindow : MonoBehaviour
+public class EquipmentDetailWindow : MonoBehaviour
 {
     [SerializeField]
     private Text nameText;
@@ -16,22 +16,17 @@ public class ItemDetailWindow : MonoBehaviour
 
     public void UpdateWindowEquipment()
     {
-        Armor armorItem = (Armor)item;
-
-        this.GetComponent<Image>().color = Helpers.ReturnRarityColor(armorItem.Rarity);
-        nameText.text = armorItem.Name;
-
         infoText.text = "";
-        infoText.text += armorItem.Base.group + "\n";
-        if (armorItem.armor != 0)
-            infoText.text += "Armor: " + armorItem.armor + "\n";
-        if (armorItem.shield != 0)
-            infoText.text += "Shield: " + armorItem.shield + "\n";
-        if (armorItem.dodgeRating != 0)
-            infoText.text += "Dodge Rating: " + armorItem.dodgeRating + "\n";
-        if (armorItem.resolveRating != 0)
-            infoText.text += "Resolve: " + armorItem.resolveRating + "\n";
+        infoText.text += item.Base.group + "\n";
+        infoText.text += item.GetType() + "\n";
 
+        if (item.GetItemType() == ItemType.ARMOR)
+        {
+            UpdateWindowEquipment_Armor((Armor)item);
+        } else if (item.GetItemType() == ItemType.WEAPON)
+        {
+            UpdateWindowEquipment_Weapon((Weapon)item);
+        }
 
         affixText.text = "";
 
@@ -56,10 +51,37 @@ public class ItemDetailWindow : MonoBehaviour
             {
                 foreach (AffixBonusProperty b in a.Base.affixBonuses)
                 {
-                    affixText.text += "\t" + a.Base.name + " " + b.bonusType + " " + a.GetAffixValue(b.bonusType)  +" [" + b.minValue + ", " + b.maxValue + "]" + "\n";
+                    affixText.text += "\t" + a.Base.name + " " + b.bonusType + " " + a.GetAffixValue(b.bonusType) + " [" + b.minValue + ", " + b.maxValue + "]" + "\n";
                 }
             }
         }
+    }
+
+    public void UpdateWindowEquipment_Armor(Armor armorItem)
+    {
+        this.GetComponent<Image>().color = Helpers.ReturnRarityColor(armorItem.Rarity);
+        nameText.text = armorItem.Name;
+
+        if (armorItem.armor != 0)
+            infoText.text += "Armor: " + armorItem.armor + "\n";
+        if (armorItem.shield != 0)
+            infoText.text += "Shield: " + armorItem.shield + "\n";
+        if (armorItem.dodgeRating != 0)
+            infoText.text += "Dodge Rating: " + armorItem.dodgeRating + "\n";
+        if (armorItem.resolveRating != 0)
+            infoText.text += "Resolve: " + armorItem.resolveRating + "\n";
+    }
+
+    public void UpdateWindowEquipment_Weapon(Weapon weaponItem)
+    {
+        this.GetComponent<Image>().color = Helpers.ReturnRarityColor(weaponItem.Rarity);
+        nameText.text = weaponItem.Name;
+
+        if (weaponItem.minDamage != 0 && weaponItem.maxDamage != 0)
+            infoText.text += "Damage: " + weaponItem.minDamage + "-" + weaponItem.maxDamage + "\n";
+        infoText.text += "Critical Chance: " + weaponItem.criticalChance + "\n";
+        infoText.text += "Range: " + weaponItem.weaponRange + "\n";
+
     }
 
     public void OnAddAffixClick()
