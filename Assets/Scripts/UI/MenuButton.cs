@@ -8,17 +8,8 @@ public class MenuButton : MonoBehaviour
 {
     public void OnClickInvToggle()
     {
-        GameObject target = UIManager.Instance.InvWindowRect.gameObject;
-        UIManager.Instance.CloseHeroWindows();
-        UIManager.Instance.EquipDetailWindow.gameObject.SetActive(false);
-        if (!target.activeSelf)
-        {
-            target.SetActive(true);
-            UIManager.Instance.InvScrollContent.ShowAllEquipment();
-        }
-        else
-            target.SetActive(false);
-        
+        UIManager.Instance.IsEquipSelectMode = false;
+        UIManager.Instance.ToggleInventoryWindow();
     }
 
 

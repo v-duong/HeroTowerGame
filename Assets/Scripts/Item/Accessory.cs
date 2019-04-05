@@ -10,4 +10,9 @@
     {
         return ItemType.ACCESSORY;
     }
+
+    public override bool UpdateItemStats()
+    {
+        return true;
+    }
 }

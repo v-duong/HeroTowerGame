@@ -10,19 +10,20 @@ public class HeroEquipmentSlot : MonoBehaviour
 
     public void OnSlotClick()
     {
+        UIManager ui = UIManager.Instance;
         Debug.Log(slot);
-        HeroData hero = UIManager.Instance.HeroDetailWindow.hero;
-        UIManager.Instance.InvWindowRect.gameObject.SetActive(true);
+        HeroData hero = ui.HeroDetailWindow.hero;
+        ui.InvWindowRect.gameObject.SetActive(true);
+
+        ui.IsEquipSelectMode = true;
+        ui.SlotContext = slot;
         if (slot == EquipSlotType.RING_SLOT_1 || slot == EquipSlotType.RING_SLOT_2)
         {
-            UIManager.Instance.InvScrollContent.ShowEquipmentBySlotType(EquipSlotType.RING);
+            ui.InvScrollContent.ShowEquipmentBySlotType(EquipSlotType.RING);
         }
         else
         {
-            UIManager.Instance.InvScrollContent.ShowEquipmentBySlotType(slot);
+            ui.InvScrollContent.ShowEquipmentBySlotType(slot);
         }
-        
-        
-        //hero.EquipToSlot();
     }
 }

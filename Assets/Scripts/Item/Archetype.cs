@@ -161,4 +161,8 @@ public class Archetype : Item, IAbilitySource
         return ItemType.ARCHETYPE;
     }
 
+    public override bool UpdateItemStats()
+    {
+        return true;
+    }
 }

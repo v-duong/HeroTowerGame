@@ -82,7 +82,7 @@ public class HeroData : ActorData
         BaseAgility += a.agilityGrowth;
         BaseWill += a.willGrowth;
 
-        UpdateHeroAttributes();
+        UpdateHeroAttributes(true);
         ApplyHealthBonuses();
         ApplySoulPointBonuses();
     }
@@ -107,6 +107,9 @@ public class HeroData : ActorData
 
     public bool EquipToSlot(Equipment equip, EquipSlotType slot)
     {
+        if (equipList[(int)slot] != null)
+            UnequipFromSlot(slot);
+
         if (equip.Base.equipSlot != EquipSlotType.RING)
         {
             if (equip.Base.equipSlot != slot)
@@ -140,6 +143,20 @@ public class HeroData : ActorData
         ApplyEquipmentBonuses(equip.prefixes);
         ApplyEquipmentBonuses(equip.suffixes);
         ApplyEquipmentBonuses(equip.innate);
+        UpdateHeroAllStats();
+
+        return true;
+    }
+
+    public bool UnequipFromSlot(EquipSlotType slot)
+    {
+        if (equipList[(int)slot] == null)
+            return false;
+        Equipment equip = equipList[(int)slot];
+        RemoveEquipmentBonuses(equip.prefixes);
+        RemoveEquipmentBonuses(equip.suffixes);
+        RemoveEquipmentBonuses(equip.innate);
+        UpdateHeroAllStats();
         return true;
     }
 
@@ -149,7 +166,7 @@ public class HeroData : ActorData
         {
             foreach (AffixBonusProperty b in affix.Base.affixBonuses)
             {
-                if (b.bonusType < (BonusType)0x600)
+                if (b.bonusType < (BonusType)0x600) //ignore local mods
                     AddStatBonus(affix.GetAffixValue(b.bonusType), b.bonusType, b.modifyType);
             }
         }
@@ -161,7 +178,7 @@ public class HeroData : ActorData
         {
             foreach (AffixBonusProperty b in affix.Base.affixBonuses)
             {
-                if (b.bonusType < (BonusType)0x600)
+                if (b.bonusType < (BonusType)0x600) //ignore local mods
                     RemoveStatBonus(affix.GetAffixValue(b.bonusType), b.bonusType, b.modifyType);
             }
         }
@@ -214,7 +231,10 @@ public class HeroData : ActorData
     public void UpdateHeroAllStats()
     {
         UpdateHeroAttributes();
-        UpdateHeroDefenses();
+        ApplyHealthBonuses();
+        ApplySoulPointBonuses();
+        ApplyMagicPhasingBonuses();
+        ApplyAttackPhasingBonuses();
     }
 
     public void UpdateHeroDefenses()
@@ -229,34 +249,36 @@ public class HeroData : ActorData
         ApplyAttackPhasingBonuses();
     }
 
-    public void UpdateHeroAttributes()
+    public void UpdateHeroAttributes(bool force = false)
     {
         if (statBonuses.ContainsKey(BonusType.STRENGTH) && statBonuses[BonusType.STRENGTH].isStatOutdated)
         {
             Strength = HeroStatCalculation((int)Math.Round(BaseStrength, MidpointRounding.AwayFromZero), statBonuses[BonusType.STRENGTH]);
         }
-        else
+        else if (!statBonuses.ContainsKey(BonusType.STRENGTH))
             Strength = (int)Math.Round(BaseStrength, MidpointRounding.AwayFromZero);
         ApplyStrengthBonuses();
 
         if (statBonuses.ContainsKey(BonusType.INTELLIGENCE) && statBonuses[BonusType.INTELLIGENCE].isStatOutdated)
         {
             Intelligence = HeroStatCalculation((int)Math.Round(BaseIntelligence, MidpointRounding.AwayFromZero), statBonuses[BonusType.INTELLIGENCE]);
-        } else
+        } else if (!statBonuses.ContainsKey(BonusType.INTELLIGENCE))
             Intelligence = (int)Math.Round(BaseIntelligence, MidpointRounding.AwayFromZero);
         ApplyIntelligenceBonuses();
 
         if (statBonuses.ContainsKey(BonusType.AGILITY) && statBonuses[BonusType.AGILITY].isStatOutdated)
         {
             Agility = HeroStatCalculation((int)Math.Round(BaseAgility, MidpointRounding.AwayFromZero), statBonuses[BonusType.AGILITY]);
-        } else
+        }
+        else if (!statBonuses.ContainsKey(BonusType.AGILITY))
             Agility = (int)Math.Round(BaseAgility, MidpointRounding.AwayFromZero);
         ApplyAgilityBonuses();
 
         if (statBonuses.ContainsKey(BonusType.WILL) && statBonuses[BonusType.WILL].isStatOutdated)
         {
             Will = HeroStatCalculation((int)Math.Round(BaseWill, MidpointRounding.AwayFromZero), statBonuses[BonusType.WILL]);
-        } else
+        }
+        else if (!statBonuses.ContainsKey(BonusType.WILL))
             Will = (int)Math.Round(BaseWill, MidpointRounding.AwayFromZero);
         ApplyWillBonuses();
     }
@@ -352,36 +374,68 @@ public class HeroData : ActorData
 
     public void ApplyShieldBonuses()
     {
+        int StatFromEquip = 0;
+        foreach (Equipment e in equipList)
+        {
+            if (e != null && e.GetItemType() == ItemType.ARMOR)
+            {
+                StatFromEquip += ((Armor)e).shield;
+            }
+        }
         double percentage = CurrentShield / MaximumShield;
         if (statBonuses.ContainsKey(BonusType.GLOBAL_MAX_SHIELD))
-            MaximumShield = HeroStatCalculation(BaseShield, statBonuses[BonusType.GLOBAL_MAX_SHIELD]);
+            MaximumShield = HeroStatCalculation(BaseShield + StatFromEquip, statBonuses[BonusType.GLOBAL_MAX_SHIELD]);
         else
-            MaximumShield = BaseShield;
+            MaximumShield = BaseShield + StatFromEquip;
         CurrentShield = (float)(MaximumShield * percentage);
     }
 
     public void ApplyArmorBonuses()
     {
+        int StatFromEquip = 0;
+        foreach (Equipment e in equipList)
+        {
+            if (e != null && e.GetItemType() == ItemType.ARMOR)
+            {
+                StatFromEquip += ((Armor)e).armor;
+            }
+        }
         if (statBonuses.ContainsKey(BonusType.GLOBAL_ARMOR))
-            Armor = HeroStatCalculation(BaseArmor, statBonuses[BonusType.GLOBAL_ARMOR]);
+            Armor = HeroStatCalculation(BaseArmor + StatFromEquip, statBonuses[BonusType.GLOBAL_ARMOR]);
         else
-            Armor = BaseArmor;
+            Armor = BaseArmor + StatFromEquip;
     }
 
     public void ApplyDodgeRatingBonuses()
     {
+        int StatFromEquip = 0;
+        foreach (Equipment e in equipList)
+        {
+            if (e != null && e.GetItemType() == ItemType.ARMOR)
+            {
+                StatFromEquip += ((Armor)e).dodgeRating;
+            }
+        }
         if (statBonuses.ContainsKey(BonusType.GLOBAL_DODGE_RATING))
-            DodgeRating = HeroStatCalculation(BaseDodgeRating, statBonuses[BonusType.GLOBAL_DODGE_RATING]);
+            DodgeRating = HeroStatCalculation(BaseDodgeRating + StatFromEquip, statBonuses[BonusType.GLOBAL_DODGE_RATING]);
         else
-            DodgeRating = BaseDodgeRating;
+            DodgeRating = BaseDodgeRating + StatFromEquip;
     }
 
     public void ApplyResolveBonuses()
     {
+        int StatFromEquip = 0;
+        foreach (Equipment e in equipList)
+        {
+            if (e != null && e.GetItemType() == ItemType.ARMOR)
+            {
+                StatFromEquip += ((Armor)e).resolveRating;
+            }
+        }
         if (statBonuses.ContainsKey(BonusType.GLOBAL_RESOLVE_RATING))
-            ResolveRating = HeroStatCalculation(BaseResolveRating, statBonuses[BonusType.GLOBAL_RESOLVE_RATING]);
+            ResolveRating = HeroStatCalculation(BaseResolveRating + StatFromEquip, statBonuses[BonusType.GLOBAL_RESOLVE_RATING]);
         else
-            ResolveRating = BaseResolveRating;
+            ResolveRating = BaseResolveRating + StatFromEquip;
     }
 
     public void ApplyAttackPhasingBonuses()

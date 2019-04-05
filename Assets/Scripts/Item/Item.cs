@@ -26,6 +26,8 @@ public abstract class Item
         foreach (Affix affix in suffixes)
             affix.RerollValue();
 
+        UpdateItemStats();
+
         return true;
     }
 
@@ -62,15 +64,15 @@ public abstract class Item
         if (affix.AffixType == AffixType.PREFIX && prefixes.Contains(affix))
         {
             prefixes.Remove(affix);
-            return true;
         }
         else if (affix.AffixType == AffixType.SUFFIX && suffixes.Contains(affix))
         {
             suffixes.Remove(affix);
-            return true;
         }
         else
             return false;
+        UpdateItemStats();
+        return true;
     }
 
     public bool ClearAffixes(bool setRarityToNormal = true)
@@ -82,6 +84,8 @@ public abstract class Item
         suffixes.Clear();
         if (setRarityToNormal)
             Rarity = RarityType.NORMAL;
+
+        UpdateItemStats();
 
         return true;
     }
@@ -191,17 +195,19 @@ public abstract class Item
         if (affix.affixType == AffixType.PREFIX)
         {
             prefixes.Add(new Affix(affix));
-            return true;
         }
         else if (affix.affixType == AffixType.SUFFIX)
         {
             suffixes.Add(new Affix(affix));
-            return true;
+
         }
         else
             return false;
+        UpdateItemStats();
+        return true;
     }
 
     public abstract bool UpgradeRarity();
     public abstract ItemType GetItemType();
+    public abstract bool UpdateItemStats();
 }

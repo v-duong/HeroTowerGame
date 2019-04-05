@@ -47,4 +47,21 @@ public abstract class Equipment : Item
         AddRandomAffix();
         return true;
     }
+
+    protected static void GetLocalModValues(int[] flatMods, double[] additiveMods, List<Affix> affixes, Dictionary<BonusType, int> localBonusTypes)
+    {
+        foreach (Affix affix in affixes)
+        {
+            foreach (AffixBonusProperty prop in affix.Base.affixBonuses)
+            {
+                if (localBonusTypes.ContainsKey(prop.bonusType))
+                {
+                    if (prop.modifyType == ModifyType.FLAT_ADDITION)
+                        flatMods[localBonusTypes[prop.bonusType]] += affix.GetAffixValue(prop.bonusType);
+                    else if (prop.modifyType == ModifyType.ADDITIVE)
+                        additiveMods[localBonusTypes[prop.bonusType]] += ((double)affix.GetAffixValue(prop.bonusType) / 100);
+                }
+            }
+        }
+    }
 }

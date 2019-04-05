@@ -141,8 +141,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fd60ccafb8154074c9b73479427d7ca0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  slotPrefab: {fileID: 2344518116427176904, guid: 1dbfb6df7286e994f9f1978597cb904e,
-    type: 3}
+  SlotContext: 0
+  IsEquipSelectMode: 0
   currentActive: {fileID: 0}
 --- !u!4 &368173412
 Transform:
@@ -335,6 +335,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3f42bea9f58c0e6419922dcd4c9277bf, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  accumulatedConsumables: 0
 --- !u!1 &2073078188
 GameObject:
   m_ObjectHideFlags: 0

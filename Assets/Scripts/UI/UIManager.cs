@@ -5,6 +5,7 @@ using UnityEngine.UI;
 
 public class UIManager : MonoBehaviour {
     public static UIManager Instance { get; private set; }
+    public static int MenuBarSize = 60;
     private Canvas _invCanvas;
     private Canvas _heroCanvas;
     private ScrollRect _invWindowRect;
@@ -13,6 +14,11 @@ public class UIManager : MonoBehaviour {
     private HeroDetailWindow _heroWindow;
     private HeroScrollWindow _heroScrollWindow;
     private ScrollRect _heroWindowRect;
+    public readonly Vector2 referenceResolution = new Vector2(480, 854);
+    public readonly Vector2 fullWindowSize = new Vector2(480, 854 - MenuBarSize);
+    public readonly Vector2 itemWindowSize = new Vector2(400, 640);
+    public EquipSlotType SlotContext;
+    public bool IsEquipSelectMode = false;
 
     public Canvas currentActive;
 
@@ -116,5 +122,30 @@ public class UIManager : MonoBehaviour {
         HeroWindowRect.gameObject.SetActive(false);
         HeroDetailWindow.gameObject.SetActive(false);
     }
+
+    public void ToggleInventoryWindow()
+    {
+        GameObject target = InvWindowRect.gameObject;
+        CloseAllWindows();
+        SetInventoryScrollRectTransform(0);
+        this.EquipDetailWindow.HideButtons();
+        if (!target.activeSelf)
+        {
+            target.SetActive(true);
+            InvScrollContent.ShowAllEquipment();
+        }
+        else
+            target.SetActive(false);
+
+    }
+
+    public void SetInventoryScrollRectTransform(int type)
+    {
+        if (type == 0)
+        {
+            InvWindowRect.GetComponent<RectTransform>().sizeDelta = fullWindowSize;
+        }
+    }
+
 
 }

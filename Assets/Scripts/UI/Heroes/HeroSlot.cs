@@ -18,6 +18,6 @@ public class HeroSlot : MonoBehaviour
         detailWindow.gameObject.SetActive(true);
         detailWindow.hero = hero;
         detailWindow.heroSlot = this;
-        detailWindow.UpdateWindowEquipment();
+        detailWindow.UpdateWindow();
     }
 }

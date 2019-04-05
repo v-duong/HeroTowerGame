@@ -115,6 +115,7 @@ public class ResourceManager : MonoBehaviour
     public AffixBase GetRandomAffixBase(AffixType type, int ilvl = 0, GroupType tag = GroupType.NO_GROUP, List<string> bonusTagList = null)
     {
         Dictionary<string, AffixBase> affixList;
+
         switch (type)
         {
             case AffixType.PREFIX:
@@ -240,6 +241,7 @@ public class ResourceManager : MonoBehaviour
     private void Awake()
     {
         Instance = this;
+        Initialize();
     }
 
     private void Initialize()
@@ -260,7 +262,7 @@ public class ResourceManager : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        Initialize();
+        
     }
 
 }

@@ -16,6 +16,16 @@ public class InventorySlot : MonoBehaviour
     public void OnItemSlotClick()
     {
         EquipmentDetailWindow itemWindow = UIManager.Instance.EquipDetailWindow;
+        itemWindow.SetTransform(0);
+        if (UIManager.Instance.IsEquipSelectMode)
+        {
+            itemWindow.EquipButtonParent.SetActive(true);
+            itemWindow.UpgradeButtonParent.SetActive(false);
+        } else
+        {
+            itemWindow.EquipButtonParent.SetActive(false);
+            itemWindow.UpgradeButtonParent.SetActive(true);
+        }
         itemWindow.gameObject.SetActive(true);
         itemWindow.item = (Equipment)item;
         itemWindow.inventorySlot = this;

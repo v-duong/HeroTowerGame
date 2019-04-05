@@ -82,6 +82,8 @@ public class InventoryScrollWindow : MonoBehaviour
         SlotsInUse.Remove(slot);
         inventorySlotPool.ReturnToPool(slot);
     }
+
+
 }
 
 

@@ -17,4 +17,9 @@
     {
         return ItemType.WEAPON;
     }
+
+    public override bool UpdateItemStats()
+    {
+        return true;
+    }
 }

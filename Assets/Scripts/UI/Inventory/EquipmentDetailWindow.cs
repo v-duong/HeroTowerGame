@@ -11,6 +11,10 @@ public class EquipmentDetailWindow : MonoBehaviour
     private Text affixText;
     [SerializeField]
     private Text infoText;
+    [SerializeField]
+    public GameObject UpgradeButtonParent;
+    [SerializeField]
+    public GameObject EquipButtonParent;
     public Equipment item;
     public InventorySlot inventorySlot;
 
@@ -59,6 +63,7 @@ public class EquipmentDetailWindow : MonoBehaviour
 
     public void UpdateWindowEquipment_Armor(Armor armorItem)
     {
+
         this.GetComponent<Image>().color = Helpers.ReturnRarityColor(armorItem.Rarity);
         nameText.text = armorItem.Name;
 
@@ -82,6 +87,16 @@ public class EquipmentDetailWindow : MonoBehaviour
         infoText.text += "Critical Chance: " + weaponItem.criticalChance + "\n";
         infoText.text += "Range: " + weaponItem.weaponRange + "\n";
 
+    }
+
+    public void ShowButtons()
+    {
+        UpgradeButtonParent.SetActive(true);
+    }
+
+    public void HideButtons()
+    {
+        UpgradeButtonParent.SetActive(false);
     }
 
     public void OnAddAffixClick()
@@ -120,5 +135,24 @@ public class EquipmentDetailWindow : MonoBehaviour
     {
         item.RerollAffixesAtRarity();
         UpdateWindowEquipment();
+    }
+
+    public void SetTransform(int type)
+    {
+        UIManager ui = UIManager.Instance;
+        if (type == 0)
+        {
+            RectTransform t = this.GetComponent<RectTransform>();
+            t.sizeDelta = ui.itemWindowSize;
+            t.anchoredPosition = new Vector2((ui.referenceResolution.x - ui.itemWindowSize.x) / 2, (ui.itemWindowSize.y - ui.referenceResolution.y) / 2);
+        }
+    }
+
+    public void OnEquipClick()
+    {
+        UIManager ui = UIManager.Instance;
+        ui.HeroDetailWindow.hero.EquipToSlot(item, ui.SlotContext);
+        ui.CloseInventoryWindows();
+        ui.HeroDetailWindow.UpdateWindow();
     }
 }
