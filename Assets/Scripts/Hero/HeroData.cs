@@ -253,7 +253,7 @@ public class HeroData : ActorData
     {
         if (statBonuses.ContainsKey(BonusType.STRENGTH) && statBonuses[BonusType.STRENGTH].isStatOutdated)
         {
-            Strength = HeroStatCalculation((int)Math.Round(BaseStrength, MidpointRounding.AwayFromZero), statBonuses[BonusType.STRENGTH]);
+            Strength = statBonuses[BonusType.STRENGTH].CalculateStat((int)Math.Round(BaseStrength, MidpointRounding.AwayFromZero));
         }
         else if (!statBonuses.ContainsKey(BonusType.STRENGTH))
             Strength = (int)Math.Round(BaseStrength, MidpointRounding.AwayFromZero);
@@ -261,14 +261,14 @@ public class HeroData : ActorData
 
         if (statBonuses.ContainsKey(BonusType.INTELLIGENCE) && statBonuses[BonusType.INTELLIGENCE].isStatOutdated)
         {
-            Intelligence = HeroStatCalculation((int)Math.Round(BaseIntelligence, MidpointRounding.AwayFromZero), statBonuses[BonusType.INTELLIGENCE]);
+            Intelligence = statBonuses[BonusType.INTELLIGENCE].CalculateStat((int)Math.Round(BaseIntelligence, MidpointRounding.AwayFromZero));
         } else if (!statBonuses.ContainsKey(BonusType.INTELLIGENCE))
             Intelligence = (int)Math.Round(BaseIntelligence, MidpointRounding.AwayFromZero);
         ApplyIntelligenceBonuses();
 
         if (statBonuses.ContainsKey(BonusType.AGILITY) && statBonuses[BonusType.AGILITY].isStatOutdated)
         {
-            Agility = HeroStatCalculation((int)Math.Round(BaseAgility, MidpointRounding.AwayFromZero), statBonuses[BonusType.AGILITY]);
+            Agility = statBonuses[BonusType.AGILITY].CalculateStat((int)Math.Round(BaseAgility, MidpointRounding.AwayFromZero));
         }
         else if (!statBonuses.ContainsKey(BonusType.AGILITY))
             Agility = (int)Math.Round(BaseAgility, MidpointRounding.AwayFromZero);
@@ -276,7 +276,7 @@ public class HeroData : ActorData
 
         if (statBonuses.ContainsKey(BonusType.WILL) && statBonuses[BonusType.WILL].isStatOutdated)
         {
-            Will = HeroStatCalculation((int)Math.Round(BaseWill, MidpointRounding.AwayFromZero), statBonuses[BonusType.WILL]);
+            Will = statBonuses[BonusType.WILL].CalculateStat((int)Math.Round(BaseWill, MidpointRounding.AwayFromZero));
         }
         else if (!statBonuses.ContainsKey(BonusType.WILL))
             Will = (int)Math.Round(BaseWill, MidpointRounding.AwayFromZero);
@@ -356,7 +356,7 @@ public class HeroData : ActorData
     {
         double percentage = CurrentHealth / MaximumHealth;
         if (statBonuses.ContainsKey(BonusType.MAX_HEALTH))
-            MaximumHealth = HeroStatCalculation((int)Math.Round(BaseHealth, MidpointRounding.AwayFromZero), statBonuses[BonusType.MAX_HEALTH]);
+            MaximumHealth = statBonuses[BonusType.MAX_HEALTH].CalculateStat((int)Math.Round(BaseHealth, MidpointRounding.AwayFromZero));
         else
             MaximumHealth = (int)Math.Round(BaseHealth, MidpointRounding.AwayFromZero);
         CurrentHealth = (float)(MaximumHealth * percentage);
@@ -366,7 +366,7 @@ public class HeroData : ActorData
     {
         double percentage = CurrentSoulPoints / MaximumSoulPoints;
         if (statBonuses.ContainsKey(BonusType.MAX_SOULPOINTS))
-            MaximumSoulPoints = HeroStatCalculation((int)Math.Round(BaseSoulPoints, MidpointRounding.AwayFromZero), statBonuses[BonusType.MAX_SOULPOINTS]);
+            MaximumSoulPoints = statBonuses[BonusType.MAX_SOULPOINTS].CalculateStat((int)Math.Round(BaseSoulPoints, MidpointRounding.AwayFromZero));
         else
             MaximumSoulPoints = (int)Math.Round(BaseSoulPoints, MidpointRounding.AwayFromZero);
         CurrentSoulPoints = (float)(MaximumSoulPoints * percentage);
@@ -384,7 +384,7 @@ public class HeroData : ActorData
         }
         double percentage = CurrentShield / MaximumShield;
         if (statBonuses.ContainsKey(BonusType.GLOBAL_MAX_SHIELD))
-            MaximumShield = HeroStatCalculation(BaseShield + StatFromEquip, statBonuses[BonusType.GLOBAL_MAX_SHIELD]);
+            MaximumShield = statBonuses[BonusType.GLOBAL_MAX_SHIELD].CalculateStat(BaseShield + StatFromEquip);
         else
             MaximumShield = BaseShield + StatFromEquip;
         CurrentShield = (float)(MaximumShield * percentage);
@@ -401,7 +401,7 @@ public class HeroData : ActorData
             }
         }
         if (statBonuses.ContainsKey(BonusType.GLOBAL_ARMOR))
-            Armor = HeroStatCalculation(BaseArmor + StatFromEquip, statBonuses[BonusType.GLOBAL_ARMOR]);
+            Armor = statBonuses[BonusType.GLOBAL_ARMOR].CalculateStat(BaseArmor + StatFromEquip);
         else
             Armor = BaseArmor + StatFromEquip;
     }
@@ -417,7 +417,7 @@ public class HeroData : ActorData
             }
         }
         if (statBonuses.ContainsKey(BonusType.GLOBAL_DODGE_RATING))
-            DodgeRating = HeroStatCalculation(BaseDodgeRating + StatFromEquip, statBonuses[BonusType.GLOBAL_DODGE_RATING]);
+            DodgeRating = statBonuses[BonusType.GLOBAL_DODGE_RATING].CalculateStat(BaseDodgeRating + StatFromEquip);
         else
             DodgeRating = BaseDodgeRating + StatFromEquip;
     }
@@ -433,7 +433,7 @@ public class HeroData : ActorData
             }
         }
         if (statBonuses.ContainsKey(BonusType.GLOBAL_RESOLVE_RATING))
-            ResolveRating = HeroStatCalculation(BaseResolveRating + StatFromEquip, statBonuses[BonusType.GLOBAL_RESOLVE_RATING]);
+            ResolveRating = statBonuses[BonusType.GLOBAL_RESOLVE_RATING].CalculateStat(BaseResolveRating + StatFromEquip);
         else
             ResolveRating = BaseResolveRating + StatFromEquip;
     }
@@ -441,7 +441,7 @@ public class HeroData : ActorData
     public void ApplyAttackPhasingBonuses()
     {
         if (statBonuses.ContainsKey(BonusType.ATTACK_PHASING))
-            AttackPhasing = HeroStatCalculation(BaseAttackPhasing, statBonuses[BonusType.ATTACK_PHASING]);
+            AttackPhasing = statBonuses[BonusType.ATTACK_PHASING].CalculateStat(BaseAttackPhasing);
         else
             AttackPhasing = BaseAttackPhasing;
     }
@@ -449,20 +449,9 @@ public class HeroData : ActorData
     public void ApplyMagicPhasingBonuses()
     {
         if (statBonuses.ContainsKey(BonusType.MAGIC_PHASING))
-            MagicPhasing = HeroStatCalculation(BaseAttackPhasing, statBonuses[BonusType.MAGIC_PHASING]);
+            MagicPhasing = statBonuses[BonusType.MAGIC_PHASING].CalculateStat(BaseAttackPhasing);
         else
             MagicPhasing = BaseMagicPhasing;
-    }
-
-    public static int HeroStatCalculation(int stat, HeroStatBonus bonuses)
-    {
-        if (bonuses.hasSetModifier)
-        {
-            bonuses.isStatOutdated = false;
-            return bonuses.setModifier;
-        }
-        bonuses.isStatOutdated = false;
-        return (int)Math.Round((stat + bonuses.FlatModifier + bonuses.FlatModifierFromAttributes) * (1 + (double)(bonuses.AdditiveModifier + bonuses.AdditiveModifierFromAttributes) / 100) * bonuses.CurrentMultiplier);
     }
 
 }

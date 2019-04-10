@@ -8,13 +8,7 @@ using UnityEngine;
 public class AbilityBase
 {
     [JsonProperty]
-    public readonly int id;
-    [JsonProperty]
     public readonly string idName;
-    [JsonProperty]
-    public readonly string name;
-    [JsonProperty]
-    public readonly string description;
     [JsonConverter(typeof(StringEnumConverter))][JsonProperty]
     public readonly AbilityType abilityType;
     [JsonConverter(typeof(StringEnumConverter))][JsonProperty]
@@ -64,15 +58,35 @@ public class AbilityBase
 public class AbilityDamageBase
 {
     [JsonProperty]
-    public readonly List<Damage> damage;
+    public readonly List<MinMaxRange> damage;
+}
 
-    [Serializable]
-    public class Damage
+[Serializable]
+public class MinMaxRange
+{
+    [JsonProperty]
+    public int min;
+    [JsonProperty]
+    public int max;
+
+    public void SetMinMax(int min, int max)
     {
-        [JsonProperty]
-        public readonly int min;
-        [JsonProperty]
-        public readonly int max;
+        this.min = min;
+        this.max = max;
+    }
+
+    public void Clear()
+    {
+        min = 0;
+        max = 0;
+    }
+
+    public bool isZero()
+    {
+        if (min == 0 && max == 0)
+            return true;
+        else
+            return false;
     }
 }
 

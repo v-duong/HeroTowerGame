@@ -1,18 +1,15 @@
 ﻿using System.Collections.Generic;
+using System;
 using UnityEngine;
 
 public class Armor : Equipment
 {
+    public const int LocalBonusStart = 0x700;
     public int armor;
     public int shield;
     public int dodgeRating;
     public int resolveRating;
-    private static readonly Dictionary<BonusType, int> localBonusTypes = new Dictionary<BonusType, int> {
-        { BonusType.LOCAL_ARMOR, 0 },
-        { BonusType.LOCAL_MAX_SHIELD, 1 },
-        { BonusType.LOCAL_DODGE_RATING, 2 },
-        { BonusType.LOCAL_RESOLVE_RATING, 3 }
-    };
+    
 
     public Armor(EquipmentBase e, int ilvl) : base(e, ilvl)
     {
@@ -29,21 +26,31 @@ public class Armor : Equipment
 
     public override bool UpdateItemStats()
     {
+        Dictionary<BonusType, HeroStatBonus> bonusTotals = new Dictionary<BonusType, HeroStatBonus>();
+        List<Affix> affixes = new List<Affix>();
+        affixes.AddRange(prefixes);
+        affixes.AddRange(suffixes);
+        GetLocalModValues(bonusTotals, affixes, ItemType.ARMOR);
 
-        int[] flatMods = new int[4];
-        double[] additiveMods = new double[4] { 1, 1, 1, 1};
-        GetLocalModValues(flatMods, additiveMods, prefixes, localBonusTypes);
-
-        armor = Base.armor + flatMods[0];
-        shield = Base.shield + flatMods[1];
-        dodgeRating = Base.dodgeRating + flatMods[2];
-        resolveRating = Base.resolveRating + flatMods[3];
-
-        armor = (int)(armor * additiveMods[0]);
-        shield = (int)(shield * additiveMods[1]);
-        dodgeRating = (int)(dodgeRating * additiveMods[2]);
-        resolveRating = (int)(resolveRating * additiveMods[3]);
+        armor = CalculateStat(Base.armor, BonusType.LOCAL_ARMOR, bonusTotals);
+        shield = CalculateStat(Base.shield, BonusType.LOCAL_MAX_SHIELD, bonusTotals);
+        dodgeRating = CalculateStat(Base.dodgeRating, BonusType.LOCAL_DODGE_RATING, bonusTotals);
+        resolveRating = CalculateStat(Base.resolveRating, BonusType.LOCAL_RESOLVE_RATING, bonusTotals);
 
         return true;
+    }
+
+    public override HashSet<GroupType> GetGroupTypes()
+    {
+        HashSet<GroupType> tags = new HashSet<GroupType>();
+        tags.Add(GroupType.ALL_ARMOR);
+        tags.Add(Base.group);
+        switch(Base.equipSlot)
+        {
+            case EquipSlotType.BODY_ARMOR:
+                tags.Add(GroupType.BODY_ARMOR);
+                break;
+        }
+        return tags;
     }
 }

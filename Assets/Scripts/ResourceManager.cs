@@ -15,6 +15,8 @@ public class ResourceManager : MonoBehaviour
     private Dictionary<string, EquipmentBase> equipmentList;
     private Dictionary<string, AffixBase> prefixList;
     private Dictionary<string, AffixBase> suffixList;
+    private Dictionary<string, AffixBase> innateList;
+    private Dictionary<string, AffixBase> enchantmentList;
     private Dictionary<string, ArchetypeBase> archetypeList;
 
     public int AbilityCount { get; private set; }
@@ -107,12 +109,16 @@ public class ResourceManager : MonoBehaviour
                 if (suffixList == null)
                     suffixList = LoadAffixes(type);
                 return suffixList[id];
+            case AffixType.INNATE:
+                if (innateList == null)
+                    innateList = LoadAffixes(type);
+                return innateList[id];
             default:
                 return null;
         }
     }
 
-    public AffixBase GetRandomAffixBase(AffixType type, int ilvl = 0, GroupType tag = GroupType.NO_GROUP, List<string> bonusTagList = null)
+    public AffixBase GetRandomAffixBase(AffixType type, int ilvl = 0, HashSet<GroupType> tags = null, List<string> bonusTagList = null)
     {
         Dictionary<string, AffixBase> affixList;
 
@@ -129,6 +135,11 @@ public class ResourceManager : MonoBehaviour
                 break;
         }
 
+        if (tags == null)
+        {
+            tags = new HashSet<GroupType>() { GroupType.NO_GROUP };
+        }
+
         WeightList<AffixBase> possibleAffixList = new WeightList<AffixBase>();
         int sum = 0;
 
@@ -141,7 +152,7 @@ public class ResourceManager : MonoBehaviour
             {
                 foreach( AffixWeight affixWeight in affixBase.spawnWeight)
                 {
-                    if (tag == affixWeight.type || affixWeight.type == GroupType.NO_GROUP)
+                    if (tags.Contains(affixWeight.type) || affixWeight.type == GroupType.NO_GROUP)
                     {
                         if (affixWeight.weight == 0)
                             break;
@@ -166,10 +177,7 @@ public class ResourceManager : MonoBehaviour
         List<AbilityBase> temp = DeserializeFromPath<List<AbilityBase>>("json/abilities/abilities");
         foreach (AbilityBase ability in temp)
         {
-            if (ability.idName != null)
              abilityList.Add(ability.idName, ability);
-            else
-                abilityList.Add(ability.name, ability);
         }
     }
 
@@ -219,6 +227,12 @@ public class ResourceManager : MonoBehaviour
                 break;
             case AffixType.SUFFIX:
                 s = "suffix";
+                break;
+            case AffixType.INNATE:
+                s = "innate";
+                break;
+            case AffixType.ENCHANTMENT:
+                s = "enchantment";
                 break;
             default:
                 return null;

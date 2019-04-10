@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 public class HeroStatBonus
 {
@@ -69,5 +70,29 @@ public class HeroStatBonus
         foreach (int i in MultiplyModifiers)
             mult *= (1d + i / 100d);
         CurrentMultiplier = (float)mult;
+    }
+
+    public int CalculateStat(int stat)
+    {
+        if (this.hasSetModifier)
+        {
+            this.isStatOutdated = false;
+            return this.setModifier;
+        }
+        this.isStatOutdated = false;
+        return (int)Math.Round((stat + this.FlatModifier + this.FlatModifierFromAttributes) * (1 + (double)(this.AdditiveModifier + this.AdditiveModifierFromAttributes) / 100) * this.CurrentMultiplier);
+    }
+
+    public double CalculateStat(double stat)
+    {
+        if (this == null)
+            return stat;
+        if (this.hasSetModifier)
+        {
+            this.isStatOutdated = false;
+            return this.setModifier;
+        }
+        this.isStatOutdated = false;
+        return (stat + this.FlatModifier + this.FlatModifierFromAttributes) * (1 + (double)(this.AdditiveModifier + this.AdditiveModifierFromAttributes) / 100) * this.CurrentMultiplier;
     }
 }

@@ -5,12 +5,9 @@ using Newtonsoft.Json.Converters;
 
 public class EquipmentBase
 {
-    [JsonProperty] 
-    public readonly int id;
+
     [JsonProperty]
     public readonly string idName;
-    [JsonProperty] 
-    public readonly string name;
     [JsonProperty] 
     public readonly int dropLevel;
     [JsonProperty] 
@@ -29,6 +26,8 @@ public class EquipmentBase
     public readonly int maxDamage;
     [JsonProperty]
     public readonly float criticalChance;
+    [JsonProperty]
+    public readonly float attackSpeed;
     [JsonProperty]
     public readonly float weaponRange;
     [JsonProperty] 
@@ -51,6 +50,7 @@ public class EquipmentBase
     public readonly string innateAffixId;
     [JsonProperty]
     public readonly int spawnWeight;
+
 }
 
 public enum EquipSlotType

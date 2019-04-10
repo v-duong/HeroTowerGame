@@ -5,14 +5,9 @@ using Newtonsoft.Json.Converters;
 
 public class ArchetypeBase
 {
-    [JsonProperty]
-    public readonly int id;
+
     [JsonProperty]
     public readonly string idName;
-    [JsonProperty]
-    public readonly string name;
-    [JsonProperty]
-    public readonly string text;
     [JsonProperty]
     public readonly int stars;
     [JsonProperty]

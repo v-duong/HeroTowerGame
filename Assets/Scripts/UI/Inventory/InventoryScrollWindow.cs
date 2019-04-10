@@ -8,7 +8,15 @@ public class InventoryScrollWindow : MonoBehaviour
 {
     [SerializeField]
     private InventorySlot SlotPrefab;
-    private InventorySlotPool inventorySlotPool;
+    private InventorySlotPool _inventorySlotPool;
+    public InventorySlotPool InventorySlotPool {
+        get
+        {
+            if (_inventorySlotPool == null)
+                _inventorySlotPool = new InventorySlotPool(SlotPrefab, GameManager.Instance.PlayerStats.equipmentInventory.Count);
+            return _inventorySlotPool;
+        }
+    }
     private List<InventorySlot> SlotsInUse = new List<InventorySlot>();
 
     public InventoryScrollWindow ()
@@ -19,7 +27,6 @@ public class InventoryScrollWindow : MonoBehaviour
     private void Awake()
     {
 
-        inventorySlotPool = new InventorySlotPool(SlotPrefab, GameManager.Instance.PlayerStats.equipmentInventory.Count);
     }
 
     private void InitializeInventorySlots(List<Equipment> equipmentInventory)
@@ -60,7 +67,7 @@ public class InventoryScrollWindow : MonoBehaviour
     {
         foreach(InventorySlot i in SlotsInUse)
         {
-            inventorySlotPool.ReturnToPool(i);
+            InventorySlotPool.ReturnToPool(i);
         }
         SlotsInUse.Clear();
     }
@@ -68,7 +75,7 @@ public class InventoryScrollWindow : MonoBehaviour
     public void AddEquipmentSlot(Item item)
     {
         InventorySlot slot;
-        slot = inventorySlotPool.GetSlot();
+        slot = InventorySlotPool.GetSlot();
         slot.gameObject.transform.SetParent(this.transform, false);
         SlotsInUse.Add(slot);
         slot.item = item;
@@ -80,7 +87,7 @@ public class InventoryScrollWindow : MonoBehaviour
         InventorySlot slot = SlotsInUse.Find(x => x.item == item);
         slot.gameObject.SetActive(false);
         SlotsInUse.Remove(slot);
-        inventorySlotPool.ReturnToPool(slot);
+        InventorySlotPool.ReturnToPool(slot);
     }
 
 

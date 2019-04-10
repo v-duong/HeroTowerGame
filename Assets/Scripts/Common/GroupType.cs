@@ -9,6 +9,7 @@ public enum GroupType
     HEADGEAR,
     GLOVES,
     BOOTS,
+    ALL_ACCESSORY,
     BELT,
     RING,
     NECKLACE,

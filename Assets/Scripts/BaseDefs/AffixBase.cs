@@ -6,12 +6,9 @@ using Newtonsoft.Json.Converters;
 
 public class AffixBase
 {
-    [JsonProperty]
-    public readonly int id;
+
     [JsonProperty]
     public readonly string idName;
-    [JsonProperty]
-    public readonly string name;
     [JsonConverter(typeof(StringEnumConverter))][JsonProperty]
     public readonly AffixType affixType;
     [JsonProperty]

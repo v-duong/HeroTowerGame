@@ -126,7 +126,7 @@ public abstract class Item
         if (affixType == null)
             return false;
 
-        return AddAffix(ResourceManager.Instance.GetRandomAffixBase((AffixType)affixType, ItemLevel, itemType, GetBonusTagTypeList((AffixType)affixType)));
+        return AddAffix(ResourceManager.Instance.GetRandomAffixBase((AffixType)affixType, ItemLevel, GetGroupTypes(), GetBonusTagTypeList((AffixType)affixType)));
     }
 
     public List<string> GetBonusTagTypeList(AffixType type)
@@ -210,4 +210,5 @@ public abstract class Item
     public abstract bool UpgradeRarity();
     public abstract ItemType GetItemType();
     public abstract bool UpdateItemStats();
+    public abstract HashSet<GroupType> GetGroupTypes();
 }

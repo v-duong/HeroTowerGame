@@ -2,6 +2,7 @@
 
 public class Archetype : Item, IAbilitySource
 {
+    public const int LocalBonusStart = 0x600;
     public ArchetypeBase Base { get { return ResourceManager.Instance.GetArchetypeBase(BaseId); } }
     private string BaseId { get; set; }
 
@@ -164,5 +165,12 @@ public class Archetype : Item, IAbilitySource
     public override bool UpdateItemStats()
     {
         return true;
+    }
+
+    public override HashSet<GroupType> GetGroupTypes()
+    {
+        HashSet<GroupType> tags = new HashSet<GroupType>();
+        tags.Add(GroupType.ARCHETYPE);
+        return tags;
     }
 }

@@ -8,10 +8,6 @@ public class ArchetypeSkillNode
     [JsonProperty]
     public readonly int id;
     [JsonProperty]
-    public readonly string name;
-    [JsonProperty]
-    public readonly string desc;
-    [JsonProperty]
     public readonly int initialLevel;
     [JsonProperty]
     public readonly int maxLevel;

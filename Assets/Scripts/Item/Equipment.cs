@@ -14,11 +14,11 @@ public abstract class Equipment : Item
     public int willRequirement;
     public HeroData equippedToHero;
     public List<Affix> innate;
+    
 
     public Equipment(EquipmentBase e, int ilvl)
     {
         BaseId = e.idName;
-        Name = e.name;
         costModifier = e.sellValue;
         strRequirement = e.strengthReq;
         intRequirement = e.intelligenceReq;
@@ -48,20 +48,65 @@ public abstract class Equipment : Item
         return true;
     }
 
-    protected static void GetLocalModValues(int[] flatMods, double[] additiveMods, List<Affix> affixes, Dictionary<BonusType, int> localBonusTypes)
+    protected static void GetLocalModValues(Dictionary<BonusType, HeroStatBonus> dic, List<Affix> affixes, ItemType itemType)
     {
+        int startValue = 0;
+        switch(itemType)
+        {
+            case ItemType.ARMOR:
+                startValue = Armor.LocalBonusStart;
+                break;
+            case ItemType.ARCHETYPE:
+                startValue = Archetype.LocalBonusStart;
+                break;
+            case ItemType.WEAPON:
+                startValue = Weapon.LocalBonusStart;
+                break;
+            default:
+                return;
+        }
+
         foreach (Affix affix in affixes)
         {
             foreach (AffixBonusProperty prop in affix.Base.affixBonuses)
             {
-                if (localBonusTypes.ContainsKey(prop.bonusType))
+                if ((int)prop.bonusType >= startValue && (int)prop.bonusType < startValue + 0x100)
                 {
+                    if (!dic.ContainsKey(prop.bonusType))
+                        dic.Add(prop.bonusType, new HeroStatBonus());
                     if (prop.modifyType == ModifyType.FLAT_ADDITION)
-                        flatMods[localBonusTypes[prop.bonusType]] += affix.GetAffixValue(prop.bonusType);
+                        dic[prop.bonusType].AddToFlat(affix.GetAffixValue(prop.bonusType));
                     else if (prop.modifyType == ModifyType.ADDITIVE)
-                        additiveMods[localBonusTypes[prop.bonusType]] += ((double)affix.GetAffixValue(prop.bonusType) / 100);
+                        dic[prop.bonusType].AddToAdditive(affix.GetAffixValue(prop.bonusType));
                 }
             }
+        }
+    }
+
+    protected static int CalculateStat(int stat, BonusType bonusType, Dictionary<BonusType, HeroStatBonus> dic)
+    {
+        HeroStatBonus bonus;
+
+        if(dic.TryGetValue(bonusType, out bonus))
+        {
+            return bonus.CalculateStat(stat);
+        } else
+        {
+            return stat;
+        }
+    }
+
+    protected static double CalculateStat(double stat, BonusType bonusType, Dictionary<BonusType, HeroStatBonus> dic)
+    {
+        HeroStatBonus bonus;
+
+        if (dic.TryGetValue(bonusType, out bonus))
+        {
+            return bonus.CalculateStat(stat);
+        }
+        else
+        {
+            return stat;
         }
     }
 }
