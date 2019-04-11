@@ -7,6 +7,7 @@ public class HeroSlot : MonoBehaviour
 {
     public HeroData hero;
     public Image slotImage;
+    public Text nameText;
 
     public void UpdateSlot()
     {

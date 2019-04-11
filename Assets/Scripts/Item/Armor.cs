@@ -19,9 +19,9 @@ public class Armor : Equipment
         resolveRating = e.resolveRating;
     }
 
-    public override ItemType GetItemType()
+    public override EquipmentType GetItemType()
     {
-        return ItemType.ARMOR;
+        return EquipmentType.ARMOR;
     }
 
     public override bool UpdateItemStats()
@@ -30,7 +30,7 @@ public class Armor : Equipment
         List<Affix> affixes = new List<Affix>();
         affixes.AddRange(prefixes);
         affixes.AddRange(suffixes);
-        GetLocalModValues(bonusTotals, affixes, ItemType.ARMOR);
+        GetLocalModValues(bonusTotals, affixes, global::EquipmentType.ARMOR);
 
         armor = CalculateStat(Base.armor, BonusType.LOCAL_ARMOR, bonusTotals);
         shield = CalculateStat(Base.shield, BonusType.LOCAL_MAX_SHIELD, bonusTotals);
@@ -42,10 +42,12 @@ public class Armor : Equipment
 
     public override HashSet<GroupType> GetGroupTypes()
     {
-        HashSet<GroupType> tags = new HashSet<GroupType>();
-        tags.Add(GroupType.ALL_ARMOR);
-        tags.Add(Base.group);
-        switch(Base.equipSlot)
+        HashSet<GroupType> tags = new HashSet<GroupType>
+        {
+            GroupType.ALL_ARMOR,
+            Base.group
+        };
+        switch (Base.equipSlot)
         {
             case EquipSlotType.BODY_ARMOR:
                 tags.Add(GroupType.BODY_ARMOR);

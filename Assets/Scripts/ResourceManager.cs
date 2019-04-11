@@ -1,7 +1,6 @@
-﻿using System.Collections;
+﻿using Newtonsoft.Json;
 using System.Collections.Generic;
 using UnityEngine;
-using Newtonsoft.Json;
 
 public class ResourceManager : MonoBehaviour
 {
@@ -85,7 +84,12 @@ public class ResourceManager : MonoBehaviour
         if (equipmentBase.equipSlot == EquipSlotType.WEAPON)
         {
             e = new Weapon(equipmentBase, ilvl);
-        } else
+        }
+        else if ((int)equipmentBase.equipSlot >= 6)
+        {
+            e = new Accessory(equipmentBase, ilvl);
+        }
+        else
         {
             e = new Armor(equipmentBase, ilvl);
         }
@@ -99,20 +103,23 @@ public class ResourceManager : MonoBehaviour
 
     public AffixBase GetAffixBase(string id, AffixType type)
     {
-        switch(type)
+        switch (type)
         {
             case AffixType.PREFIX:
                 if (prefixList == null)
                     prefixList = LoadAffixes(type);
                 return prefixList[id];
+
             case AffixType.SUFFIX:
                 if (suffixList == null)
                     suffixList = LoadAffixes(type);
                 return suffixList[id];
+
             case AffixType.INNATE:
                 if (innateList == null)
                     innateList = LoadAffixes(type);
                 return innateList[id];
+
             default:
                 return null;
         }
@@ -127,9 +134,11 @@ public class ResourceManager : MonoBehaviour
             case AffixType.PREFIX:
                 affixList = prefixList;
                 break;
+
             case AffixType.SUFFIX:
                 affixList = suffixList;
                 break;
+
             default:
                 affixList = null;
                 break;
@@ -143,14 +152,14 @@ public class ResourceManager : MonoBehaviour
         WeightList<AffixBase> possibleAffixList = new WeightList<AffixBase>();
         int sum = 0;
 
-        foreach(AffixBase affixBase in affixList.Values)
+        foreach (AffixBase affixBase in affixList.Values)
         {
             if (bonusTagList != null && bonusTagList.Count > 0)
                 if (bonusTagList.Contains(affixBase.BonusTagType))
                     continue;
             if (affixBase.spawnLevel <= ilvl)
             {
-                foreach( AffixWeight affixWeight in affixBase.spawnWeight)
+                foreach (AffixWeight affixWeight in affixBase.spawnWeight)
                 {
                     if (tags.Contains(affixWeight.type) || affixWeight.type == GroupType.NO_GROUP)
                     {
@@ -167,7 +176,6 @@ public class ResourceManager : MonoBehaviour
         if (possibleAffixList.Count == 0)
             return null;
         return possibleAffixList.ReturnWeightedRandom();
-
     }
 
     private void LoadAbilities()
@@ -177,7 +185,7 @@ public class ResourceManager : MonoBehaviour
         List<AbilityBase> temp = DeserializeFromPath<List<AbilityBase>>("json/abilities/abilities");
         foreach (AbilityBase ability in temp)
         {
-             abilityList.Add(ability.idName, ability);
+            abilityList.Add(ability.idName, ability);
         }
     }
 
@@ -215,25 +223,29 @@ public class ResourceManager : MonoBehaviour
         }
     }
 
-    private Dictionary<string,AffixBase> LoadAffixes(AffixType type, int offset = 0)
+    private Dictionary<string, AffixBase> LoadAffixes(AffixType type, int offset = 0)
     {
         string s;
-        Dictionary<string, AffixBase>  affixes = new Dictionary<string, AffixBase>();
+        Dictionary<string, AffixBase> affixes = new Dictionary<string, AffixBase>();
 
-        switch(type)
+        switch (type)
         {
             case AffixType.PREFIX:
                 s = "prefix";
                 break;
+
             case AffixType.SUFFIX:
                 s = "suffix";
                 break;
+
             case AffixType.INNATE:
                 s = "innate";
                 break;
+
             case AffixType.ENCHANTMENT:
                 s = "enchantment";
                 break;
+
             default:
                 return null;
         }
@@ -249,7 +261,7 @@ public class ResourceManager : MonoBehaviour
 
     private T DeserializeFromPath<T>(string path)
     {
-        return JsonConvert.DeserializeObject<T>(Resources.Load<TextAsset>( path ).text);
+        return JsonConvert.DeserializeObject<T>(Resources.Load<TextAsset>(path).text);
     }
 
     private void Awake()
@@ -274,9 +286,7 @@ public class ResourceManager : MonoBehaviour
     }
 
     // Start is called before the first frame update
-    void Start()
+    private void Start()
     {
-        
     }
-
 }

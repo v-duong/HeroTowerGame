@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class HeroScrollWindow : MonoBehaviour
 {
@@ -23,6 +24,7 @@ public class HeroScrollWindow : MonoBehaviour
         slot = Instantiate(SlotPrefab, this.transform);
         SlotsInUse.Add(slot);
         slot.hero = hero;
+        slot.nameText.text = hero.Name;
         slot.UpdateSlot();
     }
 

@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using System.Collections.Generic;
 
 public abstract class Equipment : Item
 {
@@ -14,11 +11,22 @@ public abstract class Equipment : Item
     public int willRequirement;
     public HeroData equippedToHero;
     public List<Affix> innate;
-    
+
+    public bool IsEquipped
+    {
+        get
+        {
+            if (equippedToHero == null)
+                return false;
+            else
+                return true;
+        }
+    }
 
     public Equipment(EquipmentBase e, int ilvl)
     {
         BaseId = e.idName;
+        Name = LocalizationManager.Instance.GetLocalizationText("equipment." + e.idName);
         costModifier = e.sellValue;
         strRequirement = e.strengthReq;
         intRequirement = e.intelligenceReq;
@@ -29,7 +37,6 @@ public abstract class Equipment : Item
         prefixes = new List<Affix>();
         suffixes = new List<Affix>();
         innate = new List<Affix>();
-        itemType = e.group;
         equippedToHero = null;
         if (e.hasInnate)
         {
@@ -44,24 +51,42 @@ public abstract class Equipment : Item
             return false;
         else
             Rarity++;
+        UpdateName();
         AddRandomAffix();
         return true;
     }
 
-    protected static void GetLocalModValues(Dictionary<BonusType, HeroStatBonus> dic, List<Affix> affixes, ItemType itemType)
+    public override void UpdateName()
+    {
+        if (Rarity == RarityType.RARE || Rarity == RarityType.EPIC)
+        {
+            Name = LocalizationManager.Instance.GenerateRandomItemName(GetGroupTypes());
+        } else if (Rarity == RarityType.UNCOMMON)
+        {
+
+        } else
+        {
+            Name = LocalizationManager.Instance.GetLocalizationText_Equipment(Base.idName);
+        }
+    }
+
+    protected static void GetLocalModValues(Dictionary<BonusType, HeroStatBonus> dic, List<Affix> affixes, EquipmentType itemType)
     {
         int startValue = 0;
-        switch(itemType)
+        switch (itemType)
         {
-            case ItemType.ARMOR:
+            case global::EquipmentType.ARMOR:
                 startValue = Armor.LocalBonusStart;
                 break;
-            case ItemType.ARCHETYPE:
+
+            case global::EquipmentType.ARCHETYPE:
                 startValue = Archetype.LocalBonusStart;
                 break;
-            case ItemType.WEAPON:
+
+            case global::EquipmentType.WEAPON:
                 startValue = Weapon.LocalBonusStart;
                 break;
+
             default:
                 return;
         }
@@ -85,12 +110,11 @@ public abstract class Equipment : Item
 
     protected static int CalculateStat(int stat, BonusType bonusType, Dictionary<BonusType, HeroStatBonus> dic)
     {
-        HeroStatBonus bonus;
-
-        if(dic.TryGetValue(bonusType, out bonus))
+        if (dic.TryGetValue(bonusType, out HeroStatBonus bonus))
         {
             return bonus.CalculateStat(stat);
-        } else
+        }
+        else
         {
             return stat;
         }
@@ -98,9 +122,7 @@ public abstract class Equipment : Item
 
     protected static double CalculateStat(double stat, BonusType bonusType, Dictionary<BonusType, HeroStatBonus> dic)
     {
-        HeroStatBonus bonus;
-
-        if (dic.TryGetValue(bonusType, out bonus))
+        if (dic.TryGetValue(bonusType, out HeroStatBonus bonus))
         {
             return bonus.CalculateStat(stat);
         }

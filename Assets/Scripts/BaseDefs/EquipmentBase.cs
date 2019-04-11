@@ -63,8 +63,8 @@ public enum EquipSlotType
     BOOTS,
     BELT,
     NECKLACE,
-    RING,
     RING_SLOT_1,
-    RING_SLOT_2
+    RING_SLOT_2,
+    RING,
 }
 

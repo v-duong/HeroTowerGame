@@ -53,7 +53,7 @@ public class HeroData : ActorData
         Experience = 0;
         BaseHealth = 100;
         BaseSoulPoints = 50;
-        BaseShield = 0;
+        BaseManaShield = 0;
         BaseStrength = 10;
         BaseAgility = 10;
         BaseIntelligence = 10;
@@ -105,8 +105,15 @@ public class HeroData : ActorData
         return true;
     }
 
+    public Equipment GetEquipmentInSlot(EquipSlotType slot)
+    {
+        return equipList[(int)slot];
+    }
+
     public bool EquipToSlot(Equipment equip, EquipSlotType slot)
     {
+        if (equip.IsEquipped)
+            return false;
         if (equipList[(int)slot] != null)
             UnequipFromSlot(slot);
 
@@ -153,6 +160,7 @@ public class HeroData : ActorData
         if (equipList[(int)slot] == null)
             return false;
         Equipment equip = equipList[(int)slot];
+        equip.equippedToHero = null;
         RemoveEquipmentBonuses(equip.prefixes);
         RemoveEquipmentBonuses(equip.suffixes);
         RemoveEquipmentBonuses(equip.innate);
@@ -377,17 +385,17 @@ public class HeroData : ActorData
         int StatFromEquip = 0;
         foreach (Equipment e in equipList)
         {
-            if (e != null && e.GetItemType() == ItemType.ARMOR)
+            if (e != null && e.GetItemType() == EquipmentType.ARMOR)
             {
                 StatFromEquip += ((Armor)e).shield;
             }
         }
-        double percentage = CurrentShield / MaximumShield;
+        double percentage = CurrentManaShield / MaximumManaShield;
         if (statBonuses.ContainsKey(BonusType.GLOBAL_MAX_SHIELD))
-            MaximumShield = statBonuses[BonusType.GLOBAL_MAX_SHIELD].CalculateStat(BaseShield + StatFromEquip);
+            MaximumManaShield = statBonuses[BonusType.GLOBAL_MAX_SHIELD].CalculateStat(BaseManaShield + StatFromEquip);
         else
-            MaximumShield = BaseShield + StatFromEquip;
-        CurrentShield = (float)(MaximumShield * percentage);
+            MaximumManaShield = BaseManaShield + StatFromEquip;
+        CurrentManaShield = (float)(MaximumManaShield * percentage);
     }
 
     public void ApplyArmorBonuses()
@@ -395,7 +403,7 @@ public class HeroData : ActorData
         int StatFromEquip = 0;
         foreach (Equipment e in equipList)
         {
-            if (e != null && e.GetItemType() == ItemType.ARMOR)
+            if (e != null && e.GetItemType() == EquipmentType.ARMOR)
             {
                 StatFromEquip += ((Armor)e).armor;
             }
@@ -411,7 +419,7 @@ public class HeroData : ActorData
         int StatFromEquip = 0;
         foreach (Equipment e in equipList)
         {
-            if (e != null && e.GetItemType() == ItemType.ARMOR)
+            if (e != null && e.GetItemType() == EquipmentType.ARMOR)
             {
                 StatFromEquip += ((Armor)e).dodgeRating;
             }
@@ -427,7 +435,7 @@ public class HeroData : ActorData
         int StatFromEquip = 0;
         foreach (Equipment e in equipList)
         {
-            if (e != null && e.GetItemType() == ItemType.ARMOR)
+            if (e != null && e.GetItemType() == EquipmentType.ARMOR)
             {
                 StatFromEquip += ((Armor)e).resolveRating;
             }

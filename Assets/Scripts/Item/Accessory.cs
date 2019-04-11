@@ -9,9 +9,9 @@ public class Accessory : Equipment
 
     }
 
-    public override ItemType GetItemType()
+    public override EquipmentType GetItemType()
     {
-        return ItemType.ACCESSORY;
+        return EquipmentType.ACCESSORY;
     }
 
     public override bool UpdateItemStats()
@@ -21,9 +21,11 @@ public class Accessory : Equipment
 
     public override HashSet<GroupType> GetGroupTypes()
     {
-        HashSet<GroupType> tags = new HashSet<GroupType>();
-        tags.Add(GroupType.ALL_ACCESSORY);
-        tags.Add(Base.group);
+        HashSet<GroupType> tags = new HashSet<GroupType>
+        {
+            GroupType.ALL_ACCESSORY,
+            Base.group
+        };
         return tags;
     }
 }

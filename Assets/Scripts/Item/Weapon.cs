@@ -20,9 +20,10 @@ public class Weapon : Equipment
         weaponRange = e.weaponRange;
     }
 
-    public override ItemType GetItemType()
+    public override EquipmentType GetItemType()
     {
-        return ItemType.WEAPON;
+        
+        return EquipmentType.WEAPON;
     }
 
     public override bool UpdateItemStats()
@@ -31,7 +32,7 @@ public class Weapon : Equipment
         List<Affix> affixes = new List<Affix>();
         affixes.AddRange(prefixes);
         affixes.AddRange(suffixes);
-        GetLocalModValues(bonusTotals, affixes, ItemType.WEAPON);
+        GetLocalModValues(bonusTotals, affixes, global::EquipmentType.WEAPON);
 
         physicalDamage.min = CalculateStat(Base.minDamage, BonusType.LOCAL_PHYSICAL_DAMAGE_MIN, bonusTotals);
         physicalDamage.max = CalculateStat(Base.maxDamage, BonusType.LOCAL_PHYSICAL_DAMAGE_MAX, bonusTotals);
@@ -49,9 +50,11 @@ public class Weapon : Equipment
 
     public override HashSet<GroupType> GetGroupTypes()
     {
-        HashSet<GroupType> tags = new HashSet<GroupType>();
-        tags.Add(GroupType.WEAPON);
-        tags.Add(Base.group);
+        HashSet<GroupType> tags = new HashSet<GroupType>
+        {
+            GroupType.WEAPON,
+            Base.group
+        };
         switch (Base.group)
         {
             case GroupType.ONE_HANDED_AXE:

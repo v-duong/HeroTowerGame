@@ -23,9 +23,9 @@ public abstract class ActorData
     public int MaximumSoulPoints { get;  set; }
     public float CurrentSoulPoints { get;  set; }
 
-    public int BaseShield { get; protected set; }
-    public int MaximumShield { get;  set; }
-    public float CurrentShield { get;  set; }
+    public int BaseManaShield { get; protected set; }
+    public int MaximumManaShield { get;  set; }
+    public float CurrentManaShield { get;  set; }
 
     public int BaseArmor { get; protected set; }
     public int BaseDodgeRating { get; protected set; }

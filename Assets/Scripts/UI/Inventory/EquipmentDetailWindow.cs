@@ -21,17 +21,21 @@ public class EquipmentDetailWindow : MonoBehaviour
     public Equipment item;
     public InventorySlot inventorySlot;
 
+    public Image NameBackground;
+
     public void UpdateWindowEquipment()
     {
-        nameText.text = LocalizationManager.Instance.GetLocalizationText("equipment." + item.Base.idName) ?? item.Base.idName;
+        this.GetComponent<Outline>().effectColor = Helpers.ReturnRarityColor(item.Rarity);
+        NameBackground.color = Helpers.ReturnRarityColor(item.Rarity);
+        nameText.text = item.Name;
         infoText.text = "";
-        infoText.text += item.Base.group + "\n";
+        infoText.text += LocalizationManager.Instance.GetLocalizationText("groupType." + item.Base.group) + "\n";
 
-        if (item.GetItemType() == ItemType.ARMOR)
+        if (item.GetItemType() == EquipmentType.ARMOR)
         {
             UpdateWindowEquipment_Armor((Armor)item);
         }
-        else if (item.GetItemType() == ItemType.WEAPON)
+        else if (item.GetItemType() == EquipmentType.WEAPON)
         {
             UpdateWindowEquipment_Weapon((Weapon)item);
         }
@@ -61,7 +65,7 @@ public class EquipmentDetailWindow : MonoBehaviour
 
     private static string BuildAffixString(Affix a)
     {
-        string s = "";
+        string s = "○ ";
         foreach (AffixBonusProperty b in a.Base.affixBonuses)
         {
             if (b.bonusType.ToString().Contains("DAMAGE_MAX")) {
@@ -69,8 +73,9 @@ public class EquipmentDetailWindow : MonoBehaviour
             }
             if (b.bonusType.ToString().Contains("DAMAGE_MIN"))
             {
+
                 s += "\t" + (LocalizationManager.Instance.GetLocalizationText("bonusType." + b.bonusType) ?? b.bonusType.ToString()) + " ";
-                s += "+" + a.GetAffixValue(b.bonusType) + "-" + a.GetAffixValue(b.bonusType+1) + "\n";
+                s += "+" + a.GetAffixValue(b.bonusType) + "-" + a.GetAffixValue(b.bonusType + 1) + "\n";
             }
             else
             {
@@ -99,8 +104,6 @@ public class EquipmentDetailWindow : MonoBehaviour
 
     public void UpdateWindowEquipment_Armor(Armor armorItem)
     {
-        this.GetComponent<Image>().color = Helpers.ReturnRarityColor(armorItem.Rarity);
-
         if (armorItem.armor != 0)
             infoText.text += "Armor: " + armorItem.armor + "\n";
         if (armorItem.shield != 0)
@@ -113,10 +116,12 @@ public class EquipmentDetailWindow : MonoBehaviour
 
     public void UpdateWindowEquipment_Weapon(Weapon weaponItem)
     {
-        this.GetComponent<Image>().color = Helpers.ReturnRarityColor(weaponItem.Rarity);
-
         if (weaponItem.physicalDamage.min != 0 && weaponItem.physicalDamage.max != 0)
+        {
+            double dps = (weaponItem.physicalDamage.min + weaponItem.physicalDamage.max) / 2d * weaponItem.attackSpeed;
+            infoText.text += "Physical DPS: " + dps.ToString("F2") + "\n";
             infoText.text += "Damage: " + weaponItem.physicalDamage.min + "-" + weaponItem.physicalDamage.max + "\n";
+        }
         infoText.text += "Critical Chance: " + weaponItem.criticalChance.ToString("F2") + "%\n";
         infoText.text += "Attacks per Second: " + weaponItem.attackSpeed.ToString("F2") + "\n";
         infoText.text += "Range: " + weaponItem.weaponRange.ToString("F2") + "\n";
@@ -136,6 +141,7 @@ public class EquipmentDetailWindow : MonoBehaviour
     {
         item.AddRandomAffix();
         UpdateWindowEquipment();
+        inventorySlot.UpdateSlot();
     }
 
     public void OnUpgradeRarityClick()
@@ -156,18 +162,21 @@ public class EquipmentDetailWindow : MonoBehaviour
     {
         item.RemoveRandomAffix();
         UpdateWindowEquipment();
+        inventorySlot.UpdateSlot();
     }
 
     public void OnRerollClick()
     {
         item.RerollValues();
         UpdateWindowEquipment();
+        inventorySlot.UpdateSlot();
     }
 
     public void OnRerollAffixClick()
     {
         item.RerollAffixesAtRarity();
         UpdateWindowEquipment();
+        inventorySlot.UpdateSlot();
     }
 
     public void SetTransform(int type)

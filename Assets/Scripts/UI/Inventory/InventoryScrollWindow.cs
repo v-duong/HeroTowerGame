@@ -56,7 +56,7 @@ public class InventoryScrollWindow : MonoBehaviour
     {
         Debug.Log(type);
         ClearSlots();
-        List<Equipment> e = GameManager.Instance.PlayerStats.equipmentInventory.FindAll(x => x.Base.equipSlot == type);
+        List<Equipment> e = GameManager.Instance.PlayerStats.equipmentInventory.FindAll(x => x.Base.equipSlot == type && !x.IsEquipped);
         foreach(Equipment equip in e)
         {
             AddEquipmentSlot(equip);

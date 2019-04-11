@@ -1,7 +1,6 @@
-﻿using System.Collections;
+﻿using Newtonsoft.Json;
 using System.Collections.Generic;
 using UnityEngine;
-using Newtonsoft.Json;
 
 public class LocalizationManager : MonoBehaviour
 {
@@ -10,6 +9,7 @@ public class LocalizationManager : MonoBehaviour
     private static readonly string defaultLang = "en-US";
 
     private static Dictionary<string, string> localizationData = new Dictionary<string, string>();
+    private static ItemGenLocalization itemGenLocalization;
 
     private void Awake()
     {
@@ -21,25 +21,20 @@ public class LocalizationManager : MonoBehaviour
         LoadLocalization();
     }
 
-
     private void LoadLocalization(string locale = "en-US")
     {
         if (locale == null)
             locale = defaultLang;
-        string path = "json/localization/" + locale;
-        localizationData = JsonConvert.DeserializeObject<Dictionary<string,string>>(Resources.Load<TextAsset>(path).text);
+        string path = "json/localization/common." + locale;
+        localizationData = JsonConvert.DeserializeObject<Dictionary<string, string>>(Resources.Load<TextAsset>(path).text);
 
-    }
-
-    private T DeserializeFromPath<T>(string path)
-    {
-        return JsonConvert.DeserializeObject<T>(Resources.Load<TextAsset>(path).text);
+        path = "json/localization/itemgen." + locale;
+        itemGenLocalization = JsonConvert.DeserializeObject<ItemGenLocalization>(Resources.Load<TextAsset>(path).text);
     }
 
     public string GetLocalizationText(string stringId)
     {
-        string value = "";
-        if (localizationData.TryGetValue(stringId, out value))
+        if (localizationData.TryGetValue(stringId, out string value))
         {
             if (value == "")
                 return stringId;
@@ -49,5 +44,60 @@ public class LocalizationManager : MonoBehaviour
         {
             return stringId;
         }
+    }
+
+    public string GetLocalizationText_Equipment(string stringId)
+    {
+        if (localizationData.TryGetValue("equipment." + stringId, out string value))
+        {
+            if (value == "")
+                return stringId;
+            return value;
+        }
+        else
+        {
+            return stringId;
+        }
+    }
+
+    public string GenerateRandomItemName(ICollection<GroupType> tags)
+    {
+        if (itemGenLocalization == null)
+        {
+            LoadLocalization();
+        }
+        List<string> prefixes = new List<string>(itemGenLocalization.CommonPrefixes);
+        List<string> suffixes = new List<string>(itemGenLocalization.CommonSuffixes);
+
+        List<string> temp;
+        /*
+        if (itemGenLocalization.prefix.TryGetValue(type, out temp))
+        {
+            prefixes.AddRange(temp);
+        }
+        */
+        foreach (GroupType type in tags)
+        {
+            if (itemGenLocalization.suffix.TryGetValue(type, out temp))
+            {
+                suffixes.AddRange(temp);
+            }
+        }
+
+        string s = "";
+
+        s += prefixes[Random.Range(0, prefixes.Count)] + " ";
+        s += suffixes[Random.Range(0, suffixes.Count)];
+
+        return s;
+    }
+
+    private class ItemGenLocalization
+    {
+        public Dictionary<GroupType, List<string>> prefix;
+        public Dictionary<GroupType, List<string>> suffix;
+
+        public List<string> CommonPrefixes => prefix[GroupType.NO_GROUP];
+        public List<string> CommonSuffixes => suffix[GroupType.NO_GROUP];
     }
 }

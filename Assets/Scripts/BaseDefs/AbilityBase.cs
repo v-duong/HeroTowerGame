@@ -81,7 +81,7 @@ public class MinMaxRange
         max = 0;
     }
 
-    public bool isZero()
+    public bool IsZero()
     {
         if (min == 0 && max == 0)
             return true;

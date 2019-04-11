@@ -18,7 +18,6 @@ public class Archetype : Item, IAbilitySource
     public Archetype(ArchetypeBase b)
     {
         BaseId = b.idName;
-        itemType = GroupType.ARCHETYPE;
         prefixes = new List<Affix>();
         suffixes = new List<Affix>();
         enchantments = new List<Affix>();
@@ -50,6 +49,11 @@ public class Archetype : Item, IAbilitySource
             default:
                 return 40;
         }
+    }
+
+    public override void UpdateName()
+    {
+        return;
     }
 
     public override bool UpgradeRarity()
@@ -157,9 +161,9 @@ public class Archetype : Item, IAbilitySource
         return this.level;
     }
 
-    public override ItemType GetItemType()
+    public override EquipmentType GetItemType()
     {
-        return ItemType.ARCHETYPE;
+        return EquipmentType.ARCHETYPE;
     }
 
     public override bool UpdateItemStats()
@@ -169,8 +173,10 @@ public class Archetype : Item, IAbilitySource
 
     public override HashSet<GroupType> GetGroupTypes()
     {
-        HashSet<GroupType> tags = new HashSet<GroupType>();
-        tags.Add(GroupType.ARCHETYPE);
+        HashSet<GroupType> tags = new HashSet<GroupType>
+        {
+            GroupType.ARCHETYPE
+        };
         return tags;
     }
 }

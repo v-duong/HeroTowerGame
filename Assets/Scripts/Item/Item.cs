@@ -8,7 +8,6 @@ public abstract class Item
     public string Name { get; protected set; }
     public RarityType Rarity { get; protected set; }
     public int ItemLevel { get; protected set; }
-    public GroupType itemType { get; protected set; }
 
     public List<Affix> prefixes;
     public List<Affix> suffixes;
@@ -71,6 +70,7 @@ public abstract class Item
         }
         else
             return false;
+        SortAffixes();
         UpdateItemStats();
         return true;
     }
@@ -80,12 +80,17 @@ public abstract class Item
         if (prefixes.Count == 0 && suffixes.Count == 0 && Rarity == RarityType.NORMAL)
             return false;
 
+
         prefixes.Clear();
         suffixes.Clear();
         if (setRarityToNormal)
+        {
             Rarity = RarityType.NORMAL;
+            UpdateName();
+        }
 
         UpdateItemStats();
+
 
         return true;
     }
@@ -98,10 +103,12 @@ public abstract class Item
             return false;
         if (Rarity == RarityType.UNCOMMON)
         {
+            
             ClearAffixes(false);
             AddRandomAffix();
             if (Random.Range(0, 2) == 0)
                 AddRandomAffix();
+            UpdateName();
             return true;
         }
         else if (Rarity == RarityType.RARE || Rarity == RarityType.EPIC)
@@ -115,6 +122,7 @@ public abstract class Item
                 AddRandomAffix();
                 i++;
             }
+            UpdateName();
             return true;
         }
         return false;
@@ -203,12 +211,22 @@ public abstract class Item
         }
         else
             return false;
+        SortAffixes();
         UpdateItemStats();
         return true;
     }
 
+    private void SortAffixes()
+    {
+        if (Rarity == RarityType.UNIQUE)
+            return;
+        prefixes = prefixes.OrderByDescending(x => x.Base.affixBonuses[0].bonusType).ToList();
+        suffixes = suffixes.OrderByDescending(x => x.Base.affixBonuses[0].bonusType).ToList();
+    }
+
     public abstract bool UpgradeRarity();
-    public abstract ItemType GetItemType();
+    public abstract EquipmentType GetItemType();
     public abstract bool UpdateItemStats();
     public abstract HashSet<GroupType> GetGroupTypes();
+    public abstract void UpdateName();
 }

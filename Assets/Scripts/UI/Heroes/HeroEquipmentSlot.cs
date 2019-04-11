@@ -1,17 +1,18 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-
+using UnityEngine.UI;
 public class HeroEquipmentSlot : MonoBehaviour
 {
     [SerializeField]
     private EquipSlotType slot;
+    public Text slotText;
 
+    public EquipSlotType EquipSlot => slot;
 
     public void OnSlotClick()
     {
         UIManager ui = UIManager.Instance;
-        Debug.Log(slot);
         HeroData hero = ui.HeroDetailWindow.hero;
         ui.InvWindowRect.gameObject.SetActive(true);
 
@@ -26,4 +27,6 @@ public class HeroEquipmentSlot : MonoBehaviour
             ui.InvScrollContent.ShowEquipmentBySlotType(slot);
         }
     }
+
+    
 }
