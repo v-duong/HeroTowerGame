@@ -16,6 +16,7 @@ public class Accessory : Equipment
 
     public override bool UpdateItemStats()
     {
+        base.UpdateItemStats();
         return true;
     }
 

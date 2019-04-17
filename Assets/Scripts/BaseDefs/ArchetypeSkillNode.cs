@@ -8,6 +8,8 @@ public class ArchetypeSkillNode
     [JsonProperty]
     public readonly int id;
     [JsonProperty]
+    public readonly string idName;
+    [JsonProperty]
     public readonly int initialLevel;
     [JsonProperty]
     public readonly int maxLevel;
@@ -35,7 +37,7 @@ public struct ScalingBonusProperty
     [JsonProperty]
     public readonly ModifyType modifyType;
     [JsonProperty]
-    public readonly int intialValue;
+    public readonly int initialValue;
     [JsonProperty]
     public readonly int growthValue;
 }

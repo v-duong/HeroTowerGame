@@ -26,7 +26,8 @@ public class Armor : Equipment
 
     public override bool UpdateItemStats()
     {
-        Dictionary<BonusType, HeroStatBonus> bonusTotals = new Dictionary<BonusType, HeroStatBonus>();
+        base.UpdateItemStats();
+        Dictionary<BonusType, StatBonus> bonusTotals = new Dictionary<BonusType, StatBonus>();
         List<Affix> affixes = new List<Affix>();
         affixes.AddRange(prefixes);
         affixes.AddRange(suffixes);

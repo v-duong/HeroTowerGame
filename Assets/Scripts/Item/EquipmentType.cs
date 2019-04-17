@@ -2,6 +2,5 @@
 {
     ARMOR,
     WEAPON,
-    ACCESSORY,
-    ARCHETYPE
+    ACCESSORY
 }

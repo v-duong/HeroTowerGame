@@ -1,10 +1,13 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
-public abstract class Equipment : Item
+public abstract class Equipment : AffixedItem
 {
+    public static readonly int MaxLevelReq = 95;
     public EquipmentBase Base { get { return ResourceManager.Instance.GetEquipmentBase(BaseId); } }
     private string BaseId { get; set; }
     public float costModifier;
+    public int levelRequirement;
     public int strRequirement;
     public int intRequirement;
     public int agiRequirement;
@@ -32,12 +35,14 @@ public abstract class Equipment : Item
         intRequirement = e.intelligenceReq;
         agiRequirement = e.agilityReq;
         willRequirement = e.willReq;
+        levelRequirement = Math.Min(e.dropLevel, MaxLevelReq);
         Rarity = RarityType.NORMAL;
         ItemLevel = ilvl;
         prefixes = new List<Affix>();
         suffixes = new List<Affix>();
         innate = new List<Affix>();
         equippedToHero = null;
+
         if (e.hasInnate)
         {
             Affix newInnate = new Affix(ResourceManager.Instance.GetAffixBase(e.innateAffixId, AffixType.INNATE));
@@ -61,26 +66,42 @@ public abstract class Equipment : Item
         if (Rarity == RarityType.RARE || Rarity == RarityType.EPIC)
         {
             Name = LocalizationManager.Instance.GenerateRandomItemName(GetGroupTypes());
-        } else if (Rarity == RarityType.UNCOMMON)
+        }
+        else if (Rarity == RarityType.UNCOMMON)
         {
-
-        } else
+        }
+        else
         {
             Name = LocalizationManager.Instance.GetLocalizationText_Equipment(Base.idName);
         }
     }
 
-    protected static void GetLocalModValues(Dictionary<BonusType, HeroStatBonus> dic, List<Affix> affixes, EquipmentType itemType)
+    public override bool UpdateItemStats()
+    {
+        int req = Base.dropLevel;
+
+        List<Affix> affixes = new List<Affix>();
+        affixes.AddRange(prefixes);
+        affixes.AddRange(suffixes);
+
+        foreach (Affix affix in affixes)
+        {
+            if (affix.Base.spawnLevel > req)
+                req = affix.Base.spawnLevel;
+        }
+
+        levelRequirement = Math.Min(req, MaxLevelReq);
+
+        return true;
+    }
+
+    protected static void GetLocalModValues(Dictionary<BonusType, StatBonus> dic, List<Affix> affixes, EquipmentType itemType)
     {
         int startValue = 0;
         switch (itemType)
         {
             case global::EquipmentType.ARMOR:
                 startValue = Armor.LocalBonusStart;
-                break;
-
-            case global::EquipmentType.ARCHETYPE:
-                startValue = Archetype.LocalBonusStart;
                 break;
 
             case global::EquipmentType.WEAPON:
@@ -98,7 +119,7 @@ public abstract class Equipment : Item
                 if ((int)prop.bonusType >= startValue && (int)prop.bonusType < startValue + 0x100)
                 {
                     if (!dic.ContainsKey(prop.bonusType))
-                        dic.Add(prop.bonusType, new HeroStatBonus());
+                        dic.Add(prop.bonusType, new StatBonus());
                     if (prop.modifyType == ModifyType.FLAT_ADDITION)
                         dic[prop.bonusType].AddToFlat(affix.GetAffixValue(prop.bonusType));
                     else if (prop.modifyType == ModifyType.ADDITIVE)
@@ -108,9 +129,9 @@ public abstract class Equipment : Item
         }
     }
 
-    protected static int CalculateStat(int stat, BonusType bonusType, Dictionary<BonusType, HeroStatBonus> dic)
+    protected static int CalculateStat(int stat, BonusType bonusType, Dictionary<BonusType, StatBonus> dic)
     {
-        if (dic.TryGetValue(bonusType, out HeroStatBonus bonus))
+        if (dic.TryGetValue(bonusType, out StatBonus bonus))
         {
             return bonus.CalculateStat(stat);
         }
@@ -120,9 +141,9 @@ public abstract class Equipment : Item
         }
     }
 
-    protected static double CalculateStat(double stat, BonusType bonusType, Dictionary<BonusType, HeroStatBonus> dic)
+    protected static double CalculateStat(double stat, BonusType bonusType, Dictionary<BonusType, StatBonus> dic)
     {
-        if (dic.TryGetValue(bonusType, out HeroStatBonus bonus))
+        if (dic.TryGetValue(bonusType, out StatBonus bonus))
         {
             return bonus.CalculateStat(stat);
         }

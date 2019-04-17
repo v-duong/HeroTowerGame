@@ -2,12 +2,13 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 public class HeroSlot : MonoBehaviour
 {
     public HeroData hero;
     public Image slotImage;
-    public Text nameText;
+    public TextMeshProUGUI nameText;
 
     public void UpdateSlot()
     {

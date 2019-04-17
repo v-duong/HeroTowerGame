@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using UnityEngine;
 
 public class HeroData : ActorData
 {
@@ -22,23 +21,14 @@ public class HeroData : ActorData
     public int AttackPhasing { get; private set; }
     public int MagicPhasing { get; private set; }
 
-    protected Dictionary<BonusType, HeroStatBonus> statBonuses;
-    /*
-    private Equipment headgear;
-    private Equipment bodyArmor;
-    private Equipment gloves;
-    private Equipment boots;
-    private Equipment belt;
-    private Equipment ring1;
-    private Equipment ring2;
-    private Equipment necklace;
-    private Equipment mainHand;
-    private Equipment offHand;
-    private Archetype archetype;
-    private Archetype subArchetype;
-    */
+    protected Dictionary<BonusType, StatBonus> statBonuses;
+    protected Dictionary<BonusType, StatBonus> archetypeStatBonuses;
+    protected Dictionary<BonusType, StatBonus> attributeStatBonuses;
+
     private Equipment[] equipList;
+
     private Archetype[] archetypeList;
+
     private List<AbilitySlot> abilityList;
 
     public HeroData()
@@ -66,11 +56,12 @@ public class HeroData : ActorData
         Resistances = new ElementResistances();
         equipList = new Equipment[10];
         archetypeList = new Archetype[2];
-        statBonuses = new Dictionary<BonusType, HeroStatBonus>();
+        statBonuses = new Dictionary<BonusType, StatBonus>();
+        archetypeStatBonuses = new Dictionary<BonusType, StatBonus>();
+        attributeStatBonuses = new Dictionary<BonusType, StatBonus>();
         abilityList = new List<AbilitySlot>();
         UpdateHeroAllStats();
-    } 
-
+    }
 
     public void LevelUp()
     {
@@ -82,12 +73,10 @@ public class HeroData : ActorData
         BaseAgility += a.agilityGrowth;
         BaseWill += a.willGrowth;
 
-        UpdateHeroAttributes(true);
+        UpdateHeroAttributes();
         ApplyHealthBonuses();
         ApplySoulPointBonuses();
     }
-
-
 
     public bool EquipAbility(AbilityBase ability, int slot, IAbilitySource source)
     {
@@ -174,7 +163,7 @@ public class HeroData : ActorData
         {
             foreach (AffixBonusProperty b in affix.Base.affixBonuses)
             {
-                if (b.bonusType < (BonusType)0x600) //ignore local mods
+                if (b.bonusType < (BonusType)0x700) //ignore local mods
                     AddStatBonus(affix.GetAffixValue(b.bonusType), b.bonusType, b.modifyType);
             }
         }
@@ -186,7 +175,7 @@ public class HeroData : ActorData
         {
             foreach (AffixBonusProperty b in affix.Base.affixBonuses)
             {
-                if (b.bonusType < (BonusType)0x600) //ignore local mods
+                if (b.bonusType < (BonusType)0x700) //ignore local mods
                     RemoveStatBonus(affix.GetAffixValue(b.bonusType), b.bonusType, b.modifyType);
             }
         }
@@ -195,7 +184,7 @@ public class HeroData : ActorData
     public void AddStatBonus(int value, BonusType type, ModifyType modifier)
     {
         if (!statBonuses.ContainsKey(type))
-            statBonuses.Add(type, new HeroStatBonus());
+            statBonuses.Add(type, new StatBonus());
         switch (modifier)
         {
             case ModifyType.FLAT_ADDITION:
@@ -241,238 +230,215 @@ public class HeroData : ActorData
         UpdateHeroAttributes();
         ApplyHealthBonuses();
         ApplySoulPointBonuses();
-        ApplyMagicPhasingBonuses();
-        ApplyAttackPhasingBonuses();
+        CalculateDefenses();
+        AttackPhasing = CalculateHeroStat(BonusType.ATTACK_PHASING, BaseAttackPhasing);
+        MagicPhasing = CalculateHeroStat(BonusType.MAGIC_PHASING, BaseMagicPhasing);
     }
 
     public void UpdateHeroDefenses()
     {
         ApplyHealthBonuses();
-        ApplyShieldBonuses();
         ApplySoulPointBonuses();
-        ApplyDodgeRatingBonuses();
-        ApplyResolveBonuses();
-        ApplyArmorBonuses();
-        ApplyMagicPhasingBonuses();
-        ApplyAttackPhasingBonuses();
+        CalculateDefenses();
+        AttackPhasing = CalculateHeroStat(BonusType.ATTACK_PHASING, BaseAttackPhasing);
+        MagicPhasing = CalculateHeroStat(BonusType.MAGIC_PHASING, BaseMagicPhasing);
     }
 
-    public void UpdateHeroAttributes(bool force = false)
+    public void UpdateHeroAttributes()
     {
-        if (statBonuses.ContainsKey(BonusType.STRENGTH) && statBonuses[BonusType.STRENGTH].isStatOutdated)
-        {
-            Strength = statBonuses[BonusType.STRENGTH].CalculateStat((int)Math.Round(BaseStrength, MidpointRounding.AwayFromZero));
-        }
-        else if (!statBonuses.ContainsKey(BonusType.STRENGTH))
-            Strength = (int)Math.Round(BaseStrength, MidpointRounding.AwayFromZero);
+        Strength = (int)Math.Round(CalculateHeroStat(BonusType.STRENGTH, BaseStrength));
         ApplyStrengthBonuses();
 
-        if (statBonuses.ContainsKey(BonusType.INTELLIGENCE) && statBonuses[BonusType.INTELLIGENCE].isStatOutdated)
-        {
-            Intelligence = statBonuses[BonusType.INTELLIGENCE].CalculateStat((int)Math.Round(BaseIntelligence, MidpointRounding.AwayFromZero));
-        } else if (!statBonuses.ContainsKey(BonusType.INTELLIGENCE))
-            Intelligence = (int)Math.Round(BaseIntelligence, MidpointRounding.AwayFromZero);
+        Intelligence = (int)Math.Round(CalculateHeroStat(BonusType.INTELLIGENCE, BaseIntelligence));
         ApplyIntelligenceBonuses();
 
-        if (statBonuses.ContainsKey(BonusType.AGILITY) && statBonuses[BonusType.AGILITY].isStatOutdated)
-        {
-            Agility = statBonuses[BonusType.AGILITY].CalculateStat((int)Math.Round(BaseAgility, MidpointRounding.AwayFromZero));
-        }
-        else if (!statBonuses.ContainsKey(BonusType.AGILITY))
-            Agility = (int)Math.Round(BaseAgility, MidpointRounding.AwayFromZero);
+        Agility = (int)Math.Round(CalculateHeroStat(BonusType.AGILITY, BaseAgility));
         ApplyAgilityBonuses();
 
-        if (statBonuses.ContainsKey(BonusType.WILL) && statBonuses[BonusType.WILL].isStatOutdated)
-        {
-            Will = statBonuses[BonusType.WILL].CalculateStat((int)Math.Round(BaseWill, MidpointRounding.AwayFromZero));
-        }
-        else if (!statBonuses.ContainsKey(BonusType.WILL))
-            Will = (int)Math.Round(BaseWill, MidpointRounding.AwayFromZero);
+        Will = (int)Math.Round(CalculateHeroStat(BonusType.WILL, BaseWill));
         ApplyWillBonuses();
     }
 
     public void ApplyStrengthBonuses()
     {
-        int armorMod = (int)Math.Round((double)Strength / 5, MidpointRounding.AwayFromZero);
-        int attackDamageMod = (int)Math.Round((double)Strength / 10, MidpointRounding.AwayFromZero);
+        /*
+         * +1% Armor per 5 Str
+         * +1% Attack Damage per 10 Str
+         */
+        int armorMod = (int)Math.Round(Strength / 5d, MidpointRounding.AwayFromZero);
+        int attackDamageMod = (int)Math.Round(Strength / 10d, MidpointRounding.AwayFromZero);
 
-        if (!statBonuses.ContainsKey(BonusType.GLOBAL_ARMOR))
-            statBonuses.Add(BonusType.GLOBAL_ARMOR, new HeroStatBonus());
-        statBonuses[BonusType.GLOBAL_ARMOR].SetAdditiveAttributes(armorMod);
+        if (!attributeStatBonuses.ContainsKey(BonusType.GLOBAL_ARMOR))
+            attributeStatBonuses.Add(BonusType.GLOBAL_ARMOR, new StatBonus());
+        attributeStatBonuses[BonusType.GLOBAL_ARMOR].SetAdditive(armorMod);
 
-        if (!statBonuses.ContainsKey(BonusType.ATTACK_DAMAGE))
-            statBonuses.Add(BonusType.ATTACK_DAMAGE, new HeroStatBonus());
-        statBonuses[BonusType.ATTACK_DAMAGE].SetAdditiveAttributes(attackDamageMod);
-
-        ApplyArmorBonuses();
+        if (!attributeStatBonuses.ContainsKey(BonusType.ATTACK_DAMAGE))
+            attributeStatBonuses.Add(BonusType.ATTACK_DAMAGE, new StatBonus());
+        attributeStatBonuses[BonusType.ATTACK_DAMAGE].SetAdditive(attackDamageMod);
     }
 
     public void ApplyIntelligenceBonuses()
     {
-        int shieldMod = (int)Math.Round((double)Intelligence / 5, MidpointRounding.AwayFromZero);
-        int spellDamageMod = (int)Math.Round((double)Intelligence / 10, MidpointRounding.AwayFromZero);
+        /*
+         * +1% Shield per 5 Int
+         * +1% Spell Damage per 10 Int
+         */
+        int shieldMod = (int)Math.Round(Intelligence / 5d, MidpointRounding.AwayFromZero);
+        int spellDamageMod = (int)Math.Round(Intelligence / 10d, MidpointRounding.AwayFromZero);
 
-        if (!statBonuses.ContainsKey(BonusType.GLOBAL_MAX_SHIELD))
-            statBonuses.Add(BonusType.GLOBAL_MAX_SHIELD, new HeroStatBonus());
-        statBonuses[BonusType.GLOBAL_MAX_SHIELD].SetAdditiveAttributes(shieldMod);
+        if (!attributeStatBonuses.ContainsKey(BonusType.GLOBAL_MAX_SHIELD))
+            attributeStatBonuses.Add(BonusType.GLOBAL_MAX_SHIELD, new StatBonus());
+        attributeStatBonuses[BonusType.GLOBAL_MAX_SHIELD].SetAdditive(shieldMod);
 
-        if (!statBonuses.ContainsKey(BonusType.SPELL_DAMAGE))
-            statBonuses.Add(BonusType.SPELL_DAMAGE, new HeroStatBonus());
-        statBonuses[BonusType.SPELL_DAMAGE].SetAdditiveAttributes(spellDamageMod);
-
-        ApplyShieldBonuses();
+        if (!attributeStatBonuses.ContainsKey(BonusType.SPELL_DAMAGE))
+            attributeStatBonuses.Add(BonusType.SPELL_DAMAGE, new StatBonus());
+        attributeStatBonuses[BonusType.SPELL_DAMAGE].SetAdditive(spellDamageMod);
     }
 
     public void ApplyAgilityBonuses()
     {
-        int dodgeRatingMod = (int)Math.Round((double)Agility / 5, MidpointRounding.AwayFromZero);
-        int attackSpeedMod = (int)Math.Round((double)Agility / 25, MidpointRounding.AwayFromZero);
-        int castSpeedMod = (int)Math.Round((double)Agility / 25, MidpointRounding.AwayFromZero);
+        /*
+         * +1% Dodge per 5 Agi
+         * +1% Attack/Cast Speed per 25 Agi
+         */
+        int dodgeRatingMod = (int)Math.Round(Agility / 5d, MidpointRounding.AwayFromZero);
+        int attackSpeedMod = (int)Math.Round(Agility / 25d, MidpointRounding.AwayFromZero);
+        int castSpeedMod = (int)Math.Round(Agility / 25d, MidpointRounding.AwayFromZero);
 
-        if (!statBonuses.ContainsKey(BonusType.GLOBAL_DODGE_RATING))
-            statBonuses.Add(BonusType.GLOBAL_DODGE_RATING, new HeroStatBonus());
-        statBonuses[BonusType.GLOBAL_DODGE_RATING].SetAdditiveAttributes(dodgeRatingMod);
+        if (!attributeStatBonuses.ContainsKey(BonusType.GLOBAL_DODGE_RATING))
+            attributeStatBonuses.Add(BonusType.GLOBAL_DODGE_RATING, new StatBonus());
+        attributeStatBonuses[BonusType.GLOBAL_DODGE_RATING].SetAdditive(dodgeRatingMod);
 
-        if (!statBonuses.ContainsKey(BonusType.GLOBAL_ATTACK_SPEED))
-            statBonuses.Add(BonusType.GLOBAL_ATTACK_SPEED, new HeroStatBonus());
-        statBonuses[BonusType.GLOBAL_ATTACK_SPEED].SetAdditiveAttributes(attackSpeedMod);
+        if (!attributeStatBonuses.ContainsKey(BonusType.GLOBAL_ATTACK_SPEED))
+            attributeStatBonuses.Add(BonusType.GLOBAL_ATTACK_SPEED, new StatBonus());
+        attributeStatBonuses[BonusType.GLOBAL_ATTACK_SPEED].SetAdditive(attackSpeedMod);
 
-        if (!statBonuses.ContainsKey(BonusType.CAST_SPEED))
-            statBonuses.Add(BonusType.CAST_SPEED, new HeroStatBonus());
-        statBonuses[BonusType.CAST_SPEED].SetAdditiveAttributes(castSpeedMod);
-
-        ApplyDodgeRatingBonuses();
+        if (!attributeStatBonuses.ContainsKey(BonusType.CAST_SPEED))
+            attributeStatBonuses.Add(BonusType.CAST_SPEED, new StatBonus());
+        attributeStatBonuses[BonusType.CAST_SPEED].SetAdditive(castSpeedMod);
     }
 
     public void ApplyWillBonuses()
     {
-        int resolveRatingMod = (int)Math.Round((double)Will / 5, MidpointRounding.AwayFromZero);
-        int auraEffectMod = (int)Math.Round((double)Will / 20, MidpointRounding.AwayFromZero);
+        /*
+         * +1% Resolve per 5 Will
+         * +1% Aura Effect per 20 Will
+         */
+        int resolveRatingMod = (int)Math.Round(Will / 5d, MidpointRounding.AwayFromZero);
+        int auraEffectMod = (int)Math.Round(Will / 20d, MidpointRounding.AwayFromZero);
 
-        if (!statBonuses.ContainsKey(BonusType.GLOBAL_RESOLVE_RATING))
-            statBonuses.Add(BonusType.GLOBAL_RESOLVE_RATING, new HeroStatBonus());
-        statBonuses[BonusType.GLOBAL_RESOLVE_RATING].SetAdditiveAttributes(resolveRatingMod);
+        if (!attributeStatBonuses.ContainsKey(BonusType.GLOBAL_RESOLVE_RATING))
+            attributeStatBonuses.Add(BonusType.GLOBAL_RESOLVE_RATING, new StatBonus());
+        attributeStatBonuses[BonusType.GLOBAL_RESOLVE_RATING].SetAdditive(resolveRatingMod);
 
-        if (!statBonuses.ContainsKey(BonusType.AURA_EFFECT))
-            statBonuses.Add(BonusType.AURA_EFFECT, new HeroStatBonus());
-        statBonuses[BonusType.AURA_EFFECT].SetFlatAttributes(auraEffectMod);
-
-        ApplyResolveBonuses();
+        if (!attributeStatBonuses.ContainsKey(BonusType.AURA_EFFECT))
+            attributeStatBonuses.Add(BonusType.AURA_EFFECT, new StatBonus());
+        attributeStatBonuses[BonusType.AURA_EFFECT].SetAdditive(auraEffectMod);
     }
 
     public void ApplyHealthBonuses()
     {
         double percentage = CurrentHealth / MaximumHealth;
-        if (statBonuses.ContainsKey(BonusType.MAX_HEALTH))
-            MaximumHealth = statBonuses[BonusType.MAX_HEALTH].CalculateStat((int)Math.Round(BaseHealth, MidpointRounding.AwayFromZero));
-        else
-            MaximumHealth = (int)Math.Round(BaseHealth, MidpointRounding.AwayFromZero);
+        MaximumHealth = (int)Math.Round(CalculateHeroStat(BonusType.MAX_HEALTH, BaseHealth));
         CurrentHealth = (float)(MaximumHealth * percentage);
     }
 
     public void ApplySoulPointBonuses()
     {
         double percentage = CurrentSoulPoints / MaximumSoulPoints;
-        if (statBonuses.ContainsKey(BonusType.MAX_SOULPOINTS))
-            MaximumSoulPoints = statBonuses[BonusType.MAX_SOULPOINTS].CalculateStat((int)Math.Round(BaseSoulPoints, MidpointRounding.AwayFromZero));
-        else
-            MaximumSoulPoints = (int)Math.Round(BaseSoulPoints, MidpointRounding.AwayFromZero);
+        MaximumSoulPoints = (int)Math.Round(CalculateHeroStat(BonusType.MAX_SOULPOINTS, BaseSoulPoints));
         CurrentSoulPoints = (float)(MaximumSoulPoints * percentage);
     }
 
-    public void ApplyShieldBonuses()
+    public void CalculateDefenses()
     {
-        int StatFromEquip = 0;
+        int ArmorFromEquip = 0;
+        int ShieldFromEquip = 0;
+        int DodgeFromEquip = 0;
+        int ResolveFromEquip = 0;
         foreach (Equipment e in equipList)
         {
             if (e != null && e.GetItemType() == EquipmentType.ARMOR)
             {
-                StatFromEquip += ((Armor)e).shield;
+                Armor equip = e as Armor;
+                ArmorFromEquip += equip.armor;
+                ShieldFromEquip += equip.shield;
+                DodgeFromEquip += equip.dodgeRating;
+                ResolveFromEquip += equip.resolveRating;
             }
         }
-        double percentage = CurrentManaShield / MaximumManaShield;
-        if (statBonuses.ContainsKey(BonusType.GLOBAL_MAX_SHIELD))
-            MaximumManaShield = statBonuses[BonusType.GLOBAL_MAX_SHIELD].CalculateStat(BaseManaShield + StatFromEquip);
-        else
-            MaximumManaShield = BaseManaShield + StatFromEquip;
-        CurrentManaShield = (float)(MaximumManaShield * percentage);
+
+        Armor = CalculateHeroStat(BonusType.GLOBAL_ARMOR, BaseArmor + ArmorFromEquip);
+        MaximumManaShield = CalculateHeroStat(BonusType.GLOBAL_MAX_SHIELD, BaseManaShield + ShieldFromEquip);
+        DodgeRating = CalculateHeroStat(BonusType.GLOBAL_DODGE_RATING, BaseDodgeRating + DodgeFromEquip);
+        ResolveRating = CalculateHeroStat(BonusType.GLOBAL_RESOLVE_RATING, BaseResolveRating + ResolveFromEquip);
     }
 
-    public void ApplyArmorBonuses()
+    public int CalculateHeroStat(BonusType type, int stat)
     {
-        int StatFromEquip = 0;
-        foreach (Equipment e in equipList)
+        return (int)Math.Round(CalculateHeroStat(type, (double)stat));
+    }
+
+    public double CalculateHeroStat(BonusType type, double stat)
+    {
+        bool hasStatBonus = false, hasAttributeBonus = false, hasArchetypeBonus = false;
+
+        if (statBonuses.TryGetValue(type, out StatBonus bonus))
+            hasStatBonus = true;
+        if (attributeStatBonuses.TryGetValue(type, out StatBonus attributeBonus))
+            hasAttributeBonus = true;
+        if (archetypeStatBonuses.TryGetValue(type, out StatBonus archetypeBonus))
+            hasArchetypeBonus = true;
+
+        if (!hasAttributeBonus && !hasStatBonus && !hasArchetypeBonus)
         {
-            if (e != null && e.GetItemType() == EquipmentType.ARMOR)
-            {
-                StatFromEquip += ((Armor)e).armor;
-            }
+            return stat;
         }
-        if (statBonuses.ContainsKey(BonusType.GLOBAL_ARMOR))
-            Armor = statBonuses[BonusType.GLOBAL_ARMOR].CalculateStat(BaseArmor + StatFromEquip);
-        else
-            Armor = BaseArmor + StatFromEquip;
-    }
 
-    public void ApplyDodgeRatingBonuses()
-    {
-        int StatFromEquip = 0;
-        foreach (Equipment e in equipList)
+        if (hasArchetypeBonus && archetypeBonus.hasSetModifier)
         {
-            if (e != null && e.GetItemType() == EquipmentType.ARMOR)
-            {
-                StatFromEquip += ((Armor)e).dodgeRating;
-            }
+            return archetypeBonus.setModifier;
         }
-        if (statBonuses.ContainsKey(BonusType.GLOBAL_DODGE_RATING))
-            DodgeRating = statBonuses[BonusType.GLOBAL_DODGE_RATING].CalculateStat(BaseDodgeRating + StatFromEquip);
-        else
-            DodgeRating = BaseDodgeRating + StatFromEquip;
-    }
-
-    public void ApplyResolveBonuses()
-    {
-        int StatFromEquip = 0;
-        foreach (Equipment e in equipList)
+        else if (hasStatBonus && bonus.hasSetModifier)
         {
-            if (e != null && e.GetItemType() == EquipmentType.ARMOR)
-            {
-                StatFromEquip += ((Armor)e).resolveRating;
-            }
+            return bonus.setModifier;
         }
-        if (statBonuses.ContainsKey(BonusType.GLOBAL_RESOLVE_RATING))
-            ResolveRating = statBonuses[BonusType.GLOBAL_RESOLVE_RATING].CalculateStat(BaseResolveRating + StatFromEquip);
-        else
-            ResolveRating = BaseResolveRating + StatFromEquip;
+
+        double flat = 0;
+        int additive = 0;
+        double multiplier = 1.0d;
+
+        if (hasStatBonus)
+        {
+            flat += bonus.FlatModifier;
+            additive += bonus.AdditiveModifier;
+            multiplier *= bonus.CurrentMultiplier;
+        }
+        if (hasArchetypeBonus)
+        {
+            flat += archetypeBonus.FlatModifier;
+            additive += archetypeBonus.AdditiveModifier;
+            multiplier *= archetypeBonus.CurrentMultiplier;
+        }
+        if (hasAttributeBonus)
+        {
+            flat += attributeBonus.FlatModifier;
+            additive += attributeBonus.AdditiveModifier;
+            multiplier *= attributeBonus.CurrentMultiplier;
+        }
+
+        return (stat + flat) * (1 + (double)(additive) / 100) * multiplier;
     }
 
-    public void ApplyAttackPhasingBonuses()
+    public class AbilitySlot
     {
-        if (statBonuses.ContainsKey(BonusType.ATTACK_PHASING))
-            AttackPhasing = statBonuses[BonusType.ATTACK_PHASING].CalculateStat(BaseAttackPhasing);
-        else
-            AttackPhasing = BaseAttackPhasing;
-    }
+        public string AbilityId { get; private set; }
+        public IAbilitySource Source { get; private set; }
 
-    public void ApplyMagicPhasingBonuses()
-    {
-        if (statBonuses.ContainsKey(BonusType.MAGIC_PHASING))
-            MagicPhasing = statBonuses[BonusType.MAGIC_PHASING].CalculateStat(BaseAttackPhasing);
-        else
-            MagicPhasing = BaseMagicPhasing;
-    }
-
-}
-
-
-public class AbilitySlot
-{
-    public string AbilityId { get; private set; }
-    public IAbilitySource Source { get; private set; }
-
-    public void SetAbilityToSlot(string id , IAbilitySource s)
-    {
-        AbilityId = id;
-        Source = s;
+        public void SetAbilityToSlot(string id, IAbilitySource s)
+        {
+            AbilityId = id;
+            Source = s;
+        }
     }
 }

@@ -25,7 +25,7 @@ public class CameraController : MonoBehaviour
         }
 
 
-        if (!Input.GetMouseButton(0)) isPanning = false;
+        if (!Input.GetMouseButton(0)) isDragging = false;
 
         if (isDragging)
         {

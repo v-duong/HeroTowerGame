@@ -31,15 +31,15 @@ public class InventoryScrollWindow : MonoBehaviour
 
     private void InitializeInventorySlots(List<Equipment> equipmentInventory)
     {
-        foreach (Item item in equipmentInventory)
+        foreach (AffixedItem item in equipmentInventory)
         {
             AddEquipmentSlot(item);
         }
     }
 
-    public void InitializeInventorySlots(List<Item> list)
+    public void InitializeInventorySlots(List<AffixedItem> list)
     {
-        foreach (Item item in list)
+        foreach (AffixedItem item in list)
         {
             AddEquipmentSlot(item);
         }
@@ -54,7 +54,6 @@ public class InventoryScrollWindow : MonoBehaviour
 
     public void ShowEquipmentBySlotType(EquipSlotType type)
     {
-        Debug.Log(type);
         ClearSlots();
         List<Equipment> e = GameManager.Instance.PlayerStats.equipmentInventory.FindAll(x => x.Base.equipSlot == type && !x.IsEquipped);
         foreach(Equipment equip in e)
@@ -72,7 +71,7 @@ public class InventoryScrollWindow : MonoBehaviour
         SlotsInUse.Clear();
     }
 
-    public void AddEquipmentSlot(Item item)
+    public void AddEquipmentSlot(AffixedItem item)
     {
         InventorySlot slot;
         slot = InventorySlotPool.GetSlot();
@@ -82,7 +81,7 @@ public class InventoryScrollWindow : MonoBehaviour
         slot.UpdateSlot();
     }
 
-    public void RemoveEquipmentSlot(Item item)
+    public void RemoveEquipmentSlot(AffixedItem item)
     {
         InventorySlot slot = SlotsInUse.Find(x => x.item == item);
         slot.gameObject.SetActive(false);

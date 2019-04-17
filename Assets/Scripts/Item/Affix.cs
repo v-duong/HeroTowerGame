@@ -10,7 +10,7 @@ public class Affix
     public AffixType AffixType { get; private set; }
 
 
-    public Affix(AffixBase a)
+    public Affix(AffixBase a, bool locked = false)
     {
         BaseId = a.idName;
         affixValues = new Dictionary<BonusType, int>();
@@ -19,6 +19,7 @@ public class Affix
         {
             affixValues.Add(mod.bonusType, Random.Range(mod.minValue, mod.maxValue + 1));
         }
+
     }
 
     public void RerollValue()

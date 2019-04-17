@@ -87,12 +87,6 @@ public enum BonusType
     ATTACK_VOID_DAMAGE_MAX,
     ATTACK_CRITICAL_CHANCE,
     ATTACK_CRITICAL_DAMAGE,
-    ARCHETYPE_STRENGTH = Archetype.LocalBonusStart, // start of local archetype mods
-    ARCHETYPE_INTELLIGENCE,
-    ARCHETYPE_AGILITY,
-    ARCHETYPE_WILL,
-    ARCHETYPE_MAX_HEALTH,
-    ARCHETYPE_MAX_SOULPOINTS,
     LOCAL_MAX_SHIELD = Armor.LocalBonusStart, // local armor mods
     LOCAL_ARMOR,
     LOCAL_DODGE_RATING,

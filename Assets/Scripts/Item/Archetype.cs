@@ -1,27 +1,21 @@
 ﻿using System.Collections.Generic;
 
-public class Archetype : Item, IAbilitySource
+public class Archetype : Item
 {
-    public const int LocalBonusStart = 0x600;
     public ArchetypeBase Base { get { return ResourceManager.Instance.GetArchetypeBase(BaseId); } }
     private string BaseId { get; set; }
 
-    public int level;
-    public int experience;
-    public int skillPoints;
+
+    public int allocatedSkillPoints;
     public HeroData equippedToHero;
-    public List<Affix> innate;
-    public List<Affix> enchantments;
+
 
     private Dictionary<int, NodeLevel> nodeLevels;
 
     public Archetype(ArchetypeBase b)
     {
         BaseId = b.idName;
-        prefixes = new List<Affix>();
-        suffixes = new List<Affix>();
-        enchantments = new List<Affix>();
-        innate = new List<Affix>();
+
         nodeLevels = new Dictionary<int, NodeLevel>();
         foreach (var node in b.nodeList)
         {
@@ -31,55 +25,6 @@ public class Archetype : Item, IAbilitySource
                 bonusLevels = 0
             };
             nodeLevels.Add(node.id, n);
-        }
-    }
-
-    public int GetMaxLevel()
-    {
-        switch (Rarity)
-        {
-            case RarityType.EPIC:
-            case RarityType.RARE:
-                return 50;
-
-            case RarityType.UNCOMMON:
-                return 45;
-
-            case RarityType.NORMAL:
-            default:
-                return 40;
-        }
-    }
-
-    public override void UpdateName()
-    {
-        return;
-    }
-
-    public override bool UpgradeRarity()
-    {
-        if (Rarity == RarityType.EPIC)
-            return false;
-        Rarity++;
-        return true;
-    }
-
-    public override int GetAffixCap()
-    {
-        switch (Rarity)
-        {
-            case RarityType.EPIC:
-                return 3;
-
-            case RarityType.RARE:
-                return 2;
-
-            case RarityType.UNCOMMON:
-                return 1;
-
-            case RarityType.NORMAL:
-            default:
-                return 0;
         }
     }
 
@@ -94,7 +39,7 @@ public class Archetype : Item, IAbilitySource
         {
             if (nodeLevel.level == 1)
             {
-                equippedToHero.AddStatBonus(bonus.intialValue, bonus.bonusType, bonus.modifyType);
+                equippedToHero.AddStatBonus(bonus.initialValue, bonus.bonusType, bonus.modifyType);
                 if (nodeLevel.bonusLevels > 0)
                 {
                     equippedToHero.AddStatBonus(bonus.growthValue * nodeLevel.bonusLevels, bonus.bonusType, bonus.modifyType);
@@ -118,7 +63,7 @@ public class Archetype : Item, IAbilitySource
         {
             if (nodeLevel.level == 0)
             {
-                equippedToHero.RemoveStatBonus(bonus.intialValue, bonus.bonusType, bonus.modifyType);
+                equippedToHero.RemoveStatBonus(bonus.initialValue, bonus.bonusType, bonus.modifyType);
                 if (nodeLevel.bonusLevels > 0)
                 {
                     equippedToHero.RemoveStatBonus(bonus.growthValue * nodeLevel.bonusLevels, bonus.bonusType, bonus.modifyType);
@@ -156,27 +101,4 @@ public class Archetype : Item, IAbilitySource
         return true;
     }
 
-    public int GetAbilityLevel()
-    {
-        return this.level;
-    }
-
-    public override EquipmentType GetItemType()
-    {
-        return EquipmentType.ARCHETYPE;
-    }
-
-    public override bool UpdateItemStats()
-    {
-        return true;
-    }
-
-    public override HashSet<GroupType> GetGroupTypes()
-    {
-        HashSet<GroupType> tags = new HashSet<GroupType>
-        {
-            GroupType.ARCHETYPE
-        };
-        return tags;
-    }
 }

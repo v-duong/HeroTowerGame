@@ -18,34 +18,52 @@ public class EquipmentDetailWindow : MonoBehaviour
     [SerializeField]
     public GameObject EquipButtonParent;
 
-    public Equipment item;
+    public Equipment equip;
     public InventorySlot inventorySlot;
 
     public Image NameBackground;
 
     public void UpdateWindowEquipment()
     {
-        this.GetComponent<Outline>().effectColor = Helpers.ReturnRarityColor(item.Rarity);
-        NameBackground.color = Helpers.ReturnRarityColor(item.Rarity);
-        nameText.text = item.Name;
+        this.GetComponent<Outline>().effectColor = Helpers.ReturnRarityColor(equip.Rarity);
+        NameBackground.color = Helpers.ReturnRarityColor(equip.Rarity);
+        nameText.text = equip.Name;
         infoText.text = "";
-        infoText.text += LocalizationManager.Instance.GetLocalizationText("groupType." + item.Base.group) + "\n";
-
-        if (item.GetItemType() == EquipmentType.ARMOR)
+        infoText.text += LocalizationManager.Instance.GetLocalizationText("groupType." + equip.Base.group) + "\n";
+        infoText.text += "Requirements: Lv" + equip.levelRequirement;
+        if (equip.strRequirement > 0)
         {
-            UpdateWindowEquipment_Armor((Armor)item);
+            infoText.text += ", " + equip.strRequirement + " Str";
         }
-        else if (item.GetItemType() == EquipmentType.WEAPON)
+        if (equip.intRequirement > 0)
         {
-            UpdateWindowEquipment_Weapon((Weapon)item);
+            infoText.text += ", " + equip.intRequirement + " Int";
+        }
+        if (equip.agiRequirement > 0)
+        {
+            infoText.text += ", " + equip.agiRequirement + " Agi";
+        }
+        if (equip.willRequirement > 0)
+        {
+            infoText.text += ", " + equip.willRequirement + " Will";
+        }
+        infoText.text += "\n";
+
+        if (equip.GetItemType() == EquipmentType.ARMOR)
+        {
+            UpdateWindowEquipment_Armor((Armor)equip);
+        }
+        else if (equip.GetItemType() == EquipmentType.WEAPON)
+        {
+            UpdateWindowEquipment_Weapon((Weapon)equip);
         }
 
         affixText.text = "";
 
-        if (item.prefixes.Count > 0)
+        if (equip.prefixes.Count > 0)
         {
             affixText.text += "Prefix\n";
-            foreach (Affix a in item.prefixes)
+            foreach (Affix a in equip.prefixes)
             {
                 affixText.text += BuildAffixString(a);
             }
@@ -53,10 +71,10 @@ public class EquipmentDetailWindow : MonoBehaviour
 
         affixText.text += "\n";
 
-        if (item.suffixes.Count > 0)
+        if (equip.suffixes.Count > 0)
         {
             affixText.text += "Suffix\n";
-            foreach (Affix a in item.suffixes)
+            foreach (Affix a in equip.suffixes)
             {
                 affixText.text += BuildAffixString(a);
             }
@@ -139,42 +157,42 @@ public class EquipmentDetailWindow : MonoBehaviour
 
     public void OnAddAffixClick()
     {
-        item.AddRandomAffix();
+        equip.AddRandomAffix();
         UpdateWindowEquipment();
         inventorySlot.UpdateSlot();
     }
 
     public void OnUpgradeRarityClick()
     {
-        item.UpgradeRarity();
+        equip.UpgradeRarity();
         UpdateWindowEquipment();
         inventorySlot.UpdateSlot();
     }
 
     public void OnResetClick()
     {
-        item.ClearAffixes();
+        equip.ClearAffixes();
         UpdateWindowEquipment();
         inventorySlot.UpdateSlot();
     }
 
     public void OnRemoveAffixClick()
     {
-        item.RemoveRandomAffix();
+        equip.RemoveRandomAffix();
         UpdateWindowEquipment();
         inventorySlot.UpdateSlot();
     }
 
     public void OnRerollClick()
     {
-        item.RerollValues();
+        equip.RerollValues();
         UpdateWindowEquipment();
         inventorySlot.UpdateSlot();
     }
 
     public void OnRerollAffixClick()
     {
-        item.RerollAffixesAtRarity();
+        equip.RerollAffixesAtRarity();
         UpdateWindowEquipment();
         inventorySlot.UpdateSlot();
     }
@@ -193,7 +211,7 @@ public class EquipmentDetailWindow : MonoBehaviour
     public void OnEquipClick()
     {
         UIManager ui = UIManager.Instance;
-        ui.HeroDetailWindow.hero.EquipToSlot(item, ui.SlotContext);
+        ui.HeroDetailWindow.hero.EquipToSlot(equip, ui.SlotContext);
         ui.CloseInventoryWindows();
         ui.HeroDetailWindow.UpdateWindow();
     }

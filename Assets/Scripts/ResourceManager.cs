@@ -1,6 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Jobs;
 
 public class ResourceManager : MonoBehaviour
 {
@@ -163,9 +164,9 @@ public class ResourceManager : MonoBehaviour
                 {
                     if (tags.Contains(affixWeight.type) || affixWeight.type == GroupType.NO_GROUP)
                     {
+
                         if (affixWeight.weight == 0)
                             break;
-                        //Debug.Log(affixBase.name + " " + affixWeight.type + " " + affixWeight.weight);
                         sum += affixWeight.weight;
                         possibleAffixList.Add(affixBase, affixWeight.weight);
                         break;
@@ -191,11 +192,12 @@ public class ResourceManager : MonoBehaviour
 
     private void LoadEquipment()
     {
+
         equipmentList = new Dictionary<string, EquipmentBase>();
 
         List<EquipmentBase> temp = DeserializeFromPath<List<EquipmentBase>>("json/items/armor");
         foreach (EquipmentBase equip in temp)
-        {
+        { 
             equipmentList.Add(equip.idName, equip);
         }
 
@@ -210,6 +212,8 @@ public class ResourceManager : MonoBehaviour
         {
             equipmentList.Add(equip.idName, equip);
         }
+        
+
     }
 
     private void LoadArchetypes()

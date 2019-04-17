@@ -1,14 +1,17 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class InventorySlot : MonoBehaviour
 {
-    public Item item;
+    public AffixedItem item;
     public Image slotImage;
-    public Text nameText;
-    public Text infoText;
+    public TextMeshProUGUI nameText;
+    public TextMeshProUGUI infoText;
+
+    
 
     public void UpdateSlot()
     {
@@ -51,7 +54,7 @@ public class InventorySlot : MonoBehaviour
             itemWindow.UpgradeButtonParent.SetActive(true);
         }
         itemWindow.gameObject.SetActive(true);
-        itemWindow.item = (Equipment)item;
+        itemWindow.equip = (Equipment)item;
         itemWindow.inventorySlot = this;
         itemWindow.UpdateWindowEquipment();
     }
