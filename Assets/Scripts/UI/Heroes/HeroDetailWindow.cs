@@ -64,9 +64,7 @@ public class HeroDetailWindow : MonoBehaviour
     public void ClickPrimaryTree()
     {
         ArchetypeUITreeWindow treeWindow = UIManager.Instance.ArchetypeTreeWindow;
-        treeWindow.secondaryTreeParent.gameObject.SetActive(false);
-        treeWindow.primaryTreeParent.gameObject.SetActive(true);
-        treeWindow.ScrollView.content = treeWindow.primaryTreeParent.rectTransform;
+        treeWindow.OpenPrimaryTree();
         UIManager.Instance.OpenWindow(treeWindow.gameObject);
         if (treeWindow.hero != hero) 
             treeWindow.InitializeTree(hero);
@@ -75,9 +73,7 @@ public class HeroDetailWindow : MonoBehaviour
     public void ClickSecondaryTree()
     {
         ArchetypeUITreeWindow treeWindow = UIManager.Instance.ArchetypeTreeWindow;
-        treeWindow.primaryTreeParent.gameObject.SetActive(false);
-        treeWindow.secondaryTreeParent.gameObject.SetActive(true);
-        treeWindow.ScrollView.content = treeWindow.secondaryTreeParent.rectTransform;
+        treeWindow.OpenSecondaryTree();
         UIManager.Instance.OpenWindow(treeWindow.gameObject);
         if (treeWindow.hero != hero)
             treeWindow.InitializeTree(hero);
