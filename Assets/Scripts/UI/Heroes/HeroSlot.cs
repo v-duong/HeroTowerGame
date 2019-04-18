@@ -9,6 +9,7 @@ public class HeroSlot : MonoBehaviour
     public HeroData hero;
     public Image slotImage;
     public TextMeshProUGUI nameText;
+    public TextMeshProUGUI archetypeText;
 
     public void UpdateSlot()
     {
@@ -17,7 +18,7 @@ public class HeroSlot : MonoBehaviour
     public void OnHeroSlotClick()
     {
         HeroDetailWindow detailWindow = UIManager.Instance.HeroDetailWindow;
-        detailWindow.gameObject.SetActive(true);
+        UIManager.Instance.OpenWindow(detailWindow.gameObject);
         detailWindow.hero = hero;
         detailWindow.heroSlot = this;
         detailWindow.UpdateWindow();

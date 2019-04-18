@@ -25,6 +25,11 @@ public class HeroScrollWindow : MonoBehaviour
         SlotsInUse.Add(slot);
         slot.hero = hero;
         slot.nameText.text = hero.Name;
+        slot.archetypeText.text = hero.PrimaryArchetype.Base.idName;
+        if (hero.SecondaryArchetype != null)
+        {
+            slot.archetypeText.text += "\n" + hero.SecondaryArchetype.Base.idName;
+        }
         slot.UpdateSlot();
     }
 

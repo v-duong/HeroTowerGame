@@ -26,7 +26,7 @@ public abstract class Equipment : AffixedItem
         }
     }
 
-    public Equipment(EquipmentBase e, int ilvl)
+    protected Equipment(EquipmentBase e, int ilvl)
     {
         BaseId = e.idName;
         Name = LocalizationManager.Instance.GetLocalizationText("equipment." + e.idName);
@@ -48,6 +48,30 @@ public abstract class Equipment : AffixedItem
             Affix newInnate = new Affix(ResourceManager.Instance.GetAffixBase(e.innateAffixId, AffixType.INNATE));
             innate.Add(newInnate);
         }
+    }
+
+
+    public static Equipment CreateEquipmentFromBase(EquipmentBase equipmentBase, int ilvl)
+    {
+        Equipment e;
+        if (equipmentBase.equipSlot == EquipSlotType.WEAPON)
+        {
+            e = new Weapon(equipmentBase, ilvl);
+        }
+        else if ((int)equipmentBase.equipSlot >= 6)
+        {
+            e = new Accessory(equipmentBase, ilvl);
+        }
+        else
+        {
+            e = new Armor(equipmentBase, ilvl);
+        }
+        return e;
+    }
+
+    public static Equipment CreateRandomEquipment(int ilvl, GroupType? group = null)
+    {
+        return CreateEquipmentFromBase(ResourceManager.Instance.GetRandomEquipmentBase(ilvl, group), ilvl);
     }
 
     public override bool UpgradeRarity()
@@ -152,4 +176,6 @@ public abstract class Equipment : AffixedItem
             return stat;
         }
     }
+
+
 }

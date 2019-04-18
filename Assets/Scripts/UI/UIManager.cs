@@ -1,30 +1,54 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class UIManager : MonoBehaviour {
+public class UIManager : MonoBehaviour
+{
     public static UIManager Instance { get; private set; }
     public static int MenuBarSize = 60;
     private Canvas _invCanvas;
     private Canvas _heroCanvas;
+    private Canvas _archetypeCanvas;
     private ScrollRect _invWindowRect;
     private EquipmentDetailWindow _itemWindow;
     private InventoryScrollWindow _invWindow;
     private HeroDetailWindow _heroWindow;
     private HeroScrollWindow _heroScrollWindow;
     private ScrollRect _heroWindowRect;
+    private ArchetypeUITreeWindow _archetypeTreeWindow;
     public readonly Vector2 referenceResolution = new Vector2(480, 854);
     public readonly Vector2 fullWindowSize = new Vector2(480, 854 - MenuBarSize);
     public readonly Vector2 itemWindowSize = new Vector2(400, 640);
     public EquipSlotType SlotContext;
     public bool IsEquipSelectMode = false;
+    public GameObject currentWindow;
+    public Stack<GameObject> previousWindows = new Stack<GameObject>();
 
-    public Canvas currentActive;
+    public void OpenWindow(GameObject window)
+    {
+        if (currentWindow != null)
+        {
+            previousWindows.Push(currentWindow);
+            currentWindow.SetActive(false);
+        }
+        currentWindow = window;
+        window.SetActive(true);
+    }
 
+    public void CloseCurrentWindow()
+    {
+        currentWindow.SetActive(false);
+        if (previousWindows.Count > 0)
+        {
+            currentWindow = previousWindows.Pop();
+            currentWindow.SetActive(true);
+        }
+    }
 
-    public Canvas InvCanvas {
-        get {
+    public Canvas InvCanvas
+    {
+        get
+        {
             if (_invCanvas == null)
                 _invCanvas = GameObject.FindGameObjectWithTag("InventoryCanvas").GetComponent<Canvas>();
             return _invCanvas;
@@ -38,6 +62,16 @@ public class UIManager : MonoBehaviour {
             if (_heroCanvas == null)
                 _heroCanvas = GameObject.FindGameObjectWithTag("HeroCanvas").GetComponent<Canvas>();
             return _heroCanvas;
+        }
+    }
+
+    public Canvas ArchetypeCanvas
+    {
+        get
+        {
+            if (_archetypeCanvas == null)
+                _archetypeCanvas = GameObject.FindGameObjectWithTag("ArchetypeCanvas").GetComponent<Canvas>();
+            return _archetypeCanvas;
         }
     }
 
@@ -63,7 +97,8 @@ public class UIManager : MonoBehaviour {
 
     public EquipmentDetailWindow EquipDetailWindow
     {
-        get {
+        get
+        {
             if (_itemWindow == null)
                 _itemWindow = InvCanvas.GetComponentInChildren<EquipmentDetailWindow>(true);
             return _itemWindow;
@@ -100,6 +135,16 @@ public class UIManager : MonoBehaviour {
         }
     }
 
+    public ArchetypeUITreeWindow ArchetypeTreeWindow
+    {
+        get
+        {
+            if (_archetypeTreeWindow == null)
+                _archetypeTreeWindow = ArchetypeCanvas.GetComponentInChildren<ArchetypeUITreeWindow>(true);
+            return _archetypeTreeWindow;
+        }
+    }
+
     private void Start()
     {
         Instance = this;
@@ -109,6 +154,8 @@ public class UIManager : MonoBehaviour {
     {
         CloseInventoryWindows();
         CloseHeroWindows();
+        previousWindows.Clear();
+        currentWindow = null;
     }
 
     public void CloseInventoryWindows()
@@ -123,20 +170,15 @@ public class UIManager : MonoBehaviour {
         HeroDetailWindow.gameObject.SetActive(false);
     }
 
-    public void ToggleInventoryWindow()
+    public void OpenInventoryWindow(bool closeWindows = true)
     {
         GameObject target = InvWindowRect.gameObject;
-        CloseAllWindows();
-        SetInventoryScrollRectTransform(0);
+        if (closeWindows)
+            CloseAllWindows();
+        //SetInventoryScrollRectTransform(0);
         this.EquipDetailWindow.HideButtons();
-        if (!target.activeSelf)
-        {
-            target.SetActive(true);
-            InvScrollContent.ShowAllEquipment();
-        }
-        else
-            target.SetActive(false);
-
+        OpenWindow(target);
+        InvScrollContent.ShowAllEquipment();
     }
 
     public void SetInventoryScrollRectTransform(int type)
@@ -146,6 +188,4 @@ public class UIManager : MonoBehaviour {
             InvWindowRect.GetComponent<RectTransform>().sizeDelta = fullWindowSize;
         }
     }
-
-
 }

@@ -1,41 +1,33 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine.UI;
-using UnityEngine;
-using UnityEngine.Events;
+﻿using UnityEngine;
 
 public class MenuButton : MonoBehaviour
 {
     public void OnClickInvToggle()
     {
-        UIManager.Instance.IsEquipSelectMode = false;
-        UIManager.Instance.ToggleInventoryWindow();
+        UIManager.Instance.OpenInventoryWindow();
     }
-
 
     public void OnClickHeroToggle()
     {
-        GameObject target = UIManager.Instance.HeroWindowRect.gameObject;
-        UIManager.Instance.CloseInventoryWindows();
-        UIManager.Instance.HeroDetailWindow.gameObject.SetActive(false);
-        if (!target.activeSelf)
-            target.SetActive(true);
-        else
-            target.SetActive(false);
+        UIManager ui = UIManager.Instance;
+        ui.CloseAllWindows();
+        ui.OpenWindow(UIManager.Instance.HeroWindowRect.gameObject);
     }
 
     public void AddItem()
     {
-        Equipment equipment = ResourceManager.Instance.CreateRandomEquipment(100);
+        Equipment equipment = Equipment.CreateRandomEquipment(100);
         GameManager.Instance.PlayerStats.AddEquipmentToInventory(equipment);
     }
 
     public void AddHero()
     {
-        HeroData hero = new HeroData
-        {
-            Name = "TEST " + UnityEngine.Random.Range(2, 321)
-        };
+        HeroData hero = HeroData.CreateNewHero("TEST " + Random.Range(1, 321), new HeroArchetypeData(ArchetypeItem.CreateRandomArchetypeItem(100)), new HeroArchetypeData(ArchetypeItem.CreateRandomArchetypeItem(100)));
         GameManager.Instance.PlayerStats.AddHeroToList(hero);
+    }
+
+    public void CloseWindow()
+    {
+        UIManager.Instance.CloseCurrentWindow();
     }
 }

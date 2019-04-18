@@ -1,23 +1,36 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
 
-public class Archetype : Item
+public class HeroArchetypeData
 {
     public ArchetypeBase Base { get { return ResourceManager.Instance.GetArchetypeBase(BaseId); } }
     private string BaseId { get; set; }
-
-
     public int allocatedSkillPoints;
     public HeroData equippedToHero;
 
+    public float healthGrowth;
+    public float soulPointGrowth;
+    public float strengthGrowth;
+    public float intelligenceGrowth;
+    public float agilityGrowth;
+    public float willGrowth;
 
     private Dictionary<int, NodeLevel> nodeLevels;
 
-    public Archetype(ArchetypeBase b)
+    public HeroArchetypeData(ArchetypeItem archetypeItem)
     {
-        BaseId = b.idName;
+        BaseId = archetypeItem.Base.idName;
+
+        healthGrowth = Base.healthGrowth;
+        soulPointGrowth = Base.soulPointGrowth;
+        strengthGrowth = Base.strengthGrowth;
+        intelligenceGrowth = Base.intelligenceGrowth;
+        agilityGrowth = Base.agilityGrowth;
+        willGrowth = Base.willGrowth;
 
         nodeLevels = new Dictionary<int, NodeLevel>();
-        foreach (var node in b.nodeList)
+        foreach (var node in Base.nodeList)
         {
             NodeLevel n = new NodeLevel
             {
@@ -100,5 +113,4 @@ public class Archetype : Item
     {
         return true;
     }
-
 }

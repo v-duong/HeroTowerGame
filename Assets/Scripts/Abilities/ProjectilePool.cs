@@ -5,7 +5,7 @@ using UnityEngine;
 public class ProjectilePool : ObjectPool<Projectile>
 {
 
-    public ProjectilePool(Projectile prefab) : base(prefab, 1)
+    public ProjectilePool(Projectile prefab) : base(prefab, 40)
     { 
     }
 

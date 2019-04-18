@@ -26,20 +26,28 @@ public class HeroData : ActorData
     protected Dictionary<BonusType, StatBonus> attributeStatBonuses;
 
     private Equipment[] equipList;
-
-    private Archetype[] archetypeList;
-
+    private HeroArchetypeData[] archetypeList;
     private List<AbilitySlot> abilityList;
 
-    public HeroData()
+    public HeroArchetypeData PrimaryArchetype => archetypeList[0];
+    public HeroArchetypeData SecondaryArchetype => archetypeList[1];
+
+
+    private HeroData()
     {
         Initialize();
     }
 
-    public void Initialize()
+    private HeroData(string name)
+    {
+        Initialize(name);
+    }
+
+    public void Initialize(string name = "")
     {
         Id = 0;
-        Level = 1;
+        Name = name;
+        Level = 0;
         Experience = 0;
         BaseHealth = 100;
         BaseSoulPoints = 50;
@@ -55,7 +63,7 @@ public class HeroData : ActorData
         BaseMagicPhasing = 0;
         Resistances = new ElementResistances();
         equipList = new Equipment[10];
-        archetypeList = new Archetype[2];
+        archetypeList = new HeroArchetypeData[2];
         statBonuses = new Dictionary<BonusType, StatBonus>();
         archetypeStatBonuses = new Dictionary<BonusType, StatBonus>();
         attributeStatBonuses = new Dictionary<BonusType, StatBonus>();
@@ -63,15 +71,25 @@ public class HeroData : ActorData
         UpdateHeroAllStats();
     }
 
+    public static HeroData CreateNewHero(string name, HeroArchetypeData primaryArchetype, HeroArchetypeData subArchetype = null)
+    {
+        HeroData hero = new HeroData(name);
+        hero.archetypeList[0] = primaryArchetype;
+        hero.archetypeList[1] = subArchetype;
+        hero.LevelUp();
+        return hero;
+    }
+
     public void LevelUp()
     {
-        ArchetypeBase a = archetypeList[0].Base;
-        BaseHealth += a.healthGrowth;
-        BaseSoulPoints += a.soulPointGrowth;
-        BaseStrength += a.strengthGrowth;
-        BaseIntelligence += a.intelligenceGrowth;
-        BaseAgility += a.agilityGrowth;
-        BaseWill += a.willGrowth;
+        Level++;
+        HeroArchetypeData primaryArchetype = archetypeList[0];
+        BaseHealth += primaryArchetype.healthGrowth;
+        BaseSoulPoints += primaryArchetype.soulPointGrowth;
+        BaseStrength += primaryArchetype.strengthGrowth;
+        BaseIntelligence += primaryArchetype.intelligenceGrowth;
+        BaseAgility += primaryArchetype.agilityGrowth;
+        BaseWill += primaryArchetype.willGrowth;
 
         UpdateHeroAttributes();
         ApplyHealthBonuses();
@@ -246,16 +264,16 @@ public class HeroData : ActorData
 
     public void UpdateHeroAttributes()
     {
-        Strength = (int)Math.Round(CalculateHeroStat(BonusType.STRENGTH, BaseStrength));
+        Strength = (int)Math.Round(CalculateHeroStat(BonusType.STRENGTH, BaseStrength), MidpointRounding.AwayFromZero);
         ApplyStrengthBonuses();
 
-        Intelligence = (int)Math.Round(CalculateHeroStat(BonusType.INTELLIGENCE, BaseIntelligence));
+        Intelligence = (int)Math.Round(CalculateHeroStat(BonusType.INTELLIGENCE, BaseIntelligence), MidpointRounding.AwayFromZero);
         ApplyIntelligenceBonuses();
 
-        Agility = (int)Math.Round(CalculateHeroStat(BonusType.AGILITY, BaseAgility));
+        Agility = (int)Math.Round(CalculateHeroStat(BonusType.AGILITY, BaseAgility), MidpointRounding.AwayFromZero);
         ApplyAgilityBonuses();
 
-        Will = (int)Math.Round(CalculateHeroStat(BonusType.WILL, BaseWill));
+        Will = (int)Math.Round(CalculateHeroStat(BonusType.WILL, BaseWill), MidpointRounding.AwayFromZero);
         ApplyWillBonuses();
     }
 
@@ -339,14 +357,14 @@ public class HeroData : ActorData
     public void ApplyHealthBonuses()
     {
         double percentage = CurrentHealth / MaximumHealth;
-        MaximumHealth = (int)Math.Round(CalculateHeroStat(BonusType.MAX_HEALTH, BaseHealth));
+        MaximumHealth = (int)Math.Round(CalculateHeroStat(BonusType.MAX_HEALTH, BaseHealth), MidpointRounding.AwayFromZero);
         CurrentHealth = (float)(MaximumHealth * percentage);
     }
 
     public void ApplySoulPointBonuses()
     {
         double percentage = CurrentSoulPoints / MaximumSoulPoints;
-        MaximumSoulPoints = (int)Math.Round(CalculateHeroStat(BonusType.MAX_SOULPOINTS, BaseSoulPoints));
+        MaximumSoulPoints = (int)Math.Round(CalculateHeroStat(BonusType.MAX_SOULPOINTS, BaseSoulPoints), MidpointRounding.AwayFromZero);
         CurrentSoulPoints = (float)(MaximumSoulPoints * percentage);
     }
 
@@ -376,7 +394,7 @@ public class HeroData : ActorData
 
     public int CalculateHeroStat(BonusType type, int stat)
     {
-        return (int)Math.Round(CalculateHeroStat(type, (double)stat));
+        return (int)Math.Round(CalculateHeroStat(type, (double)stat), MidpointRounding.AwayFromZero);
     }
 
     public double CalculateHeroStat(BonusType type, double stat)

@@ -36,9 +36,9 @@ public class GameManager : MonoBehaviour
 
 #endif
         PlayerStats = new PlayerStats();
-        for (int i = 0; i < 20; i ++)
+        for (int i = 0; i < 80; i ++)
         {
-            Equipment equipment = ResourceManager.Instance.CreateRandomEquipment(100);
+            Equipment equipment = Equipment.CreateRandomEquipment(100);
             equipment.SetRarity((RarityType)Random.Range(1, 4));
             equipment.RerollAffixesAtRarity();
             PlayerStats.equipmentInventory.Add(equipment);

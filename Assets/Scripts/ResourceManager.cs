@@ -55,7 +55,28 @@ public class ResourceManager : MonoBehaviour
             return null;
     }
 
-    public EquipmentBase GetRandomEquipmentBase(int ilvl, GroupType? group = null)
+    public ArchetypeBase GetRandomArchetypeBase(int ilvl)
+    {
+        if (archetypeList == null)
+            LoadArchetypes();
+
+        WeightList<ArchetypeBase> possibleArchetypeList = new WeightList<ArchetypeBase>();
+        int sum = 0;
+
+        foreach (ArchetypeBase archetype in archetypeList.Values)
+        {
+            if (archetype.dropLevel <= ilvl)
+            {
+                possibleArchetypeList.Add(archetype, archetype.spawnWeight);
+                sum += archetype.spawnWeight;
+            }
+        }
+        if (possibleArchetypeList.Count == 0)
+            return null;
+        return possibleArchetypeList.ReturnWeightedRandom();
+    }
+
+    public EquipmentBase GetRandomEquipmentBase(int ilvl, GroupType? group = null, EquipSlotType? slot = null)
     {
         if (equipmentList == null)
             LoadEquipment();
@@ -66,6 +87,9 @@ public class ResourceManager : MonoBehaviour
         foreach (EquipmentBase equipment in equipmentList.Values)
         {
             if (group != null && equipment.group != group)
+                continue;
+
+            if (slot != null && equipment.equipSlot != slot)
                 continue;
 
             if (equipment.dropLevel <= ilvl)
@@ -79,28 +103,6 @@ public class ResourceManager : MonoBehaviour
         return possibleEquipList.ReturnWeightedRandom();
     }
 
-    public static Equipment CreateEquipmentFromBase(EquipmentBase equipmentBase, int ilvl)
-    {
-        Equipment e;
-        if (equipmentBase.equipSlot == EquipSlotType.WEAPON)
-        {
-            e = new Weapon(equipmentBase, ilvl);
-        }
-        else if ((int)equipmentBase.equipSlot >= 6)
-        {
-            e = new Accessory(equipmentBase, ilvl);
-        }
-        else
-        {
-            e = new Armor(equipmentBase, ilvl);
-        }
-        return e;
-    }
-
-    public Equipment CreateRandomEquipment(int ilvl, GroupType? group = null)
-    {
-        return CreateEquipmentFromBase(GetRandomEquipmentBase(ilvl, group), ilvl);
-    }
 
     public AffixBase GetAffixBase(string id, AffixType type)
     {

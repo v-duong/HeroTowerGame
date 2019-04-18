@@ -19,15 +19,7 @@ public class InventoryScrollWindow : MonoBehaviour
     }
     private List<InventorySlot> SlotsInUse = new List<InventorySlot>();
 
-    public InventoryScrollWindow ()
-    {
 
-    }
-
-    private void Awake()
-    {
-
-    }
 
     private void InitializeInventorySlots(List<Equipment> equipmentInventory)
     {

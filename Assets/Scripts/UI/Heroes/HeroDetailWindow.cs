@@ -19,6 +19,13 @@ public class HeroDetailWindow : MonoBehaviour
         nameText.text = hero.Name;
 
         infoText.text = "";
+        infoText.text += "Archetype: " + hero.PrimaryArchetype.Base.idName;
+        if (hero.SecondaryArchetype != null)
+        {
+            infoText.text += "/" + hero.SecondaryArchetype.Base.idName + "\n";
+        } else {
+            infoText.text += "\n";
+        }
         infoText.text += "Level: " + hero.Level + "\n";
         infoText.text += "Experience: " + hero.Experience + "\n\n";
         infoText.text += "Health: " + hero.MaximumHealth + "\n";
@@ -52,5 +59,27 @@ public class HeroDetailWindow : MonoBehaviour
             this.gameObject.SetActive(true);
         else
             this.gameObject.SetActive(false);
+    }
+
+    public void ClickPrimaryTree()
+    {
+        ArchetypeUITreeWindow treeWindow = UIManager.Instance.ArchetypeTreeWindow;
+        treeWindow.secondaryTreeParent.gameObject.SetActive(false);
+        treeWindow.primaryTreeParent.gameObject.SetActive(true);
+        treeWindow.ScrollView.content = treeWindow.primaryTreeParent.rectTransform;
+        UIManager.Instance.OpenWindow(treeWindow.gameObject);
+        if (treeWindow.hero != hero) 
+            treeWindow.InitializeTree(hero);
+        
+    }
+    public void ClickSecondaryTree()
+    {
+        ArchetypeUITreeWindow treeWindow = UIManager.Instance.ArchetypeTreeWindow;
+        treeWindow.primaryTreeParent.gameObject.SetActive(false);
+        treeWindow.secondaryTreeParent.gameObject.SetActive(true);
+        treeWindow.ScrollView.content = treeWindow.secondaryTreeParent.rectTransform;
+        UIManager.Instance.OpenWindow(treeWindow.gameObject);
+        if (treeWindow.hero != hero)
+            treeWindow.InitializeTree(hero);
     }
 }
