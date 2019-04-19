@@ -71,11 +71,11 @@ public class HeroData : ActorData
         UpdateHeroAllStats();
     }
 
-    public static HeroData CreateNewHero(string name, HeroArchetypeData primaryArchetype, HeroArchetypeData subArchetype = null)
+    public static HeroData CreateNewHero(string name, ArchetypeItem primaryArchetype, ArchetypeItem subArchetype = null)
     {
         HeroData hero = new HeroData(name);
-        hero.archetypeList[0] = primaryArchetype;
-        hero.archetypeList[1] = subArchetype;
+        hero.archetypeList[0] = new HeroArchetypeData(primaryArchetype, hero);
+        hero.archetypeList[1] = new HeroArchetypeData(subArchetype, hero);
         hero.LevelUp();
         return hero;
     }
@@ -199,6 +199,7 @@ public class HeroData : ActorData
         }
     }
 
+
     public void AddStatBonus(int value, BonusType type, ModifyType modifier)
     {
         if (!statBonuses.ContainsKey(type))
@@ -236,6 +237,50 @@ public class HeroData : ActorData
 
             case ModifyType.MULTIPLY:
                 statBonuses[type].RemoveFromMultiply(value);
+                break;
+
+            default:
+                return;
+        }
+    }
+
+    public void AddArchetypeStatBonus(int value, BonusType type, ModifyType modifier)
+    {
+        if (!archetypeStatBonuses.ContainsKey(type))
+            archetypeStatBonuses.Add(type, new StatBonus());
+        switch (modifier)
+        {
+            case ModifyType.FLAT_ADDITION:
+                archetypeStatBonuses[type].AddToFlat(value);
+                break;
+
+            case ModifyType.ADDITIVE:
+                archetypeStatBonuses[type].AddToAdditive(value);
+                break;
+
+            case ModifyType.MULTIPLY:
+                archetypeStatBonuses[type].AddToMultiply(value);
+                break;
+
+            default:
+                return;
+        }
+    }
+
+    public void RemoveArchetypeStatBonus(int value, BonusType type, ModifyType modifier)
+    {
+        switch (modifier)
+        {
+            case ModifyType.FLAT_ADDITION:
+                archetypeStatBonuses[type].AddToFlat(-value);
+                break;
+
+            case ModifyType.ADDITIVE:
+                archetypeStatBonuses[type].AddToAdditive(-value);
+                break;
+
+            case ModifyType.MULTIPLY:
+                archetypeStatBonuses[type].RemoveFromMultiply(value);
                 break;
 
             default:

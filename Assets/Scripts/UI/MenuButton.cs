@@ -22,7 +22,7 @@ public class MenuButton : MonoBehaviour
 
     public void AddHero()
     {
-        HeroData hero = HeroData.CreateNewHero("TEST " + Random.Range(1, 321), new HeroArchetypeData(ArchetypeItem.CreateRandomArchetypeItem(100)), new HeroArchetypeData(ArchetypeItem.CreateRandomArchetypeItem(100)));
+        HeroData hero = HeroData.CreateNewHero("TEST " + Random.Range(1, 321), ArchetypeItem.CreateRandomArchetypeItem(100), ArchetypeItem.CreateRandomArchetypeItem(100));
         GameManager.Instance.PlayerStats.AddHeroToList(hero);
     }
 

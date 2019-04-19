@@ -62,19 +62,19 @@ public static class Pathfinding
         r.Add(v);
     }
 
-    public static List<Vector3> GetTileNeighbor(Tilemap t, Vector3 v)
+    public static List<Vector3> GetTileNeighbor(Tilemap t, Vector3 vector)
     {
         List<Vector3> ret = new List<Vector3>();
-        Vector3Int v2 = t.WorldToCell(v);
+        Vector3Int baseVector = t.WorldToCell(vector);
 
-        if (t.GetTile(v2 + Vector3Int.up) != null)
-            ret.Add(v + Vector3.up);
-        if (t.GetTile(v2 + Vector3Int.down) != null)
-            ret.Add(v + Vector3.down);
-        if (t.GetTile(v2 + Vector3Int.left) != null)
-            ret.Add(v + Vector3.left);
-        if (t.GetTile(v2 + Vector3Int.right) != null)
-            ret.Add(v + Vector3.right);
+        if (t.GetTile(baseVector + Vector3Int.up) != null)
+            ret.Add(vector + Vector3.up);
+        if (t.GetTile(baseVector + Vector3Int.down) != null)
+            ret.Add(vector + Vector3.down);
+        if (t.GetTile(baseVector + Vector3Int.left) != null)
+            ret.Add(vector + Vector3.left);
+        if (t.GetTile(baseVector + Vector3Int.right) != null)
+            ret.Add(vector + Vector3.right);
 
         return ret;
     }

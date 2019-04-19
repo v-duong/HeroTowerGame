@@ -16,6 +16,7 @@ public class UIManager : MonoBehaviour
     private HeroScrollWindow _heroScrollWindow;
     private ScrollRect _heroWindowRect;
     private ArchetypeUITreeWindow _archetypeTreeWindow;
+    private ArchetypeNodeInfoPanel _archetypeNodeInfoPanel;
     public readonly Vector2 referenceResolution = new Vector2(480, 854);
     public readonly Vector2 fullWindowSize = new Vector2(480, 854 - MenuBarSize);
     public readonly Vector2 itemWindowSize = new Vector2(400, 640);
@@ -142,6 +143,16 @@ public class UIManager : MonoBehaviour
             if (_archetypeTreeWindow == null)
                 _archetypeTreeWindow = ArchetypeCanvas.GetComponentInChildren<ArchetypeUITreeWindow>(true);
             return _archetypeTreeWindow;
+        }
+    }
+
+    public ArchetypeNodeInfoPanel ArchetypeNodeInfoPanel
+    {
+        get
+        {
+            if (_archetypeNodeInfoPanel == null)
+                _archetypeNodeInfoPanel = ArchetypeCanvas.GetComponentInChildren<ArchetypeNodeInfoPanel>(true);
+            return _archetypeNodeInfoPanel;
         }
     }
 

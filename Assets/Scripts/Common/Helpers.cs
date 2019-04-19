@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public static class Helpers
 {
@@ -8,6 +9,32 @@ public static class Helpers
     public static readonly Color UNCOMMON_COLOR = new Color(0.4f, 0.7f, 0.9f);
     public static readonly Color RARE_COLOR = new Color(1.0f, 0.9f, 0.25f);
     public static readonly Color NORMAL_COLOR = new Color(0.7f, 0.7f, 0.7f);
+
+    public static ColorBlock enabledBlock;
+    public static ColorBlock disabledBlock;
+
+    public static ColorBlock GetEnabledColorBlock()
+    {
+        if (enabledBlock == null)
+        {
+            enabledBlock = new ColorBlock();
+            enabledBlock.normalColor = new Color(1,1,1,1);
+            enabledBlock.colorMultiplier = 1;
+        }
+        return enabledBlock;
+    }
+
+    public static ColorBlock GetDisabledColorBlock()
+    {
+        if (disabledBlock == null)
+        {
+            disabledBlock = new ColorBlock();
+            disabledBlock.normalColor = new Color(0.5f, 0.5f, 0.5f, 1);
+            disabledBlock.colorMultiplier = 1;
+        }
+        return disabledBlock;
+    }
+
 
     public static Vector3 ReturnCenterOfCell(Vector3 v)
     {

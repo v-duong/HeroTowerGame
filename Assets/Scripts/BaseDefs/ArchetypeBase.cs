@@ -28,5 +28,10 @@ public class ArchetypeBase
     public readonly int spawnWeight;
     [JsonProperty]
     public readonly List<ArchetypeSkillNode> nodeList;
+
+    public ArchetypeSkillNode GetNode(int index)
+    {
+        return nodeList[index];
+    }
 }
 

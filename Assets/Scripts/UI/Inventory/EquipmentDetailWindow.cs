@@ -92,29 +92,12 @@ public class EquipmentDetailWindow : MonoBehaviour
             if (b.bonusType.ToString().Contains("DAMAGE_MIN"))
             {
 
-                s += "\t" + (LocalizationManager.Instance.GetLocalizationText("bonusType." + b.bonusType) ?? b.bonusType.ToString()) + " ";
+                s += "\t" + LocalizationManager.Instance.GetLocalizationText("bonusType." + b.bonusType) + " ";
                 s += "+" + a.GetAffixValue(b.bonusType) + "-" + a.GetAffixValue(b.bonusType + 1) + "\n";
             }
             else
             {
-                s += "\t" + (LocalizationManager.Instance.GetLocalizationText("bonusType." + b.bonusType) ?? b.bonusType.ToString()) + " ";
-
-                if (b.modifyType == ModifyType.FLAT_ADDITION)
-                {
-                    s += "+" + a.GetAffixValue(b.bonusType) + "\n";
-                }
-                else if (b.modifyType == ModifyType.ADDITIVE)
-                {
-                    s += "+" + a.GetAffixValue(b.bonusType) + "%" + "\n";
-                }
-                else if (b.modifyType == ModifyType.MULTIPLY)
-                {
-                    s += "x" + (1 + a.GetAffixValue(b.bonusType) / 100d).ToString("F2") + "\n";
-                }
-                else if (b.modifyType == ModifyType.SET)
-                {
-                    s += "is" + a.GetAffixValue(b.bonusType) + "\n";
-                }
+                s += "\t" + LocalizationManager.Instance.GetLocalizationText_BonusType(b.bonusType, b.modifyType, a.GetAffixValue(b.bonusType));
             }
         }
         return s;

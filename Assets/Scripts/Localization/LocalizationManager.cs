@@ -60,6 +60,41 @@ public class LocalizationManager : MonoBehaviour
         }
     }
 
+    public string GetLocalizationText_BonusType(BonusType type, ModifyType modifyType, double value)
+    {
+        string output = "";
+        if (localizationData.TryGetValue("bonusType." + type.ToString(), out output))
+        {
+            if (output == "")
+            {
+                output = type.ToString();
+            }
+        }
+        else
+        {
+            output = type.ToString();
+        }
+
+        if (modifyType == ModifyType.FLAT_ADDITION)
+        {
+            output += " +" + value + "\n";
+        }
+        else if (modifyType == ModifyType.ADDITIVE)
+        {
+            output += " +" + value + "%" + "\n";
+        }
+        else if (modifyType == ModifyType.MULTIPLY)
+        {
+            output += " x" + (1 + value / 100d).ToString("F2") + "\n";
+        }
+        else if (modifyType == ModifyType.SET)
+        {
+            output += " is" + value + "\n";
+        }
+
+        return output;
+    }
+
     public string GenerateRandomItemName(ICollection<GroupType> tags)
     {
         if (itemGenLocalization == null)

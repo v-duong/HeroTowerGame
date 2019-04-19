@@ -9,6 +9,8 @@ public class ArchetypeUITreeWindow : MonoBehaviour
     public ArchetypeUITreeNode nodePrefab;
     public HeroData hero;
     public HeroArchetypeData[] archetypeData = new HeroArchetypeData[2];
+    //public Dictionary<ArchetypeSkillNode, ArchetypeUITreeNode> primaryNodes = new Dictionary<ArchetypeSkillNode, ArchetypeUITreeNode>();
+    //public Dictionary<ArchetypeSkillNode, ArchetypeUITreeNode> secondaryNodes = new Dictionary<ArchetypeSkillNode, ArchetypeUITreeNode>();
     public Dictionary<ArchetypeSkillNode, ArchetypeUITreeNode> primaryNodes = new Dictionary<ArchetypeSkillNode, ArchetypeUITreeNode>();
     public Dictionary<ArchetypeSkillNode, ArchetypeUITreeNode> secondaryNodes = new Dictionary<ArchetypeSkillNode, ArchetypeUITreeNode>();
     public UILineRenderer primaryTreeParent;
@@ -22,12 +24,8 @@ public class ArchetypeUITreeWindow : MonoBehaviour
         LineOffsetY.y = r.rect.height / 2;
     }
 
-    public void InitializeTree(HeroData hero)
+    public void ResetTreeView()
     {
-        this.hero = hero;
-        archetypeData[0] = hero.PrimaryArchetype;
-        archetypeData[1] = hero.SecondaryArchetype;
-
         foreach (ArchetypeUITreeNode n in primaryNodes.Values)
         {
             n.gameObject.SetActive(false);
@@ -42,16 +40,30 @@ public class ArchetypeUITreeWindow : MonoBehaviour
 
         primaryTreeParent.Points.Clear();
         secondaryTreeParent.Points.Clear();
+    }
+
+    public void InitializeTree(HeroData hero)
+    {
         HashSet<ArchetypeSkillNode> primaryHash = new HashSet<ArchetypeSkillNode>();
         HashSet<ArchetypeSkillNode> secondaryHash = new HashSet<ArchetypeSkillNode>();
+
+        this.hero = hero;
+        archetypeData[0] = hero.PrimaryArchetype;
+        archetypeData[1] = hero.SecondaryArchetype;
+
+        ResetTreeView();
+
         largestX = 0;
         largestY = 0;
         foreach (ArchetypeSkillNode node in archetypeData[0].Base.nodeList)
         {
             if (node.initialLevel == 1)
-                CreateTreeNode(node, primaryHash, archetypeData[0].Base, primaryTreeParent, primaryNodes);
+            {
+                CreateTreeNode(node, primaryHash, archetypeData[0], primaryTreeParent, primaryNodes);
+            }
         }
-        primaryTreeParent.rectTransform.sizeDelta = new Vector2( largestX * 230, largestY*100);
+        primaryTreeParent.rectTransform.sizeDelta = new Vector2(largestX * 230, largestY * 150);
+
         largestX = 0;
         largestY = 0;
         if (archetypeData[1] != null)
@@ -59,39 +71,59 @@ public class ArchetypeUITreeWindow : MonoBehaviour
             foreach (ArchetypeSkillNode node in archetypeData[1].Base.nodeList)
             {
                 if (node.initialLevel == 1)
-                    CreateTreeNode(node, secondaryHash, archetypeData[1].Base, secondaryTreeParent, secondaryNodes);
+                {
+                    CreateTreeNode(node, secondaryHash, archetypeData[1], secondaryTreeParent, secondaryNodes);
+                }
             }
-            secondaryTreeParent.rectTransform.sizeDelta = new Vector2(largestX * 230, largestY * 100);
+            secondaryTreeParent.rectTransform.sizeDelta = new Vector2(largestX * 230, largestY * 150);
         }
-
     }
 
-    public ArchetypeUITreeNode CreateTreeNode(ArchetypeSkillNode node, HashSet<ArchetypeSkillNode> traversedNodes, ArchetypeBase archetype, UILineRenderer parent, Dictionary<ArchetypeSkillNode, ArchetypeUITreeNode> nodeDict)
+
+    private ArchetypeUITreeNode CreateTreeNode(ArchetypeSkillNode node, HashSet<ArchetypeSkillNode> traversedNodes,
+        HeroArchetypeData archetype, UILineRenderer parent, Dictionary<ArchetypeSkillNode, ArchetypeUITreeNode> nodeDict)
     {
         if (node == null)
             return null;
 
         ArchetypeUITreeNode currentNode;
 
-        if (Math.Abs(node.nodePosition.x) > largestX)
-            largestX = node.nodePosition.x;
-        if (Math.Abs(node.nodePosition.y) > largestY)
-            largestY = node.nodePosition.y;
+        // Check if node has been traversed yet
+        // if already created, just return the node
         if (traversedNodes.Add(node))
         {
             currentNode = Instantiate(nodePrefab, parent.transform);
-            currentNode.SetNode(node);
+            currentNode.SetNode(node, archetype);
             nodeDict.Add(node, currentNode);
+            if (Math.Abs(node.nodePosition.x) > largestX)
+                largestX = Math.Abs(node.nodePosition.x);
+            if (Math.Abs(node.nodePosition.y) > largestY)
+                largestY = Math.Abs(node.nodePosition.y);
+            if (archetype.GetNodeLevel(node) > 0)
+            {
+                currentNode.EnableNode();
+            }
         }
         else
         {
             return nodeDict[node];
         }
 
+        bool isChildrenInteractable = false;
+        if (archetype.IsNodeMaxLevel(node))
+            isChildrenInteractable = true;
+
         foreach (int x in node.children)
         {
-            ArchetypeSkillNode n = archetype.nodeList[x];
+            ArchetypeSkillNode n = archetype.Base.GetNode(x);
             ArchetypeUITreeNode child = CreateTreeNode(n, traversedNodes, archetype, parent, nodeDict);
+            currentNode.childNodes.Add(child);
+
+            if (isChildrenInteractable)
+                child.EnableNode();
+            else
+                child.DisableNode();
+
             parent.AddPoints((currentNode.transform.localPosition + LineOffsetY, child.transform.localPosition + LineOffsetY));
         }
 
@@ -104,6 +136,7 @@ public class ArchetypeUITreeWindow : MonoBehaviour
         primaryTreeParent.gameObject.SetActive(true);
         (primaryTreeParent.transform as RectTransform).anchoredPosition = new Vector2(0, 0);
         ScrollView.content = primaryTreeParent.rectTransform;
+
     }
 
     public void OpenSecondaryTree()
@@ -112,5 +145,6 @@ public class ArchetypeUITreeWindow : MonoBehaviour
         secondaryTreeParent.gameObject.SetActive(true);
         (secondaryTreeParent.transform as RectTransform).anchoredPosition = new Vector2(0, 0);
         ScrollView.content = secondaryTreeParent.rectTransform;
+
     }
 }
