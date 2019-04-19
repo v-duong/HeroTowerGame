@@ -30,6 +30,7 @@ public class GameManager : MonoBehaviour
         Application.targetFrameRate = 30;
         ProjectilePool = new ProjectilePool(projectilePrefab);
         isInBattle = false;
+        
 
 #if !UNITY_EDITOR
         SceneManager.LoadScene("mainMenu", LoadSceneMode.Additive);

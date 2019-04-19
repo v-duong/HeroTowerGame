@@ -187,8 +187,10 @@ public class UIManager : MonoBehaviour
         if (closeWindows)
             CloseAllWindows();
         //SetInventoryScrollRectTransform(0);
-        this.EquipDetailWindow.HideButtons();
+        
+       
         OpenWindow(target);
+        this.EquipDetailWindow.HideButtons();
         InvScrollContent.ShowAllEquipment();
     }
 

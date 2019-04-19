@@ -8,7 +8,8 @@ public class LocalizationManager : MonoBehaviour
 
     private static readonly string defaultLang = "en-US";
 
-    private static Dictionary<string, string> localizationData = new Dictionary<string, string>();
+    private static Dictionary<string, string> commonLocalizationData = new Dictionary<string, string>();
+    private static Dictionary<string, string> abilityLocalizationData = new Dictionary<string, string>();
     private static ItemGenLocalization itemGenLocalization;
 
     private void Awake()
@@ -26,7 +27,10 @@ public class LocalizationManager : MonoBehaviour
         if (locale == null)
             locale = defaultLang;
         string path = "json/localization/common." + locale;
-        localizationData = JsonConvert.DeserializeObject<Dictionary<string, string>>(Resources.Load<TextAsset>(path).text);
+        commonLocalizationData = JsonConvert.DeserializeObject<Dictionary<string, string>>(Resources.Load<TextAsset>(path).text);
+
+        path = "json/localization/ability." + locale;
+        abilityLocalizationData = JsonConvert.DeserializeObject<Dictionary<string, string>>(Resources.Load<TextAsset>(path).text);
 
         path = "json/localization/itemgen." + locale;
         itemGenLocalization = JsonConvert.DeserializeObject<ItemGenLocalization>(Resources.Load<TextAsset>(path).text);
@@ -34,7 +38,7 @@ public class LocalizationManager : MonoBehaviour
 
     public string GetLocalizationText(string stringId)
     {
-        if (localizationData.TryGetValue(stringId, out string value))
+        if (commonLocalizationData.TryGetValue(stringId, out string value))
         {
             if (value == "")
                 return stringId;
@@ -46,9 +50,26 @@ public class LocalizationManager : MonoBehaviour
         }
     }
 
+    public string[] GetLocalizationText_Ability(string stringId)
+    {
+        string[] output = new string[3];
+        string value = "";
+        if (abilityLocalizationData.TryGetValue("ability." + stringId + ".name", out value))
+        {
+            output[0] = value;
+        }
+
+        if (abilityLocalizationData.TryGetValue("ability." + stringId + ".text", out value))
+        {
+            output[1] = value;
+        }
+
+        return output;
+    }
+
     public string GetLocalizationText_Equipment(string stringId)
     {
-        if (localizationData.TryGetValue("equipment." + stringId, out string value))
+        if (commonLocalizationData.TryGetValue("equipment." + stringId, out string value))
         {
             if (value == "")
                 return stringId;
@@ -63,7 +84,7 @@ public class LocalizationManager : MonoBehaviour
     public string GetLocalizationText_BonusType(BonusType type, ModifyType modifyType, double value)
     {
         string output = "";
-        if (localizationData.TryGetValue("bonusType." + type.ToString(), out output))
+        if (commonLocalizationData.TryGetValue("bonusType." + type.ToString(), out output))
         {
             if (output == "")
             {

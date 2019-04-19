@@ -20,27 +20,36 @@ public class ArchetypeNodeInfoPanel : MonoBehaviour
 
     public void UpdatePanel()
     {
+        int currentLevel = archetypeData.GetNodeLevel(node);
         if (uiNode.isLevelable && !archetypeData.IsNodeMaxLevel(node))
             levelButton.interactable = true;
         else
             levelButton.interactable = false;
 
         infoText.text = "";
-        int currentLevel = archetypeData.GetNodeLevel(node);
-        if (currentLevel != 0)
+        if (node.type == NodeType.ABILITY)
         {
-            infoText.text += "<b>Current Level: " + currentLevel + "</b>\n";
-            foreach (ScalingBonusProperty bonusProperty in node.bonuses)
-            {
-                infoText.text += LocalizationManager.Instance.GetLocalizationText_BonusType(bonusProperty.bonusType, bonusProperty.modifyType, bonusProperty.initialValue + bonusProperty.growthValue * (currentLevel - 1));
-            }
+            string[] strings = LocalizationManager.Instance.GetLocalizationText_Ability(node.abilityId);
+            infoText.text += "<b>" + strings[0] + "</b>\n";
+            infoText.text += strings[1];
         }
-        if (currentLevel != node.maxLevel)
+        else
         {
-            infoText.text += "<b>Next Level: " + (currentLevel + 1) + "</b>\n";
-            foreach (ScalingBonusProperty bonusProperty in node.bonuses)
+            if (currentLevel != 0)
             {
-                infoText.text += LocalizationManager.Instance.GetLocalizationText_BonusType(bonusProperty.bonusType, bonusProperty.modifyType, bonusProperty.initialValue + bonusProperty.growthValue * currentLevel);
+                infoText.text += "<b>Current Level: " + currentLevel + "</b>\n";
+                foreach (ScalingBonusProperty bonusProperty in node.bonuses)
+                {
+                    infoText.text += LocalizationManager.Instance.GetLocalizationText_BonusType(bonusProperty.bonusType, bonusProperty.modifyType, bonusProperty.initialValue + bonusProperty.growthValue * (currentLevel - 1));
+                }
+            }
+            if (currentLevel != node.maxLevel)
+            {
+                infoText.text += "<b>Next Level: " + (currentLevel + 1) + "</b>\n";
+                foreach (ScalingBonusProperty bonusProperty in node.bonuses)
+                {
+                    infoText.text += LocalizationManager.Instance.GetLocalizationText_BonusType(bonusProperty.bonusType, bonusProperty.modifyType, bonusProperty.initialValue + bonusProperty.growthValue * currentLevel);
+                }
             }
         }
     }
@@ -54,9 +63,10 @@ public class ArchetypeNodeInfoPanel : MonoBehaviour
         uiNode.UpdateNode();
         if (archetypeData.IsNodeMaxLevel(node))
         {
-            foreach (ArchetypeUITreeNode uiTreeNode in uiNode.childNodes)
+            foreach (ArchetypeUITreeNode uiTreeNode in uiNode.connectedNodes)
             {
-                uiTreeNode.EnableNode();
+                if (archetypeData.GetNodeLevel(uiTreeNode.node) == 0)
+                    uiTreeNode.EnableNode();
             }
         }
     }

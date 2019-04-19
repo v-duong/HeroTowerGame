@@ -62,6 +62,10 @@ public class ArchetypeUITreeWindow : MonoBehaviour
                 CreateTreeNode(node, primaryHash, archetypeData[0], primaryTreeParent, primaryNodes);
             }
         }
+        foreach (ArchetypeUITreeNode uiNode in primaryNodes.Values)
+        {
+            uiNode.CheckSurroundingNodes();
+        }
         primaryTreeParent.rectTransform.sizeDelta = new Vector2(largestX * 230, largestY * 150);
 
         largestX = 0;
@@ -74,6 +78,10 @@ public class ArchetypeUITreeWindow : MonoBehaviour
                 {
                     CreateTreeNode(node, secondaryHash, archetypeData[1], secondaryTreeParent, secondaryNodes);
                 }
+            }
+            foreach (ArchetypeUITreeNode uiNode in secondaryNodes.Values)
+            {
+                uiNode.CheckSurroundingNodes();
             }
             secondaryTreeParent.rectTransform.sizeDelta = new Vector2(largestX * 230, largestY * 150);
         }
@@ -99,31 +107,19 @@ public class ArchetypeUITreeWindow : MonoBehaviour
                 largestX = Math.Abs(node.nodePosition.x);
             if (Math.Abs(node.nodePosition.y) > largestY)
                 largestY = Math.Abs(node.nodePosition.y);
-            if (archetype.GetNodeLevel(node) > 0)
-            {
-                currentNode.EnableNode();
-            }
+
         }
         else
         {
             return nodeDict[node];
         }
 
-        bool isChildrenInteractable = false;
-        if (archetype.IsNodeMaxLevel(node))
-            isChildrenInteractable = true;
-
         foreach (int x in node.children)
         {
             ArchetypeSkillNode n = archetype.Base.GetNode(x);
             ArchetypeUITreeNode child = CreateTreeNode(n, traversedNodes, archetype, parent, nodeDict);
-            currentNode.childNodes.Add(child);
-
-            if (isChildrenInteractable)
-                child.EnableNode();
-            else
-                child.DisableNode();
-
+            currentNode.connectedNodes.Add(child);
+            child.connectedNodes.Add(currentNode);
             parent.AddPoints((currentNode.transform.localPosition + LineOffsetY, child.transform.localPosition + LineOffsetY));
         }
 

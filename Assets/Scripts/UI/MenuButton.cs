@@ -4,6 +4,7 @@ public class MenuButton : MonoBehaviour
 {
     public void OnClickInvToggle()
     {
+        UIManager.Instance.IsEquipSelectMode = false;
         UIManager.Instance.OpenInventoryWindow();
     }
 
@@ -22,7 +23,7 @@ public class MenuButton : MonoBehaviour
 
     public void AddHero()
     {
-        HeroData hero = HeroData.CreateNewHero("TEST " + Random.Range(1, 321), ArchetypeItem.CreateRandomArchetypeItem(100), ArchetypeItem.CreateRandomArchetypeItem(100));
+        HeroData hero = HeroData.CreateNewHero("TEST" + Random.Range(4, 100), ArchetypeItem.CreateRandomArchetypeItem(100), ArchetypeItem.CreateRandomArchetypeItem(100));
         GameManager.Instance.PlayerStats.AddHeroToList(hero);
     }
 
