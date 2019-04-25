@@ -13,7 +13,7 @@ public class HeroEquipmentSlot : MonoBehaviour
     public void OnSlotClick()
     {
         UIManager ui = UIManager.Instance;
-        HeroData hero = ui.HeroDetailWindow.hero;
+        HeroData hero = HeroDetailWindow.hero;
         ui.OpenInventoryWindow(false);
         ui.IsEquipSelectMode = true;
         ui.SlotContext = slot;

@@ -10,6 +10,17 @@ public class ArchetypeNodeInfoPanel : MonoBehaviour
     public ArchetypeUITreeNode uiNode;
     public Button levelButton;
 
+    public void OnEnable()
+    {
+        ClearPanel();
+    }
+
+    public void ClearPanel()
+    {
+        levelButton.interactable = false;
+        infoText.text = "";
+    }
+
     public void SetAndUpdatePanel(ArchetypeSkillNode node, HeroArchetypeData archetypeData, ArchetypeUITreeNode uiNode)
     {
         this.node = node;
@@ -31,6 +42,7 @@ public class ArchetypeNodeInfoPanel : MonoBehaviour
         {
             string[] strings = LocalizationManager.Instance.GetLocalizationText_Ability(node.abilityId);
             infoText.text += "<b>" + strings[0] + "</b>\n";
+            infoText.text += LocalizationManager.Instance.GetLocalizationText_AbilityBaseDamage(archetypeData.GetAbilityLevel(), node.GetAbility());
             infoText.text += strings[1];
         }
         else

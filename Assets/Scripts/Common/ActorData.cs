@@ -6,7 +6,7 @@ public abstract class ActorData
     public int Id { get; protected set; }
     public int Level { get; set; }
     public int Experience { get; set; }
-
+    public string Name { get; set; }
     public float BaseHealth { get; protected set; }
 
     [SerializeField]

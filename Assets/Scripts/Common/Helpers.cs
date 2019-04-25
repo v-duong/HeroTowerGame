@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
 
 public static class Helpers
 {
@@ -10,31 +9,159 @@ public static class Helpers
     public static readonly Color RARE_COLOR = new Color(1.0f, 0.9f, 0.25f);
     public static readonly Color NORMAL_COLOR = new Color(0.7f, 0.7f, 0.7f);
 
-    public static ColorBlock enabledBlock;
-    public static ColorBlock disabledBlock;
+    private static List<BonusType> maxDamageTypes;
+    private static List<BonusType> damageTypes;
 
-    public static ColorBlock GetEnabledColorBlock()
+    public static void GetDamageTypes(ElementType element, AbilityType abilityType, AbilityShotType shotType, List<GroupType> tags, List<BonusType> min, List<BonusType> max, List<BonusType> multi)
     {
-        if (enabledBlock == null)
+        switch (element)
         {
-            enabledBlock = new ColorBlock();
-            enabledBlock.normalColor = new Color(1,1,1,1);
-            enabledBlock.colorMultiplier = 1;
-        }
-        return enabledBlock;
-    }
+            case ElementType.PHYSICAL:
+                min.Add(BonusType.GLOBAL_PHYSICAL_DAMAGE_MIN);
+                max.Add(BonusType.GLOBAL_PHYSICAL_DAMAGE_MAX);
+                multi.Add(BonusType.GLOBAL_PHYSICAL_DAMAGE);
+                if (abilityType == AbilityType.ATTACK)
+                {
+                    min.Add(BonusType.ATTACK_PHYSICAL_DAMAGE_MIN);
+                    max.Add(BonusType.ATTACK_PHYSICAL_DAMAGE_MAX);
+                }
+                else if (abilityType == AbilityType.SPELL)
+                {
+                    min.Add(BonusType.SPELL_PHYSICAL_DAMAGE_MIN);
+                    max.Add(BonusType.SPELL_PHYSICAL_DAMAGE_MAX);
+                }
+                break;
 
-    public static ColorBlock GetDisabledColorBlock()
-    {
-        if (disabledBlock == null)
+            case ElementType.FIRE:
+                min.Add(BonusType.GLOBAL_FIRE_DAMAGE_MIN);
+                max.Add(BonusType.GLOBAL_FIRE_DAMAGE_MAX);
+                multi.Add(BonusType.GLOBAL_FIRE_DAMAGE);
+                if (abilityType == AbilityType.ATTACK)
+                {
+                    min.Add(BonusType.ATTACK_FIRE_DAMAGE_MIN);
+                    max.Add(BonusType.ATTACK_FIRE_DAMAGE_MAX);
+                }
+                else if (abilityType == AbilityType.SPELL)
+                {
+                    min.Add(BonusType.SPELL_FIRE_DAMAGE_MIN);
+                    max.Add(BonusType.SPELL_FIRE_DAMAGE_MAX);
+                }
+                break;
+
+            case ElementType.COLD:
+                min.Add(BonusType.GLOBAL_COLD_DAMAGE_MIN);
+                max.Add(BonusType.GLOBAL_COLD_DAMAGE_MAX);
+                multi.Add(BonusType.GLOBAL_COLD_DAMAGE);
+                if (abilityType == AbilityType.ATTACK)
+                {
+                    min.Add(BonusType.ATTACK_COLD_DAMAGE_MIN);
+                    max.Add(BonusType.ATTACK_COLD_DAMAGE_MAX);
+                }
+                else if (abilityType == AbilityType.SPELL)
+                {
+                    min.Add(BonusType.SPELL_COLD_DAMAGE_MIN);
+                    max.Add(BonusType.SPELL_COLD_DAMAGE_MAX);
+                }
+                break;
+
+            case ElementType.LIGHTNING:
+                min.Add(BonusType.GLOBAL_LIGHTNING_DAMAGE_MIN);
+                max.Add(BonusType.GLOBAL_LIGHTNING_DAMAGE_MAX);
+                multi.Add(BonusType.GLOBAL_LIGHTNING_DAMAGE);
+                if (abilityType == AbilityType.ATTACK)
+                {
+                    min.Add(BonusType.ATTACK_LIGHTNING_DAMAGE_MIN);
+                    max.Add(BonusType.ATTACK_LIGHTNING_DAMAGE_MAX);
+                }
+                else if (abilityType == AbilityType.SPELL)
+                {
+                    min.Add(BonusType.SPELL_LIGHTNING_DAMAGE_MIN);
+                    max.Add(BonusType.SPELL_LIGHTNING_DAMAGE_MAX);
+                }
+                break;
+
+            case ElementType.EARTH:
+                min.Add(BonusType.GLOBAL_EARTH_DAMAGE_MIN);
+                max.Add(BonusType.GLOBAL_EARTH_DAMAGE_MAX);
+                multi.Add(BonusType.GLOBAL_EARTH_DAMAGE);
+                if (abilityType == AbilityType.ATTACK)
+                {
+                    min.Add(BonusType.ATTACK_EARTH_DAMAGE_MIN);
+                    max.Add(BonusType.ATTACK_EARTH_DAMAGE_MAX);
+                }
+                else if (abilityType == AbilityType.SPELL)
+                {
+                    min.Add(BonusType.SPELL_EARTH_DAMAGE_MIN);
+                    max.Add(BonusType.SPELL_EARTH_DAMAGE_MAX);
+                }
+                break;
+
+            case ElementType.DIVINE:
+                min.Add(BonusType.GLOBAL_DIVINE_DAMAGE_MIN);
+                max.Add(BonusType.GLOBAL_DIVINE_DAMAGE_MAX);
+                multi.Add(BonusType.GLOBAL_DIVINE_DAMAGE);
+                if (abilityType == AbilityType.ATTACK)
+                {
+                    min.Add(BonusType.ATTACK_DIVINE_DAMAGE_MIN);
+                    max.Add(BonusType.ATTACK_DIVINE_DAMAGE_MAX);
+                }
+                else if (abilityType == AbilityType.SPELL)
+                {
+                    min.Add(BonusType.SPELL_DIVINE_DAMAGE_MIN);
+                    max.Add(BonusType.SPELL_DIVINE_DAMAGE_MAX);
+                }
+                break;
+
+            case ElementType.VOID:
+                min.Add(BonusType.GLOBAL_VOID_DAMAGE_MIN);
+                max.Add(BonusType.GLOBAL_VOID_DAMAGE_MAX);
+                multi.Add(BonusType.GLOBAL_VOID_DAMAGE);
+                if (abilityType == AbilityType.ATTACK)
+                {
+                    min.Add(BonusType.ATTACK_VOID_DAMAGE_MIN);
+                    max.Add(BonusType.ATTACK_VOID_DAMAGE_MAX);
+                }
+                else if (abilityType == AbilityType.SPELL)
+                {
+                    min.Add(BonusType.SPELL_VOID_DAMAGE_MIN);
+                    max.Add(BonusType.SPELL_VOID_DAMAGE_MAX);
+                }
+                break;
+
+            default:
+                break;
+        }
+
+        if (abilityType == AbilityType.ATTACK)
         {
-            disabledBlock = new ColorBlock();
-            disabledBlock.normalColor = new Color(0.5f, 0.5f, 0.5f, 1);
-            disabledBlock.colorMultiplier = 1;
+            multi.Add(BonusType.ATTACK_DAMAGE);
         }
-        return disabledBlock;
-    }
+        else if (abilityType == AbilityType.SPELL)
+        {
+            multi.Add(BonusType.SPELL_DAMAGE);
+        }
 
+        if (shotType == AbilityShotType.PROJECTILE)
+        {
+            multi.Add(BonusType.PROJECTILE_DAMAGE);
+        }
+        else if (shotType == AbilityShotType.HITSCAN)
+        {
+        }
+        else
+        {
+            multi.Add(BonusType.AREA_DAMAGE);
+        }
+
+        if (tags.Contains(GroupType.MELEE_ATTACK))
+        {
+            multi.Add(BonusType.MELEE_ATTACK_DAMAGE);
+        }
+        else if (tags.Contains(GroupType.RANGED_ATTACK))
+        {
+            multi.Add(BonusType.RANGED_ATTACK_DAMAGE);
+        }
+    }
 
     public static Vector3 ReturnCenterOfCell(Vector3 v)
     {
@@ -95,7 +222,7 @@ public class WeightList<T>
             if (weight <= 0)
                 return x.item;
         }
-        Debug.Log("Did not return proper item. Error in sum?");
+        Debug.Log("Did not return proper item. Error in sum or list");
         return default;
     }
 

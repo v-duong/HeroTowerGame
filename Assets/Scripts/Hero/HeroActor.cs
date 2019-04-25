@@ -4,16 +4,24 @@ using UnityEngine;
 
 public class HeroActor : Actor
 {
+    [SerializeField]
+    private Collider2D collider;
 
-
-    // Use this for initialization
-    public override void Start()
+    public void Initialize(HeroData data)
     {
-        ActorAbility a = new ActorAbility(ResourceManager.Instance.GetAbilityBase("Fireball"));
-        a.InitializeActorAbility();
-    }
+        Data = data;
+        if (data.GetAbilityFromSlot(0) != null)
+        {
+            ActorAbility firstAbility = data.GetAbilityFromSlot(0);
+            this.AddAbilityToList(firstAbility);
+        }
+        if (data.GetAbilityFromSlot(1) != null)
+        {
+            ActorAbility secondAbility = data.GetAbilityFromSlot(1);
+            this.AddAbilityToList(secondAbility);
+        }
 
-    // Update is called once per frame
+    }
     public void Update()
     {
         foreach (var x in instancedAbilitiesList)

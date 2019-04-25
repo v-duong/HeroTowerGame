@@ -2,15 +2,21 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 public class HeroDetailWindow : MonoBehaviour
 {
     [SerializeField]
-    private Text nameText;
+    private TextMeshProUGUI nameText;
     [SerializeField]
-    private Text infoText;
-    public HeroData hero;
-    public HeroSlot heroSlot;
+    private TextMeshProUGUI infoText;
+    [SerializeField]
+    private ArchetypeUITreeWindow treeWindow;
+    [SerializeField]
+    private ScrollRect abilityScrollRect;
+    [SerializeField]
+    private HeroAbilityScrollWindow abilityWindow;
+    public static HeroData hero;
 
     public List<HeroEquipmentSlot> equipSlots;
 
@@ -45,9 +51,20 @@ public class HeroDetailWindow : MonoBehaviour
         infoText.text += "Will: " + hero.Will + "\n\n";
         infoText.text += "Armor: " + hero.Armor + "\n";
         infoText.text += "Dodge Rating: " + hero.DodgeRating + "\n";
-        infoText.text += "Resolve: " + hero.ResolveRating + "\n";
+        infoText.text += "Resolve: " + hero.ResolveRating + "\n\n";
 
-        foreach(HeroEquipmentSlot slot in equipSlots)
+        if (hero.GetAbilityFromSlot(0) != null)
+        {
+            infoText.text += "Ability 1: " + hero.GetAbilityFromSlot(0).abilityBase.idName + "\n";
+            infoText.text += LocalizationManager.Instance.GetLocalizationText_AbilityCalculatedDamage(hero.GetAbilityFromSlot(0).damageBase);
+        }
+        if (hero.GetAbilityFromSlot(1) != null)
+        {
+            infoText.text += "Ability 2: " + hero.GetAbilityFromSlot(1).abilityBase.idName + "\n";
+            infoText.text += LocalizationManager.Instance.GetLocalizationText_AbilityCalculatedDamage(hero.GetAbilityFromSlot(1).damageBase);
+        }
+
+        foreach (HeroEquipmentSlot slot in equipSlots)
         {
             Equipment e = hero.GetEquipmentInSlot(slot.EquipSlot);
             if (e == null)
@@ -70,7 +87,6 @@ public class HeroDetailWindow : MonoBehaviour
 
     public void ClickPrimaryTree()
     {
-        ArchetypeUITreeWindow treeWindow = UIManager.Instance.ArchetypeTreeWindow;
         treeWindow.OpenPrimaryTree();
         UIManager.Instance.OpenWindow(treeWindow.gameObject);
         if (treeWindow.hero != hero) 
@@ -79,10 +95,22 @@ public class HeroDetailWindow : MonoBehaviour
     }
     public void ClickSecondaryTree()
     {
-        ArchetypeUITreeWindow treeWindow = UIManager.Instance.ArchetypeTreeWindow;
         treeWindow.OpenSecondaryTree();
         UIManager.Instance.OpenWindow(treeWindow.gameObject);
         if (treeWindow.hero != hero)
             treeWindow.InitializeTree(hero);
+    }
+
+    public void ClickAbilitySlot(int slot)
+    {
+        HeroAbilityScrollWindow.slot = slot;
+        UIManager.Instance.OpenWindow(abilityScrollRect.gameObject);
+    }
+
+    public void DebugLevelUp()
+    {
+        if (hero != null)
+            hero.LevelUp();
+        UpdateWindow();
     }
 }

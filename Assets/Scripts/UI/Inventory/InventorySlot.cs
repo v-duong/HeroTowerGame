@@ -11,8 +11,6 @@ public class InventorySlot : MonoBehaviour
     public TextMeshProUGUI nameText;
     public TextMeshProUGUI infoText;
 
-    
-
     public void UpdateSlot()
     {
         slotImage.color = Helpers.ReturnRarityColor(item.Rarity);
@@ -31,7 +29,7 @@ public class InventorySlot : MonoBehaviour
                 break;
             case EquipmentType.WEAPON:
                 Weapon weapon = item as Weapon;
-                double dps = (weapon.physicalDamage.min + weapon.physicalDamage.max) / 2d * weapon.attackSpeed;
+                double dps = (weapon.PhysicalDamage.min + weapon.PhysicalDamage.max) / 2d * weapon.AttackSpeed;
                 infoText.text += "PDPS: " + dps.ToString("F2") + "\n";
                 break;
             default:

@@ -10,17 +10,29 @@ public class HeroSlot : MonoBehaviour
     public Image slotImage;
     public TextMeshProUGUI nameText;
     public TextMeshProUGUI archetypeText;
+    
 
     public void UpdateSlot()
     {
+    }
+
+    public void SetSlot(HeroData hero)
+    {
+        this.hero = hero;
+        nameText.text = hero.Name;
+        archetypeText.text = hero.PrimaryArchetype.Base.idName;
+        if (hero.SecondaryArchetype != null)
+        {
+            archetypeText.text += "\n" + hero.SecondaryArchetype.Base.idName;
+        }
+        UpdateSlot();
     }
 
     public void OnHeroSlotClick()
     {
         HeroDetailWindow detailWindow = UIManager.Instance.HeroDetailWindow;
         UIManager.Instance.OpenWindow(detailWindow.gameObject);
-        detailWindow.hero = hero;
-        detailWindow.heroSlot = this;
+        HeroDetailWindow.hero = hero;
         detailWindow.UpdateWindow();
     }
 }

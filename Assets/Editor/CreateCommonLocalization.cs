@@ -43,6 +43,46 @@ public class CreateCommonLocalization
                     keys.Remove(localizationKey);
             }
 
+
+
+            List<string> elementTypes = new List<string>(Enum.GetNames(typeof(ElementType)));
+
+            foreach (string x in elementTypes)
+            {
+                string localizationKey = "elementType." + x;
+                if (!localization.ContainsKey(localizationKey))
+                    localization.Add(localizationKey, "");
+                else
+                    keys.Remove(localizationKey);
+            }
+
+            List<string> effectTypes = new List<string>(Enum.GetNames(typeof(EffectType)));
+
+            foreach (string x in effectTypes)
+            {
+                string localizationKey = "effectType." + x;
+                if (!localization.ContainsKey(localizationKey))
+                    localization.Add(localizationKey, "");
+                else
+                    keys.Remove(localizationKey);
+            }
+
+            string filepath2 = "Assets/Resources/json/localization/UIKeys.txt";
+            string uiKeysText = System.IO.File.ReadAllText(filepath2);
+            
+            string[] uiKeys = uiKeysText.Split(',');
+            Debug.Log(uiKeys.Length);
+
+            foreach (string x in uiKeys)
+            {
+                string localizationKey = x;
+                if (!localization.ContainsKey(localizationKey))
+                    localization.Add(localizationKey, "");
+                else
+                    keys.Remove(localizationKey);
+            }
+
+
             foreach (string key in keys)
             {
                 localization.Remove(key);

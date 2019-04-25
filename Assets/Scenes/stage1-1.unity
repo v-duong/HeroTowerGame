@@ -54,7 +54,7 @@ LightmapSettings:
     m_EnableBakedLightmaps: 0
     m_EnableRealtimeLightmaps: 0
   m_LightmapEditorSettings:
-    serializedVersion: 10
+    serializedVersion: 12
     m_Resolution: 2
     m_BakeResolution: 40
     m_AtlasSize: 1024
@@ -62,6 +62,7 @@ LightmapSettings:
     m_AOMaxDistance: 1
     m_CompAOExponent: 1
     m_CompAOExponentDirect: 0
+    m_ExtractAmbientOcclusion: 0
     m_Padding: 2
     m_LightmapParameters: {fileID: 0}
     m_LightmapsBakeMode: 1
@@ -76,10 +77,16 @@ LightmapSettings:
     m_PVRDirectSampleCount: 32
     m_PVRSampleCount: 500
     m_PVRBounces: 2
+    m_PVREnvironmentSampleCount: 500
+    m_PVREnvironmentReferencePointCount: 2048
+    m_PVRFilteringMode: 2
+    m_PVRDenoiserTypeDirect: 0
+    m_PVRDenoiserTypeIndirect: 0
+    m_PVRDenoiserTypeAO: 0
     m_PVRFilterTypeDirect: 0
     m_PVRFilterTypeIndirect: 0
     m_PVRFilterTypeAO: 0
-    m_PVRFilteringMode: 1
+    m_PVREnvironmentMIS: 0
     m_PVRCulling: 1
     m_PVRFilteringGaussRadiusDirect: 1
     m_PVRFilteringGaussRadiusIndirect: 5
@@ -88,6 +95,7 @@ LightmapSettings:
     m_PVRFilteringAtrousPositionSigmaIndirect: 2
     m_PVRFilteringAtrousPositionSigmaAO: 1
     m_ShowResolutionOverlay: 1
+    m_ExportTrainingData: 0
   m_LightingDataAsset: {fileID: 0}
   m_UseShadowmask: 1
 --- !u!196 &4
@@ -4047,6 +4055,7 @@ GameObject:
   - component: {fileID: 631073838}
   - component: {fileID: 631073837}
   - component: {fileID: 631073836}
+  - component: {fileID: 631073835}
   m_Layer: 5
   m_Name: WorldCanvas
   m_TagString: Untagged
@@ -4054,6 +4063,23 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
+--- !u!114 &631073835
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 631073834}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 1301386320, guid: f70555f144d8491a825f0804e09c671c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_IgnoreReversedGraphics: 1
+  m_BlockingObjects: 0
+  m_BlockingMask:
+    serializedVersion: 2
+    m_Bits: 4294967295
 --- !u!114 &631073836
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4093,7 +4119,7 @@ Canvas:
   m_OverrideSorting: 0
   m_OverridePixelPerfect: 0
   m_SortingBucketNormalizedSize: 0
-  m_AdditionalShaderChannelsFlag: 0
+  m_AdditionalShaderChannelsFlag: 25
   m_SortingLayerID: 0
   m_SortingOrder: 0
   m_TargetDisplay: 0
@@ -4123,37 +4149,6 @@ PrefabInstance:
   m_Modification:
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 114549246527707256, guid: 216bc762bb109564fac8abb093eda570,
-        type: 3}
-      propertyPath: m_abilitiesList.Array.size
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 114549246527707256, guid: 216bc762bb109564fac8abb093eda570,
-        type: 3}
-      propertyPath: m_abilitiesList.Array.data[0].instancedAbilityEffects.Array.size
-      value: 4
-      objectReference: {fileID: 0}
-    - target: {fileID: 114549246527707256, guid: 216bc762bb109564fac8abb093eda570,
-        type: 3}
-      propertyPath: m_abilitiesList.Array.data[0]
-      value: 
-      objectReference: {fileID: 0}
-    - target: {fileID: 114549246527707256, guid: 216bc762bb109564fac8abb093eda570,
-        type: 3}
-      propertyPath: m_abilitiesList.Array.data[0].abilityLevel
-      value: 3
-      objectReference: {fileID: 0}
-    - target: {fileID: 114549246527707256, guid: 216bc762bb109564fac8abb093eda570,
-        type: 3}
-      propertyPath: m_abilitiesList.Array.data[0].abilityBase
-      value: 
-      objectReference: {fileID: 11400000, guid: c3e4a520410714a40ba80aaa01cc5312,
-        type: 2}
-    - target: {fileID: 114549246527707256, guid: 216bc762bb109564fac8abb093eda570,
-        type: 3}
-      propertyPath: m_Enabled
-      value: 1
-      objectReference: {fileID: 0}
     - target: {fileID: 4015013199261470, guid: 216bc762bb109564fac8abb093eda570, type: 3}
       propertyPath: m_LocalPosition.x
       value: 3.48
@@ -4201,6 +4196,37 @@ PrefabInstance:
       propertyPath: m_Color.b
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 114549246527707256, guid: 216bc762bb109564fac8abb093eda570,
+        type: 3}
+      propertyPath: m_abilitiesList.Array.size
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 114549246527707256, guid: 216bc762bb109564fac8abb093eda570,
+        type: 3}
+      propertyPath: m_abilitiesList.Array.data[0].instancedAbilityEffects.Array.size
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 114549246527707256, guid: 216bc762bb109564fac8abb093eda570,
+        type: 3}
+      propertyPath: m_abilitiesList.Array.data[0]
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 114549246527707256, guid: 216bc762bb109564fac8abb093eda570,
+        type: 3}
+      propertyPath: m_abilitiesList.Array.data[0].abilityLevel
+      value: 3
+      objectReference: {fileID: 0}
+    - target: {fileID: 114549246527707256, guid: 216bc762bb109564fac8abb093eda570,
+        type: 3}
+      propertyPath: m_abilitiesList.Array.data[0].abilityBase
+      value: 
+      objectReference: {fileID: 11400000, guid: c3e4a520410714a40ba80aaa01cc5312,
+        type: 2}
+    - target: {fileID: 114549246527707256, guid: 216bc762bb109564fac8abb093eda570,
+        type: 3}
+      propertyPath: m_Enabled
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 216bc762bb109564fac8abb093eda570, type: 3}
 --- !u!1 &781425541
@@ -4215,6 +4241,7 @@ GameObject:
   - component: {fileID: 781425544}
   - component: {fileID: 781425543}
   - component: {fileID: 781425545}
+  - component: {fileID: 781425546}
   m_Layer: 8
   m_Name: Path
   m_TagString: PathMap
@@ -4230,7 +4257,7 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 781425541}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 1}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children: []
   m_Father: {fileID: 930190570}
@@ -4767,6 +4794,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 901f88b0b29e83f4986b7180e168e974, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!19719996 &781425546
+TilemapCollider2D:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 781425541}
+  m_Enabled: 1
+  m_Density: 1
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_UsedByEffector: 0
+  m_UsedByComposite: 0
+  m_Offset: {x: 0, y: 0}
+  m_MaximumTileChangeCount: 1000
 --- !u!1 &930190568
 GameObject:
   m_ObjectHideFlags: 0

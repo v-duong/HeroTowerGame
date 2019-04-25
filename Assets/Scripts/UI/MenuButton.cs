@@ -1,7 +1,16 @@
 ﻿using UnityEngine;
+using UnityEngine.UI;
 
 public class MenuButton : MonoBehaviour
 {
+
+    public void OnEnable()
+    {
+        Text textObject = GetComponentInChildren<Text>();
+        if (textObject == null)
+            return;
+         textObject.text = LocalizationManager.Instance.GetLocalizationText(textObject.text);
+    }
     public void OnClickInvToggle()
     {
         UIManager.Instance.IsEquipSelectMode = false;
@@ -30,5 +39,15 @@ public class MenuButton : MonoBehaviour
     public void CloseWindow()
     {
         UIManager.Instance.CloseCurrentWindow();
+    }
+
+    public void UnloadMainMenu()
+    {
+        GameManager.Instance.MoveToBattle("stage1-1");
+    }
+
+    public void LoadMainMenu()
+    {
+        GameManager.Instance.MoveToMainMenu();
     }
 }

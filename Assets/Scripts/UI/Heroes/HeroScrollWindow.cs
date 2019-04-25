@@ -1,36 +1,49 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UI;
 
 public class HeroScrollWindow : MonoBehaviour
 {
     [SerializeField]
     private HeroSlot SlotPrefab;
+
     private List<HeroSlot> SlotsInUse = new List<HeroSlot>();
+    private Stack<HeroSlot> AvailableSlots = new Stack<HeroSlot>();
+    private bool initialized = false;
+
+    private void OnEnable()
+    {
+        InitializeHeroSlots(GameManager.Instance.PlayerStats.heroList);
+    }
 
     public void InitializeHeroSlots(List<HeroData> list)
     {
+        foreach (HeroSlot slot in SlotsInUse)
+        {
+            slot.gameObject.SetActive(false);
+            AvailableSlots.Push(slot);
+        }
+        SlotsInUse.Clear();
         foreach (HeroData hero in list)
         {
             AddHeroSlot(hero);
         }
     }
 
-
     public void AddHeroSlot(HeroData hero)
     {
         HeroSlot slot;
-        slot = Instantiate(SlotPrefab, this.transform);
-        SlotsInUse.Add(slot);
-        slot.hero = hero;
-        slot.nameText.text = hero.Name;
-        slot.archetypeText.text = hero.PrimaryArchetype.Base.idName;
-        if (hero.SecondaryArchetype != null)
+        if (AvailableSlots.Count > 0)
         {
-            slot.archetypeText.text += "\n" + hero.SecondaryArchetype.Base.idName;
+            slot = AvailableSlots.Pop();
         }
-        slot.UpdateSlot();
+        else
+        {
+            slot = Instantiate(SlotPrefab, this.transform);
+        }
+        slot.gameObject.SetActive(true);
+        SlotsInUse.Add(slot);
+
+        slot.SetSlot(hero);
     }
 
     public void RemoveHeroSlot(HeroData hero)

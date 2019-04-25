@@ -1,16 +1,19 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using TMPro;
+using UnityEngine;
 using UnityEngine.UI;
+using System;
 
 public class EquipmentDetailWindow : MonoBehaviour
 {
     [SerializeField]
-    private Text nameText;
+    private TextMeshProUGUI nameText;
 
     [SerializeField]
-    private Text affixText;
+    private TextMeshProUGUI affixText;
 
     [SerializeField]
-    private Text infoText;
+    private TextMeshProUGUI infoText;
 
     [SerializeField]
     public GameObject UpgradeButtonParent;
@@ -47,7 +50,7 @@ public class EquipmentDetailWindow : MonoBehaviour
         {
             infoText.text += ", " + equip.willRequirement + " Will";
         }
-        infoText.text += "\n";
+        infoText.text += "\n\n";
 
         if (equip.GetItemType() == EquipmentType.ARMOR)
         {
@@ -86,12 +89,12 @@ public class EquipmentDetailWindow : MonoBehaviour
         string s = "○ ";
         foreach (AffixBonusProperty b in a.Base.affixBonuses)
         {
-            if (b.bonusType.ToString().Contains("DAMAGE_MAX")) {
+            if (b.bonusType.ToString().Contains("DAMAGE_MAX"))
+            {
                 continue;
             }
             if (b.bonusType.ToString().Contains("DAMAGE_MIN"))
             {
-
                 s += "\t" + LocalizationManager.Instance.GetLocalizationText("bonusType." + b.bonusType) + " ";
                 s += "+" + a.GetAffixValue(b.bonusType) + "-" + a.GetAffixValue(b.bonusType + 1) + "\n";
             }
@@ -117,15 +120,78 @@ public class EquipmentDetailWindow : MonoBehaviour
 
     public void UpdateWindowEquipment_Weapon(Weapon weaponItem)
     {
-        if (weaponItem.physicalDamage.min != 0 && weaponItem.physicalDamage.max != 0)
+        bool hasElemental = false;
+        bool hasPrimordial = false;
+        List<string> elementalDamage = new List<string>();
+        List<string> elementalDps = new List<string>();
+        List<string> primDamage = new List<string>();
+        List<string> primDps = new List<string>();
+        string physDPS;
+        string physDamage = "";
+        MinMaxRange range;
+        double dps;
+
+        for (int i = 1; i < (int)ElementType.DIVINE; i++)
         {
-            double dps = (weaponItem.physicalDamage.min + weaponItem.physicalDamage.max) / 2d * weaponItem.attackSpeed;
-            infoText.text += "Physical DPS: " + dps.ToString("F2") + "\n";
-            infoText.text += "Damage: " + weaponItem.physicalDamage.min + "-" + weaponItem.physicalDamage.max + "\n";
+            range = weaponItem.GetWeaponDamage((ElementType)i);
+            if (!range.IsZero())
+            {
+                hasElemental = true;
+                dps = (range.min + range.max) / 2d * weaponItem.AttackSpeed;
+                elementalDps.Add(LocalizationManager.BuildElementalDamageString(dps.ToString("F2"), (ElementType)i));
+                elementalDamage.Add(LocalizationManager.BuildElementalDamageString(range.min + "-" + range.max, (ElementType)i));
+            }
         }
-        infoText.text += "Critical Chance: " + weaponItem.criticalChance.ToString("F2") + "%\n";
-        infoText.text += "Attacks per Second: " + weaponItem.attackSpeed.ToString("F2") + "\n";
-        infoText.text += "Range: " + weaponItem.weaponRange.ToString("F2") + "\n";
+
+        range = weaponItem.GetWeaponDamage(ElementType.DIVINE);
+        if (!range.IsZero())
+        {
+            hasPrimordial = true;
+            dps = (range.min + range.max) / 2d * weaponItem.AttackSpeed;
+            primDps.Add(LocalizationManager.BuildElementalDamageString(dps.ToString("F2"), ElementType.DIVINE));
+            primDamage.Add(LocalizationManager.BuildElementalDamageString(range.min + "-" + range.max, ElementType.DIVINE));
+        }
+
+        range = weaponItem.GetWeaponDamage(ElementType.VOID);
+        if (!range.IsZero())
+        {
+            hasPrimordial = true;
+            dps = (range.min + range.max) / 2d * weaponItem.AttackSpeed;
+            primDps.Add(LocalizationManager.BuildElementalDamageString(dps.ToString("F2"), ElementType.VOID));
+            primDamage.Add(LocalizationManager.BuildElementalDamageString(range.min + "-" + range.max, ElementType.VOID));
+        }
+
+
+        if (weaponItem.PhysicalDamage.min != 0 && weaponItem.PhysicalDamage.max != 0)
+        {
+            dps = (weaponItem.PhysicalDamage.min + weaponItem.PhysicalDamage.max) / 2d * weaponItem.AttackSpeed;
+            //physDPS = "Physical DPS: " + dps.ToString("F2") + "\n";
+            infoText.text += "Phys. DPS: " + dps.ToString("F2") + "\n";
+            physDamage = "Phys. Damage: " + weaponItem.PhysicalDamage.min + "-" + weaponItem.PhysicalDamage.max + "\n";
+            //infoText.text += "Phys. Damage: " + weaponItem.PhysicalDamage.min + "-" + weaponItem.PhysicalDamage.max + "\n";
+        }
+        if (hasElemental)
+        {
+            infoText.text += "Ele. DPS: " + String.Join(", ", elementalDps) + "\n";
+        }
+        if (hasPrimordial)
+        {
+            infoText.text += "Prim. DPS: " + String.Join(", ", primDps) + "\n";
+        }
+        infoText.text += "\n";
+        infoText.text += physDamage;
+        if (hasElemental)
+        {
+            infoText.text += "Ele. Damage: " + String.Join(", ", elementalDamage) + "\n";
+        }
+        if (hasPrimordial)
+        {
+            infoText.text += "Prim. Damage: " + String.Join(", ", primDamage) + "\n";
+        }
+        infoText.text += "\n";
+        infoText.text += "Critical Chance: " + weaponItem.CriticalChance.ToString("F2") + "%\n";
+        infoText.text += "Attacks per Second: " + weaponItem.AttackSpeed.ToString("F2") + "\n";
+        infoText.text += "Range: " + weaponItem.WeaponRange.ToString("F2") + "\n";
     }
 
     public void ShowButtons()
@@ -194,7 +260,7 @@ public class EquipmentDetailWindow : MonoBehaviour
     public void OnEquipClick()
     {
         UIManager ui = UIManager.Instance;
-        ui.HeroDetailWindow.hero.EquipToSlot(equip, ui.SlotContext);
+        HeroDetailWindow.hero.EquipToSlot(equip, ui.SlotContext);
         this.gameObject.SetActive(false);
         ui.CloseCurrentWindow();
         ui.HeroDetailWindow.UpdateWindow();

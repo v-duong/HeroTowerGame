@@ -10,6 +10,9 @@ public class ResourceManager : MonoBehaviour
     //private readonly static int EnchantmentOffset = 30000;
     //private readonly static int InnateOffset = 40000;
 
+    [SerializeField]
+    private GameObject heroPrefab;
+
     private Dictionary<string, AbilityBase> abilityList;
     private Dictionary<string, EquipmentBase> equipmentList;
     private Dictionary<string, AffixBase> prefixList;
@@ -23,6 +26,7 @@ public class ResourceManager : MonoBehaviour
     public int PrefixCount { get; private set; }
     public int SuffixCount { get; private set; }
     public int ArchetypeCount { get; private set; }
+    public GameObject HeroPrefab => heroPrefab;
 
     public AbilityBase GetAbilityBase(string id)
     {

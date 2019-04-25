@@ -18,28 +18,37 @@ public class Projectile : MonoBehaviour
     }
 
     // Update is called once per frame
-    private void Update()
+    private void FixedUpdate()
     {
         Move();
-        timeToLive -= Time.deltaTime;
+        timeToLive -= Time.fixedDeltaTime;
     }
 
     public void OnTriggerEnter2D(Collider2D collision)
     {
+        if (!this.isActiveAndEnabled)
+            return;
         int damage = 0;
         foreach (int d in projectileDamage.Values)
             damage += d;
         collision.gameObject.GetComponent<Actor>().ApplyDamage(damage);
         
-        var m_Collider = GetComponent<Collider2D>();
-        m_Collider.enabled = false;
+        var _collider = GetComponent<Collider2D>();
+        _collider.enabled = false;
+
+        ReturnToPool();
     }
 
     public void Move()
     {
-        float dt = Time.deltaTime;
+        float dt = Time.fixedDeltaTime;
         //this.transform.position += currentHeading.normalized * currentSpeed * dt;
         this.transform.Translate(currentHeading.normalized * currentSpeed * dt);
         return;
+    }
+
+    public void ReturnToPool()
+    {
+        GameManager.Instance.ProjectilePool.ReturnToPool(this);
     }
 }

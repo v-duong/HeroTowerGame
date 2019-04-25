@@ -19,6 +19,7 @@ public enum GroupType
     SWORD_TYPE,
     AXE_TYPE,
     MACE_TYPE,
+    POLE_TYPE,
     GUN_TYPE,
     BOW_TYPE,
     MAGIC_TYPE,

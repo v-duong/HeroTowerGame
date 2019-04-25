@@ -1,52 +1,88 @@
-﻿using System;
-using System.Collections.Generic;
-
+﻿using System.Collections.Generic;
+using UnityEngine;
 public class Weapon : Equipment
 {
     public const int LocalBonusStart = 0x800;
-    public MinMaxRange physicalDamage;
-    public Dictionary<ElementType, MinMaxRange> nonPhysicalDamage;
-    public float criticalChance;
-    public float weaponRange;
-    public float attackSpeed;
+    private Dictionary<ElementType, MinMaxRange> weaponDamage;
+    public float CriticalChance { get; private set; }
+    public float WeaponRange { get; private set; }
+    public float AttackSpeed { get; private set; }
+
+    public MinMaxRange PhysicalDamage
+    {
+        get
+        {
+            return weaponDamage[0];
+        }
+    }
 
     public Weapon(EquipmentBase e, int ilvl) : base(e, ilvl)
     {
-        physicalDamage = new MinMaxRange();
-        nonPhysicalDamage = new Dictionary<ElementType, MinMaxRange>();
-        physicalDamage.SetMinMax(e.minDamage, e.maxDamage);
-        criticalChance = e.criticalChance;
-        attackSpeed = e.attackSpeed;
-        weaponRange = e.weaponRange;
+        weaponDamage = new Dictionary<ElementType, MinMaxRange>();
+        for(int i = 0; i < (int)ElementType.COUNT;i++)
+        {
+            weaponDamage[(ElementType)i] = new MinMaxRange();
+        }
+        weaponDamage[ElementType.PHYSICAL].SetMinMax(e.minDamage, e.maxDamage);
+        CriticalChance = e.criticalChance;
+        AttackSpeed = e.attackSpeed;
+        WeaponRange = e.weaponRange;
     }
 
     public override EquipmentType GetItemType()
     {
-        
         return EquipmentType.WEAPON;
     }
 
     public override bool UpdateItemStats()
     {
         base.UpdateItemStats();
-        Dictionary<BonusType, StatBonus> bonusTotals = new Dictionary<BonusType, StatBonus>();
+        Dictionary<BonusType, StatBonus> localBonusTotals = new Dictionary<BonusType, StatBonus>();
         List<Affix> affixes = new List<Affix>();
         affixes.AddRange(prefixes);
         affixes.AddRange(suffixes);
-        GetLocalModValues(bonusTotals, affixes, global::EquipmentType.WEAPON);
+        GetLocalModValues(localBonusTotals, affixes, global::EquipmentType.WEAPON);
 
-        physicalDamage.min = CalculateStat(Base.minDamage, BonusType.LOCAL_PHYSICAL_DAMAGE_MIN, bonusTotals);
-        physicalDamage.max = CalculateStat(Base.maxDamage, BonusType.LOCAL_PHYSICAL_DAMAGE_MAX, bonusTotals);
-        physicalDamage.min = CalculateStat(physicalDamage.min, BonusType.LOCAL_PHYSICAL_DAMAGE, bonusTotals);
-        physicalDamage.max = CalculateStat(physicalDamage.max, BonusType.LOCAL_PHYSICAL_DAMAGE, bonusTotals);
-        criticalChance = (float)CalculateStat(Base.criticalChance, BonusType.LOCAL_CRITICAL_CHANCE, bonusTotals);
-        attackSpeed = (float)CalculateStat(Base.attackSpeed, BonusType.LOCAL_ATTACK_SPEED, bonusTotals);
+        PhysicalDamage.min = CalculateStat(Base.minDamage, BonusType.LOCAL_PHYSICAL_DAMAGE_MIN, localBonusTotals);
+        PhysicalDamage.max = CalculateStat(Base.maxDamage, BonusType.LOCAL_PHYSICAL_DAMAGE_MAX, localBonusTotals);
+        PhysicalDamage.min = CalculateStat(PhysicalDamage.min, BonusType.LOCAL_PHYSICAL_DAMAGE, localBonusTotals);
+        PhysicalDamage.max = CalculateStat(PhysicalDamage.max, BonusType.LOCAL_PHYSICAL_DAMAGE, localBonusTotals);
+
+        weaponDamage[ElementType.FIRE].min = CalculateStat(0, BonusType.LOCAL_FIRE_DAMAGE_MIN, localBonusTotals);
+        weaponDamage[ElementType.FIRE].max = CalculateStat(0, BonusType.LOCAL_FIRE_DAMAGE_MAX, localBonusTotals);
+
+        weaponDamage[ElementType.COLD].min = CalculateStat(0, BonusType.LOCAL_COLD_DAMAGE_MIN, localBonusTotals);
+        weaponDamage[ElementType.COLD].max = CalculateStat(0, BonusType.LOCAL_COLD_DAMAGE_MAX, localBonusTotals);
+
+        weaponDamage[ElementType.LIGHTNING].min = CalculateStat(0, BonusType.LOCAL_LIGHTNING_DAMAGE_MIN, localBonusTotals);
+        weaponDamage[ElementType.LIGHTNING].max = CalculateStat(0, BonusType.LOCAL_LIGHTNING_DAMAGE_MAX, localBonusTotals);
+
+        weaponDamage[ElementType.EARTH].min = CalculateStat(0, BonusType.LOCAL_EARTH_DAMAGE_MIN, localBonusTotals);
+        weaponDamage[ElementType.EARTH].max = CalculateStat(0, BonusType.LOCAL_EARTH_DAMAGE_MAX, localBonusTotals);
+
+        weaponDamage[ElementType.DIVINE].min = CalculateStat(0, BonusType.LOCAL_DIVINE_DAMAGE_MIN, localBonusTotals);
+        weaponDamage[ElementType.DIVINE].max = CalculateStat(0, BonusType.LOCAL_DIVINE_DAMAGE_MAX, localBonusTotals);
+
+        weaponDamage[ElementType.VOID].min = CalculateStat(0, BonusType.LOCAL_VOID_DAMAGE_MIN, localBonusTotals);
+        weaponDamage[ElementType.VOID].max = CalculateStat(0, BonusType.LOCAL_VOID_DAMAGE_MAX, localBonusTotals);
+
+        CriticalChance = (float)CalculateStat(Base.criticalChance, BonusType.LOCAL_CRITICAL_CHANCE, localBonusTotals);
+        AttackSpeed = (float)CalculateStat(Base.attackSpeed, BonusType.LOCAL_ATTACK_SPEED, localBonusTotals);
 
         return true;
     }
 
     private void ResetDamageValues()
     {
+        
+    }
+
+    public MinMaxRange GetWeaponDamage(ElementType e)
+    {
+        if (weaponDamage.TryGetValue(e, out MinMaxRange range))
+            return range;
+        else
+            return new MinMaxRange();
     }
 
     public override HashSet<GroupType> GetGroupTypes()

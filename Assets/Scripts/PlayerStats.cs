@@ -6,6 +6,7 @@ public class PlayerStats
     public readonly static int maxEquipInventory = 250;
     public readonly static int maxArchetypeInventory = 100;
     public readonly static int maxAbilityInventory = 100;
+    public readonly static int maxHeroes = 100;
 
     public int gold;
     public int archetypeFragments;

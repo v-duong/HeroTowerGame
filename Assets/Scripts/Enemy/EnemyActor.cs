@@ -2,21 +2,24 @@
 
 public class EnemyActor : Actor
 {
-
-    private int nextMovementNode;
-
     [SerializeField]
     public int spawnerOriginIndex;
 
     [SerializeField]
     public int indexOfGoal;
 
+    private int nextMovementNode;
+
     public bool isBoss = false;
 
     // Use this for initialization
     public override void Start()
     {
-        Data.MaximumHealth = 40;
+        Data = new EnemyData
+        {
+            MaximumHealth = 10,
+            movementSpeed = 2
+        };
         Data.CurrentHealth = Data.MaximumHealth;
 
         nextMovementNode = 1;

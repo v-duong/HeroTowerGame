@@ -18,7 +18,7 @@ public class InventoryScrollWindow : MonoBehaviour
         }
     }
     private List<InventorySlot> SlotsInUse = new List<InventorySlot>();
-
+    bool showingAllItems = false;
 
 
     private void InitializeInventorySlots(List<Equipment> equipmentInventory)
@@ -39,13 +39,17 @@ public class InventoryScrollWindow : MonoBehaviour
 
     public void ShowAllEquipment()
     {
-
-        ClearSlots();
-        InitializeInventorySlots(GameManager.Instance.PlayerStats.equipmentInventory);
+        if (!showingAllItems)
+        {
+            ClearSlots();
+            InitializeInventorySlots(GameManager.Instance.PlayerStats.equipmentInventory);
+            showingAllItems = true;
+        }
     }
 
     public void ShowEquipmentBySlotType(EquipSlotType type)
     {
+        showingAllItems = false;
         ClearSlots();
         List<Equipment> e = GameManager.Instance.PlayerStats.equipmentInventory.FindAll(x => x.Base.equipSlot == type && !x.IsEquipped);
         foreach(Equipment equip in e)

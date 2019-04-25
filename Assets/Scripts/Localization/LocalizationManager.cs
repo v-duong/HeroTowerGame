@@ -15,10 +15,6 @@ public class LocalizationManager : MonoBehaviour
     private void Awake()
     {
         Instance = this;
-    }
-
-    private void Start()
-    {
         LoadLocalization();
     }
 
@@ -56,7 +52,10 @@ public class LocalizationManager : MonoBehaviour
         string value = "";
         if (abilityLocalizationData.TryGetValue("ability." + stringId + ".name", out value))
         {
-            output[0] = value;
+            if (value == "")
+                output[0] = stringId;
+            else
+                output[0] = value;
         }
 
         if (abilityLocalizationData.TryGetValue("ability." + stringId + ".text", out value))
@@ -65,6 +64,65 @@ public class LocalizationManager : MonoBehaviour
         }
 
         return output;
+    }
+
+    public string GetLocalizationText_Element(ElementType type)
+    {
+        return GetLocalizationText("elementType." + type.ToString());
+    }
+
+    public static string BuildElementalDamageString(string s, ElementType element)
+    {
+        switch (element)
+        {
+            case ElementType.FIRE:
+                return "<color=#e03131>" + s + "</color>";
+            case ElementType.COLD:
+                return "<color=#33b7e8>" + s + "</color>";
+            case ElementType.LIGHTNING:
+                return "<color=#9da800>" + s + "</color>";
+            case ElementType.EARTH:
+                return "<color=#7c5916>" + s + "</color>";
+            case ElementType.DIVINE:
+                return "<color=#f29e02>" + s + "</color>";
+            case ElementType.VOID:
+                return "<color=#56407c>" + s + "</color>";
+            default:
+                return s;
+    }
+}
+
+    public string GetLocalizationText_AbilityBaseDamage(int level, AbilityBase ability)
+    {
+        string s = "";
+        string damageText;
+        if (ability.abilityType == AbilityType.SPELL)
+        {
+            damageText = GetLocalizationText("UI_DEAL_DAMAGE_FIXED");
+            foreach (KeyValuePair<ElementType, AbilityDamageBase> damage in ability.damageLevels)
+            {
+                var d = damage.Value.damage[level];
+                s += string.Format(damageText, d.min, d.max, GetLocalizationText_Element(damage.Key)) + "\n";
+            }
+        }
+        else if (ability.abilityType == AbilityType.ATTACK)
+        {
+            damageText = GetLocalizationText("UI_DEAL_DAMAGE_WEAPON");
+            double d = ability.weaponMultiplier + ability.weaponMultiplierScaling * level;
+            s += string.Format(damageText, d) + "\n";
+        }
+        return s;
+    }
+
+    public string GetLocalizationText_AbilityCalculatedDamage(Dictionary<ElementType, MinMaxRange> damageDict)
+    {
+        string s = "";
+        string damageText = GetLocalizationText("UI_DEAL_DAMAGE_FIXED");
+        foreach (KeyValuePair<ElementType, MinMaxRange> damage in damageDict)
+        {
+            s += string.Format(damageText, damage.Value.min, damage.Value.max, GetLocalizationText_Element(damage.Key)) + "\n";
+        }
+        return s;
     }
 
     public string GetLocalizationText_Equipment(string stringId)

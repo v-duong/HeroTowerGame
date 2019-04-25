@@ -9,6 +9,8 @@ TagManager:
   - InventoryCanvas
   - HeroCanvas
   - ArchetypeCanvas
+  - LoadingManager
+  - BattleUICanvas
   layers:
   - Default
   - TransparentFX
@@ -22,7 +24,7 @@ TagManager:
   - Enemy
   - Hero
   - Bullet
-  - 
+  - Obstacles
   - 
   - 
   - 

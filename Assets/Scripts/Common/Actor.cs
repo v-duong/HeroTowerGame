@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public abstract class Actor : MonoBehaviour
+    
 {
     public ActorData Data { get; protected set; }
     public float actorTimeScale = 1f;

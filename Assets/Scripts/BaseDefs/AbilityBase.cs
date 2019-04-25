@@ -18,10 +18,13 @@ public class AbilityBase
     public readonly AbilityShotType abilityShotType;
 
     [JsonProperty]
-    public readonly float cooldown;
+    public readonly float attacksPerSec;
 
     [JsonProperty]
     public readonly float targetRange;
+
+    [JsonProperty]
+    public readonly float baseCritical;
 
     [JsonConverter(typeof(StringEnumConverter))]
     [JsonProperty]
@@ -35,6 +38,12 @@ public class AbilityBase
 
     [JsonProperty]
     public readonly int projectileCount;
+
+    [JsonProperty]
+    public readonly int projectileSpread;
+
+    [JsonProperty]
+    public readonly bool doesProjectileSpread;
 
     [JsonProperty]
     public readonly float areaRadius;
@@ -71,6 +80,25 @@ public class AbilityBase
 
     [JsonProperty]
     public readonly LinkedAbilityData linkedAbility;
+
+    [JsonProperty]
+    public readonly List<AbilityEffectData> appliedEffects;
+
+    [JsonProperty]
+    public readonly bool hasLinkedAbility;
+
+
+    public MinMaxRange GetDamageAtLevel(ElementType e, int level)
+    {
+        if (damageLevels.TryGetValue(e, out AbilityDamageBase damageBase))
+        {
+            return damageBase.damage[level];
+        }
+        else
+        {
+            return null;
+        }
+    }
 }
 
 [Serializable]
@@ -114,7 +142,7 @@ public class MinMaxRange
 public class LinkedAbilityData
 {
     [JsonProperty]
-    public readonly int abilityId;
+    public readonly string abilityId;
 
     [JsonConverter(typeof(StringEnumConverter))]
     [JsonProperty]
@@ -122,6 +150,14 @@ public class LinkedAbilityData
 
     [JsonProperty]
     public readonly float time;
+
+    [JsonProperty]
+    public readonly bool inheritsDamage;
+
+    [JsonProperty]
+    public readonly float inheritDamagePercent;
+    [JsonProperty]
+    public readonly float inheritDamagePercentScaling;
 }
 
 [Serializable]

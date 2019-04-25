@@ -6,24 +6,30 @@ public class UIManager : MonoBehaviour
 {
     public static UIManager Instance { get; private set; }
     public static int MenuBarSize = 60;
+    public readonly Vector2 referenceResolution = new Vector2(480, 854);
+    public readonly Vector2 fullWindowSize = new Vector2(480, 854 - MenuBarSize);
+    public readonly Vector2 itemWindowSize = new Vector2(400, 640);
+
     private Canvas _invCanvas;
     private Canvas _heroCanvas;
     private Canvas _archetypeCanvas;
+    private Canvas _battleUICanvas;
     private ScrollRect _invWindowRect;
     private EquipmentDetailWindow _itemWindow;
     private InventoryScrollWindow _invWindow;
     private HeroDetailWindow _heroWindow;
     private HeroScrollWindow _heroScrollWindow;
     private ScrollRect _heroWindowRect;
-    private ArchetypeUITreeWindow _archetypeTreeWindow;
     private ArchetypeNodeInfoPanel _archetypeNodeInfoPanel;
-    public readonly Vector2 referenceResolution = new Vector2(480, 854);
-    public readonly Vector2 fullWindowSize = new Vector2(480, 854 - MenuBarSize);
-    public readonly Vector2 itemWindowSize = new Vector2(400, 640);
+    private LoadingScript _loadingScreen;
+    private SummonScrollWindow _summonScrollWindow;
+
     public EquipSlotType SlotContext;
     public bool IsEquipSelectMode = false;
     public GameObject currentWindow;
     public Stack<GameObject> previousWindows = new Stack<GameObject>();
+
+    public static HeroData selectedHero;
 
     public void OpenWindow(GameObject window)
     {
@@ -73,6 +79,16 @@ public class UIManager : MonoBehaviour
             if (_archetypeCanvas == null)
                 _archetypeCanvas = GameObject.FindGameObjectWithTag("ArchetypeCanvas").GetComponent<Canvas>();
             return _archetypeCanvas;
+        }
+    }
+
+    public Canvas BattleUICanvas
+    {
+        get
+        {
+            if (_battleUICanvas == null)
+                _battleUICanvas = GameObject.FindGameObjectWithTag("BattleUICanvas").GetComponent<Canvas>();
+            return _battleUICanvas;
         }
     }
 
@@ -136,16 +152,6 @@ public class UIManager : MonoBehaviour
         }
     }
 
-    public ArchetypeUITreeWindow ArchetypeTreeWindow
-    {
-        get
-        {
-            if (_archetypeTreeWindow == null)
-                _archetypeTreeWindow = ArchetypeCanvas.GetComponentInChildren<ArchetypeUITreeWindow>(true);
-            return _archetypeTreeWindow;
-        }
-    }
-
     public ArchetypeNodeInfoPanel ArchetypeNodeInfoPanel
     {
         get
@@ -155,6 +161,27 @@ public class UIManager : MonoBehaviour
             return _archetypeNodeInfoPanel;
         }
     }
+
+    public LoadingScript LoadingScreen
+    {
+        get
+        {
+            if (_loadingScreen == null)
+                _loadingScreen = GameObject.FindGameObjectWithTag("LoadingManager").GetComponent<LoadingScript>();
+            return _loadingScreen;
+        }
+    }
+
+    public SummonScrollWindow SummonScrollWindow
+    {
+        get
+        {
+            if (_summonScrollWindow == null)
+                _summonScrollWindow = BattleUICanvas.GetComponentInChildren<SummonScrollWindow>(true);
+            return _summonScrollWindow;
+        }
+    }
+
 
     private void Start()
     {

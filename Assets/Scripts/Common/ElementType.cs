@@ -4,13 +4,14 @@ using System;
 
 public enum ElementType
 {
-    NONE, //none/physical
+    PHYSICAL, //none/physical
     FIRE,
     COLD,
     LIGHTNING,
     EARTH,
     DIVINE,
     VOID,
+    COUNT
 }
 
 public class ElementResistances

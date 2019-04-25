@@ -26,7 +26,22 @@ public class ArchetypeSkillNode
     public readonly string iconPath;
     [JsonProperty]
     public readonly List<int> children;
+
+    private AbilityBase abilityBase;
+    public AbilityBase GetAbility()
+    {
+        if (string.IsNullOrEmpty(abilityId))
+        {
+            return null;
+        }
+        else if (abilityBase == null)
+        {
+            abilityBase = ResourceManager.Instance.GetAbilityBase(abilityId);
+        }
+        return abilityBase;
+    }
 }
+
 
 public struct ScalingBonusProperty
 {
