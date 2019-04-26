@@ -11,6 +11,7 @@ TagManager:
   - ArchetypeCanvas
   - LoadingManager
   - BattleUICanvas
+  - HighlightMap
   layers:
   - Default
   - TransparentFX
@@ -20,14 +21,14 @@ TagManager:
   - UI
   - 
   - 
-  - Paths
+  - EnemyDetect
+  - AllyDetect
+  - BothDetect
+  - 
   - Enemy
   - Hero
-  - Bullet
   - Obstacles
-  - 
-  - 
-  - 
+  - Paths
   - 
   - 
   - 

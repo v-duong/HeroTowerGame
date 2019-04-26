@@ -4,8 +4,6 @@ using UnityEngine;
 
 public class HeroActor : Actor
 {
-    [SerializeField]
-    private Collider2D collider;
 
     public void Initialize(HeroData data)
     {
@@ -22,7 +20,8 @@ public class HeroActor : Actor
         }
 
     }
-    public void Update()
+
+    public void OnEnable()
     {
         foreach (var x in instancedAbilitiesList)
         {
@@ -30,8 +29,19 @@ public class HeroActor : Actor
         }
     }
 
+    private void OnDisable()
+    {
+        foreach (var x in instancedAbilitiesList)
+        {
+            x.StopFiring(this);
+        }
+    }
+
     public override void Death()
     {
-        
+        foreach (var x in instancedAbilitiesList)
+        {
+            x.StopFiring(this);
+        }
     }
 }

@@ -41,7 +41,7 @@ public class InputManager : MonoBehaviour
 
         if (!IsSummoningMode)
         {
-            if (Input.GetMouseButtonDown(0))
+            if (Input.GetMouseButtonDown(0) && !EventSystem.current.IsPointerOverGameObject())
             {
                 isDragging = true;
             }
@@ -64,14 +64,14 @@ public class InputManager : MonoBehaviour
 
                 if (hit.collider != null)
                 {
-                    if (hit.collider.gameObject.layer == 8 || hit.collider.gameObject.layer == 14)
+                    if (hit.collider.gameObject.layer >= 11)
                         return;
                     else
                     {
 
                     }
                 }
-                spawnLocation.z = 2;
+                spawnLocation.z = -3;
                 selectedHero.transform.position = spawnLocation;
                 selectedHero.gameObject.SetActive(true);
                 IsSummoningMode = false;

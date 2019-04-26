@@ -1,4 +1,5 @@
 ﻿using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -8,12 +9,10 @@ public class GameManager : MonoBehaviour
 
     [SerializeField]
     protected Projectile projectilePrefab;
-
     public ProjectilePool ProjectilePool;
 
     [SerializeField]
     protected EnemyActor enemyPrefab;
-
     public EnemyPool EnemyPool;
 
     public PlayerStats PlayerStats;
@@ -72,21 +71,22 @@ public class GameManager : MonoBehaviour
 
     public void MoveToMainMenu()
     {
+        ProjectilePool.ReturnAll();
         isInBattle = false;
-        SceneManager.UnloadSceneAsync("battleUI");
+
         SceneManager.UnloadSceneAsync(currentSceneName);
         SceneManager.LoadScene("mainMenu", LoadSceneMode.Additive);
+        
     }
 
     public void MoveToBattle(string sceneName)
     {
+        SceneManager.LoadScene("loadingScene", LoadSceneMode.Additive);
         isInBattle = true;
         currentSceneName = sceneName;
         StartCoroutine(LoadBattleRoutine(sceneName));
-        SceneManager.LoadScene("loadingScene", LoadSceneMode.Additive);
+        Camera.main.transform.position = new Vector3(0, 0, -10);
         SceneManager.UnloadSceneAsync("mainMenu");
-
-       
     }
 
     IEnumerator LoadBattleRoutine(string sceneName)
@@ -97,21 +97,24 @@ public class GameManager : MonoBehaviour
         {
             yield return null;
         }
+        HighlightMap.Instance.gameObject.SetActive(false);
         Scene scene = SceneManager.GetSceneByName(sceneName);
         SceneManager.SetActiveScene(scene);
         
         
 
-        yield return LoadBattleUI();
+        yield return LoadBattleUI(scene);
     }
 
-    IEnumerator LoadBattleUI()
+    IEnumerator LoadBattleUI(Scene sceneToMergeTo)
     {
         AsyncOperation asyncOperation = SceneManager.LoadSceneAsync("battleUI", LoadSceneMode.Additive);
         while (!asyncOperation.isDone)
         {
             yield return null;
         }
+        Scene scene = SceneManager.GetSceneByName("battleUI");
+        SceneManager.MergeScenes(scene, sceneToMergeTo);
         SummonScrollWindow summonScroll = UIManager.Instance.SummonScrollWindow;
         foreach (HeroData data in PlayerStats.heroList)
         {

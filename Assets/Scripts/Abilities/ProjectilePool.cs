@@ -21,4 +21,9 @@ public class ProjectilePool : ObjectPool<Projectile>
     {
         Return(p);
     }
+
+    public void ReturnAll()
+    {
+        ReturnAllActive();
+    }
 }

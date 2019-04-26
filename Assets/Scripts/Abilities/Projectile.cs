@@ -6,9 +6,11 @@ public class Projectile : MonoBehaviour
     public bool canHitAllies = false;
     public bool canHitEnemies = false;
     public float currentSpeed;
-    public float timeToLive = 1.5f;
+    public float timeToLive = 2.5f;
     public Dictionary<ElementType, int> projectileDamage;
     public Vector3 currentHeading;
+    public LinkedActorAbility linkedAbility;
+    public float inheritedDamagePercent;
 
     //public List<AbilityEffect> attachedEffects;
 
@@ -20,6 +22,10 @@ public class Projectile : MonoBehaviour
     // Update is called once per frame
     private void FixedUpdate()
     {
+        if (timeToLive <= 0)
+        {
+            ReturnToPool();
+        }
         Move();
         timeToLive -= Time.fixedDeltaTime;
     }
@@ -28,14 +34,32 @@ public class Projectile : MonoBehaviour
     {
         if (!this.isActiveAndEnabled)
             return;
-        int damage = 0;
-        foreach (int d in projectileDamage.Values)
-            damage += d;
-        collision.gameObject.GetComponent<Actor>().ApplyDamage(damage);
-        
+        //Debug.Log(collision.gameObject);
+        Actor actor = collision.gameObject.GetComponent<Actor>();
+        Vector3 targetPosition;
+        if (actor != null)
+        {
+            targetPosition = actor.transform.position;
+            int damage = 0;
+            foreach (int d in projectileDamage.Values)
+                damage += d;
+            actor.ApplyDamage(damage);
+        } else
+        {
+            return;
+        }
+
         var _collider = GetComponent<Collider2D>();
         _collider.enabled = false;
+        if (linkedAbility != null)
+        {
+            Dictionary<ElementType, int> newDamage = new Dictionary<ElementType, int>();
+            foreach(KeyValuePair<ElementType, int> damage in projectileDamage)
+            {
 
+            }
+            linkedAbility.Fire(this.transform.position, targetPosition);
+        }
         ReturnToPool();
     }
 

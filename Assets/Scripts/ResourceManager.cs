@@ -1,6 +1,9 @@
 ﻿using Newtonsoft.Json;
 using System.Collections.Generic;
 using UnityEngine;
+using System;
+using System.IO;
+
 
 public class ResourceManager : MonoBehaviour
 {
@@ -12,6 +15,8 @@ public class ResourceManager : MonoBehaviour
 
     [SerializeField]
     private GameObject heroPrefab;
+    [SerializeField]
+    private GameObject abilityContainerPrefab;
 
     private Dictionary<string, AbilityBase> abilityList;
     private Dictionary<string, EquipmentBase> equipmentList;
@@ -26,7 +31,9 @@ public class ResourceManager : MonoBehaviour
     public int PrefixCount { get; private set; }
     public int SuffixCount { get; private set; }
     public int ArchetypeCount { get; private set; }
+    AssetBundle jsonBundle;
     public GameObject HeroPrefab => heroPrefab;
+    public GameObject AbilityContainerPrefab => abilityContainerPrefab;
 
     public AbilityBase GetAbilityBase(string id)
     {
@@ -180,7 +187,7 @@ public class ResourceManager : MonoBehaviour
     {
         abilityList = new Dictionary<string, AbilityBase>();
 
-        List<AbilityBase> temp = DeserializeFromPath<List<AbilityBase>>("json/abilities/abilities");
+        List<AbilityBase> temp = DeserializeFromPath_Resources<List<AbilityBase>>("json/abilities/abilities");
         foreach (AbilityBase ability in temp)
         {
             abilityList.Add(ability.idName, ability);
@@ -191,19 +198,19 @@ public class ResourceManager : MonoBehaviour
     {
         equipmentList = new Dictionary<string, EquipmentBase>();
 
-        List<EquipmentBase> temp = DeserializeFromPath<List<EquipmentBase>>("json/items/armor");
+        List<EquipmentBase> temp = DeserializeFromPath_Resources<List<EquipmentBase>>("json/items/armor");
         foreach (EquipmentBase equip in temp)
         {
             equipmentList.Add(equip.idName, equip);
         }
 
-        temp = DeserializeFromPath<List<EquipmentBase>>("json/items/weapon");
+        temp = DeserializeFromPath_Resources<List<EquipmentBase>>("json/items/weapon");
         foreach (EquipmentBase equip in temp)
         {
             equipmentList.Add(equip.idName, equip);
         }
 
-        temp = DeserializeFromPath<List<EquipmentBase>>("json/items/accessory");
+        temp = DeserializeFromPath_Resources<List<EquipmentBase>>("json/items/accessory");
         foreach (EquipmentBase equip in temp)
         {
             equipmentList.Add(equip.idName, equip);
@@ -214,7 +221,7 @@ public class ResourceManager : MonoBehaviour
     {
         archetypeList = new Dictionary<string, ArchetypeBase>();
 
-        List<ArchetypeBase> temp = DeserializeFromPath<List<ArchetypeBase>>("json/archetypes/archetypes");
+        List<ArchetypeBase> temp = DeserializeFromPath_Resources<List<ArchetypeBase>>("json/archetypes/archetypes");
         foreach (ArchetypeBase arche in temp)
         {
             archetypeList.Add(arche.idName, arche);
@@ -248,7 +255,8 @@ public class ResourceManager : MonoBehaviour
                 return null;
         }
 
-        List<AffixBase> temp = DeserializeFromPath<List<AffixBase>>("json/affixes/" + s);
+        List<AffixBase> temp = DeserializeFromPath_Resources<List<AffixBase>>("json/affixes/" + s);
+        //List<AffixBase> temp = DeserializeFromPath_Bundle<List<AffixBase>>(s);
         foreach (AffixBase affix in temp)
         {
             affix.SetBonusTagType();
@@ -257,10 +265,16 @@ public class ResourceManager : MonoBehaviour
         return affixes;
     }
 
-    private T DeserializeFromPath<T>(string path)
+    private T DeserializeFromPath_Resources<T>(string path)
     {
         return JsonConvert.DeserializeObject<T>(Resources.Load<TextAsset>(path).text);
     }
+
+    private T DeserializeFromPath_Bundle<T>(string path)
+    {
+        return JsonConvert.DeserializeObject<T>(jsonBundle.LoadAsset<TextAsset>(path).text);
+    }
+
 
     private void Awake()
     {
@@ -270,6 +284,8 @@ public class ResourceManager : MonoBehaviour
 
     private void Initialize()
     {
+        //jsonBundle = AssetBundle.LoadFromFile(Path.Combine(Application.streamingAssetsPath,"jsonfiles"));
+
         LoadAbilities();
         LoadEquipment();
         prefixList = LoadAffixes(AffixType.PREFIX);

@@ -205,8 +205,11 @@ public enum AbilityLinkInheritType
 public enum AbilityShotType
 {
     PROJECTILE,
-    HITSCAN,
+    HITSCAN_SINGLE,
+    ARC_AOE,
     RADIAL_AOE,
+    NOVA_AOE,
+    NOVA_ARC_AOE,
     LINEAR_AOE
 }
 

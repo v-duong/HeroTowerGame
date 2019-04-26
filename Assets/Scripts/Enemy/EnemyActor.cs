@@ -13,7 +13,7 @@ public class EnemyActor : Actor
     public bool isBoss = false;
 
     // Use this for initialization
-    public override void Start()
+    public void Start()
     {
         Data = new EnemyData
         {

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class Goal : MonoBehaviour {
+
     [SerializeField]
     public int goalIndex;
 

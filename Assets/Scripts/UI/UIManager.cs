@@ -23,6 +23,7 @@ public class UIManager : MonoBehaviour
     private ArchetypeNodeInfoPanel _archetypeNodeInfoPanel;
     private LoadingScript _loadingScreen;
     private SummonScrollWindow _summonScrollWindow;
+    private HighlightMap _highlightMap;
 
     public EquipSlotType SlotContext;
     public bool IsEquipSelectMode = false;
@@ -179,6 +180,16 @@ public class UIManager : MonoBehaviour
             if (_summonScrollWindow == null)
                 _summonScrollWindow = BattleUICanvas.GetComponentInChildren<SummonScrollWindow>(true);
             return _summonScrollWindow;
+        }
+    }
+
+    public HighlightMap HighlightMap
+    {
+        get
+        {
+            if (_highlightMap == null)
+                _highlightMap = GameObject.FindGameObjectWithTag("HighlightMap").GetComponent<HighlightMap>();
+            return _highlightMap;
         }
     }
 

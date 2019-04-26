@@ -287,6 +287,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   heroPrefab: {fileID: 1259325507012432, guid: 216bc762bb109564fac8abb093eda570, type: 3}
+  abilityContainerPrefab: {fileID: 5517317699776473116, guid: 7e860e6fa18b2b24396cbd63e034707c,
+    type: 3}
 --- !u!4 &1360361551
 Transform:
   m_ObjectHideFlags: 0
@@ -330,6 +332,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2e15dc51fa7c11d47844d9d9438bedf3, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  IsSummoningMode: 0
+  selectedHero: {fileID: 0}
 --- !u!4 &1382361696
 Transform:
   m_ObjectHideFlags: 0
@@ -488,7 +492,7 @@ Camera:
   m_Depth: -1
   m_CullingMask:
     serializedVersion: 2
-    m_Bits: 3639
+    m_Bits: 30519
   m_RenderingPath: -1
   m_TargetTexture: {fileID: 0}
   m_TargetDisplay: 0

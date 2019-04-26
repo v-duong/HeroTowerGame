@@ -3,26 +3,12 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public abstract class Actor : MonoBehaviour
-    
 {
     public ActorData Data { get; protected set; }
     public float actorTimeScale = 1f;
     protected UIHealthBar healthBar;
-    protected List<ActorAbility> instancedAbilitiesList;
-    public List<Actor> targetList;
-
-
-    public virtual void Awake()
-    {
-        if (instancedAbilitiesList == null)
-            instancedAbilitiesList = new List<ActorAbility>();
-        if (targetList == null)
-            targetList = new List<Actor>();
-    }
-
-    public virtual void Start()
-    {
-    }
+    protected List<ActorAbility> instancedAbilitiesList = new List<ActorAbility>();
+    protected List<AbilityColliderContainer> abilityColliders = new List<AbilityColliderContainer>();
 
     public void InitializeHealthBar()
     {
@@ -40,10 +26,22 @@ public abstract class Actor : MonoBehaviour
     public void AddAbilityToList(ActorAbility ability)
     {
         instancedAbilitiesList.Add(ability);
-        var collider = this.transform.gameObject.AddComponent<CircleCollider2D>();
+        GameObject newObject = Instantiate(ResourceManager.Instance.AbilityContainerPrefab, transform);
+        AbilityColliderContainer abilityContainer = newObject.GetComponent<AbilityColliderContainer>();
+        abilityContainer.ability = ability;
+        abilityContainer.parentActor = this;
+        abilityContainer.transform.position = transform.position;
+
+        var collider = newObject.AddComponent<CircleCollider2D>();
         collider.radius = ability.abilityBase.targetRange;
-        ability.collider = collider;
+        ability.abilityCollider = collider;
         collider.isTrigger = true;
+
+        if (ability.TargetType == AbilityTargetType.ENEMY)
+        {
+            collider.gameObject.layer = LayerMask.NameToLayer("EnemyDetect");
+        }
+
     }
 
     public void ModifyCurrentHealth(int mod)

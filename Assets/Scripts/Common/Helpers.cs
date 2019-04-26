@@ -145,8 +145,9 @@ public static class Helpers
         {
             multi.Add(BonusType.PROJECTILE_DAMAGE);
         }
-        else if (shotType == AbilityShotType.HITSCAN)
+        else if (shotType == AbilityShotType.HITSCAN_SINGLE)
         {
+            multi.Add(BonusType.PROJECTILE_DAMAGE);
         }
         else
         {
