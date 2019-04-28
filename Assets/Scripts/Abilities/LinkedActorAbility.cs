@@ -26,81 +26,16 @@ public class LinkedActorAbility : ActorAbility
 
     public override void UpdateAbilityStats(HeroData data)
     {
-        UpdateAbilityDamage(data);
-    }
-
-    protected override void UpdateAbilityDamage(HeroData data)
-    {
-        if (abilityBase.abilityType == AbilityType.AURA || abilityBase.abilityType == AbilityType.SELF_BUFF)
-            return;
-
-        StatBonus minBonus, maxBonus, multiBonus;
-        AbilityType abilityType = abilityBase.abilityType;
-        var elementValues = Enum.GetValues(typeof(ElementType));
-
-        Dictionary<ElementType, AbilityDamageBase> damageLevels;
-
-        if (linkedAbilityData.inheritsDamage)
-            damageLevels = parentDamageLevels;
-        else
-            damageLevels = abilityBase.damageLevels;
-
-        foreach (ElementType e in elementValues)
-        {
-            MinMaxRange newDamageRange = new MinMaxRange();
-
-            if (damageLevels.ContainsKey(e))
-            {
-                MinMaxRange abilityBaseDamage = damageLevels[e].damage[abilityLevel];
-                newDamageRange.min = abilityBaseDamage.min;
-                newDamageRange.max = abilityBaseDamage.max;
-            }
-            if (abilityBase.abilityType == AbilityType.ATTACK)
-            {
-                if (data.GetEquipmentInSlot(EquipSlotType.WEAPON) is Weapon weapon)
-                {
-                    float weaponMulti = abilityBase.weaponMultiplier + abilityBase.weaponMultiplierScaling * abilityLevel;
-                    MinMaxRange weaponDamage = weapon.GetWeaponDamage(e);
-                    newDamageRange.min = (int)(weaponDamage.min * weaponMulti);
-                    newDamageRange.max = (int)(weaponDamage.max * weaponMulti);
-                }
-            }
-
-            List<BonusType> min = new List<BonusType>();
-            List<BonusType> max = new List<BonusType>();
-            List<BonusType> multi = new List<BonusType>();
-            minBonus = new StatBonus();
-            maxBonus = new StatBonus();
-            multiBonus = new StatBonus();
-
-            Helpers.GetDamageTypes(e, abilityType, abilityBase.abilityShotType, abilityBase.groupTypes, min, max, multi);
-
-            foreach (BonusType bonusType in min)
-            {
-                data.GetTotalStatBonus(bonusType, minBonus);
-            }
-            foreach (BonusType bonusType in max)
-            {
-                data.GetTotalStatBonus(bonusType, maxBonus);
-            }
-            foreach (BonusType bonusType in multi)
-            {
-                data.GetTotalStatBonus(bonusType, multiBonus);
-            }
-
-            newDamageRange.min = (int)(minBonus.CalculateStat(newDamageRange.min) * abilityBase.flatDamageMultiplier);
-            newDamageRange.max = (int)(maxBonus.CalculateStat(newDamageRange.max) * abilityBase.flatDamageMultiplier);
-
-            newDamageRange.min = multiBonus.CalculateStat(newDamageRange.min);
-            newDamageRange.max = multiBonus.CalculateStat(newDamageRange.max);
-
-            if (newDamageRange.IsZero())
-                damageBase.Remove(e);
-            else
-            {
-                damageBase[e] = newDamageRange;
-            }
+        if (linkedAbilityData.inheritsDamage) {
+            float damageModifier = linkedAbilityData.inheritDamagePercent + linkedAbilityData.inheritDamagePercentScaling * abilityLevel;
+            UpdateAbilityDamage(data, parentDamageLevels, damageModifier);
         }
+        else
+            UpdateAbilityDamage(data, abilityBase.damageLevels);
+
+        UpdateAbility_AbilityType(data);
+        UpdateAbility_ShotType(data);
+
     }
 
     public void Fire(Vector3 origin, Vector3 target)

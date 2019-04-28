@@ -33,8 +33,9 @@ public class InputManager : MonoBehaviour
         mainCamera = Camera.main;
     }
 
+
     // Update is called once per frame
-    private void LateUpdate()
+    private void Update()
     {
         if (!GameManager.Instance.isInBattle)
             return;

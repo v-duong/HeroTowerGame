@@ -59,5 +59,5 @@ public enum ConsumableType
     REMOVE_AFFIX,
     RESET_NORMAL,
     VALUE_REROLL,
-    //RESTRICTOR_EXTENSION,
+    ENCHANTMENT_EXTENSION,
 }

@@ -4,6 +4,17 @@ using UnityEngine;
 
 public class HeroActor : Actor
 {
+    public new HeroData Data
+    {
+        get
+        {
+            return (HeroData)base.Data;
+        }
+        private set
+        {
+            base.Data = value;
+        }
+    }
 
     public void Initialize(HeroData data)
     {
@@ -43,5 +54,10 @@ public class HeroActor : Actor
         {
             x.StopFiring(this);
         }
+    }
+
+    public override ActorType GetActorType()
+    {
+        return ActorType.ALLY;
     }
 }

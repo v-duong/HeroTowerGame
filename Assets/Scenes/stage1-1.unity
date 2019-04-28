@@ -4798,28 +4798,14 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3343919836f438d4d9427ebc7ea54eda, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  projectilePrefab: {fileID: 114322440621193234, guid: 53c78f19f32f39e4db0933865cbd0efe,
-    type: 3}
-  enemyPrefab: {fileID: 114675168251884226, guid: 27d98af55284370498d47dd2e66fd1ff,
-    type: 3}
   waves:
   - enemyList:
     - enemyType: {fileID: 114675168251884226, guid: 27d98af55284370498d47dd2e66fd1ff,
         type: 3}
-      enemyCount: 2
+      enemyCount: 1
     - enemyType: {fileID: 114675168251884226, guid: 27d98af55284370498d47dd2e66fd1ff,
         type: 3}
-      enemyCount: 4
-    delayBetweenSpawns: 0.3
-    delayUntilNextWave: 15
-    spawnerIndex: 0
-  - enemyList:
-    - enemyType: {fileID: 114675168251884226, guid: 27d98af55284370498d47dd2e66fd1ff,
-        type: 3}
-      enemyCount: 2
-    - enemyType: {fileID: 114675168251884226, guid: 27d98af55284370498d47dd2e66fd1ff,
-        type: 3}
-      enemyCount: 4
+      enemyCount: 0
     delayBetweenSpawns: 0.3
     delayUntilNextWave: 15
     spawnerIndex: 0

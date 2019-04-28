@@ -3,13 +3,14 @@ using System.Collections;
 using System.Collections.Generic;
 
 using UnityEngine;
+using UnityEngine.Tilemaps;
 
 [Serializable]
 public class ActorAbility
 {
     public readonly AbilityBase abilityBase;
     public int abilityLevel;
-    public Collider2D abilityCollider;
+    public AbilityColliderContainer abilityCollider;
     public Dictionary<ElementType, MinMaxRange> damageBase = new Dictionary<ElementType, MinMaxRange>();
     public AbilityTargetType TargetType { get; private set; }
     public float AreaLength { get; private set; }
@@ -53,6 +54,7 @@ public class ActorAbility
                 LinkedAbility = new LinkedActorAbility(ability.linkedAbility, ability.damageLevels);
             else
                 LinkedAbility = new LinkedActorAbility(ability.linkedAbility);
+            LinkedAbility.abilityLevel = abilityLevel;
         }
     }
 
@@ -83,10 +85,16 @@ public class ActorAbility
         }
     }
 
+    public void UpdateAbilityLevel(int level)
+    {
+        abilityLevel = level;
+        if (LinkedAbility != null)
+            LinkedAbility.abilityLevel = level;
+    }
+
     public virtual void UpdateAbilityStats(HeroData data)
     {
-        Debug.Log("Updating Ability");
-        UpdateAbilityDamage(data);
+        UpdateAbilityDamage(data, abilityBase.damageLevels);
         UpdateAbility_AbilityType(data);
         UpdateAbility_ShotType(data);
         if (LinkedAbility != null)
@@ -156,7 +164,7 @@ public class ActorAbility
             Cooldown = 0.001f;
     }
 
-    protected virtual void UpdateAbilityDamage(HeroData data)
+    protected void UpdateAbilityDamage(HeroData data, Dictionary<ElementType, AbilityDamageBase> damageLevels, float damageModifier = 1.0f)
     {
         if (abilityBase.abilityType == AbilityType.AURA || abilityBase.abilityType == AbilityType.SELF_BUFF)
             return;
@@ -169,17 +177,17 @@ public class ActorAbility
         {
             MinMaxRange newDamageRange = new MinMaxRange();
 
-            if (abilityBase.damageLevels.ContainsKey(e))
+            if (damageLevels.ContainsKey(e))
             {
-                MinMaxRange abilityBaseDamage = abilityBase.GetDamageAtLevel(e, abilityLevel);
+                MinMaxRange abilityBaseDamage = damageLevels[e].damage[abilityLevel];
                 newDamageRange.min = abilityBaseDamage.min;
                 newDamageRange.max = abilityBaseDamage.max;
             }
             if (abilityBase.abilityType == AbilityType.ATTACK)
             {
+                float weaponMulti = abilityBase.weaponMultiplier + abilityBase.weaponMultiplierScaling * abilityLevel;
                 if (data.GetEquipmentInSlot(EquipSlotType.WEAPON) is Weapon weapon)
                 {
-                    float weaponMulti = abilityBase.weaponMultiplier + abilityBase.weaponMultiplierScaling * abilityLevel;
                     MinMaxRange weaponDamage = weapon.GetWeaponDamage(e);
                     newDamageRange.min = (int)(weaponDamage.min * weaponMulti);
                     newDamageRange.max = (int)(weaponDamage.max * weaponMulti);
@@ -213,6 +221,9 @@ public class ActorAbility
 
             newDamageRange.min = multiBonus.CalculateStat(newDamageRange.min);
             newDamageRange.max = multiBonus.CalculateStat(newDamageRange.max);
+
+            newDamageRange.min = (int)(newDamageRange.min * damageModifier);
+            newDamageRange.max = (int)(newDamageRange.max * damageModifier);
 
             if (newDamageRange.IsZero())
                 damageBase.Remove(e);
@@ -377,7 +388,40 @@ public class ActorAbility
 
     protected void FireProjectile()
     {
-        FireProjectile(abilityCollider.transform.position, CurrentTarget.transform.position, CalculateDamageDict());
+        if (CurrentTarget.GetActorType() == ActorType.ENEMY)
+        {
+            EnemyActor enemy = CurrentTarget as EnemyActor;
+            float enemySpeed = enemy.Data.movementSpeed;
+            Tilemap tilemap = StageManager.Instance.PathTilemap;
+            Vector3? nextNode;
+            Vector2 currentPosition = abilityCollider.transform.position;
+            float threshold = 2 + UnityEngine.Random.Range(0f, 1f);
+
+            for (int i = 0; i < 5; i++)
+            {
+                nextNode = enemy.GetMovementNode(i);
+                if (nextNode != null)
+                {
+                    float moveTime = i / enemySpeed;
+                    Vector2 heading = ((Vector2)nextNode - currentPosition).normalized * ProjectileSpeed * moveTime;
+                    float magnitude = ((Vector2)nextNode - (currentPosition + heading)).sqrMagnitude;
+                    if (magnitude < threshold)
+                    {
+                        FireProjectile(abilityCollider.transform.position, (Vector3)nextNode, CalculateDamageDict());
+                        return;
+                    }
+                }
+                else
+                {
+                    break;
+                }
+            }
+            FireProjectile(abilityCollider.transform.position, CurrentTarget.transform.position, CalculateDamageDict());
+        }
+        else
+        {
+            FireProjectile(abilityCollider.transform.position, CurrentTarget.transform.position, CalculateDamageDict());
+        }
     }
 
     protected void FireProjectile(Vector3 origin, Vector3 target, Dictionary<ElementType, int> damageDict)

@@ -2,6 +2,18 @@
 
 public class EnemyActor : Actor
 {
+    public new EnemyData Data
+    {
+        get
+        {
+            return (EnemyData)base.Data;
+        }
+        private set
+        {
+            base.Data = value;
+        }
+    }
+
     [SerializeField]
     public int spawnerOriginIndex;
 
@@ -17,8 +29,8 @@ public class EnemyActor : Actor
     {
         Data = new EnemyData
         {
-            MaximumHealth = 10,
-            movementSpeed = 2
+            MaximumHealth = 355,
+            movementSpeed = 5
         };
         Data.CurrentHealth = Data.MaximumHealth;
 
@@ -29,8 +41,11 @@ public class EnemyActor : Actor
     // Update is called once per frame
     public void Update()
     {
-        Move();
-        healthBar.UpdatePosition(this.transform);
+        if (this.gameObject.activeSelf)
+        {
+            Move();
+            healthBar.UpdatePosition(this.transform);
+        }
     }
 
     private void Move()
@@ -50,12 +65,29 @@ public class EnemyActor : Actor
         }
     }
 
+    public Vector3? GetMovementNode(int lookahead)
+    {
+        var nodes = ParentSpawner.GetNodesToGoal(indexOfGoal);
+        int index = nextMovementNode + lookahead;
+        if (index > nodes.Count-1)
+        {
+            return null;
+        }
+        return nodes[index];
+    }
+
     public override void Death()
     {
         StageManager.Instance.WaveManager.enemiesSpawned -= 1;
         StageManager.Instance.WaveManager.currentEnemyList.Remove(this);
-        this.healthBar.transform.gameObject.SetActive(false);
-        this.transform.gameObject.SetActive(false);
+        
+        this.gameObject.SetActive(false);
+        this.healthBar.gameObject.SetActive(false);
+    }
+
+    public override ActorType GetActorType()
+    {
+        return ActorType.ENEMY;
     }
 
     [SerializeField]

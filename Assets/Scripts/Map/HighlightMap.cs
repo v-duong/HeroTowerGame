@@ -5,11 +5,5 @@ using UnityEngine.Tilemaps;
 
 public class HighlightMap : MonoBehaviour
 {
-    public static HighlightMap Instance;
     public Tilemap tilemap;
-
-    private void Awake()
-    {
-        Instance = this;
-    }
 }

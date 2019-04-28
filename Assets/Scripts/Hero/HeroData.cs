@@ -541,7 +541,7 @@ public class HeroData : ActorData
         {
             if (abilitySlot.Ability != null)
             {
-                abilitySlot.Ability.abilityLevel = abilitySlot.GetAbilityLevel();
+                abilitySlot.UpdateAbilityLevel();
                 abilitySlot.Ability.UpdateAbilityStats(this);
             }
         }
@@ -570,6 +570,11 @@ public class HeroData : ActorData
         public int GetAbilityLevel()
         {
             return source.GetAbilityLevel();
+        }
+
+        public void UpdateAbilityLevel()
+        {
+            Ability.UpdateAbilityLevel(GetAbilityLevel());
         }
 
         public void ClearAbility()

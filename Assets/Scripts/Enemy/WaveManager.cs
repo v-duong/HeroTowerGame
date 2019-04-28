@@ -5,7 +5,6 @@ using System;
 using System.Linq;
 
 public class WaveManager : MonoBehaviour {
-    public static WaveManager Instance;
 
     private List<Spawner> spawnerList;
     private List<Goal> goalList;
@@ -14,11 +13,6 @@ public class WaveManager : MonoBehaviour {
     private int currentWave;
     private bool clearedAll;
     public int enemiesSpawned;
-
-    private void Awake()
-    {
-        Instance = this;
-    }
 
     // Use this for initialization
     void Start () {

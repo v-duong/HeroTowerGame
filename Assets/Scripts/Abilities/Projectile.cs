@@ -49,15 +49,10 @@ public class Projectile : MonoBehaviour
             return;
         }
 
-        var _collider = GetComponent<Collider2D>();
-        _collider.enabled = false;
+        var collider = GetComponent<Collider2D>();
+        collider.enabled = false;
         if (linkedAbility != null)
         {
-            Dictionary<ElementType, int> newDamage = new Dictionary<ElementType, int>();
-            foreach(KeyValuePair<ElementType, int> damage in projectileDamage)
-            {
-
-            }
             linkedAbility.Fire(this.transform.position, targetPosition);
         }
         ReturnToPool();

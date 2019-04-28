@@ -21,7 +21,7 @@ public class TilemapPath : MonoBehaviour {
             Vector3 position = tilemap.CellToWorld(localPlace);
             if (tilemap.HasTile(localPlace))
             {
-                HighlightMap.Instance.tilemap.SetTile(localPlace, null);
+                StageManager.Instance.HighlightMap.tilemap.SetTile(localPlace, null);
             }
         }
     }

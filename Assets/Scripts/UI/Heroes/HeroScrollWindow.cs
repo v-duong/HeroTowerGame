@@ -7,7 +7,7 @@ public class HeroScrollWindow : MonoBehaviour
     private HeroSlot SlotPrefab;
 
     private List<HeroSlot> SlotsInUse = new List<HeroSlot>();
-    private Stack<HeroSlot> AvailableSlots = new Stack<HeroSlot>();
+    private Queue<HeroSlot> AvailableSlots = new Queue<HeroSlot>();
     private bool initialized = false;
 
     private void OnEnable()
@@ -20,7 +20,7 @@ public class HeroScrollWindow : MonoBehaviour
         foreach (HeroSlot slot in SlotsInUse)
         {
             slot.gameObject.SetActive(false);
-            AvailableSlots.Push(slot);
+            AvailableSlots.Enqueue(slot);
         }
         SlotsInUse.Clear();
         foreach (HeroData hero in list)
@@ -34,7 +34,7 @@ public class HeroScrollWindow : MonoBehaviour
         HeroSlot slot;
         if (AvailableSlots.Count > 0)
         {
-            slot = AvailableSlots.Pop();
+            slot = AvailableSlots.Dequeue();
         }
         else
         {

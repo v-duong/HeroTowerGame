@@ -82,7 +82,7 @@ public class GameManager : MonoBehaviour
     public void MoveToBattle(string sceneName)
     {
         SceneManager.LoadScene("loadingScene", LoadSceneMode.Additive);
-        isInBattle = true;
+
         currentSceneName = sceneName;
         StartCoroutine(LoadBattleRoutine(sceneName));
         Camera.main.transform.position = new Vector3(0, 0, -10);
@@ -97,7 +97,7 @@ public class GameManager : MonoBehaviour
         {
             yield return null;
         }
-        HighlightMap.Instance.gameObject.SetActive(false);
+        StageManager.Instance.HighlightMap.gameObject.SetActive(false);
         Scene scene = SceneManager.GetSceneByName(sceneName);
         SceneManager.SetActiveScene(scene);
         
@@ -126,5 +126,6 @@ public class GameManager : MonoBehaviour
             summonScroll.AddHeroActor(heroActor);
         }
         UIManager.Instance.LoadingScreen.endLoadingScreen = true;
+        isInBattle = true;
     }
 }

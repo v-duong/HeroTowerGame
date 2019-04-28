@@ -9,6 +9,7 @@ public abstract class Actor : MonoBehaviour
     protected UIHealthBar healthBar;
     protected List<ActorAbility> instancedAbilitiesList = new List<ActorAbility>();
     protected List<AbilityColliderContainer> abilityColliders = new List<AbilityColliderContainer>();
+    public abstract ActorType GetActorType();
 
     public void InitializeHealthBar()
     {
@@ -26,15 +27,17 @@ public abstract class Actor : MonoBehaviour
     public void AddAbilityToList(ActorAbility ability)
     {
         instancedAbilitiesList.Add(ability);
+
         GameObject newObject = Instantiate(ResourceManager.Instance.AbilityContainerPrefab, transform);
         AbilityColliderContainer abilityContainer = newObject.GetComponent<AbilityColliderContainer>();
         abilityContainer.ability = ability;
         abilityContainer.parentActor = this;
         abilityContainer.transform.position = transform.position;
+        ability.abilityCollider = abilityContainer;
 
         var collider = newObject.AddComponent<CircleCollider2D>();
         collider.radius = ability.abilityBase.targetRange;
-        ability.abilityCollider = collider;
+        abilityContainer.collider = collider;
         collider.isTrigger = true;
 
         if (ability.TargetType == AbilityTargetType.ENEMY)
@@ -50,6 +53,8 @@ public abstract class Actor : MonoBehaviour
             Data.CurrentHealth = Data.MaximumHealth;
         else
             Data.CurrentHealth -= mod;
+
+        healthBar.UpdateHealthBar(Data.MaximumHealth, Data.CurrentHealth);
         if (Data.CurrentHealth <= 0)
         {
             Death();
@@ -60,6 +65,12 @@ public abstract class Actor : MonoBehaviour
     public void ApplyDamage(int damage)
     {
         ModifyCurrentHealth(damage);
-        healthBar.UpdateHealthBar(Data.MaximumHealth, Data.CurrentHealth);
     }
+}
+
+
+public enum ActorType
+{
+    ENEMY,
+    ALLY
 }

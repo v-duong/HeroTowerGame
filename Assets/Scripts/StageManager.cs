@@ -8,6 +8,11 @@ public class StageManager : MonoBehaviour
     public static StageManager Instance { get; private set; }
     public int accumulatedConsumables;
 
+    private WaveManager _waveManager;
+    private Tilemap _pathTilemap;
+    private GameObject _worldCanvas;
+    private HighlightMap _highlightMap;
+
     public Tilemap PathTilemap
     {
         get
@@ -39,9 +44,18 @@ public class StageManager : MonoBehaviour
             return _worldCanvas;
         }
     }
-    private WaveManager _waveManager;
-    private Tilemap _pathTilemap;
-    private GameObject _worldCanvas;
+
+    public HighlightMap HighlightMap
+    {
+        get
+        {
+            if (_highlightMap == null)
+                _highlightMap = GameObject.FindGameObjectWithTag("HighlightMap").GetComponent<HighlightMap>();
+            return _highlightMap;
+        }
+    }
+
+
 
     void Awake()
     {
