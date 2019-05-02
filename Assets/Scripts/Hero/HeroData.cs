@@ -66,6 +66,7 @@ public class HeroData : ActorData
         BaseResolveRating = 0;
         BaseAttackPhasing = 0;
         BaseMagicPhasing = 0;
+        movementSpeed = 3f;
         Resistances = new ElementResistances();
         equipList = new Equipment[10];
         archetypeList = new HeroArchetypeData[2];

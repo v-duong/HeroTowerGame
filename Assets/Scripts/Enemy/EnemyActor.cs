@@ -20,8 +20,6 @@ public class EnemyActor : Actor
     [SerializeField]
     public int indexOfGoal;
 
-    private int nextMovementNode;
-
     public bool isBoss = false;
 
     // Use this for initialization
@@ -54,11 +52,12 @@ public class EnemyActor : Actor
         var nodes = ParentSpawner.GetNodesToGoal(indexOfGoal);
         if (nodes != null && nextMovementNode < nodes.Count)
         {
-            float dist = Vector3.Distance(nodes[nextMovementNode], this.transform.position);
+            //float dist = Vector3.Distance(nodes[nextMovementNode], this.transform.position);
+            float dist = Vector3.SqrMagnitude(nodes[nextMovementNode] - this.transform.position);
 
             this.transform.position = Vector3.MoveTowards(this.transform.position, nodes[nextMovementNode], Data.movementSpeed * dt * actorTimeScale);
 
-            if (dist <= 1.5f * Data.movementSpeed * dt)
+            if (dist <= 0.1f * Data.movementSpeed * Data.movementSpeed * dt)
             {
                 nextMovementNode++;
             }

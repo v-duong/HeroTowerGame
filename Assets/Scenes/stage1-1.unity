@@ -4119,7 +4119,7 @@ Canvas:
   m_OverrideSorting: 0
   m_OverridePixelPerfect: 0
   m_SortingBucketNormalizedSize: 0
-  m_AdditionalShaderChannelsFlag: 25
+  m_AdditionalShaderChannelsFlag: 0
   m_SortingLayerID: 0
   m_SortingOrder: 0
   m_TargetDisplay: 0
@@ -4802,11 +4802,11 @@ MonoBehaviour:
   - enemyList:
     - enemyType: {fileID: 114675168251884226, guid: 27d98af55284370498d47dd2e66fd1ff,
         type: 3}
-      enemyCount: 1
+      enemyCount: 6
     - enemyType: {fileID: 114675168251884226, guid: 27d98af55284370498d47dd2e66fd1ff,
         type: 3}
-      enemyCount: 0
-    delayBetweenSpawns: 0.3
+      enemyCount: 5
+    delayBetweenSpawns: 0.5
     delayUntilNextWave: 15
     spawnerIndex: 0
   currentEnemyList: []

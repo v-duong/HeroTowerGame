@@ -42,7 +42,7 @@ public class Spawner : MonoBehaviour
     {
         foreach (var goal in StageManager.Instance.WaveManager.GoalList)
         {
-            nodesToGoal.Add(Pathfinding.FindPath(transform.position, goal.transform.position, StageManager.Instance.PathTilemap));
+            nodesToGoal.Add(Pathfinding.FindPath(transform.position, goal.transform.position, StageManager.Instance.PathTilemap, false));
         }
         nodesAreOutdated = false;
     }

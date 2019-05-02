@@ -20,8 +20,8 @@ public class ActorAbility
     public float ProjectileSize { get; private set; }
     public float ProjectileSpeed { get; private set; }
     public int ProjectilePierce { get; private set; }
-    public float TargetRange { get; private set; }
     public float CriticalChance { get; private set; }
+    public float TargetRange { get; private set; }
     public int ProjectileCount { get; private set; }
     public LinkedActorAbility LinkedAbility { get; private set; }
 
@@ -44,9 +44,9 @@ public class ActorAbility
         ProjectileSize = abilityBase.projectileSize;
         ProjectileSpeed = abilityBase.projectileSpeed;
 
-        TargetRange = abilityBase.targetRange;
-        ProjectileCount = abilityBase.projectileCount;
         CriticalChance = abilityBase.baseCritical;
+        ProjectileCount = abilityBase.projectileCount;
+        TargetRange = abilityBase.targetRange;
 
         if (abilityBase.hasLinkedAbility)
         {
@@ -397,15 +397,19 @@ public class ActorAbility
             Vector2 currentPosition = abilityCollider.transform.position;
             float threshold = 2 + UnityEngine.Random.Range(0f, 1f);
 
+            //Grab next movement steps for enemy then calculate enemy move time to
+            //that node. If travel time of projectile and enemy of node are within 
+            //error then shoot toward that node.
+            //Only calculate few nodes ahead for performance and game balance.
             for (int i = 0; i < 5; i++)
             {
                 nextNode = enemy.GetMovementNode(i);
                 if (nextNode != null)
                 {
-                    float moveTime = i / enemySpeed;
-                    Vector2 heading = ((Vector2)nextNode - currentPosition).normalized * ProjectileSpeed * moveTime;
-                    float magnitude = ((Vector2)nextNode - (currentPosition + heading)).sqrMagnitude;
-                    if (magnitude < threshold)
+                    float enemyMoveTime = i / enemySpeed;
+                    Vector2 projDirectionToNode = ((Vector2)nextNode - currentPosition).normalized * ProjectileSpeed * enemyMoveTime;
+                    float distance = ((Vector2)nextNode - (currentPosition + projDirectionToNode)).sqrMagnitude;
+                    if (distance < threshold)
                     {
                         FireProjectile(abilityCollider.transform.position, (Vector3)nextNode, CalculateDamageDict());
                         return;

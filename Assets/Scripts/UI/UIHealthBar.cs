@@ -15,7 +15,7 @@ public class UIHealthBar : MonoBehaviour {
 
     public void Initialize(float maxHealth, float currentHealth, Transform actorTransform)
     {
-        this.transform.SetParent(StageManager.Instance.WorldCanvas.transform);
+        this.transform.SetParent(StageManager.Instance.WorldCanvas.transform, false);
         UpdateHealthBar(maxHealth, currentHealth);
         UpdatePosition(actorTransform);
     }
@@ -33,9 +33,11 @@ public class UIHealthBar : MonoBehaviour {
         m_cachedHealthPercent.x = (float)(currentHealth / maxHealth);
         _healthBarFill.anchorMax = m_cachedHealthPercent;
 
+        /*
         if (m_cachedHealthPercent.x == 1.0f)
             this.gameObject.SetActive(false);
         else
             this.gameObject.SetActive(true);
+            */
     }
 }

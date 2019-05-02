@@ -11,17 +11,14 @@ public abstract class Actor : MonoBehaviour
     protected List<AbilityColliderContainer> abilityColliders = new List<AbilityColliderContainer>();
     public abstract ActorType GetActorType();
 
+    protected int nextMovementNode;
+
+    public abstract void Death();
+
     public void InitializeHealthBar()
     {
         healthBar = GetComponentInChildren<UIHealthBar>();
         healthBar.Initialize(Data.MaximumHealth, Data.CurrentHealth, this.transform);
-    }
-
-
-    public abstract void Death();
-
-    public void Shoot(ActorData target, AbilityBase ability)
-    {
     }
 
     public void AddAbilityToList(ActorAbility ability)

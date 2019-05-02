@@ -8,6 +8,7 @@ public class InputManager : MonoBehaviour
     public bool IsSummoningMode = false;
     public HeroActor selectedHero = null;
     public Action onSummonCallback = null;
+    public bool IsMovementMode = false;
 
     private bool isDragging;
     private static float dragspeed = 0.35f;
@@ -33,29 +34,13 @@ public class InputManager : MonoBehaviour
         mainCamera = Camera.main;
     }
 
-
     // Update is called once per frame
     private void Update()
     {
         if (!GameManager.Instance.isInBattle)
             return;
 
-        if (!IsSummoningMode)
-        {
-            if (Input.GetMouseButtonDown(0) && !EventSystem.current.IsPointerOverGameObject())
-            {
-                isDragging = true;
-            }
-
-            if (!Input.GetMouseButton(0)) isDragging = false;
-
-            if (isDragging)
-            {
-                Vector3 move = new Vector3(Input.GetAxis("Mouse X") * dragspeed, Input.GetAxis("Mouse Y") * dragspeed, 0);
-                mainCamera.transform.Translate(-move, Space.Self);
-            }
-        }
-        else
+        if (IsSummoningMode)
         {
             if (Input.GetMouseButtonDown(0) && !EventSystem.current.IsPointerOverGameObject())
             {
@@ -69,7 +54,6 @@ public class InputManager : MonoBehaviour
                         return;
                     else
                     {
-
                     }
                 }
                 spawnLocation.z = -3;
@@ -97,6 +81,55 @@ public class InputManager : MonoBehaviour
                 transform.Translate(new Vector3(0, speed * Time.deltaTime, 0));
             }
             */
+        }
+        else if (IsMovementMode)
+        {
+            Vector3 moveLocation = mainCamera.ScreenToWorldPoint(Input.mousePosition);
+            moveLocation.z = -3;
+
+            if (Input.GetMouseButtonDown(0) && !EventSystem.current.IsPointerOverGameObject())
+            {
+                selectedHero.StartMovement(moveLocation);
+                IsMovementMode = false;
+                selectedHero = null;
+            }
+        }
+        else
+        {
+            if (Input.GetMouseButtonDown(0) && !EventSystem.current.IsPointerOverGameObject())
+            {
+                
+                LayerMask mask = LayerMask.GetMask("Hero", "Enemy");
+                Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
+                RaycastHit2D hit = Physics2D.Raycast(ray.origin, ray.direction, 50, mask);
+
+                if (hit.collider != null)
+                {
+                    if (hit.collider.gameObject.layer == 13)
+                    {
+                        HeroActor hero = hit.collider.gameObject.GetComponent<HeroActor>();
+                        if (hero != null)
+                        {
+                            selectedHero = hero;
+                            IsMovementMode = true;
+                            return;
+                        }
+                        return;
+                    }
+                    else
+                    {
+                    }
+                }
+                isDragging = true;
+            }
+
+            if (!Input.GetMouseButton(0)) isDragging = false;
+
+            if (isDragging)
+            {
+                Vector3 move = new Vector3(Input.GetAxis("Mouse X") * dragspeed, Input.GetAxis("Mouse Y") * dragspeed, 0);
+                mainCamera.transform.Translate(-move, Space.Self);
+            }
         }
     }
 }
