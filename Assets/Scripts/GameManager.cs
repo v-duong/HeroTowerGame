@@ -101,8 +101,6 @@ public class GameManager : MonoBehaviour
         Scene scene = SceneManager.GetSceneByName(sceneName);
         SceneManager.SetActiveScene(scene);
         
-        
-
         yield return LoadBattleUI(scene);
     }
 
@@ -118,7 +116,7 @@ public class GameManager : MonoBehaviour
         SummonScrollWindow summonScroll = UIManager.Instance.SummonScrollWindow;
         foreach (HeroData data in PlayerStats.heroList)
         {
-            GameObject actor = Instantiate(ResourceManager.Instance.HeroPrefab);
+            GameObject actor = Instantiate(ResourceManager.Instance.HeroPrefab.gameObject);
             data.InitHeroActor(actor);
             HeroActor heroActor = actor.GetComponent<HeroActor>();
             if (heroActor == null)

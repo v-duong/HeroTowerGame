@@ -43,8 +43,6 @@ public abstract class ActorData
         return CurrentHealth;
     }
 
-
-
     public bool IsAlive
     {
         get { return GetCurrentHealth() > 0.0f; }

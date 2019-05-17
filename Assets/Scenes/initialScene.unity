@@ -287,6 +287,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   heroPrefab: {fileID: 1259325507012432, guid: 216bc762bb109564fac8abb093eda570, type: 3}
+  enemyPrefab: {fileID: 1382977793396928, guid: 27d98af55284370498d47dd2e66fd1ff,
+    type: 3}
   abilityContainerPrefab: {fileID: 5517317699776473116, guid: 7e860e6fa18b2b24396cbd63e034707c,
     type: 3}
 --- !u!4 &1360361551

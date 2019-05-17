@@ -19,7 +19,6 @@ public class CreateCommonLocalization
             string json = System.IO.File.ReadAllText(filepath);
             localization = JsonConvert.DeserializeObject<SortedDictionary<string, string>>(json);
             HashSet<string> keys = new HashSet<string>(localization.Keys);
-            Debug.Log(localization.Count);
             
             List<string> bonusTypes = new List<string>(Enum.GetNames(typeof(BonusType)));
 
@@ -49,6 +48,9 @@ public class CreateCommonLocalization
 
             foreach (string x in elementTypes)
             {
+                Debug.Log(x);
+                if (string.Compare(x ,"COUNT") == 0)
+                    continue;
                 string localizationKey = "elementType." + x;
                 if (!localization.ContainsKey(localizationKey))
                     localization.Add(localizationKey, "");
@@ -71,8 +73,6 @@ public class CreateCommonLocalization
             string uiKeysText = System.IO.File.ReadAllText(filepath2);
             
             string[] uiKeys = uiKeysText.Split(',');
-            Debug.Log(uiKeys.Length);
-
             foreach (string x in uiKeys)
             {
                 string localizationKey = x;

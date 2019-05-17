@@ -16,6 +16,8 @@ public class ResourceManager : MonoBehaviour
     [SerializeField]
     private GameObject heroPrefab;
     [SerializeField]
+    private GameObject enemyPrefab;
+    [SerializeField]
     private GameObject abilityContainerPrefab;
 
     private Dictionary<string, AbilityBase> abilityList;
@@ -25,6 +27,7 @@ public class ResourceManager : MonoBehaviour
     private Dictionary<string, AffixBase> innateList;
     private Dictionary<string, AffixBase> enchantmentList;
     private Dictionary<string, ArchetypeBase> archetypeList;
+    private Dictionary<string, EnemyBase> enemyList;
 
     public int AbilityCount { get; private set; }
     public int EquipmentCount { get; private set; }
@@ -33,6 +36,7 @@ public class ResourceManager : MonoBehaviour
     public int ArchetypeCount { get; private set; }
     AssetBundle jsonBundle;
     public GameObject HeroPrefab => heroPrefab;
+    public GameObject EnemyPrefab => enemyPrefab;
     public GameObject AbilityContainerPrefab => abilityContainerPrefab;
 
     public AbilityBase GetAbilityBase(string id)
@@ -127,6 +131,10 @@ public class ResourceManager : MonoBehaviour
                 if (innateList == null)
                     innateList = LoadAffixes(type);
                 return innateList[id];
+            case AffixType.ENCHANTMENT:
+                if (enchantmentList == null)
+                    enchantmentList = LoadAffixes(type);
+                return enchantmentList[id];
 
             default:
                 return null;
@@ -217,6 +225,17 @@ public class ResourceManager : MonoBehaviour
         }
     }
 
+    private void LoadEnemies()
+    {
+        enemyList = new Dictionary<string, EnemyBase>();
+
+        List<EnemyBase> temp = DeserializeFromPath_Resources<List<EnemyBase>>("json/enemies/enemies");
+        foreach(EnemyBase enemy in temp)
+        {
+            enemyList.Add(enemy.idName, enemy);
+        }
+    }
+
     private void LoadArchetypes()
     {
         archetypeList = new Dictionary<string, ArchetypeBase>();
@@ -290,7 +309,10 @@ public class ResourceManager : MonoBehaviour
         LoadEquipment();
         prefixList = LoadAffixes(AffixType.PREFIX);
         suffixList = LoadAffixes(AffixType.SUFFIX);
+        innateList = LoadAffixes(AffixType.INNATE);
+        enchantmentList = LoadAffixes(AffixType.ENCHANTMENT);
         LoadArchetypes();
+        LoadEnemies();
 
         AbilityCount = abilityList.Count;
         EquipmentCount = equipmentList.Count;

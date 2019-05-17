@@ -87,6 +87,8 @@ public class AbilityBase
     [JsonProperty]
     public readonly bool hasLinkedAbility;
 
+    
+
 
     public MinMaxRange GetDamageAtLevel(ElementType e, int level)
     {
@@ -138,7 +140,6 @@ public class MinMaxRange
     }
 }
 
-[Serializable]
 public class LinkedAbilityData
 {
     [JsonProperty]
@@ -160,7 +161,6 @@ public class LinkedAbilityData
     public readonly float inheritDamagePercentScaling;
 }
 
-[Serializable]
 public class AbilityEffectData
 {
     [JsonConverter(typeof(StringEnumConverter))]

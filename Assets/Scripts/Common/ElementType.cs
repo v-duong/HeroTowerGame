@@ -21,10 +21,18 @@ public class ElementResistances
     public ElementResistances()
     {
         dict = new Dictionary<ElementType, int>();
-        var elementEnums = Enum.GetValues(typeof(ElementType));
-        foreach (ElementType element in elementEnums)
+        for(int i = 0; i < (int)ElementType.COUNT; i++)
         {
-            dict.Add(element, 0);
+            dict[(ElementType)i] = 0;
+        }
+    }
+
+    public ElementResistances(Dictionary<ElementType, int> value)
+    {
+        dict = new Dictionary<ElementType, int>();
+        foreach (KeyValuePair<ElementType, int> e in value)
+        {
+            dict[e.Key] = e.Value;
         }
     }
 

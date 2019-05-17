@@ -33,11 +33,11 @@ public class WaveManager : MonoBehaviour {
         {
             for (int j = 0; j < waveToSpawn.enemyList[i].enemyCount; j++)
             {
-                Spawner spawner = SpawnerList[waveToSpawn.spawnerIndex];
+                Spawner spawner = SpawnerList[waveToSpawn.enemyList[i].spawnerIndex];
                 yield return new WaitForSeconds(waveToSpawn.delayBetweenSpawns);
-                var enemy = Instantiate(waveToSpawn.enemyList[i].enemyType, spawner.transform.position, spawner.transform.rotation);
-                enemy.ParentSpawner = spawner;
-                currentEnemyList.Add(enemy);
+                var enemy = Instantiate(ResourceManager.Instance.EnemyPrefab, spawner.transform.position, spawner.transform.rotation);
+                enemy.GetComponent<EnemyActor>().ParentSpawner = spawner;
+                currentEnemyList.Add(enemy.GetComponent<EnemyActor>());
                 enemiesSpawned++;
             }
         }
