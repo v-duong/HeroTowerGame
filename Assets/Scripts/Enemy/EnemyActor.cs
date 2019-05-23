@@ -22,28 +22,38 @@ public class EnemyActor : Actor
 
     public bool isBoss = false;
 
-    // Use this for initialization
-    public void Start()
+    public EnemyActor()
     {
         Data = new EnemyData
         {
-            MaximumHealth = 355,
+            MaximumHealth = 60,
             movementSpeed = 5
         };
         Data.CurrentHealth = Data.MaximumHealth;
+    }
 
+    // Use this for initialization
+    private void Start()
+    {
         nextMovementNode = 1;
         InitializeHealthBar();
     }
 
     // Update is called once per frame
-    public void Update()
+    private void Update()
     {
         if (this.gameObject.activeSelf)
         {
             Move();
             healthBar.UpdatePosition(this.transform);
         }
+    }
+
+    public void SetBase(EnemyBase enemyBase)
+    {
+        Data.MaximumHealth = (int)(enemyBase.level * enemyBase.healthScaling + 30);
+        Data.CurrentHealth = Data.MaximumHealth;
+        Data.movementSpeed = enemyBase.movementSpeed;
     }
 
     private void Move()

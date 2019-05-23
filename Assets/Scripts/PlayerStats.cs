@@ -17,6 +17,7 @@ public class PlayerStats
     public List<Equipment> equipmentInventory;
     public List<ArchetypeItem> archetypeInventory;
     public List<HeroData> heroList;
+    public List<HeroData> activeHeroList;
 
     public PlayerStats()
     {
@@ -31,6 +32,7 @@ public class PlayerStats
         equipmentInventory = new List<Equipment>();
         archetypeInventory = new List<ArchetypeItem>();
         heroList = new List<HeroData>();
+        activeHeroList = new List<HeroData>();
     }
 
     public void AddEquipmentToInventory(Equipment newEquipment)

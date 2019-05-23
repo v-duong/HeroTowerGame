@@ -28,6 +28,7 @@ public class ResourceManager : MonoBehaviour
     private Dictionary<string, AffixBase> enchantmentList;
     private Dictionary<string, ArchetypeBase> archetypeList;
     private Dictionary<string, EnemyBase> enemyList;
+    private Dictionary<string, StageInfoCollection> stageList;
 
     public int AbilityCount { get; private set; }
     public int EquipmentCount { get; private set; }
@@ -65,6 +66,26 @@ public class ResourceManager : MonoBehaviour
             LoadEquipment();
         if (equipmentList.ContainsKey(id))
             return equipmentList[id];
+        else
+            return null;
+    }
+
+    public StageInfoCollection GetStageInfo(string id)
+    {
+        if (stageList == null)
+            LoadStages();
+        if (stageList.ContainsKey(id))
+            return stageList[id];
+        else
+            return null;
+    }
+
+    public EnemyBase GetEnemyBase(string id)
+    {
+        if (enemyList == null)
+            LoadEnemies();
+        if (enemyList.ContainsKey(id))
+            return enemyList[id];
         else
             return null;
     }
@@ -247,6 +268,19 @@ public class ResourceManager : MonoBehaviour
         }
     }
 
+    private void LoadStages()
+    {
+        stageList = new Dictionary<string, StageInfoCollection>();
+
+        List<StageInfoCollection> temp = DeserializeFromPath_Resources<List<StageInfoCollection>>("json/stages/stages");
+        foreach (StageInfoCollection stage in temp)
+        {
+            string name = "stage" + stage.act + "-" + stage.stage;
+            stageList.Add(name, stage);
+            Debug.Log(name);
+        }
+    }
+
     private Dictionary<string, AffixBase> LoadAffixes(AffixType type, int offset = 0)
     {
         string s;
@@ -313,6 +347,7 @@ public class ResourceManager : MonoBehaviour
         enchantmentList = LoadAffixes(AffixType.ENCHANTMENT);
         LoadArchetypes();
         LoadEnemies();
+        LoadStages();
 
         AbilityCount = abilityList.Count;
         EquipmentCount = equipmentList.Count;

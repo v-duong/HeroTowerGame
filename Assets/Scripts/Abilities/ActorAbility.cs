@@ -111,7 +111,7 @@ public class ActorAbility
 
             ProjectileSpeed = (float)projSpeedBonus.CalculateStat(abilityBase.projectileSpeed);
             ProjectilePierce = projPierceBonus.CalculateStat(0);
-            ProjectileCount = projSpeedBonus.CalculateStat(abilityBase.projectileCount);
+            ProjectileCount = projCountBonus.CalculateStat(abilityBase.projectileCount);
         }
     }
 
@@ -398,7 +398,7 @@ public class ActorAbility
             float threshold = 2 + UnityEngine.Random.Range(0f, 1f);
 
             //Grab next movement steps for enemy then calculate enemy move time to
-            //that node. If travel time of projectile and enemy of node are within 
+            //that node. If travel time of projectile and enemy of node are within
             //error then shoot toward that node.
             //Only calculate few nodes ahead for performance and game balance.
             for (int i = 0; i < 5; i++)
@@ -448,7 +448,6 @@ public class ActorAbility
         {
             spreadAngle = abilityBase.projectileSpread;
         }
-
         for (int i = 0; i < ProjectileCount; i++)
         {
             var p = GameManager.Instance.ProjectilePool.GetProjectile();

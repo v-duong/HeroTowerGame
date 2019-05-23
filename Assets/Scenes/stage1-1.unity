@@ -97,7 +97,7 @@ LightmapSettings:
     m_ShowResolutionOverlay: 1
     m_ExportTrainingData: 0
   m_LightingDataAsset: {fileID: 0}
-  m_UseShadowmask: 1
+  m_UseShadowmask: 0
 --- !u!196 &4
 NavMeshSettings:
   serializedVersion: 2
@@ -4780,7 +4780,7 @@ GameObject:
   - component: {fileID: 963618084}
   - component: {fileID: 963618083}
   m_Layer: 0
-  m_Name: WaveManager
+  m_Name: BattleManager
   m_TagString: WaveManager
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

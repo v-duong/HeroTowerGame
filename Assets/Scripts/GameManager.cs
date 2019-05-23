@@ -100,6 +100,8 @@ public class GameManager : MonoBehaviour
         StageManager.Instance.HighlightMap.gameObject.SetActive(false);
         Scene scene = SceneManager.GetSceneByName(sceneName);
         SceneManager.SetActiveScene(scene);
+        StageInfoCollection stage = ResourceManager.Instance.GetStageInfo(sceneName);
+        StageManager.Instance.WaveManager.SetWaves(stage.difficultyList[0].enemyWaves);
         
         yield return LoadBattleUI(scene);
     }

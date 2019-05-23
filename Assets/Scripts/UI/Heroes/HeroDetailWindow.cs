@@ -19,6 +19,7 @@ public class HeroDetailWindow : MonoBehaviour
     public static HeroData hero;
 
     public List<HeroEquipmentSlot> equipSlots;
+    public Button activeButton;
 
     public void OnEnable()
     {
@@ -105,6 +106,21 @@ public class HeroDetailWindow : MonoBehaviour
     {
         HeroAbilityScrollWindow.slot = slot;
         UIManager.Instance.OpenWindow(abilityScrollRect.gameObject);
+    }
+
+    public void SetHeroActiveForBattle()
+    {
+        if (!hero.IsActive)
+        {
+            GameManager.Instance.PlayerStats.activeHeroList.Add(hero);
+            hero.IsActive = true;
+            activeButton.GetComponentInChildren<Text>().text = "Active";
+        } else
+        {
+            GameManager.Instance.PlayerStats.activeHeroList.Remove(hero);
+            hero.IsActive = false;
+            activeButton.GetComponentInChildren<Text>().text = "Inactive";
+        }
     }
 
     public void DebugLevelUp()

@@ -4,7 +4,6 @@ using UnityEngine;
 
 public class HeroData : ActorData
 {
-
     public float BaseStrength { get; private set; }
     public float BaseIntelligence { get; private set; }
     public float BaseAgility { get; private set; }
@@ -31,6 +30,8 @@ public class HeroData : ActorData
 
     public HeroArchetypeData PrimaryArchetype => archetypeList[0];
     public HeroArchetypeData SecondaryArchetype => archetypeList[1];
+
+    public bool IsActive;
 
     private HeroData()
     {
@@ -67,6 +68,7 @@ public class HeroData : ActorData
         BaseAttackPhasing = 0;
         BaseMagicPhasing = 0;
         movementSpeed = 3f;
+        IsActive = false;
         Resistances = new ElementResistances();
         equipList = new Equipment[10];
         archetypeList = new HeroArchetypeData[2];
@@ -86,6 +88,8 @@ public class HeroData : ActorData
         return hero;
     }
 
+    
+
     public void LevelUp()
     {
         if (Level == 100)
@@ -100,6 +104,15 @@ public class HeroData : ActorData
         BaseWill += primaryArchetype.WillGrowth;
 
         UpdateHeroAllStats();
+    }
+
+    public void AddExperience(int experience)
+    {
+        Experience += experience;
+        while (Experience > Helpers.GetRequiredExperience(Level))
+        {
+            LevelUp();
+        }
     }
 
     public bool EquipAbility(AbilityBase ability, int slot, IAbilitySource source)

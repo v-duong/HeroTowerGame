@@ -9,6 +9,10 @@ public static class Helpers
     public static readonly Color RARE_COLOR = new Color(1.0f, 0.9f, 0.25f);
     public static readonly Color NORMAL_COLOR = new Color(0.7f, 0.7f, 0.7f);
 
+    public static double SCALING_FACTOR = 1.042;
+    public static double LEVEL_SCALING_FACTOR = 0.402;
+    public static double ENEMY_SCALING = 1.012;
+
     private static List<BonusType> maxDamageTypes;
     private static List<BonusType> damageTypes;
 
@@ -167,6 +171,22 @@ public static class Helpers
     public static Vector3 ReturnCenterOfCell(Vector3 v)
     {
         return new Vector3((float)Math.Round(v.x * 2f) / 2f, (float)Math.Round(v.y * 2f) / 2f, v.z);
+    }
+
+    public static double GetEnemyHealthScaling(double level)
+    {
+        // formula
+        // (Scaling*(EnemyScaling))^(level/1.5 - 22) * (level*levelFactor) + level*2
+        double enemyFactor = Math.Pow(SCALING_FACTOR * ENEMY_SCALING, level / 1.5 - 23) * level * LEVEL_SCALING_FACTOR + level * 2;
+
+        return enemyFactor;
+    }
+
+    public static int GetRequiredExperience(int level)
+    {
+        double exp = Math.Pow(SCALING_FACTOR * ENEMY_SCALING, level * 50) * level * 20 * LEVEL_SCALING_FACTOR;
+
+        return (int)exp;
     }
 
     public static Color ReturnRarityColor(RarityType rarity)

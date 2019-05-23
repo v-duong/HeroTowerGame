@@ -8,13 +8,13 @@ using UnityEngine;
 public class StageInfoCollection
 {
     [JsonProperty]
-    private string idName;
+    public readonly string idName;
     [JsonProperty]
-    private int act;
+    public readonly int act;
     [JsonProperty]
-    private int stage;
+    public readonly int stage;
     [JsonProperty]
-    private List<StageInfoBase> difficultyList;
+    public readonly List<StageInfoBase> difficultyList;
 }
 
 public class StageInfoBase
@@ -69,12 +69,14 @@ public class EnemyWaveItem
     public readonly int enemyCount;
     [JsonProperty]
     public readonly int spawnerIndex; // which spawn point to spawn from
+    [JsonProperty]
+    public readonly int goalIndex; // which goal to head toward
 }
 
 public class WeightBase
 {
     [JsonProperty]
-    public string idName;
+    public readonly string idName;
     [JsonProperty]
-    public int weight;
+    public readonly int weight;
 }
