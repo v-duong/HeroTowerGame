@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Tilemaps;
 
 public static class Helpers
 {
@@ -208,6 +209,14 @@ public static class Helpers
             default:
                 return Color.black;
         }
+    }
+
+    public static Vector3 ReturnTilePosition(Tilemap tilemap, Vector3 position, int z = 0)
+    {
+        Vector3Int cellPos = tilemap.WorldToCell(position);
+        Vector3 returnVal = tilemap.GetCellCenterWorld(cellPos);
+        returnVal.z = z;
+        return returnVal;
     }
 }
 

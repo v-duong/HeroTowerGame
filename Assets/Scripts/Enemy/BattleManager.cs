@@ -61,7 +61,6 @@ public class BattleManager : MonoBehaviour
         EnemyBase enemyBase;
         for (int i = 0; i < waveToSpawn.enemyList.Count; i++)
         {
-            Debug.Log(i);
             enemyBase = ResourceManager.Instance.GetEnemyBase(waveToSpawn.enemyList[i].enemyName);
             for (int j = 0; j < waveToSpawn.enemyList[i].enemyCount; j++)
             {

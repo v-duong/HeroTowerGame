@@ -23,6 +23,7 @@ public class UIManager : MonoBehaviour
     private ArchetypeNodeInfoPanel _archetypeNodeInfoPanel;
     private LoadingScript _loadingScreen;
     private SummonScrollWindow _summonScrollWindow;
+    private BattleCharInfoPanel _battleCharInfoPanel;
 
     public EquipSlotType SlotContext;
     public bool IsEquipSelectMode = false;
@@ -179,6 +180,16 @@ public class UIManager : MonoBehaviour
             if (_summonScrollWindow == null)
                 _summonScrollWindow = BattleUICanvas.GetComponentInChildren<SummonScrollWindow>(true);
             return _summonScrollWindow;
+        }
+    }
+
+    public BattleCharInfoPanel BattleCharInfoPanel
+    {
+        get
+        {
+            if (_battleCharInfoPanel == null)
+                _battleCharInfoPanel = BattleUICanvas.GetComponentInChildren<BattleCharInfoPanel>(true);
+            return _battleCharInfoPanel;
         }
     }
 

@@ -45,6 +45,9 @@ public class HeroData : ActorData
 
     public void InitHeroActor(GameObject actor)
     {
+        CurrentHealth = MaximumHealth;
+        CurrentManaShield = MaximumManaShield;
+        CurrentSoulPoints = 50;
         HeroActor hero = actor.AddComponent<HeroActor>();
         hero.Initialize(this);
     }

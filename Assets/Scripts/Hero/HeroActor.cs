@@ -47,7 +47,7 @@ public class HeroActor : Actor
 
             this.transform.position = Vector3.MoveTowards(this.transform.position, movementNodes[nextMovementNode], Data.movementSpeed * dt * actorTimeScale);
 
-            if (dist <= 0.35f * Data.movementSpeed * dt)
+            if (dist <= 0.15f * Data.movementSpeed * dt)
             {
                 nextMovementNode++;
             }
@@ -59,6 +59,7 @@ public class HeroActor : Actor
 
     public void StartMovement(Vector3 destination)
     {
+        destination = Helpers.ReturnTilePosition(StageManager.Instance.HighlightMap.tilemap, destination, -3);
         Vector3 vector = destination - transform.position;
         float dist = vector.sqrMagnitude;
 
@@ -71,7 +72,6 @@ public class HeroActor : Actor
         }
         else
         {
-
             Tilemap tilemap = StageManager.Instance.HighlightMap.tilemap;
             Vector3Int cellPos = tilemap.WorldToCell(transform.position);
             Vector3 startPos = tilemap.GetCellCenterWorld(cellPos);

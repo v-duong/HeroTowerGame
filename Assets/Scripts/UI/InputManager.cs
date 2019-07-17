@@ -56,7 +56,8 @@ public class InputManager : MonoBehaviour
                     {
                     }
                 }
-                spawnLocation.z = -3;
+                spawnLocation = Helpers.ReturnTilePosition(StageManager.Instance.HighlightMap.tilemap, spawnLocation, -3);
+                Debug.Log(spawnLocation);
                 selectedHero.transform.position = spawnLocation;
                 selectedHero.gameObject.SetActive(true);
                 IsSummoningMode = false;
@@ -98,13 +99,13 @@ public class InputManager : MonoBehaviour
         {
             if (Input.GetMouseButtonDown(0) && !EventSystem.current.IsPointerOverGameObject())
             {
-                
                 LayerMask mask = LayerMask.GetMask("Hero", "Enemy");
                 Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
                 RaycastHit2D hit = Physics2D.Raycast(ray.origin, ray.direction, 50, mask);
 
                 if (hit.collider != null)
                 {
+
                     if (hit.collider.gameObject.layer == 13)
                     {
                         HeroActor hero = hit.collider.gameObject.GetComponent<HeroActor>();
@@ -112,6 +113,7 @@ public class InputManager : MonoBehaviour
                         {
                             selectedHero = hero;
                             IsMovementMode = true;
+                            UIManager.Instance.BattleCharInfoPanel.text.text = "Health: " + hero.Data.CurrentHealth + "/" + hero.Data.MaximumHealth;
                             return;
                         }
                         return;
@@ -119,6 +121,7 @@ public class InputManager : MonoBehaviour
                     else
                     {
                     }
+                    return;
                 }
                 isDragging = true;
             }

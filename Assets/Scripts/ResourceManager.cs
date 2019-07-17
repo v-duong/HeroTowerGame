@@ -277,7 +277,6 @@ public class ResourceManager : MonoBehaviour
         {
             string name = "stage" + stage.act + "-" + stage.stage;
             stageList.Add(name, stage);
-            Debug.Log(name);
         }
     }
 
