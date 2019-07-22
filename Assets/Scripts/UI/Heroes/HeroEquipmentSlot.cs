@@ -14,7 +14,7 @@ public class HeroEquipmentSlot : MonoBehaviour
     {
         UIManager ui = UIManager.Instance;
         HeroData hero = HeroDetailWindow.hero;
-        ui.OpenInventoryWindow(false);
+        ui.OpenInventoryWindow(false, false);
         ui.IsEquipSelectMode = true;
         ui.SlotContext = slot;
         if (slot == EquipSlotType.RING_SLOT_1 || slot == EquipSlotType.RING_SLOT_2)

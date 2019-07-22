@@ -1,15 +1,16 @@
-﻿using System.Collections;
+﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
-using System.Linq;
-using System;
 
 public class InventoryScrollWindow : MonoBehaviour
 {
     [SerializeField]
     private InventorySlot SlotPrefab;
+
     private InventorySlotPool _inventorySlotPool;
-    public InventorySlotPool InventorySlotPool {
+
+    public InventorySlotPool InventorySlotPool
+    {
         get
         {
             if (_inventorySlotPool == null)
@@ -17,63 +18,79 @@ public class InventoryScrollWindow : MonoBehaviour
             return _inventorySlotPool;
         }
     }
+
     private List<InventorySlot> SlotsInUse = new List<InventorySlot>();
-    bool showingAllItems = false;
+    private bool showingAllEquip = false;
 
+    private void InitializeInventorySlots(List<ArchetypeItem> archetypeInventory, Action callback = null)
+    {
+        foreach (ArchetypeItem item in archetypeInventory)
+        {
+            AddEquipmentSlot(item, callback);
+        }
+    }
 
-    private void InitializeInventorySlots(List<Equipment> equipmentInventory)
+    private void InitializeInventorySlots(List<Equipment> equipmentInventory, Action callback = null)
     {
         foreach (AffixedItem item in equipmentInventory)
         {
-            AddEquipmentSlot(item);
+            AddEquipmentSlot(item, callback);
         }
     }
 
-    public void InitializeInventorySlots(List<AffixedItem> list)
+    public void InitializeInventorySlots(List<AffixedItem> list, Action callback = null)
     {
         foreach (AffixedItem item in list)
         {
-            AddEquipmentSlot(item);
+            AddEquipmentSlot(item, callback);
         }
     }
 
-    public void ShowAllEquipment()
+    public void ShowAllEquipment(Action callback = null)
     {
-        if (!showingAllItems)
+        if (!showingAllEquip)
         {
             ClearSlots();
             InitializeInventorySlots(GameManager.Instance.PlayerStats.equipmentInventory);
-            showingAllItems = true;
+            showingAllEquip = true;
         }
     }
 
-    public void ShowEquipmentBySlotType(EquipSlotType type)
+    public void ShowAllArchetype(Action callback = null)
     {
-        showingAllItems = false;
+        ClearSlots();
+        InitializeInventorySlots(GameManager.Instance.PlayerStats.archetypeInventory);
+        showingAllEquip = false;
+    }
+
+    public void ShowEquipmentBySlotType(EquipSlotType type, Action callback = null)
+    {
+        showingAllEquip = false;
         ClearSlots();
         List<Equipment> e = GameManager.Instance.PlayerStats.equipmentInventory.FindAll(x => x.Base.equipSlot == type && !x.IsEquipped);
-        foreach(Equipment equip in e)
+        foreach (Equipment equip in e)
         {
-            AddEquipmentSlot(equip);
+            AddEquipmentSlot(equip, callback);
         }
     }
 
     private void ClearSlots()
     {
-        foreach(InventorySlot i in SlotsInUse)
+        foreach (InventorySlot i in SlotsInUse)
         {
             InventorySlotPool.ReturnToPool(i);
         }
         SlotsInUse.Clear();
     }
 
-    public void AddEquipmentSlot(AffixedItem item)
+    public void AddEquipmentSlot(Item item, Action callback = null)
     {
         InventorySlot slot;
         slot = InventorySlotPool.GetSlot();
         slot.gameObject.transform.SetParent(this.transform, false);
         SlotsInUse.Add(slot);
         slot.item = item;
+        slot.onClickAction = callback;
         slot.UpdateSlot();
     }
 
@@ -84,10 +101,7 @@ public class InventoryScrollWindow : MonoBehaviour
         SlotsInUse.Remove(slot);
         InventorySlotPool.ReturnToPool(slot);
     }
-
-
 }
-
 
 public class InventorySlotPool : ObjectPool<InventorySlot>
 {

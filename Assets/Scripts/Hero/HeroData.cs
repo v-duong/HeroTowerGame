@@ -30,8 +30,9 @@ public class HeroData : ActorData
 
     public HeroArchetypeData PrimaryArchetype => archetypeList[0];
     public HeroArchetypeData SecondaryArchetype => archetypeList[1];
+    public int assignedTeam;
 
-    public bool IsActive;
+    public bool IsLocked;
 
     private HeroData()
     {
@@ -71,7 +72,8 @@ public class HeroData : ActorData
         BaseAttackPhasing = 0;
         BaseMagicPhasing = 0;
         movementSpeed = 3f;
-        IsActive = false;
+        IsLocked = false;
+        assignedTeam = -1;
         Resistances = new ElementResistances();
         equipList = new Equipment[10];
         archetypeList = new HeroArchetypeData[2];
@@ -472,7 +474,7 @@ public class HeroData : ActorData
         int ResolveFromEquip = 0;
         foreach (Equipment e in equipList)
         {
-            if (e != null && e.GetItemType() == EquipmentType.ARMOR)
+            if (e != null && e.GetItemType() == ItemType.ARMOR)
             {
                 Armor equip = e as Armor;
                 ArmorFromEquip += equip.armor;

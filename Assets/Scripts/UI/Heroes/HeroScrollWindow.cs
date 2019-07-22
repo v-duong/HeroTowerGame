@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class HeroScrollWindow : MonoBehaviour
@@ -50,5 +51,13 @@ public class HeroScrollWindow : MonoBehaviour
     {
         HeroSlot slot = SlotsInUse.Find(x => x.hero == hero);
         slot.gameObject.SetActive(false);
+    }
+
+    public void SetCallback(Action<HeroData> callback)
+    {
+        foreach (HeroSlot slot in SlotsInUse)
+        {
+            slot.callback = callback;
+        }
     }
 }

@@ -11,9 +11,11 @@ public class UIManager : MonoBehaviour
     public readonly Vector2 itemWindowSize = new Vector2(400, 640);
 
     private Canvas _invCanvas;
+    private InvWindowCanvas _invWindowCanvas;
     private Canvas _heroCanvas;
     private Canvas _archetypeCanvas;
     private Canvas _battleUICanvas;
+    private Canvas _teamCanvas;
     private ScrollRect _invWindowRect;
     private EquipmentDetailWindow _itemWindow;
     private InventoryScrollWindow _invWindow;
@@ -24,6 +26,8 @@ public class UIManager : MonoBehaviour
     private LoadingScript _loadingScreen;
     private SummonScrollWindow _summonScrollWindow;
     private BattleCharInfoPanel _battleCharInfoPanel;
+    private ItemCategoryPanel _itemCategoryPanel;
+    private TeamWindow _teamWindow;
 
     public EquipSlotType SlotContext;
     public bool IsEquipSelectMode = false;
@@ -63,6 +67,16 @@ public class UIManager : MonoBehaviour
         }
     }
 
+    public InvWindowCanvas InvWindowCanvas
+    {
+        get
+        {
+            if (_invWindowCanvas == null)
+                _invWindowCanvas = InvCanvas.GetComponentInChildren<InvWindowCanvas>(true);
+            return _invWindowCanvas;
+        }
+    }
+
     public Canvas HeroCanvas
     {
         get
@@ -70,6 +84,16 @@ public class UIManager : MonoBehaviour
             if (_heroCanvas == null)
                 _heroCanvas = GameObject.FindGameObjectWithTag("HeroCanvas").GetComponent<Canvas>();
             return _heroCanvas;
+        }
+    }
+
+    public Canvas TeamCanvas
+    {
+        get
+        {
+            if (_teamCanvas == null)
+                _teamCanvas = GameObject.FindGameObjectWithTag("TeamCanvas").GetComponent<Canvas>();
+            return _teamCanvas;
         }
     }
 
@@ -120,6 +144,16 @@ public class UIManager : MonoBehaviour
             if (_itemWindow == null)
                 _itemWindow = InvCanvas.GetComponentInChildren<EquipmentDetailWindow>(true);
             return _itemWindow;
+        }
+    }
+
+    public ItemCategoryPanel ItemCategoryPanel
+    {
+        get
+        {
+            if (_itemCategoryPanel == null)
+                _itemCategoryPanel = InvCanvas.GetComponentInChildren<ItemCategoryPanel>(true);
+            return _itemCategoryPanel;
         }
     }
 
@@ -193,6 +227,16 @@ public class UIManager : MonoBehaviour
         }
     }
 
+    public TeamWindow TeamWindow
+    {
+        get
+        {
+            if (_teamWindow == null)
+                _teamWindow = TeamCanvas.GetComponentInChildren<TeamWindow>(true);
+            return _teamWindow;
+        }
+    }
+
     private void Start()
     {
         Instance = this;
@@ -208,7 +252,7 @@ public class UIManager : MonoBehaviour
 
     public void CloseInventoryWindows()
     {
-        InvWindowRect.gameObject.SetActive(false);
+        InvWindowCanvas.gameObject.SetActive(false);
         EquipDetailWindow.gameObject.SetActive(false);
     }
 
@@ -218,17 +262,41 @@ public class UIManager : MonoBehaviour
         HeroDetailWindow.gameObject.SetActive(false);
     }
 
-    public void OpenInventoryWindow(bool closeWindows = true)
+    public void OpenInventoryWindow(bool closeWindows = true, bool showCategories = true)
     {
-        GameObject target = InvWindowRect.gameObject;
         if (closeWindows)
             CloseAllWindows();
-        //SetInventoryScrollRectTransform(0);
-        
-       
-        OpenWindow(target);
+
+        RectTransform rect = InvWindowRect.GetComponent<RectTransform>();
+
+        if (showCategories)
+        {
+            ItemCategoryPanel.gameObject.SetActive(true);
+            rect.offsetMin = new Vector2(rect.offsetMin.x, 60);
+        }
+        else
+        {
+            ItemCategoryPanel.gameObject.SetActive(false);
+            rect.offsetMin = new Vector2(rect.offsetMin.x, 0);
+        }
+
+        OpenWindow(InvWindowCanvas.gameObject);
         this.EquipDetailWindow.HideButtons();
         InvScrollContent.ShowAllEquipment();
+    }
+
+    public void OpenTeamWindow(bool closeWindows = true)
+    {
+        if (closeWindows)
+            CloseAllWindows();
+        OpenWindow(TeamWindow.gameObject);
+    }
+
+    public void OpenHeroWindow(bool closeWindows = true)
+    {
+        if (closeWindows)
+            CloseAllWindows();
+        OpenWindow(HeroWindowRect.gameObject);
     }
 
     public void SetInventoryScrollRectTransform(int type)

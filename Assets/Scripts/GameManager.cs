@@ -100,8 +100,9 @@ public class GameManager : MonoBehaviour
         StageManager.Instance.HighlightMap.gameObject.SetActive(false);
         Scene scene = SceneManager.GetSceneByName(sceneName);
         SceneManager.SetActiveScene(scene);
-        StageInfoCollection stage = ResourceManager.Instance.GetStageInfo(sceneName);
-        StageManager.Instance.WaveManager.SetWaves(stage.difficultyList[0].enemyWaves);
+        Debug.Log(sceneName);
+        StageInfoBase stage = ResourceManager.Instance.GetStageInfo(sceneName);
+        StageManager.Instance.WaveManager.SetWaves(stage.enemyWaves);
         
         yield return LoadBattleUI(scene);
     }
@@ -116,8 +117,10 @@ public class GameManager : MonoBehaviour
         Scene scene = SceneManager.GetSceneByName("battleUI");
         SceneManager.MergeScenes(scene, sceneToMergeTo);
         SummonScrollWindow summonScroll = UIManager.Instance.SummonScrollWindow;
-        foreach (HeroData data in PlayerStats.heroList)
+        foreach (HeroData data in PlayerStats.heroTeams[0])
         {
+            if (data == null)
+                continue;
             GameObject actor = Instantiate(ResourceManager.Instance.HeroPrefab.gameObject);
             data.InitHeroActor(actor);
             HeroActor heroActor = actor.GetComponent<HeroActor>();

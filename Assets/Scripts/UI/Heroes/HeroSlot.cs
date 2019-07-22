@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
@@ -10,7 +11,7 @@ public class HeroSlot : MonoBehaviour
     public Image slotImage;
     public TextMeshProUGUI nameText;
     public TextMeshProUGUI archetypeText;
-    
+    public Action<HeroData> callback;
 
     public void UpdateSlot()
     {
@@ -30,6 +31,11 @@ public class HeroSlot : MonoBehaviour
 
     public void OnHeroSlotClick()
     {
+        if (callback != null)
+        {
+            callback.Invoke(hero);
+            return;
+        }
         HeroDetailWindow detailWindow = UIManager.Instance.HeroDetailWindow;
         UIManager.Instance.OpenWindow(detailWindow.gameObject);
         HeroDetailWindow.hero = hero;

@@ -34,7 +34,7 @@ public abstract class Actor : MonoBehaviour
 
         var collider = newObject.AddComponent<CircleCollider2D>();
         collider.radius = ability.abilityBase.targetRange;
-        abilityContainer.collider = collider;
+        abilityContainer.abilityCollider = collider;
         collider.isTrigger = true;
 
         if (ability.TargetType == AbilityTargetType.ENEMY)

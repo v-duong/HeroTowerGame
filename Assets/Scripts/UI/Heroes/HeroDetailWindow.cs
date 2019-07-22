@@ -19,7 +19,7 @@ public class HeroDetailWindow : MonoBehaviour
     public static HeroData hero;
 
     public List<HeroEquipmentSlot> equipSlots;
-    public Button activeButton;
+    public Button lockButton;
 
     public void OnEnable()
     {
@@ -30,6 +30,16 @@ public class HeroDetailWindow : MonoBehaviour
     public void UpdateWindow()
     {
         nameText.text = hero.Name;
+
+        if (hero.IsLocked)
+        {
+            lockButton.GetComponentInChildren<Text>().text = "Locked";
+        }
+        else
+        {
+            lockButton.GetComponentInChildren<Text>().text = "Unlocked";
+        }
+        
 
         infoText.text = "";
         infoText.text += "Archetype: " + hero.PrimaryArchetype.Base.idName;
@@ -108,18 +118,16 @@ public class HeroDetailWindow : MonoBehaviour
         UIManager.Instance.OpenWindow(abilityScrollRect.gameObject);
     }
 
-    public void SetHeroActiveForBattle()
+    public void SetHeroLocked()
     {
-        if (!hero.IsActive)
+        if (!hero.IsLocked)
         {
-            GameManager.Instance.PlayerStats.activeHeroList.Add(hero);
-            hero.IsActive = true;
-            activeButton.GetComponentInChildren<Text>().text = "Active";
+            hero.IsLocked = true;
+            lockButton.GetComponentInChildren<Text>().text = "Locked";
         } else
         {
-            GameManager.Instance.PlayerStats.activeHeroList.Remove(hero);
-            hero.IsActive = false;
-            activeButton.GetComponentInChildren<Text>().text = "Inactive";
+            hero.IsLocked = false;
+            lockButton.GetComponentInChildren<Text>().text = "Unlocked";
         }
     }
 

@@ -5,7 +5,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class StageInfoCollection
+public class StageInfoBase
 {
     [JsonProperty]
     public readonly string idName;
@@ -13,12 +13,6 @@ public class StageInfoCollection
     public readonly int act;
     [JsonProperty]
     public readonly int stage;
-    [JsonProperty]
-    public readonly List<StageInfoBase> difficultyList;
-}
-
-public class StageInfoBase
-{
     [JsonProperty]
     [JsonConverter(typeof(StringEnumConverter))]
     public readonly DifficultyType difficulty;

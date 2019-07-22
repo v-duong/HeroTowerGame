@@ -17,17 +17,21 @@ public class MenuButton : MonoBehaviour
         UIManager.Instance.OpenInventoryWindow();
     }
 
+    public void OnClickTeam()
+    {
+        UIManager.Instance.OpenTeamWindow();
+    }
+
     public void OnClickHeroToggle()
     {
-        UIManager ui = UIManager.Instance;
-        ui.CloseAllWindows();
-        ui.OpenWindow(UIManager.Instance.HeroWindowRect.gameObject);
+        UIManager.Instance.OpenHeroWindow();
     }
 
     public void AddItem()
     {
         Equipment equipment = Equipment.CreateRandomEquipment(100);
         GameManager.Instance.PlayerStats.AddEquipmentToInventory(equipment);
+        GameManager.Instance.PlayerStats.AddArchetypeToInventory(ArchetypeItem.CreateRandomArchetypeItem(100));
     }
 
     public void AddHero()

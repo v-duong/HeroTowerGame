@@ -29,7 +29,7 @@ public abstract class Equipment : AffixedItem
     protected Equipment(EquipmentBase e, int ilvl)
     {
         BaseId = e.idName;
-        Name = LocalizationManager.Instance.GetLocalizationText("equipment." + e.idName);
+        Name = LocalizationManager.Instance.GetLocalizationText_Equipment(e.idName);
         costModifier = e.sellValue;
         strRequirement = e.strengthReq;
         intRequirement = e.intelligenceReq;
@@ -119,16 +119,16 @@ public abstract class Equipment : AffixedItem
         return true;
     }
 
-    protected static void GetLocalModValues(Dictionary<BonusType, StatBonus> dic, List<Affix> affixes, EquipmentType itemType)
+    protected static void GetLocalModValues(Dictionary<BonusType, StatBonus> dic, List<Affix> affixes, ItemType itemType)
     {
         int startValue = 0;
         switch (itemType)
         {
-            case global::EquipmentType.ARMOR:
+            case global::ItemType.ARMOR:
                 startValue = Armor.LocalBonusStart;
                 break;
 
-            case global::EquipmentType.WEAPON:
+            case global::ItemType.WEAPON:
                 startValue = Weapon.LocalBonusStart;
                 break;
 

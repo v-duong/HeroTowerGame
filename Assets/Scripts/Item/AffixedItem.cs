@@ -218,7 +218,6 @@ public abstract class AffixedItem : Item
     }
 
     public abstract bool UpgradeRarity();
-    public abstract EquipmentType GetItemType();
     public abstract bool UpdateItemStats();
     public abstract HashSet<GroupType> GetGroupTypes();
     public abstract void UpdateName();

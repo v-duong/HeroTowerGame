@@ -17,7 +17,7 @@ public class PlayerStats
     public List<Equipment> equipmentInventory;
     public List<ArchetypeItem> archetypeInventory;
     public List<HeroData> heroList;
-    public List<HeroData> activeHeroList;
+    public List<HeroData[]> heroTeams;
 
     public PlayerStats()
     {
@@ -25,28 +25,35 @@ public class PlayerStats
         archetypeFragments = 0;
         expStock = 0;
         consumables = new Dictionary<ConsumableType, int>();
-        foreach(ConsumableType c in Enum.GetValues(typeof(ConsumableType)))
+        foreach (ConsumableType c in Enum.GetValues(typeof(ConsumableType)))
         {
             consumables.Add(c, 0);
         }
         equipmentInventory = new List<Equipment>();
         archetypeInventory = new List<ArchetypeItem>();
         heroList = new List<HeroData>();
-        activeHeroList = new List<HeroData>();
+        heroTeams = new List<HeroData[]>();
+        for (int i = 0; i < 5; i++)
+        {
+            heroTeams.Add(new HeroData[5]);
+        }
     }
 
     public void AddEquipmentToInventory(Equipment newEquipment)
     {
         equipmentInventory.Add(newEquipment);
-        UIManager.Instance.InvScrollContent.AddEquipmentSlot(newEquipment);
-     }
+    }
+
+    public void AddArchetypeToInventory(ArchetypeItem newArchetype)
+    {
+        archetypeInventory.Add(newArchetype);
+    }
 
     public void AddHeroToList(HeroData hero)
     {
         heroList.Add(hero);
         UIManager.Instance.HeroScrollContent.AddHeroSlot(hero);
     }
-
 }
 
 public enum ConsumableType

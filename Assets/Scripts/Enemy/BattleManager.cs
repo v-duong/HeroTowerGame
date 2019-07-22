@@ -13,6 +13,7 @@ public class BattleManager : MonoBehaviour
     public int enemiesSpawned;
     public bool startedSpawn = false;
     public bool finishedSpawn = false;
+    public int selectedTeam;
 
     // Use this for initialization
     private void Start()
@@ -41,7 +42,7 @@ public class BattleManager : MonoBehaviour
     {
         if (victory)
         {
-            foreach(HeroData hero in GameManager.Instance.PlayerStats.activeHeroList)
+            foreach(HeroData hero in GameManager.Instance.PlayerStats.heroTeams[selectedTeam])
             {
                 hero.AddExperience(5000);
             }

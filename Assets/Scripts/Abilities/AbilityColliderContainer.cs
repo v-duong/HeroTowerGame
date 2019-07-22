@@ -4,7 +4,7 @@ public class AbilityColliderContainer : MonoBehaviour
 {
     public ActorAbility ability;
     public Actor parentActor;
-    public Collider2D collider;
+    public Collider2D abilityCollider;
     
     private void OnTriggerEnter2D(Collider2D collision)
     {

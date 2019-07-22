@@ -10,4 +10,5 @@ public abstract class Item
     public int ItemLevel { get; protected set; }
 
     public void SetRarity(RarityType rarity) => Rarity = rarity;
+    public abstract ItemType GetItemType();
 }

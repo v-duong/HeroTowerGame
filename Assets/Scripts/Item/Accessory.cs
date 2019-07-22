@@ -9,9 +9,9 @@ public class Accessory : Equipment
 
     }
 
-    public override EquipmentType GetItemType()
+    public override ItemType GetItemType()
     {
-        return EquipmentType.ACCESSORY;
+        return ItemType.ACCESSORY;
     }
 
     public override bool UpdateItemStats()

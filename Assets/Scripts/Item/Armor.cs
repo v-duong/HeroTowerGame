@@ -19,9 +19,9 @@ public class Armor : Equipment
         resolveRating = e.resolveRating;
     }
 
-    public override EquipmentType GetItemType()
+    public override ItemType GetItemType()
     {
-        return EquipmentType.ARMOR;
+        return ItemType.ARMOR;
     }
 
     public override bool UpdateItemStats()
@@ -31,7 +31,7 @@ public class Armor : Equipment
         List<Affix> affixes = new List<Affix>();
         affixes.AddRange(prefixes);
         affixes.AddRange(suffixes);
-        GetLocalModValues(bonusTotals, affixes, global::EquipmentType.ARMOR);
+        GetLocalModValues(bonusTotals, affixes, global::ItemType.ARMOR);
 
         armor = CalculateStat(Base.armor, BonusType.LOCAL_ARMOR, bonusTotals);
         shield = CalculateStat(Base.shield, BonusType.LOCAL_MAX_SHIELD, bonusTotals);

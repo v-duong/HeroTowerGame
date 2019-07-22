@@ -28,7 +28,7 @@ public class ResourceManager : MonoBehaviour
     private Dictionary<string, AffixBase> enchantmentList;
     private Dictionary<string, ArchetypeBase> archetypeList;
     private Dictionary<string, EnemyBase> enemyList;
-    private Dictionary<string, StageInfoCollection> stageList;
+    private Dictionary<string, StageInfoBase> stageList;
 
     public int AbilityCount { get; private set; }
     public int EquipmentCount { get; private set; }
@@ -70,7 +70,7 @@ public class ResourceManager : MonoBehaviour
             return null;
     }
 
-    public StageInfoCollection GetStageInfo(string id)
+    public StageInfoBase GetStageInfo(string id)
     {
         if (stageList == null)
             LoadStages();
@@ -270,10 +270,10 @@ public class ResourceManager : MonoBehaviour
 
     private void LoadStages()
     {
-        stageList = new Dictionary<string, StageInfoCollection>();
+        stageList = new Dictionary<string, StageInfoBase>();
 
-        List<StageInfoCollection> temp = DeserializeFromPath_Resources<List<StageInfoCollection>>("json/stages/stages");
-        foreach (StageInfoCollection stage in temp)
+        List<StageInfoBase> temp = DeserializeFromPath_Resources<List<StageInfoBase>>("json/stages/stages");
+        foreach (StageInfoBase stage in temp)
         {
             string name = "stage" + stage.act + "-" + stage.stage;
             stageList.Add(name, stage);

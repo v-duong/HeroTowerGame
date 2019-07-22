@@ -12,6 +12,7 @@ TagManager:
   - LoadingManager
   - BattleUICanvas
   - HighlightMap
+  - TeamCanvas
   layers:
   - Default
   - TransparentFX

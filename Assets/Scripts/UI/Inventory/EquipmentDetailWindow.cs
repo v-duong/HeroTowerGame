@@ -52,11 +52,11 @@ public class EquipmentDetailWindow : MonoBehaviour
         }
         infoText.text += "\n\n";
 
-        if (equip.GetItemType() == EquipmentType.ARMOR)
+        if (equip.GetItemType() == ItemType.ARMOR)
         {
             UpdateWindowEquipment_Armor((Armor)equip);
         }
-        else if (equip.GetItemType() == EquipmentType.WEAPON)
+        else if (equip.GetItemType() == ItemType.WEAPON)
         {
             UpdateWindowEquipment_Weapon((Weapon)equip);
         }

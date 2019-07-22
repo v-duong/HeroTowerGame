@@ -16,4 +16,14 @@ public class ArchetypeItem : Item
         return new ArchetypeItem(ResourceManager.Instance.GetRandomArchetypeBase(ilvl));
     }
 
+    public static ArchetypeItem CreateArchetypeItem(ArchetypeBase archetype, int ilvl)
+    {
+        return new ArchetypeItem(archetype);
+    }
+
+    public override ItemType GetItemType()
+    {
+        return ItemType.ARCHETYPE;
+    }
+
 }
