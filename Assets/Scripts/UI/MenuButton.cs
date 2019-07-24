@@ -27,6 +27,11 @@ public class MenuButton : MonoBehaviour
         UIManager.Instance.OpenHeroWindow();
     }
 
+    public void OnClickWorkshop()
+    {
+        UIManager.Instance.OpenWorkshopWindow();
+    }
+
     public void AddItem()
     {
         Equipment equipment = Equipment.CreateRandomEquipment(100);

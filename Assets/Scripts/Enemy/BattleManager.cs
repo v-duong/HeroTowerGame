@@ -13,7 +13,9 @@ public class BattleManager : MonoBehaviour
     public int enemiesSpawned;
     public bool startedSpawn = false;
     public bool finishedSpawn = false;
+    public List<HeroData> activeHeroes = new List<HeroData>();
     public int selectedTeam;
+    public bool battleEnded = false;
 
     // Use this for initialization
     private void Start()
@@ -28,8 +30,9 @@ public class BattleManager : MonoBehaviour
             startedSpawn = true;
             this.SpawnWave();
         }
-        if (finishedSpawn && currentEnemyList.Count == 0) {
+        if (finishedSpawn && currentEnemyList.Count == 0 && !battleEnded) {
             EndBattle(true);
+            battleEnded = true;
         }
     }
 
@@ -42,12 +45,12 @@ public class BattleManager : MonoBehaviour
     {
         if (victory)
         {
-            foreach(HeroData hero in GameManager.Instance.PlayerStats.heroTeams[selectedTeam])
+            Debug.Log("VIC");
+            foreach(HeroData hero in GameManager.Instance.inBattleHeroes)
             {
                 hero.AddExperience(5000);
             }
         }
-        this.gameObject.SetActive(false);
     }
 
     public void SpawnWave()

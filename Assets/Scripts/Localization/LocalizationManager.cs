@@ -9,6 +9,8 @@ public class LocalizationManager : MonoBehaviour
     private static readonly string defaultLang = "en-US";
 
     private static Dictionary<string, string> commonLocalizationData = new Dictionary<string, string>();
+    private static Dictionary<string, string> archetypeLocalizationData = new Dictionary<string, string>();
+    private static Dictionary<string, string> equipmentLocalizationData = new Dictionary<string, string>();
     private static Dictionary<string, string> abilityLocalizationData = new Dictionary<string, string>();
     private static ItemGenLocalization itemGenLocalization;
 
@@ -27,6 +29,12 @@ public class LocalizationManager : MonoBehaviour
 
         path = "json/localization/ability." + locale;
         abilityLocalizationData = JsonConvert.DeserializeObject<Dictionary<string, string>>(Resources.Load<TextAsset>(path).text);
+
+        path = "json/localization/archetype." + locale;
+        archetypeLocalizationData = JsonConvert.DeserializeObject<Dictionary<string, string>>(Resources.Load<TextAsset>(path).text);
+
+        path = "json/localization/equipment." + locale;
+        equipmentLocalizationData = JsonConvert.DeserializeObject<Dictionary<string, string>>(Resources.Load<TextAsset>(path).text);
 
         path = "json/localization/itemgen." + locale;
         itemGenLocalization = JsonConvert.DeserializeObject<ItemGenLocalization>(Resources.Load<TextAsset>(path).text);
@@ -127,7 +135,21 @@ public class LocalizationManager : MonoBehaviour
 
     public string GetLocalizationText_Equipment(string stringId)
     {
-        if (commonLocalizationData.TryGetValue("equipment." + stringId, out string value))
+        if (equipmentLocalizationData.TryGetValue("equipment." + stringId, out string value))
+        {
+            if (value == "")
+                return stringId;
+            return value;
+        }
+        else
+        {
+            return stringId;
+        }
+    }
+
+    public string GetLocalizationText_Archetype(string stringId)
+    {
+        if (archetypeLocalizationData.TryGetValue("equipment." + stringId, out string value))
         {
             if (value == "")
                 return stringId;

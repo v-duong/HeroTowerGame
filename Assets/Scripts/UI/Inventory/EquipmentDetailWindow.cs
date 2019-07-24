@@ -68,7 +68,7 @@ public class EquipmentDetailWindow : MonoBehaviour
             affixText.text += "Prefix\n";
             foreach (Affix a in equip.prefixes)
             {
-                affixText.text += BuildAffixString(a);
+                affixText.text += a.BuildAffixString();
             }
         }
 
@@ -79,31 +79,9 @@ public class EquipmentDetailWindow : MonoBehaviour
             affixText.text += "Suffix\n";
             foreach (Affix a in equip.suffixes)
             {
-                affixText.text += BuildAffixString(a);
+                affixText.text += a.BuildAffixString();
             }
         }
-    }
-
-    private static string BuildAffixString(Affix a)
-    {
-        string s = "○ ";
-        foreach (AffixBonusProperty b in a.Base.affixBonuses)
-        {
-            if (b.bonusType.ToString().Contains("DAMAGE_MAX"))
-            {
-                continue;
-            }
-            if (b.bonusType.ToString().Contains("DAMAGE_MIN"))
-            {
-                s += "\t" + LocalizationManager.Instance.GetLocalizationText("bonusType." + b.bonusType) + " ";
-                s += "+" + a.GetAffixValue(b.bonusType) + "-" + a.GetAffixValue(b.bonusType + 1) + "\n";
-            }
-            else
-            {
-                s += "\t" + LocalizationManager.Instance.GetLocalizationText_BonusType(b.bonusType, b.modifyType, a.GetAffixValue(b.bonusType));
-            }
-        }
-        return s;
     }
 
     public void UpdateWindowEquipment_Armor(Armor armorItem)

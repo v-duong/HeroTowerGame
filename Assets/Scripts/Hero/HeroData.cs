@@ -88,25 +88,33 @@ public class HeroData : ActorData
     {
         HeroData hero = new HeroData(name);
         hero.archetypeList[0] = new HeroArchetypeData(primaryArchetype, hero);
-        hero.archetypeList[1] = new HeroArchetypeData(subArchetype, hero);
+        if (subArchetype != null)
+            hero.archetypeList[1] = new HeroArchetypeData(subArchetype, hero);
         hero.LevelUp();
         return hero;
     }
-
-    
 
     public void LevelUp()
     {
         if (Level == 100)
             return;
         Level++;
-        HeroArchetypeData primaryArchetype = archetypeList[0];
-        BaseHealth += primaryArchetype.HealthGrowth;
-        BaseSoulPoints += primaryArchetype.SoulPointGrowth;
-        BaseStrength += primaryArchetype.StrengthGrowth;
-        BaseIntelligence += primaryArchetype.IntelligenceGrowth;
-        BaseAgility += primaryArchetype.AgilityGrowth;
-        BaseWill += primaryArchetype.WillGrowth;
+        BaseHealth += PrimaryArchetype.HealthGrowth;
+        BaseSoulPoints += PrimaryArchetype.SoulPointGrowth;
+        BaseStrength += PrimaryArchetype.StrengthGrowth;
+        BaseIntelligence += PrimaryArchetype.IntelligenceGrowth;
+        BaseAgility += PrimaryArchetype.AgilityGrowth;
+        BaseWill += PrimaryArchetype.WillGrowth;
+
+        if (SecondaryArchetype != null)
+        {
+            BaseHealth += SecondaryArchetype.HealthGrowth / 2;
+            BaseSoulPoints += SecondaryArchetype.SoulPointGrowth / 2;
+            BaseStrength += SecondaryArchetype.StrengthGrowth / 2;
+            BaseIntelligence += SecondaryArchetype.IntelligenceGrowth / 2;
+            BaseAgility += SecondaryArchetype.AgilityGrowth / 2;
+            BaseWill += SecondaryArchetype.WillGrowth / 2;
+        }
 
         UpdateHeroAllStats();
     }

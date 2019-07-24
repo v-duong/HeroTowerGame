@@ -13,10 +13,10 @@ public class HeroScrollWindow : MonoBehaviour
 
     private void OnEnable()
     {
-        InitializeHeroSlots(GameManager.Instance.PlayerStats.heroList);
+        InitializeHeroSlots(GameManager.Instance.PlayerStats.HeroList);
     }
 
-    public void InitializeHeroSlots(List<HeroData> list)
+    public void InitializeHeroSlots(IList<HeroData> list)
     {
         foreach (HeroSlot slot in SlotsInUse)
         {

@@ -16,6 +16,7 @@ public class UIManager : MonoBehaviour
     private Canvas _archetypeCanvas;
     private Canvas _battleUICanvas;
     private Canvas _teamCanvas;
+    private Canvas _workshopCanvas;
     private ScrollRect _invWindowRect;
     private EquipmentDetailWindow _itemWindow;
     private InventoryScrollWindow _invWindow;
@@ -23,11 +24,14 @@ public class UIManager : MonoBehaviour
     private HeroScrollWindow _heroScrollWindow;
     private ScrollRect _heroWindowRect;
     private ArchetypeNodeInfoPanel _archetypeNodeInfoPanel;
+    private ArchetypeUITreeWindow _archetypeUITreeWindow;
     private LoadingScript _loadingScreen;
     private SummonScrollWindow _summonScrollWindow;
     private BattleCharInfoPanel _battleCharInfoPanel;
     private ItemCategoryPanel _itemCategoryPanel;
     private TeamWindow _teamWindow;
+    private WorkshopParentWindow _workshopParentWindow;
+    private ItemCraftingPanel _itemCraftingPanel;
 
     public EquipSlotType SlotContext;
     public bool IsEquipSelectMode = false;
@@ -36,12 +40,13 @@ public class UIManager : MonoBehaviour
 
     public static HeroData selectedHero;
 
-    public void OpenWindow(GameObject window)
+    public void OpenWindow(GameObject window, bool closePrevious = true)
     {
         if (currentWindow != null)
         {
             previousWindows.Push(currentWindow);
-            currentWindow.SetActive(false);
+            if (closePrevious)
+                currentWindow.SetActive(false);
         }
         currentWindow = window;
         window.SetActive(true);
@@ -84,6 +89,16 @@ public class UIManager : MonoBehaviour
             if (_heroCanvas == null)
                 _heroCanvas = GameObject.FindGameObjectWithTag("HeroCanvas").GetComponent<Canvas>();
             return _heroCanvas;
+        }
+    }
+
+    public Canvas WorkshopCanvas
+    {
+        get
+        {
+            if (_workshopCanvas == null)
+                _workshopCanvas = GameObject.FindGameObjectWithTag("WorkshopCanvas").GetComponent<Canvas>();
+            return _workshopCanvas;
         }
     }
 
@@ -197,6 +212,17 @@ public class UIManager : MonoBehaviour
         }
     }
 
+
+    public ArchetypeUITreeWindow ArchetypeUITreeWindow
+    {
+        get
+        {
+            if (_archetypeUITreeWindow == null)
+                _archetypeUITreeWindow = ArchetypeCanvas.GetComponentInChildren<ArchetypeUITreeWindow>(true);
+            return _archetypeUITreeWindow;
+        }
+    }
+
     public LoadingScript LoadingScreen
     {
         get
@@ -237,6 +263,26 @@ public class UIManager : MonoBehaviour
         }
     }
 
+    public WorkshopParentWindow WorkshopParentWindow
+    {
+        get
+        {
+            if (_workshopParentWindow == null)
+                _workshopParentWindow = WorkshopCanvas.GetComponentInChildren<WorkshopParentWindow>(true);
+            return _workshopParentWindow;
+        }
+    }
+
+    public ItemCraftingPanel ItemCraftingPanel
+    {
+        get
+        {
+            if (_itemCraftingPanel == null)
+                _itemCraftingPanel = WorkshopCanvas.GetComponentInChildren<ItemCraftingPanel>(true);
+            return _itemCraftingPanel;
+        }
+    }
+
     private void Start()
     {
         Instance = this;
@@ -262,7 +308,7 @@ public class UIManager : MonoBehaviour
         HeroDetailWindow.gameObject.SetActive(false);
     }
 
-    public void OpenInventoryWindow(bool closeWindows = true, bool showCategories = true)
+    public void OpenInventoryWindow(bool closeWindows = true, bool showCategories = true, bool showDefault = true)
     {
         if (closeWindows)
             CloseAllWindows();
@@ -280,9 +326,10 @@ public class UIManager : MonoBehaviour
             rect.offsetMin = new Vector2(rect.offsetMin.x, 0);
         }
 
-        OpenWindow(InvWindowCanvas.gameObject);
+        OpenWindow(InvWindowCanvas.gameObject, closeWindows);
         this.EquipDetailWindow.HideButtons();
-        InvScrollContent.ShowAllEquipment();
+        if (showDefault)
+            InvScrollContent.ShowAllEquipment();
     }
 
     public void OpenTeamWindow(bool closeWindows = true)
@@ -297,6 +344,14 @@ public class UIManager : MonoBehaviour
         if (closeWindows)
             CloseAllWindows();
         OpenWindow(HeroWindowRect.gameObject);
+    }
+
+    public void OpenWorkshopWindow(bool closeWindows = true)
+    {
+        if (closeWindows)
+            CloseAllWindows();
+        OpenWindow(WorkshopParentWindow.gameObject);
+        WorkshopParentWindow.Instance.SetItemCraftingPanelActive();
     }
 
     public void SetInventoryScrollRectTransform(int type)

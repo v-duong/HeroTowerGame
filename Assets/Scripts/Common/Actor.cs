@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 public abstract class Actor : MonoBehaviour
@@ -9,6 +8,7 @@ public abstract class Actor : MonoBehaviour
     protected UIHealthBar healthBar;
     protected List<ActorAbility> instancedAbilitiesList = new List<ActorAbility>();
     protected List<AbilityColliderContainer> abilityColliders = new List<AbilityColliderContainer>();
+
     public abstract ActorType GetActorType();
 
     protected int nextMovementNode;
@@ -41,7 +41,6 @@ public abstract class Actor : MonoBehaviour
         {
             collider.gameObject.layer = LayerMask.NameToLayer("EnemyDetect");
         }
-
     }
 
     public void ModifyCurrentHealth(int mod)
@@ -58,13 +57,11 @@ public abstract class Actor : MonoBehaviour
         }
     }
 
-
     public void ApplyDamage(int damage)
     {
         ModifyCurrentHealth(damage);
     }
 }
-
 
 public enum ActorType
 {

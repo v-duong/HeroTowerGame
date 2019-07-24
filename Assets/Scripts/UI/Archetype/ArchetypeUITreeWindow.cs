@@ -9,9 +9,11 @@ public class ArchetypeUITreeWindow : MonoBehaviour
     public ArchetypeUITreeNode nodePrefab;
     public HeroData hero;
     public HeroArchetypeData[] archetypeData = new HeroArchetypeData[2];
+
     //public Dictionary<ArchetypeSkillNode, ArchetypeUITreeNode> primaryNodes = new Dictionary<ArchetypeSkillNode, ArchetypeUITreeNode>();
     //public Dictionary<ArchetypeSkillNode, ArchetypeUITreeNode> secondaryNodes = new Dictionary<ArchetypeSkillNode, ArchetypeUITreeNode>();
     public Dictionary<ArchetypeSkillNode, ArchetypeUITreeNode> primaryNodes = new Dictionary<ArchetypeSkillNode, ArchetypeUITreeNode>();
+
     public Dictionary<ArchetypeSkillNode, ArchetypeUITreeNode> secondaryNodes = new Dictionary<ArchetypeSkillNode, ArchetypeUITreeNode>();
     public UILineRenderer primaryTreeParent;
     public UILineRenderer secondaryTreeParent;
@@ -53,40 +55,61 @@ public class ArchetypeUITreeWindow : MonoBehaviour
 
         ResetTreeView();
 
-        largestX = 0;
-        largestY = 0;
-        foreach (ArchetypeSkillNode node in archetypeData[0].Base.nodeList)
+        if (archetypeData[0] != null)
         {
-            if (node.initialLevel == 1)
-            {
-                CreateTreeNode(node, primaryHash, archetypeData[0], primaryTreeParent, primaryNodes);
-            }
+            BuildArchetypeTree(archetypeData[0], primaryTreeParent, primaryNodes);
         }
-        foreach (ArchetypeUITreeNode uiNode in primaryNodes.Values)
-        {
-            uiNode.CheckSurroundingNodes();
-        }
-        primaryTreeParent.rectTransform.sizeDelta = new Vector2(largestX * 230, largestY * 150);
 
-        largestX = 0;
-        largestY = 0;
         if (archetypeData[1] != null)
         {
-            foreach (ArchetypeSkillNode node in archetypeData[1].Base.nodeList)
-            {
-                if (node.initialLevel == 1)
-                {
-                    CreateTreeNode(node, secondaryHash, archetypeData[1], secondaryTreeParent, secondaryNodes);
-                }
-            }
-            foreach (ArchetypeUITreeNode uiNode in secondaryNodes.Values)
-            {
-                uiNode.CheckSurroundingNodes();
-            }
-            secondaryTreeParent.rectTransform.sizeDelta = new Vector2(largestX * 230, largestY * 150);
+            BuildArchetypeTree(archetypeData[1], secondaryTreeParent, secondaryNodes);
         }
     }
 
+    public void BuildArchetypeTree(ArchetypeBase archetypeBase)
+    {
+        ResetTreeView();
+        hero = null;
+        BuildArchetypeTree(archetypeBase, primaryTreeParent, primaryNodes);
+    }
+
+    private void BuildArchetypeTree(HeroArchetypeData archetype, UILineRenderer treeParent, Dictionary<ArchetypeSkillNode, ArchetypeUITreeNode> nodeDict)
+    {
+        HashSet<ArchetypeSkillNode> traversedNodes = new HashSet<ArchetypeSkillNode>();
+        largestX = 0;
+        largestY = 0;
+        foreach (ArchetypeSkillNode node in archetype.Base.nodeList)
+        {
+            if (node.initialLevel == 1)
+            {
+                CreateTreeNode(node, traversedNodes, archetype, treeParent, nodeDict);
+            }
+        }
+        foreach (ArchetypeUITreeNode uiNode in nodeDict.Values)
+        {
+            uiNode.CheckSurroundingNodes();
+        }
+        treeParent.rectTransform.sizeDelta = new Vector2(largestX * 230, largestY * 150);
+    }
+
+    private void BuildArchetypeTree(ArchetypeBase archetypeBase, UILineRenderer treeParent, Dictionary<ArchetypeSkillNode, ArchetypeUITreeNode> nodeDict)
+    {
+        HashSet<ArchetypeSkillNode> traversedNodes = new HashSet<ArchetypeSkillNode>();
+        largestX = 0;
+        largestY = 0;
+        foreach (ArchetypeSkillNode node in archetypeBase.nodeList)
+        {
+            if (node.initialLevel == 1)
+            {
+                CreateTreeNode(node, traversedNodes, archetypeBase, treeParent, nodeDict);
+            }
+        }
+        foreach (ArchetypeUITreeNode uiNode in nodeDict.Values)
+        {
+            uiNode.CheckSurroundingNodes();
+        }
+        treeParent.rectTransform.sizeDelta = new Vector2(largestX * 230, largestY * 150);
+    }
 
     private ArchetypeUITreeNode CreateTreeNode(ArchetypeSkillNode node, HashSet<ArchetypeSkillNode> traversedNodes,
         HeroArchetypeData archetype, UILineRenderer parent, Dictionary<ArchetypeSkillNode, ArchetypeUITreeNode> nodeDict)
@@ -101,13 +124,12 @@ public class ArchetypeUITreeWindow : MonoBehaviour
         if (traversedNodes.Add(node))
         {
             currentNode = Instantiate(nodePrefab, parent.transform);
-            currentNode.SetNode(node, archetype);
+            currentNode.SetNode(node, archetype, false);
             nodeDict.Add(node, currentNode);
             if (Math.Abs(node.nodePosition.x) > largestX)
                 largestX = Math.Abs(node.nodePosition.x);
             if (Math.Abs(node.nodePosition.y) > largestY)
                 largestY = Math.Abs(node.nodePosition.y);
-
         }
         else
         {
@@ -126,21 +148,71 @@ public class ArchetypeUITreeWindow : MonoBehaviour
         return currentNode;
     }
 
+    private ArchetypeUITreeNode CreateTreeNode(ArchetypeSkillNode node, HashSet<ArchetypeSkillNode> traversedNodes,
+    ArchetypeBase archetypeBase, UILineRenderer parent, Dictionary<ArchetypeSkillNode, ArchetypeUITreeNode> nodeDict)
+    {
+        if (node == null)
+            return null;
+
+        ArchetypeUITreeNode currentNode;
+
+        // Check if node has been traversed yet
+        // if already created, just return the node
+        if (traversedNodes.Add(node))
+        {
+            currentNode = Instantiate(nodePrefab, parent.transform);
+            currentNode.SetNode(node, null, true);
+            nodeDict.Add(node, currentNode);
+            if (Math.Abs(node.nodePosition.x) > largestX)
+                largestX = Math.Abs(node.nodePosition.x);
+            if (Math.Abs(node.nodePosition.y) > largestY)
+                largestY = Math.Abs(node.nodePosition.y);
+        }
+        else
+        {
+            return nodeDict[node];
+        }
+
+        foreach (int x in node.children)
+        {
+            ArchetypeSkillNode n = archetypeBase.GetNode(x);
+            ArchetypeUITreeNode child = CreateTreeNode(n, traversedNodes, archetypeBase, parent, nodeDict);
+            currentNode.connectedNodes.Add(child);
+            child.connectedNodes.Add(currentNode);
+            parent.AddPoints((currentNode.transform.localPosition + LineOffsetY, child.transform.localPosition + LineOffsetY));
+        }
+
+        return currentNode;
+    }
+
     public void OpenPrimaryTree()
     {
+        UIManager.Instance.ArchetypeNodeInfoPanel.SetPreviewMode(false);
         secondaryTreeParent.gameObject.SetActive(false);
         primaryTreeParent.gameObject.SetActive(true);
         (primaryTreeParent.transform as RectTransform).anchoredPosition = new Vector2(0, 0);
         ScrollView.content = primaryTreeParent.rectTransform;
-
+        UIManager.Instance.OpenWindow(this.gameObject, false);
     }
 
     public void OpenSecondaryTree()
     {
+        UIManager.Instance.ArchetypeNodeInfoPanel.SetPreviewMode(false);
         primaryTreeParent.gameObject.SetActive(false);
         secondaryTreeParent.gameObject.SetActive(true);
         (secondaryTreeParent.transform as RectTransform).anchoredPosition = new Vector2(0, 0);
         ScrollView.content = secondaryTreeParent.rectTransform;
+        UIManager.Instance.OpenWindow(this.gameObject, false);
+    }
 
+    public void OpenPreviewTree(ArchetypeBase archetype)
+    {
+        UIManager.Instance.ArchetypeNodeInfoPanel.SetPreviewMode(true);
+        secondaryTreeParent.gameObject.SetActive(false);
+        primaryTreeParent.gameObject.SetActive(true);
+        (primaryTreeParent.transform as RectTransform).anchoredPosition = new Vector2(0, 0);
+        ScrollView.content = primaryTreeParent.rectTransform;
+        UIManager.Instance.OpenWindow(this.gameObject, false);
+        BuildArchetypeTree(archetype);
     }
 }

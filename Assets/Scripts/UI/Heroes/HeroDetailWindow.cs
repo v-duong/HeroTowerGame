@@ -1,21 +1,25 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using TMPro;
 
 public class HeroDetailWindow : MonoBehaviour
 {
     [SerializeField]
     private TextMeshProUGUI nameText;
+
     [SerializeField]
     private TextMeshProUGUI infoText;
+
     [SerializeField]
     private ArchetypeUITreeWindow treeWindow;
+
     [SerializeField]
     private ScrollRect abilityScrollRect;
+
     [SerializeField]
     private HeroAbilityScrollWindow abilityWindow;
+
     public static HeroData hero;
 
     public List<HeroEquipmentSlot> equipSlots;
@@ -39,14 +43,15 @@ public class HeroDetailWindow : MonoBehaviour
         {
             lockButton.GetComponentInChildren<Text>().text = "Unlocked";
         }
-        
 
         infoText.text = "";
         infoText.text += "Archetype: " + hero.PrimaryArchetype.Base.idName;
         if (hero.SecondaryArchetype != null)
         {
             infoText.text += "/" + hero.SecondaryArchetype.Base.idName + "\n";
-        } else {
+        }
+        else
+        {
             infoText.text += "\n";
         }
         infoText.text += "Level: " + hero.Level + "\n";
@@ -81,7 +86,8 @@ public class HeroDetailWindow : MonoBehaviour
             if (e == null)
             {
                 slot.slotText.text = slot.EquipSlot.ToString();
-            } else
+            }
+            else
             {
                 slot.slotText.text = e.Name;
             }
@@ -99,15 +105,14 @@ public class HeroDetailWindow : MonoBehaviour
     public void ClickPrimaryTree()
     {
         treeWindow.OpenPrimaryTree();
-        UIManager.Instance.OpenWindow(treeWindow.gameObject);
-        if (treeWindow.hero != hero) 
+        if (treeWindow.hero != hero)
             treeWindow.InitializeTree(hero);
         
     }
+
     public void ClickSecondaryTree()
     {
         treeWindow.OpenSecondaryTree();
-        UIManager.Instance.OpenWindow(treeWindow.gameObject);
         if (treeWindow.hero != hero)
             treeWindow.InitializeTree(hero);
     }
@@ -124,7 +129,8 @@ public class HeroDetailWindow : MonoBehaviour
         {
             hero.IsLocked = true;
             lockButton.GetComponentInChildren<Text>().text = "Locked";
-        } else
+        }
+        else
         {
             hero.IsLocked = false;
             lockButton.GetComponentInChildren<Text>().text = "Unlocked";
@@ -134,7 +140,7 @@ public class HeroDetailWindow : MonoBehaviour
     public void DebugLevelUp()
     {
         if (hero != null)
-            hero.LevelUp();
+            hero.AddExperience(5000);
         UpdateWindow();
     }
 }

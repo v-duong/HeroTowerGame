@@ -17,6 +17,7 @@ public class GameManager : MonoBehaviour
 
     public PlayerStats PlayerStats;
     public bool isInBattle;
+    public List<HeroData> inBattleHeroes = new List<HeroData>();
     private string currentSceneName = "";
 
     private WeightList<ConsumableType> consumableWeightList;
@@ -45,7 +46,7 @@ public class GameManager : MonoBehaviour
             Equipment equipment = Equipment.CreateRandomEquipment(100);
             equipment.SetRarity((RarityType)Random.Range(1, 4));
             equipment.RerollAffixesAtRarity();
-            PlayerStats.equipmentInventory.Add(equipment);
+            PlayerStats.AddEquipmentToInventory(equipment);
         }
     }
 
@@ -117,6 +118,7 @@ public class GameManager : MonoBehaviour
         Scene scene = SceneManager.GetSceneByName("battleUI");
         SceneManager.MergeScenes(scene, sceneToMergeTo);
         SummonScrollWindow summonScroll = UIManager.Instance.SummonScrollWindow;
+        inBattleHeroes.Clear();
         foreach (HeroData data in PlayerStats.heroTeams[0])
         {
             if (data == null)
@@ -127,6 +129,7 @@ public class GameManager : MonoBehaviour
             if (heroActor == null)
                 continue;
             summonScroll.AddHeroActor(heroActor);
+            inBattleHeroes.Add(data);
         }
         UIManager.Instance.LoadingScreen.endLoadingScreen = true;
         isInBattle = true;

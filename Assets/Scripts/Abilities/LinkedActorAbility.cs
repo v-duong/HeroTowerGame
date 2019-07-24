@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 public class LinkedActorAbility : ActorAbility
@@ -26,7 +25,8 @@ public class LinkedActorAbility : ActorAbility
 
     public override void UpdateAbilityStats(HeroData data)
     {
-        if (linkedAbilityData.inheritsDamage) {
+        if (linkedAbilityData.inheritsDamage)
+        {
             float damageModifier = linkedAbilityData.inheritDamagePercent + linkedAbilityData.inheritDamagePercentScaling * abilityLevel;
             UpdateAbilityDamage(data, parentDamageLevels, damageModifier);
         }
@@ -35,7 +35,6 @@ public class LinkedActorAbility : ActorAbility
 
         UpdateAbility_AbilityType(data);
         UpdateAbility_ShotType(data);
-
     }
 
     public void Fire(Vector3 origin, Vector3 target)

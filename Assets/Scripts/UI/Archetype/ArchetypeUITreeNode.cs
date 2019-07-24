@@ -13,19 +13,36 @@ public class ArchetypeUITreeNode : MonoBehaviour
     public List<ArchetypeUITreeNode> connectedNodes = new List<ArchetypeUITreeNode>();
     public HeroArchetypeData archetypeData;
     public bool isLevelable;
+    private bool isPreviewMode = false;
 
-    public void SetNode(ArchetypeSkillNode n, HeroArchetypeData data)
+    public void SetNode(ArchetypeSkillNode n, HeroArchetypeData data, bool isPreviewMode)
     {
         this.node = n;
         this.archetypeData = data;
 
-        UpdateNode();
+        this.isPreviewMode = isPreviewMode;
+
+        if (isPreviewMode)
+            UpdateNodePreview();
+        else
+            UpdateNode();
         ((RectTransform)transform).anchoredPosition = new Vector3(n.nodePosition.x * 100, n.nodePosition.y * 100 + yPositionOffset, 0);
     }
 
     public void UpdateNode()
     {
         int level = archetypeData.GetNodeLevel(node);
+        nodeText.text = node.idName;
+        levelText.text = level + "/" + node.maxLevel;
+        if (level > 0)
+        {
+            nodeButton.image.color = new Color(1f, 1f, 1f, 1);
+        }
+    }
+
+    public void UpdateNodePreview()
+    {
+        int level = 0;
         nodeText.text = node.idName;
         levelText.text = level + "/" + node.maxLevel;
         if (level > 0)
@@ -45,6 +62,12 @@ public class ArchetypeUITreeNode : MonoBehaviour
         }
     }
 
+    private void EnablePreviewNode()
+    {
+        isLevelable = false;
+        nodeButton.image.color = new Color(0.8f, 0.8f, 0.8f, 1);
+    }
+
     public void DisableNode()
     {
         isLevelable = false;
@@ -53,6 +76,12 @@ public class ArchetypeUITreeNode : MonoBehaviour
 
     public void CheckSurroundingNodes()
     {
+        if (isPreviewMode)
+        {
+            EnablePreviewNode();
+            return;
+        }
+
         if (archetypeData.GetNodeLevel(node) > 0)
         {
             EnableNode();

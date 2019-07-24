@@ -88,12 +88,14 @@ public class HeroArchetypeData : IAbilitySource
         {
             if (nodeLevel.level == 1)
             {
-                hero.AddArchetypeStatBonus(bonus.initialValue, bonus.bonusType, bonus.modifyType);
+                hero.AddArchetypeStatBonus(bonus.growthValue, bonus.bonusType, bonus.modifyType);
                 if (nodeLevel.bonusLevels > 0)
                 {
                     hero.AddArchetypeStatBonus(bonus.growthValue * nodeLevel.bonusLevels, bonus.bonusType, bonus.modifyType);
                 }
             }
+            else if (nodeLevel.level == node.maxLevel)
+                hero.AddArchetypeStatBonus(bonus.finalLevelValue, bonus.bonusType, bonus.modifyType);
             else
                 hero.AddArchetypeStatBonus(bonus.growthValue, bonus.bonusType, bonus.modifyType);
         }
@@ -106,23 +108,28 @@ public class HeroArchetypeData : IAbilitySource
         NodeLevel nodeLevel = nodeLevels[node.id];
         if (nodeLevel.level == node.initialLevel)
             return false;
-        nodeLevel.level--;
+        
         if (node.type == NodeType.ABILITY)
             AvailableAbilityList.Remove(node.GetAbility());
 
         foreach (var bonus in node.bonuses)
         {
-            if (nodeLevel.level == 0)
+            if (nodeLevel.level == 1)
             {
-                hero.RemoveArchetypeStatBonus(bonus.initialValue, bonus.bonusType, bonus.modifyType);
+                hero.RemoveArchetypeStatBonus(bonus.growthValue, bonus.bonusType, bonus.modifyType);
                 if (nodeLevel.bonusLevels > 0)
                 {
                     hero.RemoveArchetypeStatBonus(bonus.growthValue * nodeLevel.bonusLevels, bonus.bonusType, bonus.modifyType);
                 }
             }
+            else if (nodeLevel.level == node.maxLevel)
+                hero.RemoveArchetypeStatBonus(bonus.finalLevelValue, bonus.bonusType, bonus.modifyType);
             else
                 hero.RemoveArchetypeStatBonus(bonus.growthValue, bonus.bonusType, bonus.modifyType);
         }
+
+        nodeLevel.level--;
+
         hero.UpdateHeroAllStats();
         return true;
     }

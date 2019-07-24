@@ -73,7 +73,6 @@ public abstract class AffixedItem : Item
         if (prefixes.Count == 0 && suffixes.Count == 0 && Rarity == RarityType.NORMAL)
             return false;
 
-
         prefixes.Clear();
         suffixes.Clear();
         if (setRarityToNormal)
@@ -84,8 +83,12 @@ public abstract class AffixedItem : Item
 
         UpdateItemStats();
 
-
         return true;
+    }
+
+    public bool SetRarityToNormal()
+    {
+       return ClearAffixes(true);
     }
 
     public bool RerollAffixesAtRarity()
@@ -96,7 +99,6 @@ public abstract class AffixedItem : Item
             return false;
         if (Rarity == RarityType.UNCOMMON)
         {
-            
             ClearAffixes(false);
             AddRandomAffix();
             if (Random.Range(0, 2) == 0)
@@ -107,7 +109,7 @@ public abstract class AffixedItem : Item
         else if (Rarity == RarityType.RARE || Rarity == RarityType.EPIC)
         {
             ClearAffixes(false);
-            for(int j = 0; j < affixCap+1; j++)
+            for (int j = 0; j < affixCap + 1; j++)
                 AddRandomAffix();
             int i = 0;
             while ((Random.Range(0, 2) == 0) && i < (affixCap - 1))
@@ -143,6 +145,35 @@ public abstract class AffixedItem : Item
             returnList.Add(affix.Base.BonusTagType);
         }
         return returnList;
+    }
+
+    public bool UpgradeNormalToUncommon()
+    {
+        if (Rarity != RarityType.NORMAL)
+            return false;
+        Rarity = RarityType.UNCOMMON;
+        AddRandomAffix();
+        if (Random.Range(0, 2) == 0)
+            AddRandomAffix();
+        UpdateName();
+        return true;
+    }
+
+    public bool UpgradeNormalToRare()
+    {
+        if (Rarity != RarityType.NORMAL)
+            return false;
+        Rarity = RarityType.RARE;
+        AddRandomAffix();
+        AddRandomAffix();
+        AddRandomAffix();
+        AddRandomAffix();
+        if (Random.Range(0, 2) == 0)
+            AddRandomAffix();
+        if (Random.Range(0, 2) == 0)
+            AddRandomAffix();
+        UpdateName();
+        return true;
     }
 
     public virtual int GetAffixCap()
@@ -200,7 +231,6 @@ public abstract class AffixedItem : Item
         else if (affix.affixType == AffixType.SUFFIX)
         {
             suffixes.Add(new Affix(affix));
-
         }
         else
             return false;
@@ -218,7 +248,10 @@ public abstract class AffixedItem : Item
     }
 
     public abstract bool UpgradeRarity();
+
     public abstract bool UpdateItemStats();
+
     public abstract HashSet<GroupType> GetGroupTypes();
+
     public abstract void UpdateName();
 }

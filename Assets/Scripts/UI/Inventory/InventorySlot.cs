@@ -12,11 +12,17 @@ public class InventorySlot : MonoBehaviour
     public Image slotImage;
     public TextMeshProUGUI nameText;
     public TextMeshProUGUI infoText;
-    public Action onClickAction;
+    public Action<Item> onClickAction;
 
     public void UpdateSlot()
     {
         infoText.text = "";
+        if (item == null)
+        {
+            nameText.text = "REMOVE";
+            slotImage.color = Color.cyan;
+            return;
+        }
 
         switch (item.GetItemType())
         {
@@ -44,7 +50,7 @@ public class InventorySlot : MonoBehaviour
     {
         if (onClickAction != null)
         {
-            onClickAction?.Invoke();
+            onClickAction?.Invoke(item);
             return;
         }
         else
@@ -53,6 +59,7 @@ public class InventorySlot : MonoBehaviour
             {
                 case ItemType.ARMOR:
                 case ItemType.WEAPON:
+                case ItemType.ACCESSORY:
                     break;
                 default:
                     return;
@@ -69,7 +76,7 @@ public class InventorySlot : MonoBehaviour
                 itemWindow.EquipButtonParent.SetActive(false);
                 itemWindow.ShowButtons();
             }
-            itemWindow.gameObject.SetActive(true);
+            UIManager.Instance.OpenWindow(itemWindow.gameObject, false);
             itemWindow.equip = (Equipment)item;
             itemWindow.inventorySlot = this;
             itemWindow.UpdateWindowEquipment();

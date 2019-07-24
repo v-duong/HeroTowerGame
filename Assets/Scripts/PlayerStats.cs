@@ -14,9 +14,32 @@ public class PlayerStats
 
     public Dictionary<ConsumableType, int> consumables;
 
-    public List<Equipment> equipmentInventory;
-    public List<ArchetypeItem> archetypeInventory;
-    public List<HeroData> heroList;
+    private List<Equipment> equipmentInventory;
+    private List<ArchetypeItem> archetypeInventory;
+    private List<HeroData> heroList;
+    public IList<Equipment> EquipmentInventory
+    {
+        get
+        {
+            return equipmentInventory.AsReadOnly();
+        }
+    }
+
+    public IList<ArchetypeItem> ArchetypeInventory
+    {
+        get
+        {
+            return archetypeInventory.AsReadOnly();
+        }
+    }
+
+    public IList<HeroData> HeroList
+    {
+        get
+        {
+            return heroList.AsReadOnly();
+        }
+    }
     public List<HeroData[]> heroTeams;
 
     public PlayerStats()
@@ -39,20 +62,41 @@ public class PlayerStats
         }
     }
 
-    public void AddEquipmentToInventory(Equipment newEquipment)
+    public bool AddEquipmentToInventory(Equipment newEquipment)
     {
         equipmentInventory.Add(newEquipment);
+        return true;
     }
 
-    public void AddArchetypeToInventory(ArchetypeItem newArchetype)
+    public bool AddArchetypeToInventory(ArchetypeItem newArchetype)
     {
         archetypeInventory.Add(newArchetype);
+        return true;
     }
 
-    public void AddHeroToList(HeroData hero)
+    public bool AddHeroToList(HeroData hero)
     {
         heroList.Add(hero);
         UIManager.Instance.HeroScrollContent.AddHeroSlot(hero);
+        return true;
+    }
+
+    public bool RemoveEquipmentFromInventory(Equipment equip)
+    {
+        equipmentInventory.Remove(equip);
+        return true;
+    }
+
+    public bool RemoveArchetypeFromInventory(ArchetypeItem archetype)
+    {
+        archetypeInventory.Remove(archetype);
+        return true;
+    }
+
+    public bool RemoveHeroFromList(HeroData hero)
+    {
+        heroList.Remove(hero);
+        return true;
     }
 }
 

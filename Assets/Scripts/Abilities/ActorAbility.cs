@@ -103,8 +103,10 @@ public class ActorAbility
 
     protected void UpdateAbility_ShotType(HeroData data)
     {
+        /*
         if (abilityBase.abilityShotType == AbilityShotType.PROJECTILE)
         {
+        */
             StatBonus projSpeedBonus = data.GetTotalStatBonus(BonusType.PROJECTILE_SPEED);
             StatBonus projCountBonus = data.GetTotalStatBonus(BonusType.PROJECTILE_COUNT);
             StatBonus projPierceBonus = data.GetTotalStatBonus(BonusType.PROJECTILE_PIERCE);
@@ -112,7 +114,10 @@ public class ActorAbility
             ProjectileSpeed = (float)projSpeedBonus.CalculateStat(abilityBase.projectileSpeed);
             ProjectilePierce = projPierceBonus.CalculateStat(0);
             ProjectileCount = projCountBonus.CalculateStat(abilityBase.projectileCount);
-        }
+        //}
+
+        StatBonus areaRadiusBonus = data.GetTotalStatBonus(BonusType.AREA_RADIUS);
+        AreaRadius = (float)areaRadiusBonus.CalculateStat(abilityBase.areaRadius);
     }
 
     protected void UpdateAbility_AbilityType(HeroData data)
@@ -327,7 +332,7 @@ public class ActorAbility
 
     protected void FireRadialAoe(Vector3 origin, Vector3 target, Dictionary<ElementType, int> damageDict)
     {
-        List<RaycastHit2D> hits = new List<RaycastHit2D>();
+        Collider2D[] hits;
         ContactFilter2D filter = new ContactFilter2D
         {
             useTriggers = true
@@ -335,19 +340,18 @@ public class ActorAbility
         filter.SetLayerMask(LayerMask.GetMask("Enemy"));
 
         Vector2 forward = target - origin;
-
         if (abilityBase.abilityShotType == AbilityShotType.RADIAL_AOE)
         {
-            Physics2D.CircleCast(target, AreaRadius, -forward, filter, hits);
+            hits = Physics2D.OverlapCircleAll(target, AreaRadius, LayerMask.GetMask("Enemy"));
         }
         else
         {
-            Physics2D.CircleCast(origin, AreaRadius, -forward, filter, hits);
+            hits = Physics2D.OverlapCircleAll(origin, AreaRadius, LayerMask.GetMask("Enemy"));
         }
 
-        foreach (RaycastHit2D hit in hits)
+        foreach (Collider2D hit in hits)
         {
-            Actor actor = hit.collider.gameObject.GetComponent<Actor>();
+            Actor actor = hit.gameObject.GetComponent<Actor>();
             if (actor != null)
             {
                 actor.ApplyDamage(CalculateDamageTotalValue());

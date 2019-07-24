@@ -9,6 +9,7 @@ public class ArchetypeItem : Item
     protected ArchetypeItem(ArchetypeBase b)
     {
         BaseId = b.idName;
+        Name = LocalizationManager.Instance.GetLocalizationText_Archetype(b.idName);
     }
 
     public static ArchetypeItem CreateRandomArchetypeItem(int ilvl)

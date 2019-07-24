@@ -1,6 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
-using System;
 
 public class HeroAbilityScrollWindow : MonoBehaviour
 {
@@ -9,6 +9,7 @@ public class HeroAbilityScrollWindow : MonoBehaviour
 
     private Stack<HeroUIAbilitySlot> SlotsInUse = new Stack<HeroUIAbilitySlot>();
     private Stack<HeroUIAbilitySlot> AvailableSlots = new Stack<HeroUIAbilitySlot>();
+
     [NonSerialized]
     public static int slot;
 
@@ -30,13 +31,16 @@ public class HeroAbilityScrollWindow : MonoBehaviour
 
         foreach (AbilityBase ability in hero.PrimaryArchetype.AvailableAbilityList)
         {
-            string s = LocalizationManager.Instance.GetLocalizationText_AbilityBaseDamage(hero.PrimaryArchetype.GetAbilityLevel(), ability);
-            AddAbilitySlot(ability, hero.PrimaryArchetype, s);
+            string str = LocalizationManager.Instance.GetLocalizationText_AbilityBaseDamage(hero.PrimaryArchetype.GetAbilityLevel(), ability);
+            AddAbilitySlot(ability, hero.PrimaryArchetype, str);
         }
-        foreach (AbilityBase ability in hero.SecondaryArchetype.AvailableAbilityList)
+        if (hero.SecondaryArchetype != null)
         {
-            string s = LocalizationManager.Instance.GetLocalizationText_AbilityBaseDamage(hero.SecondaryArchetype.GetAbilityLevel(), ability);
-            AddAbilitySlot(ability, hero.SecondaryArchetype, s);
+            foreach (AbilityBase ability in hero.SecondaryArchetype.AvailableAbilityList)
+            {
+                string str = LocalizationManager.Instance.GetLocalizationText_AbilityBaseDamage(hero.SecondaryArchetype.GetAbilityLevel(), ability);
+                AddAbilitySlot(ability, hero.SecondaryArchetype, str);
+            }
         }
     }
 

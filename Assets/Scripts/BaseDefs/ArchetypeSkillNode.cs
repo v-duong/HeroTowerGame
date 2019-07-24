@@ -52,9 +52,9 @@ public struct ScalingBonusProperty
     [JsonProperty]
     public readonly ModifyType modifyType;
     [JsonProperty]
-    public readonly int initialValue;
-    [JsonProperty]
     public readonly int growthValue;
+    [JsonProperty]
+    public readonly int finalLevelValue;
 }
 
 public enum NodeType
