@@ -69,12 +69,10 @@ public class InventorySlot : MonoBehaviour
             if (UIManager.Instance.IsEquipSelectMode)
             {
                 itemWindow.EquipButtonParent.SetActive(true);
-                itemWindow.HideButtons();
             }
             else
             {
                 itemWindow.EquipButtonParent.SetActive(false);
-                itemWindow.ShowButtons();
             }
             UIManager.Instance.OpenWindow(itemWindow.gameObject, false);
             itemWindow.equip = (Equipment)item;

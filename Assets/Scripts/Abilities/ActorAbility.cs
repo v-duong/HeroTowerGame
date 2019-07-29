@@ -255,19 +255,6 @@ public class ActorAbility
         return dict;
     }
 
-    public int CalculateDamageTotalValue()
-    {
-        int total = 0;
-        for (int i = 0; i < (int)ElementType.COUNT; i++)
-        {
-            if (damageBase.ContainsKey((ElementType)i))
-            {
-                total += UnityEngine.Random.Range(damageBase[(ElementType)i].min, damageBase[(ElementType)i].max + 1);
-            }
-        }
-        return total;
-    }
-
     public void StartFiring(Actor parent)
     {
         if (firingRoutine == null)
@@ -354,7 +341,7 @@ public class ActorAbility
             Actor actor = hit.gameObject.GetComponent<Actor>();
             if (actor != null)
             {
-                actor.ApplyDamage(CalculateDamageTotalValue());
+                actor.ApplyDamage(CalculateDamageDict());
             }
         }
     }
@@ -385,7 +372,7 @@ public class ActorAbility
             {
                 Vector2 toActor = (actor.transform.position - origin);
                 if (Vector2.Dot(toActor, forward) > arc)
-                    actor.ApplyDamage(CalculateDamageTotalValue());
+                    actor.ApplyDamage(CalculateDamageDict());
             }
         }
     }

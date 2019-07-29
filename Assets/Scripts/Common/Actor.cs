@@ -5,13 +5,14 @@ public abstract class Actor : MonoBehaviour
 {
     public ActorData Data { get; protected set; }
     public float actorTimeScale = 1f;
+    private readonly List<ActorStatusEffect> statusEffects = new List<ActorStatusEffect>();
+
     protected UIHealthBar healthBar;
     protected List<ActorAbility> instancedAbilitiesList = new List<ActorAbility>();
     protected List<AbilityColliderContainer> abilityColliders = new List<AbilityColliderContainer>();
+    protected int nextMovementNode;
 
     public abstract ActorType GetActorType();
-
-    protected int nextMovementNode;
 
     public abstract void Death();
 
@@ -19,6 +20,16 @@ public abstract class Actor : MonoBehaviour
     {
         healthBar = GetComponentInChildren<UIHealthBar>();
         healthBar.Initialize(Data.MaximumHealth, Data.CurrentHealth, this.transform);
+    }
+    
+    public void AddStatusEffect(ActorStatusEffect statusEffect)
+    {
+        statusEffects.Add(statusEffect);
+    }
+
+    public void RemoveStatusEffect(ActorStatusEffect statusEffect)
+    {
+        statusEffects.Remove(statusEffect);
     }
 
     public void AddAbilityToList(ActorAbility ability)
@@ -43,12 +54,12 @@ public abstract class Actor : MonoBehaviour
         }
     }
 
-    public void ModifyCurrentHealth(int mod)
+    public void ModifyCurrentHealth(double mod)
     {
         if (Data.CurrentHealth - mod > Data.MaximumHealth)
             Data.CurrentHealth = Data.MaximumHealth;
         else
-            Data.CurrentHealth -= mod;
+            Data.CurrentHealth -= (float)mod;
 
         healthBar.UpdateHealthBar(Data.MaximumHealth, Data.CurrentHealth);
         if (Data.CurrentHealth <= 0)
@@ -57,9 +68,19 @@ public abstract class Actor : MonoBehaviour
         }
     }
 
-    public void ApplyDamage(int damage)
+    public void ApplyDamage(Dictionary<ElementType, int> damage)
     {
-        ModifyCurrentHealth(damage);
+        double total = 0;
+        ElementType element;
+        for (int i = 0; i < (int)ElementType.COUNT; i++)
+        {
+            element = (ElementType)i;
+            if (damage.ContainsKey(element))
+            {
+                total += ((1.0 - Data.Resistances[element] / 100d) * damage[element]);
+            }
+        }
+        ModifyCurrentHealth(total);
     }
 }
 

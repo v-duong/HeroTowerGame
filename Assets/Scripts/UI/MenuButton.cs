@@ -1,16 +1,9 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 
-public class MenuButton : MonoBehaviour
+public class MenuButton : UIKeyButton
 {
 
-    public void OnEnable()
-    {
-        Text textObject = GetComponentInChildren<Text>();
-        if (textObject == null)
-            return;
-         textObject.text = LocalizationManager.Instance.GetLocalizationText(textObject.text);
-    }
     public void OnClickInvToggle()
     {
         UIManager.Instance.IsEquipSelectMode = false;
@@ -30,6 +23,11 @@ public class MenuButton : MonoBehaviour
     public void OnClickWorkshop()
     {
         UIManager.Instance.OpenWorkshopWindow();
+    }
+
+    public void OnClickStageSelect()
+    {
+        UIManager.Instance.OpenStageSelectWindow();
     }
 
     public void AddItem()
@@ -52,7 +50,7 @@ public class MenuButton : MonoBehaviour
 
     public void UnloadMainMenu()
     {
-        GameManager.Instance.MoveToBattle("stage1-1");
+        //GameManager.Instance.MoveToBattle("stage1-1NORMAL");
     }
 
     public void LoadMainMenu()

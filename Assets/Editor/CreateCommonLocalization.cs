@@ -1,8 +1,10 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using UnityEngine;
 using UnityEditor;
+using UnityEngine;
+using UnityEngine.UI;
+using TMPro;
 
 public class CreateCommonLocalization
 {
@@ -19,7 +21,7 @@ public class CreateCommonLocalization
             string json = System.IO.File.ReadAllText(filepath);
             localization = JsonConvert.DeserializeObject<SortedDictionary<string, string>>(json);
             HashSet<string> keys = new HashSet<string>(localization.Keys);
-            
+
             List<string> bonusTypes = new List<string>(Enum.GetNames(typeof(BonusType)));
 
             foreach (string x in bonusTypes)
@@ -42,14 +44,11 @@ public class CreateCommonLocalization
                     keys.Remove(localizationKey);
             }
 
-
-
             List<string> elementTypes = new List<string>(Enum.GetNames(typeof(ElementType)));
 
             foreach (string x in elementTypes)
             {
-                Debug.Log(x);
-                if (string.Compare(x ,"COUNT") == 0)
+                if (string.Compare(x, "COUNT") == 0)
                     continue;
                 string localizationKey = "elementType." + x;
                 if (!localization.ContainsKey(localizationKey))
@@ -71,7 +70,7 @@ public class CreateCommonLocalization
 
             string filepath2 = "Assets/Resources/json/localization/UIKeys.txt";
             string uiKeysText = System.IO.File.ReadAllText(filepath2);
-            
+
             string[] uiKeys = uiKeysText.Split(',');
             foreach (string x in uiKeys)
             {
@@ -82,7 +81,6 @@ public class CreateCommonLocalization
                     keys.Remove(localizationKey);
             }
 
-
             foreach (string key in keys)
             {
                 localization.Remove(key);
@@ -90,7 +88,29 @@ public class CreateCommonLocalization
 
             string o = JsonConvert.SerializeObject(localization);
             System.IO.File.WriteAllText(filepath, o);
-            
         }
+    }
+
+    [MenuItem("Localization/Build UI Strings")]
+    public static void FindUIStrings()
+    {
+        Text[] texts = Resources.FindObjectsOfTypeAll<Text>();
+        TextMeshProUGUI[] textMeshPros = Resources.FindObjectsOfTypeAll<TextMeshProUGUI>();
+        string filepath = "Assets/Resources/json/localization/UIKeys.txt";
+        string keys = "";
+
+        foreach (Text t in texts)
+        {
+            if (t.text.Contains("UI_"))
+                keys += t.text + ",";
+        }
+
+        foreach (TextMeshProUGUI t in textMeshPros)
+        {
+            if (t.text.Contains("UI_"))
+                keys += t.text + ",";
+        }
+        keys = keys.TrimEnd(',');
+        System.IO.File.WriteAllText(filepath, keys);
     }
 }

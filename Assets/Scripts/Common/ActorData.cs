@@ -1,31 +1,32 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 public abstract class ActorData
 {
-    public int Id { get; protected set; }
+    public Guid Id { get; protected set; }
     public int Level { get; set; }
     public int Experience { get; set; }
     public string Name { get; set; }
     public float BaseHealth { get; protected set; }
 
     [SerializeField]
-    public int MaximumHealth { get;  set; }
+    public int MaximumHealth { get; set; }
 
     [SerializeField]
-    public float CurrentHealth { get;  set; }
+    public float CurrentHealth { get; set; }
 
     public int MinimumHealth { get; protected set; } //for cases of invincible/phased actors
 
     public bool HealthIsHitsToKill { get; protected set; } //health is number of hits to kill
 
     public float BaseSoulPoints { get; protected set; }
-    public int MaximumSoulPoints { get;  set; }
-    public float CurrentSoulPoints { get;  set; }
+    public int MaximumSoulPoints { get; set; }
+    public float CurrentSoulPoints { get; set; }
 
     public int BaseManaShield { get; protected set; }
-    public int MaximumManaShield { get;  set; }
-    public float CurrentManaShield { get;  set; }
+    public int MaximumManaShield { get; set; }
+    public float CurrentManaShield { get; set; }
 
     public int BaseArmor { get; protected set; }
     public int BaseDodgeRating { get; protected set; }
@@ -37,6 +38,11 @@ public abstract class ActorData
 
     public float movementSpeed;
 
+
+    protected ActorData() {
+        Id = Guid.NewGuid();
+        Resistances = new ElementResistances();
+    }
 
     public float GetCurrentHealth()
     {

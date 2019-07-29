@@ -40,10 +40,7 @@ public class Projectile : MonoBehaviour
         if (actor != null)
         {
             targetPosition = actor.transform.position;
-            int damage = 0;
-            foreach (int d in projectileDamage.Values)
-                damage += d;
-            actor.ApplyDamage(damage);
+            actor.ApplyDamage(projectileDamage);
         } else
         {
             return;

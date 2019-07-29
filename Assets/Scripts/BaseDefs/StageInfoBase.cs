@@ -25,7 +25,7 @@ public class StageInfoBase
     [JsonProperty]
     public readonly List<WeightBase> archetypeDropList;
     [JsonProperty]
-    public readonly List<ScalingBonusProperty> stageProperties;
+    public readonly List<AffixBase> stageProperties;
     [JsonProperty]
     public readonly float expMultiplier;
     [JsonProperty]
@@ -34,6 +34,11 @@ public class StageInfoBase
     public readonly float consumableDropRateMultiplier;
     [JsonProperty]
     public readonly List<EnemyWave> enemyWaves;
+    [JsonProperty]
+    public readonly int sceneAct;
+    [JsonProperty]
+    public readonly int sceneStage;
+
 }
 
 public class EnemyWave
@@ -54,7 +59,7 @@ public class EnemyWaveItem
     [JsonConverter(typeof(StringEnumConverter))]
     public readonly RarityType enemyRarity;
     [JsonProperty]
-    public readonly List<ScalingBonusProperty> bonusProperties;
+    public readonly List<AffixBase> bonusProperties;
     [JsonProperty]
     public readonly List<string> abilityOverrides;
     [JsonProperty]

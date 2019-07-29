@@ -80,17 +80,16 @@ public class GameManager : MonoBehaviour
         
     }
 
-    public void MoveToBattle(string sceneName)
+    public void MoveToBattle(StageInfoBase stageInfoBase)
     {
         SceneManager.LoadScene("loadingScene", LoadSceneMode.Additive);
-
-        currentSceneName = sceneName;
-        StartCoroutine(LoadBattleRoutine(sceneName));
+        currentSceneName = "stage" + stageInfoBase.sceneAct + '-' + stageInfoBase.sceneStage;
+        StartCoroutine(LoadBattleRoutine(currentSceneName, stageInfoBase));
         Camera.main.transform.position = new Vector3(0, 0, -10);
         SceneManager.UnloadSceneAsync("mainMenu");
     }
 
-    IEnumerator LoadBattleRoutine(string sceneName)
+    IEnumerator LoadBattleRoutine(string sceneName, StageInfoBase stageInfoBase)
     {
 
         AsyncOperation asyncOperation = SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Additive);
@@ -101,9 +100,7 @@ public class GameManager : MonoBehaviour
         StageManager.Instance.HighlightMap.gameObject.SetActive(false);
         Scene scene = SceneManager.GetSceneByName(sceneName);
         SceneManager.SetActiveScene(scene);
-        Debug.Log(sceneName);
-        StageInfoBase stage = ResourceManager.Instance.GetStageInfo(sceneName);
-        StageManager.Instance.WaveManager.SetWaves(stage.enemyWaves);
+        StageManager.Instance.WaveManager.SetWaves(stageInfoBase.enemyWaves);
         
         yield return LoadBattleUI(scene);
     }

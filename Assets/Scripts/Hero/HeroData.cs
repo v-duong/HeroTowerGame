@@ -34,12 +34,12 @@ public class HeroData : ActorData
 
     public bool IsLocked;
 
-    private HeroData()
+    private HeroData() : base()
     {
         Initialize();
     }
 
-    private HeroData(string name)
+    private HeroData(string name) : base()
     {
         Initialize(name);
     }
@@ -55,7 +55,6 @@ public class HeroData : ActorData
 
     private void Initialize(string name = "")
     {
-        Id = 0;
         Name = name;
         Level = 0;
         Experience = 0;
@@ -74,7 +73,6 @@ public class HeroData : ActorData
         movementSpeed = 3f;
         IsLocked = false;
         assignedTeam = -1;
-        Resistances = new ElementResistances();
         equipList = new Equipment[10];
         archetypeList = new HeroArchetypeData[2];
         statBonuses = new Dictionary<BonusType, StatBonus>();

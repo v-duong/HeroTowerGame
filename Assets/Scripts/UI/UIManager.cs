@@ -17,6 +17,7 @@ public class UIManager : MonoBehaviour
     private Canvas _battleUICanvas;
     private Canvas _teamCanvas;
     private Canvas _workshopCanvas;
+    private Canvas _stageSelectCanvas;
     private ScrollRect _invWindowRect;
     private EquipmentDetailWindow _itemWindow;
     private InventoryScrollWindow _invWindow;
@@ -32,6 +33,7 @@ public class UIManager : MonoBehaviour
     private TeamWindow _teamWindow;
     private WorkshopParentWindow _workshopParentWindow;
     private ItemCraftingPanel _itemCraftingPanel;
+    private StageSelectPanel _stageSelectPanel;
 
     public EquipSlotType SlotContext;
     public bool IsEquipSelectMode = false;
@@ -129,6 +131,16 @@ public class UIManager : MonoBehaviour
             if (_battleUICanvas == null)
                 _battleUICanvas = GameObject.FindGameObjectWithTag("BattleUICanvas").GetComponent<Canvas>();
             return _battleUICanvas;
+        }
+    }
+
+    public Canvas StageSelectCanvas
+    {
+        get
+        {
+            if (_stageSelectCanvas == null)
+                _stageSelectCanvas = GameObject.FindGameObjectWithTag("StageSelectCanvas").GetComponent<Canvas>();
+            return _stageSelectCanvas;
         }
     }
 
@@ -283,6 +295,16 @@ public class UIManager : MonoBehaviour
         }
     }
 
+    public StageSelectPanel StageSelectPanel
+    {
+        get
+        {
+            if (_stageSelectPanel == null)
+                _stageSelectPanel = StageSelectCanvas.GetComponentInChildren<StageSelectPanel>(true);
+            return _stageSelectPanel;
+        }
+    }
+
     private void Start()
     {
         Instance = this;
@@ -327,7 +349,6 @@ public class UIManager : MonoBehaviour
         }
 
         OpenWindow(InvWindowCanvas.gameObject, closeWindows);
-        this.EquipDetailWindow.HideButtons();
         if (showDefault)
             InvScrollContent.ShowAllEquipment();
     }
@@ -352,6 +373,13 @@ public class UIManager : MonoBehaviour
             CloseAllWindows();
         OpenWindow(WorkshopParentWindow.gameObject);
         WorkshopParentWindow.Instance.SetItemCraftingPanelActive();
+    }
+
+    public void OpenStageSelectWindow(bool closeWindows = true)
+    {
+        if (closeWindows)
+            CloseAllWindows();
+        OpenWindow(StageSelectPanel.gameObject);
     }
 
     public void SetInventoryScrollRectTransform(int type)

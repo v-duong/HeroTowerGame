@@ -20,11 +20,19 @@ public class ItemCraftingPanel : MonoBehaviour
     private TextMeshProUGUI leftInfo;
     [SerializeField]
     private TextMeshProUGUI rightInfo;
+    [SerializeField]
+    private Button confirmButton;
 
     private void OnDisable()
     {
         selectedOption = null;
         currentSelectedButton = null;
+        currentItem = null;
+    }
+
+    private void OnEnable()
+    {
+        UpdatePanels();
     }
 
     public void ItemSlotOnClick()
@@ -46,22 +54,35 @@ public class ItemCraftingPanel : MonoBehaviour
 
     private void UpdatePanels()
     {
+        itemSlot.text.text = "";
+        prefixes.text = "";
+        suffixes.text = "";
+        leftInfo.text = "";
+        rightInfo.text = "";
         if (currentItem == null)
+        {
+            confirmButton.interactable = false;
             return;
+        }
+        if (selectedOption == null)
+        {
+            confirmButton.interactable = false;
+        }
         itemSlot.text.text = currentItem.Name;
         itemSlot.GetComponentInChildren<Image>().color = Helpers.ReturnRarityColor(currentItem.Rarity);
+
         prefixes.text = "Prefixes\n";
         foreach (Affix a in currentItem.prefixes)
         {
             prefixes.text += a.BuildAffixString(false);
         }
         suffixes.text = "Suffixes\n";
+
         foreach (Affix a in currentItem.suffixes)
         {
             suffixes.text += a.BuildAffixString(false);
         }
-        leftInfo.text = "";
-        rightInfo.text = "";
+
         if (currentItem.GetItemType() == ItemType.WEAPON)
         {
             UpdateInfo_Weapon(currentItem as Weapon);
@@ -76,7 +97,6 @@ public class ItemCraftingPanel : MonoBehaviour
         List<string> elementalDps = new List<string>();
         List<string> primDamage = new List<string>();
         List<string> primDps = new List<string>();
-        string physDPS;
         string physDamage = "";
         MinMaxRange range;
         double dps;
@@ -145,55 +165,69 @@ public class ItemCraftingPanel : MonoBehaviour
     {
         if (currentItem == null)
             return;
-        selectedOption = currentItem.RerollAffixesAtRarity;
+        SetSelectedOption(currentItem.RerollAffixesAtRarity);
     }
 
     public void RerollValuesOnClick(Button button)
     {
         if (currentItem == null)
             return;
-        selectedOption = currentItem.RerollValues;
+        SetSelectedOption(currentItem.RerollValues);
     }
 
     public void AddAffixOnClick(Button button)
     {
         if (currentItem == null)
             return;
-        selectedOption = currentItem.AddRandomAffix;
+        SetSelectedOption(currentItem.AddRandomAffix);
     }
 
     public void RemoveAffixOnClick(Button button)
     {
         if (currentItem == null)
             return;
-        selectedOption = currentItem.RemoveRandomAffix;
+        SetSelectedOption(currentItem.RemoveRandomAffix);
     }
 
     public void UpgradeRarityOnClick(Button button)
     {
         if (currentItem == null)
             return;
-        selectedOption = currentItem.UpgradeRarity;
+        SetSelectedOption(currentItem.UpgradeRarity);
     }
 
     public void NormalToUncommonOnClick(Button button)
     {
         if (currentItem == null)
             return;
-        selectedOption = currentItem.UpgradeNormalToUncommon;
+        SetSelectedOption(currentItem.UpgradeNormalToUncommon);
     }
     public void NormalToRareOnClick(Button button)
     {
         if (currentItem == null)
             return;
-        selectedOption = currentItem.UpgradeNormalToRare;
+        SetSelectedOption(currentItem.UpgradeNormalToRare);
     }
 
     public void ToNormalOnClick(Button button)
     {
         if (currentItem == null)
             return;
-        selectedOption = currentItem.SetRarityToNormal;
+        SetSelectedOption(currentItem.SetRarityToNormal);
+    }
+
+    private void SetSelectedOption(Func<bool> option)
+    {
+        if (option != null)
+        {
+            selectedOption = option;
+            confirmButton.interactable = true;
+        } else
+        {
+            selectedOption = null;
+            confirmButton.interactable = false;
+        }
+
     }
 
     public void ApplyActionOnClick()

@@ -45,4 +45,11 @@ public class ElementResistances
     {
         dict[e] = value;
     }
+
+    public int this[ElementType i]
+    {
+        get { return dict[i]; }
+        set { dict[i] = value; }
+    }
+
 }

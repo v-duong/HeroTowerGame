@@ -1,0 +1,1 @@
+[{"IdName":"MobMaxHealth1","AffixType":"MONSTERMOD","Tier":1,"SpawnLevel":0,"AffixBonuses":[{"BonusType":"MAX_HEALTH","ModifyType":"ADDITIVE","MinValue":15,"MaxValue":15}],"SpawnWeight":[],"GroupTypes":[]}]

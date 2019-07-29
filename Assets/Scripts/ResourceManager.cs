@@ -1,9 +1,7 @@
 ﻿using Newtonsoft.Json;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
-using System;
-using System.IO;
-
 
 public class ResourceManager : MonoBehaviour
 {
@@ -15,8 +13,10 @@ public class ResourceManager : MonoBehaviour
 
     [SerializeField]
     private GameObject heroPrefab;
+
     [SerializeField]
     private GameObject enemyPrefab;
+
     [SerializeField]
     private GameObject abilityContainerPrefab;
 
@@ -26,6 +26,7 @@ public class ResourceManager : MonoBehaviour
     private Dictionary<string, AffixBase> suffixList;
     private Dictionary<string, AffixBase> innateList;
     private Dictionary<string, AffixBase> enchantmentList;
+    private Dictionary<string, AffixBase> monsterModList;
     private Dictionary<string, ArchetypeBase> archetypeList;
     private Dictionary<string, EnemyBase> enemyList;
     private Dictionary<string, StageInfoBase> stageList;
@@ -35,7 +36,7 @@ public class ResourceManager : MonoBehaviour
     public int PrefixCount { get; private set; }
     public int SuffixCount { get; private set; }
     public int ArchetypeCount { get; private set; }
-    AssetBundle jsonBundle;
+    private AssetBundle jsonBundle;
     public GameObject HeroPrefab => heroPrefab;
     public GameObject EnemyPrefab => enemyPrefab;
     public GameObject AbilityContainerPrefab => abilityContainerPrefab;
@@ -78,6 +79,15 @@ public class ResourceManager : MonoBehaviour
             return stageList[id];
         else
             return null;
+    }
+
+    public List<StageInfoBase> GetStagesByAct(int act)
+    {
+        if (stageList == null)
+            LoadStages();
+        List<StageInfoBase> returnList = new List<StageInfoBase>();
+        returnList = stageList.Values.Where(x => x.act == act).ToList();
+        return returnList;
     }
 
     public EnemyBase GetEnemyBase(string id)
@@ -152,7 +162,13 @@ public class ResourceManager : MonoBehaviour
                 if (innateList == null)
                     innateList = LoadAffixes(type);
                 return innateList[id];
+
             case AffixType.ENCHANTMENT:
+                if (enchantmentList == null)
+                    enchantmentList = LoadAffixes(type);
+                return enchantmentList[id];
+
+            case AffixType.MONSTERMOD:
                 if (enchantmentList == null)
                     enchantmentList = LoadAffixes(type);
                 return enchantmentList[id];
@@ -174,6 +190,18 @@ public class ResourceManager : MonoBehaviour
 
             case AffixType.SUFFIX:
                 affixList = suffixList;
+                break;
+
+            case AffixType.INNATE:
+                affixList = innateList;
+                break;
+
+            case AffixType.ENCHANTMENT:
+                affixList = enchantmentList;
+                break;
+
+            case AffixType.MONSTERMOD:
+                affixList = monsterModList;
                 break;
 
             default:
@@ -251,7 +279,7 @@ public class ResourceManager : MonoBehaviour
         enemyList = new Dictionary<string, EnemyBase>();
 
         List<EnemyBase> temp = DeserializeFromPath_Resources<List<EnemyBase>>("json/enemies/enemies");
-        foreach(EnemyBase enemy in temp)
+        foreach (EnemyBase enemy in temp)
         {
             enemyList.Add(enemy.idName, enemy);
         }
@@ -275,7 +303,7 @@ public class ResourceManager : MonoBehaviour
         List<StageInfoBase> temp = DeserializeFromPath_Resources<List<StageInfoBase>>("json/stages/stages");
         foreach (StageInfoBase stage in temp)
         {
-            string name = "stage" + stage.act + "-" + stage.stage;
+            string name = "stage" + stage.act + "-" + stage.stage + stage.difficulty;
             stageList.Add(name, stage);
         }
     }
@@ -303,6 +331,10 @@ public class ResourceManager : MonoBehaviour
                 s = "enchantment";
                 break;
 
+            case AffixType.MONSTERMOD:
+                s = "monstermod";
+                break;
+
             default:
                 return null;
         }
@@ -327,7 +359,6 @@ public class ResourceManager : MonoBehaviour
         return JsonConvert.DeserializeObject<T>(jsonBundle.LoadAsset<TextAsset>(path).text);
     }
 
-
     private void Awake()
     {
         Instance = this;
@@ -344,6 +375,7 @@ public class ResourceManager : MonoBehaviour
         suffixList = LoadAffixes(AffixType.SUFFIX);
         innateList = LoadAffixes(AffixType.INNATE);
         enchantmentList = LoadAffixes(AffixType.ENCHANTMENT);
+        monsterModList = LoadAffixes(AffixType.MONSTERMOD);
         LoadArchetypes();
         LoadEnemies();
         LoadStages();
@@ -353,10 +385,5 @@ public class ResourceManager : MonoBehaviour
         PrefixCount = prefixList.Count;
         SuffixCount = suffixList.Count;
         ArchetypeCount = archetypeList.Count;
-    }
-
-    // Start is called before the first frame update
-    private void Start()
-    {
     }
 }

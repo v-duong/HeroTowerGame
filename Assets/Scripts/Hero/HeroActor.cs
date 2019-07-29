@@ -63,7 +63,7 @@ public class HeroActor : Actor
         Vector3 vector = destination - transform.position;
         float dist = vector.sqrMagnitude;
 
-        if (dist <= 2f)
+        if (dist <= 0.0f)
         {
             movementNodes.Clear();
             movementNodes.Add(destination);

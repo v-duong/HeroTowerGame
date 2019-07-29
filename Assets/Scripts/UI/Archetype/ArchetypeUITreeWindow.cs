@@ -10,10 +10,7 @@ public class ArchetypeUITreeWindow : MonoBehaviour
     public HeroData hero;
     public HeroArchetypeData[] archetypeData = new HeroArchetypeData[2];
 
-    //public Dictionary<ArchetypeSkillNode, ArchetypeUITreeNode> primaryNodes = new Dictionary<ArchetypeSkillNode, ArchetypeUITreeNode>();
-    //public Dictionary<ArchetypeSkillNode, ArchetypeUITreeNode> secondaryNodes = new Dictionary<ArchetypeSkillNode, ArchetypeUITreeNode>();
     public Dictionary<ArchetypeSkillNode, ArchetypeUITreeNode> primaryNodes = new Dictionary<ArchetypeSkillNode, ArchetypeUITreeNode>();
-
     public Dictionary<ArchetypeSkillNode, ArchetypeUITreeNode> secondaryNodes = new Dictionary<ArchetypeSkillNode, ArchetypeUITreeNode>();
     public UILineRenderer primaryTreeParent;
     public UILineRenderer secondaryTreeParent;
@@ -28,13 +25,13 @@ public class ArchetypeUITreeWindow : MonoBehaviour
 
     public void ResetTreeView()
     {
-        foreach (ArchetypeUITreeNode n in primaryNodes.Values)
+        foreach (ArchetypeUITreeNode node in primaryNodes.Values)
         {
-            n.gameObject.SetActive(false);
+            node.gameObject.SetActive(false);
         }
-        foreach (ArchetypeUITreeNode n in secondaryNodes.Values)
+        foreach (ArchetypeUITreeNode node in secondaryNodes.Values)
         {
-            n.gameObject.SetActive(false);
+            node.gameObject.SetActive(false);
         }
 
         primaryNodes.Clear();

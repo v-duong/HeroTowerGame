@@ -51,9 +51,8 @@ public class EnemyActor : Actor
 
     public void SetBase(EnemyBase enemyBase)
     {
-        Data.MaximumHealth = (int)(enemyBase.level * enemyBase.healthScaling + 30);
-        Data.CurrentHealth = Data.MaximumHealth;
-        Data.movementSpeed = enemyBase.movementSpeed;
+        Data.SetBase(enemyBase);
+
     }
 
     private void Move()

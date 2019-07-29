@@ -172,58 +172,6 @@ public class EquipmentDetailWindow : MonoBehaviour
         infoText.text += "Range: " + weaponItem.WeaponRange.ToString("F2") + "\n";
     }
 
-    public void ShowButtons()
-    {
-        UpgradeButtonParent.SetActive(true);
-    }
-
-    public void HideButtons()
-    {
-        UpgradeButtonParent.SetActive(false);
-    }
-
-    public void OnAddAffixClick()
-    {
-        equip.AddRandomAffix();
-        UpdateWindowEquipment();
-        inventorySlot.UpdateSlot();
-    }
-
-    public void OnUpgradeRarityClick()
-    {
-        equip.UpgradeRarity();
-        UpdateWindowEquipment();
-        inventorySlot.UpdateSlot();
-    }
-
-    public void OnResetClick()
-    {
-        equip.ClearAffixes();
-        UpdateWindowEquipment();
-        inventorySlot.UpdateSlot();
-    }
-
-    public void OnRemoveAffixClick()
-    {
-        equip.RemoveRandomAffix();
-        UpdateWindowEquipment();
-        inventorySlot.UpdateSlot();
-    }
-
-    public void OnRerollClick()
-    {
-        equip.RerollValues();
-        UpdateWindowEquipment();
-        inventorySlot.UpdateSlot();
-    }
-
-    public void OnRerollAffixClick()
-    {
-        equip.RerollAffixesAtRarity();
-        UpdateWindowEquipment();
-        inventorySlot.UpdateSlot();
-    }
-
     public void SetTransform(int type)
     {
         UIManager ui = UIManager.Instance;
