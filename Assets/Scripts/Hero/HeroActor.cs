@@ -87,6 +87,9 @@ public class HeroActor : Actor
 
     void Update()
     {
+        UpdateStatusEffects();
+        if (!this.gameObject.activeSelf)
+            return;
         if (isMoving)
         {
             Move();

@@ -41,7 +41,7 @@ public class Weapon : Equipment
         List<Affix> affixes = new List<Affix>();
         affixes.AddRange(prefixes);
         affixes.AddRange(suffixes);
-        GetLocalModValues(localBonusTotals, affixes, global::ItemType.WEAPON);
+        GetLocalModValues(localBonusTotals, affixes, ItemType.WEAPON);
 
         PhysicalDamage.min = CalculateStat(Base.minDamage, BonusType.LOCAL_PHYSICAL_DAMAGE_MIN, localBonusTotals);
         PhysicalDamage.max = CalculateStat(Base.maxDamage, BonusType.LOCAL_PHYSICAL_DAMAGE_MAX, localBonusTotals);

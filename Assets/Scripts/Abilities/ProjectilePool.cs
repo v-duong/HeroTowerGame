@@ -13,7 +13,6 @@ public class ProjectilePool : ObjectPool<Projectile>
     public Projectile GetProjectile()
     {
         Projectile p = Get();
-        p.projectileDamage.Clear();
         return p;
     }
 

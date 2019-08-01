@@ -14,7 +14,7 @@ public class EnemyData : ActorData
 
     public void SetBase(EnemyBase enemyBase)
     {
-        MaximumHealth = (int)(enemyBase.level * enemyBase.healthScaling + 30);
+        MaximumHealth = (int)(enemyBase.level * enemyBase.healthScaling + 120);
         CurrentHealth = MaximumHealth;
         movementSpeed = enemyBase.movementSpeed;
         for (int i = 0; i < (int)ElementType.COUNT; i++)

@@ -351,6 +351,8 @@
   "UI_ACT5": "World 5",
   "UI_ADDAFFIX": "Add Random Affix",
   "UI_BATTLE": "Battle",
+  "UI_DEAL_DAMAGE_FIXED": "Deals {0}-{1} {2} Damage",
+  "UI_DEAL_DAMAGE_WEAPON": "Deals {0:P1} of Weapon Damage",
   "UI_HEROES": "Heroes",
   "UI_INVENTORY": "Inventory",
   "UI_NORMALTORARE": "Upgrade Normal to Rare",

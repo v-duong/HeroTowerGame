@@ -69,7 +69,7 @@ public class ArchetypeNodeInfoPanel : MonoBehaviour
             {
                 infoText.text += "<b>Current Level: " + currentLevel + "</b>\n";
 
-                foreach (ScalingBonusProperty bonusProperty in node.bonuses)
+                foreach (NodeScalingBonusProperty bonusProperty in node.bonuses)
                 {
                     if (currentLevel == node.maxLevel && node.maxLevel > 1)
 
@@ -87,7 +87,7 @@ public class ArchetypeNodeInfoPanel : MonoBehaviour
             {
                 infoText.text += "<b>Next Level: " + (currentLevel + 1) + "</b>\n";
 
-                foreach (ScalingBonusProperty bonusProperty in node.bonuses)
+                foreach (NodeScalingBonusProperty bonusProperty in node.bonuses)
                 {
                     if (currentLevel == node.maxLevel - 1 && node.maxLevel > 1)
                         bonusValue = bonusProperty.growthValue * (currentLevel) + bonusProperty.finalLevelValue;
@@ -119,7 +119,7 @@ public class ArchetypeNodeInfoPanel : MonoBehaviour
         {
             infoText.text += "<b>Level 1: </b>\n";
 
-            foreach (ScalingBonusProperty bonusProperty in node.bonuses)
+            foreach (NodeScalingBonusProperty bonusProperty in node.bonuses)
             {
                 bonusValue = bonusProperty.growthValue;
                 if (bonusValue == 0 && (bonusProperty.modifyType != ModifyType.MULTIPLY || bonusProperty.modifyType != ModifyType.SET))
@@ -131,7 +131,7 @@ public class ArchetypeNodeInfoPanel : MonoBehaviour
             {
                 infoText.text += "<b>Level " + (node.maxLevel) + ":</b>\n";
 
-                foreach (ScalingBonusProperty bonusProperty in node.bonuses)
+                foreach (NodeScalingBonusProperty bonusProperty in node.bonuses)
                 {
                     bonusValue = bonusProperty.growthValue * (node.maxLevel - 1) + bonusProperty.finalLevelValue;
                     if (bonusValue == 0 && (bonusProperty.modifyType != ModifyType.MULTIPLY || bonusProperty.modifyType != ModifyType.SET))

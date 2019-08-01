@@ -92,7 +92,7 @@ public class HeroData : ActorData
         return hero;
     }
 
-    public void LevelUp()
+    private void LevelUp()
     {
         if (Level == 100)
             return;
@@ -261,90 +261,26 @@ public class HeroData : ActorData
     {
         if (!statBonuses.ContainsKey(type))
             statBonuses.Add(type, new StatBonus());
-        switch (modifier)
-        {
-            case ModifyType.FLAT_ADDITION:
-                statBonuses[type].AddToFlat(value);
-                break;
-
-            case ModifyType.ADDITIVE:
-                statBonuses[type].AddToAdditive(value);
-                break;
-
-            case ModifyType.MULTIPLY:
-                statBonuses[type].AddToMultiply(value);
-                break;
-
-            default:
-                return;
-        }
+        statBonuses[type].AddBonus(modifier, value);
     }
 
     public void RemoveStatBonus(int value, BonusType type, ModifyType modifier)
     {
-        switch (modifier)
-        {
-            case ModifyType.FLAT_ADDITION:
-                statBonuses[type].AddToFlat(-value);
-                break;
-
-            case ModifyType.ADDITIVE:
-                statBonuses[type].AddToAdditive(-value);
-                break;
-
-            case ModifyType.MULTIPLY:
-                statBonuses[type].RemoveFromMultiply(value);
-                break;
-
-            default:
-                return;
-        }
+        statBonuses[type].RemoveBonus(modifier, value);
     }
 
     public void AddArchetypeStatBonus(int value, BonusType type, ModifyType modifier)
     {
         if (!archetypeStatBonuses.ContainsKey(type))
             archetypeStatBonuses.Add(type, new StatBonus());
-        switch (modifier)
-        {
-            case ModifyType.FLAT_ADDITION:
-                archetypeStatBonuses[type].AddToFlat(value);
-                break;
-
-            case ModifyType.ADDITIVE:
-                archetypeStatBonuses[type].AddToAdditive(value);
-                break;
-
-            case ModifyType.MULTIPLY:
-                archetypeStatBonuses[type].AddToMultiply(value);
-                break;
-
-            default:
-                return;
-        }
+        archetypeStatBonuses[type].AddBonus(modifier, value);
     }
 
     public void RemoveArchetypeStatBonus(int value, BonusType type, ModifyType modifier)
     {
         if (!archetypeStatBonuses.ContainsKey(type))
             return;
-        switch (modifier)
-        {
-            case ModifyType.FLAT_ADDITION:
-                archetypeStatBonuses[type].AddToFlat(-value);
-                break;
-
-            case ModifyType.ADDITIVE:
-                archetypeStatBonuses[type].AddToAdditive(-value);
-                break;
-
-            case ModifyType.MULTIPLY:
-                archetypeStatBonuses[type].RemoveFromMultiply(value);
-                break;
-
-            default:
-                return;
-        }
+        archetypeStatBonuses[type].RemoveBonus(modifier, value);
     }
 
     public void UpdateHeroAllStats()
@@ -447,7 +383,7 @@ public class HeroData : ActorData
         int debuffDamageMod = (int)Math.Round(Will / 10d, MidpointRounding.AwayFromZero);
 
         BonusType bonus1 = BonusType.GLOBAL_RESOLVE_RATING;
-        BonusType bonus2 = BonusType.DEBUFF_DAMAGE;
+        BonusType bonus2 = BonusType.STATUS_EFFECT_DAMAGE;
 
         if (!attributeStatBonuses.ContainsKey(bonus1))
             attributeStatBonuses.Add(bonus1, new StatBonus());
@@ -503,61 +439,81 @@ public class HeroData : ActorData
 
     public double CalculateHeroStat(BonusType type, double stat)
     {
-        return GetTotalStatBonus(type).CalculateStat(stat);
+        StatBonus bonus = new StatBonus();
+        GetTotalStatBonus(type, null, bonus);
+        return bonus.CalculateStat(stat);
     }
 
-    public StatBonus GetTotalStatBonus(BonusType type, StatBonus existingBonus = null)
+    public void GetTotalStatBonus(BonusType type, Dictionary<BonusType, StatBonus> abilityBonusProperties, StatBonus inputStatBonus)
     {
         StatBonus resultBonus;
-        if (existingBonus == null)
+        StatBonus abilityBonus = null;
+        if (inputStatBonus == null)
             resultBonus = new StatBonus();
         else
-            resultBonus = existingBonus;
-        bool hasStatBonus = false, hasAttributeBonus = false, hasArchetypeBonus = false;
+            resultBonus = inputStatBonus;
+        bool hasStatBonus = false, hasAttributeBonus = false, hasArchetypeBonus = false, hasAbilityBonus = false;
 
-        if (statBonuses.TryGetValue(type, out StatBonus baseBonus))
+        if (statBonuses.TryGetValue(type, out StatBonus statBonus))
             hasStatBonus = true;
         if (attributeStatBonuses.TryGetValue(type, out StatBonus attributeBonus))
             hasAttributeBonus = true;
         if (archetypeStatBonuses.TryGetValue(type, out StatBonus archetypeBonus))
             hasArchetypeBonus = true;
-
-        if (!hasAttributeBonus && !hasStatBonus && !hasArchetypeBonus)
+        if (abilityBonusProperties != null && abilityBonusProperties.TryGetValue(type, out abilityBonus))
         {
-            return resultBonus;
+            hasAbilityBonus = true;
+            if (abilityBonus.hasSetModifier)
+            {
+                resultBonus.hasSetModifier = true;
+                resultBonus.setModifier = abilityBonus.setModifier;
+                return;
+            }
+        }
+
+        if (!hasAttributeBonus && !hasStatBonus && !hasArchetypeBonus && !hasAbilityBonus)
+        {
+            return;
         }
 
         if (hasArchetypeBonus && archetypeBonus.hasSetModifier)
         {
             resultBonus.hasSetModifier = true;
             resultBonus.setModifier = archetypeBonus.setModifier;
-            return resultBonus;
+            return;
         }
-        else if (hasStatBonus && baseBonus.hasSetModifier)
+        else if (hasStatBonus && statBonus.hasSetModifier)
         {
             resultBonus.hasSetModifier = true;
-            resultBonus.setModifier = baseBonus.setModifier;
+            resultBonus.setModifier = statBonus.setModifier;
+            return;
         }
 
         if (hasStatBonus)
         {
-            resultBonus.AddToFlat(baseBonus.FlatModifier);
-            resultBonus.AddToAdditive(baseBonus.AdditiveModifier);
-            resultBonus.AddToMultiply((baseBonus.CurrentMultiplier - 1) * 100);
+            resultBonus.AddBonus(ModifyType.FLAT_ADDITION, statBonus.FlatModifier);
+            resultBonus.AddBonus(ModifyType.ADDITIVE, statBonus.AdditiveModifier);
+            resultBonus.AddBonus(ModifyType.MULTIPLY, (statBonus.CurrentMultiplier - 1) * 100);
         }
         if (hasArchetypeBonus)
         {
-            resultBonus.AddToFlat(archetypeBonus.FlatModifier);
-            resultBonus.AddToAdditive(archetypeBonus.AdditiveModifier);
-            resultBonus.AddToMultiply((archetypeBonus.CurrentMultiplier - 1) * 100);
+            resultBonus.AddBonus(ModifyType.FLAT_ADDITION, archetypeBonus.FlatModifier);
+            resultBonus.AddBonus(ModifyType.ADDITIVE, archetypeBonus.AdditiveModifier);
+            resultBonus.AddBonus(ModifyType.MULTIPLY, (archetypeBonus.CurrentMultiplier - 1) * 100);
         }
         if (hasAttributeBonus)
         {
-            resultBonus.AddToFlat(attributeBonus.FlatModifier);
-            resultBonus.AddToAdditive(attributeBonus.AdditiveModifier);
-            resultBonus.AddToMultiply((attributeBonus.CurrentMultiplier - 1) * 100);
+            resultBonus.AddBonus(ModifyType.FLAT_ADDITION, attributeBonus.FlatModifier);
+            resultBonus.AddBonus(ModifyType.ADDITIVE, attributeBonus.AdditiveModifier);
+            resultBonus.AddBonus(ModifyType.MULTIPLY, (attributeBonus.CurrentMultiplier - 1) * 100);
         }
-        return resultBonus;
+        if (hasAbilityBonus)
+        {
+            resultBonus.AddBonus(ModifyType.FLAT_ADDITION, abilityBonus.FlatModifier);
+            resultBonus.AddBonus(ModifyType.ADDITIVE, abilityBonus.AdditiveModifier);
+            resultBonus.AddBonus(ModifyType.MULTIPLY, (abilityBonus.CurrentMultiplier - 1) * 100);
+        }
+        return;
     }
 
     public void UpdateAbilities()

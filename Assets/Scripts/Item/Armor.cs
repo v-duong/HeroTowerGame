@@ -31,7 +31,7 @@ public class Armor : Equipment
         List<Affix> affixes = new List<Affix>();
         affixes.AddRange(prefixes);
         affixes.AddRange(suffixes);
-        GetLocalModValues(bonusTotals, affixes, global::ItemType.ARMOR);
+        GetLocalModValues(bonusTotals, affixes, ItemType.ARMOR);
 
         armor = CalculateStat(Base.armor, BonusType.LOCAL_ARMOR, bonusTotals);
         shield = CalculateStat(Base.shield, BonusType.LOCAL_MAX_SHIELD, bonusTotals);

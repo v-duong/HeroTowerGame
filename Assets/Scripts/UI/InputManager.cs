@@ -105,7 +105,6 @@ public class InputManager : MonoBehaviour
 
                 if (hit.collider != null)
                 {
-
                     if (hit.collider.gameObject.layer == 13)
                     {
                         HeroActor hero = hit.collider.gameObject.GetComponent<HeroActor>();
@@ -113,13 +112,16 @@ public class InputManager : MonoBehaviour
                         {
                             selectedHero = hero;
                             IsMovementMode = true;
-                            UIManager.Instance.BattleCharInfoPanel.text.text = "Health: " + hero.Data.CurrentHealth + "/" + hero.Data.MaximumHealth;
-                            return;
+                            UIManager.Instance.BattleCharInfoPanel.data = hero.Data;
                         }
-                        return;
                     }
-                    else
+                    else if (hit.collider.gameObject.layer == 12)
                     {
+                        EnemyActor enemy = hit.collider.gameObject.GetComponent<EnemyActor>();
+                        if (enemy != null)
+                        {
+                            UIManager.Instance.BattleCharInfoPanel.data = enemy.Data;
+                        }
                     }
                     return;
                 }

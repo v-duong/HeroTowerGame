@@ -26,7 +26,7 @@ public class EnemyActor : Actor
     {
         Data = new EnemyData
         {
-            MaximumHealth = 60,
+            MaximumHealth = 100,
             movementSpeed = 5
         };
         Data.CurrentHealth = Data.MaximumHealth;
@@ -42,17 +42,16 @@ public class EnemyActor : Actor
     // Update is called once per frame
     private void Update()
     {
-        if (this.gameObject.activeSelf)
-        {
-            Move();
-            healthBar.UpdatePosition(this.transform);
-        }
+        UpdateStatusEffects();
+        if (!this.gameObject.activeSelf)
+            return;
+        Move();
+        healthBar.UpdatePosition(this.transform);
     }
 
     public void SetBase(EnemyBase enemyBase)
     {
         Data.SetBase(enemyBase);
-
     }
 
     private void Move()
@@ -77,7 +76,7 @@ public class EnemyActor : Actor
     {
         var nodes = ParentSpawner.GetNodesToGoal(indexOfGoal);
         int index = nextMovementNode + lookahead;
-        if (index > nodes.Count-1)
+        if (index > nodes.Count - 1)
         {
             return null;
         }
@@ -88,7 +87,7 @@ public class EnemyActor : Actor
     {
         StageManager.Instance.WaveManager.enemiesSpawned -= 1;
         StageManager.Instance.WaveManager.currentEnemyList.Remove(this);
-        
+
         this.gameObject.SetActive(false);
         this.healthBar.gameObject.SetActive(false);
     }

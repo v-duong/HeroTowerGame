@@ -50,7 +50,6 @@ public abstract class Equipment : AffixedItem
         }
     }
 
-
     public static Equipment CreateEquipmentFromBase(EquipmentBase equipmentBase, int ilvl)
     {
         Equipment e;
@@ -144,10 +143,7 @@ public abstract class Equipment : AffixedItem
                 {
                     if (!dic.ContainsKey(prop.bonusType))
                         dic.Add(prop.bonusType, new StatBonus());
-                    if (prop.modifyType == ModifyType.FLAT_ADDITION)
-                        dic[prop.bonusType].AddToFlat(affix.GetAffixValue(prop.bonusType));
-                    else if (prop.modifyType == ModifyType.ADDITIVE)
-                        dic[prop.bonusType].AddToAdditive(affix.GetAffixValue(prop.bonusType));
+                    dic[prop.bonusType].AddBonus(prop.modifyType, affix.GetAffixValue(prop.bonusType));
                 }
             }
         }
@@ -176,6 +172,4 @@ public abstract class Equipment : AffixedItem
             return stat;
         }
     }
-
-
 }

@@ -73,16 +73,13 @@ public class AbilityBase
     public readonly List<GroupType> weaponRestrictions;
 
     [JsonProperty]
-    public readonly List<ScalingBonusProperty> bonusProperties;
+    public readonly List<AbilityScalingBonusProperty> bonusProperties;
 
     [JsonProperty]
     public readonly string effectSprite;
 
     [JsonProperty]
     public readonly LinkedAbilityData linkedAbility;
-
-    [JsonProperty]
-    public readonly List<AbilityEffectData> appliedEffects;
 
     [JsonProperty]
     public readonly bool hasLinkedAbility;
@@ -159,19 +156,6 @@ public class LinkedAbilityData
     public readonly float inheritDamagePercent;
     [JsonProperty]
     public readonly float inheritDamagePercentScaling;
-}
-
-public class AbilityEffectData
-{
-    [JsonConverter(typeof(StringEnumConverter))]
-    [JsonProperty]
-    public readonly EffectType effect;
-
-    [JsonProperty]
-    public readonly float chanceToApply;
-
-    [JsonProperty]
-    public readonly float effectPower;
 }
 
 public enum AbilityType

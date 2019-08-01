@@ -7,16 +7,16 @@ public class Projectile : MonoBehaviour
     public bool canHitEnemies = false;
     public float currentSpeed;
     public float timeToLive = 2.5f;
-    public Dictionary<ElementType, int> projectileDamage;
+    public Dictionary<ElementType, double> projectileDamage;
     public Vector3 currentHeading;
     public LinkedActorAbility linkedAbility;
+    public AbilityStatusEffectDataContainer statusData;
     public float inheritedDamagePercent;
 
     //public List<AbilityEffect> attachedEffects;
 
     public Projectile()
     {
-        projectileDamage = new Dictionary<ElementType, int>();
     }
 
     // Update is called once per frame
@@ -40,7 +40,7 @@ public class Projectile : MonoBehaviour
         if (actor != null)
         {
             targetPosition = actor.transform.position;
-            actor.ApplyDamage(projectileDamage);
+            actor.ApplyDamage(projectileDamage, statusData);
         } else
         {
             return;
@@ -65,6 +65,9 @@ public class Projectile : MonoBehaviour
 
     public void ReturnToPool()
     {
+        projectileDamage = null;
+        linkedAbility = null;
+        statusData = null;
         GameManager.Instance.ProjectilePool.ReturnToPool(this);
     }
 }

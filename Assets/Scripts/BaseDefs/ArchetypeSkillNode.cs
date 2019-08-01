@@ -17,7 +17,7 @@ public class ArchetypeSkillNode
     [JsonProperty]
     public readonly NodeType type;
     [JsonProperty]
-    public readonly List<ScalingBonusProperty> bonuses;
+    public readonly List<NodeScalingBonusProperty> bonuses;
     [JsonProperty]
     public readonly string abilityId;
     [JsonProperty]
@@ -43,7 +43,7 @@ public class ArchetypeSkillNode
 }
 
 
-public struct ScalingBonusProperty
+public struct NodeScalingBonusProperty
 {
     [JsonConverter(typeof(StringEnumConverter))]
     [JsonProperty]
@@ -55,6 +55,20 @@ public struct ScalingBonusProperty
     public readonly int growthValue;
     [JsonProperty]
     public readonly int finalLevelValue;
+}
+
+public struct AbilityScalingBonusProperty
+{
+    [JsonConverter(typeof(StringEnumConverter))]
+    [JsonProperty]
+    public readonly BonusType bonusType;
+    [JsonConverter(typeof(StringEnumConverter))]
+    [JsonProperty]
+    public readonly ModifyType modifyType;
+    [JsonProperty]
+    public readonly float initialValue;
+    [JsonProperty]
+    public readonly float growthValue;
 }
 
 public enum NodeType

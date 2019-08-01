@@ -25,16 +25,18 @@ public class LinkedActorAbility : ActorAbility
 
     public override void UpdateAbilityStats(HeroData data)
     {
+        UpdateAbilityBonusProperties();
         if (linkedAbilityData.inheritsDamage)
         {
             float damageModifier = linkedAbilityData.inheritDamagePercent + linkedAbilityData.inheritDamagePercentScaling * abilityLevel;
-            UpdateAbilityDamage(data, parentDamageLevels, damageModifier);
+            UpdateAbility_Damage(data, parentDamageLevels, damageModifier);
         }
         else
-            UpdateAbilityDamage(data, abilityBase.damageLevels);
+            UpdateAbility_Damage(data, abilityBase.damageLevels);
 
         UpdateAbility_AbilityType(data);
         UpdateAbility_ShotType(data);
+        UpdateAbility_StatusBonuses(data);
     }
 
     public void Fire(Vector3 origin, Vector3 target)
@@ -42,16 +44,16 @@ public class LinkedActorAbility : ActorAbility
         switch (abilityBase.abilityShotType)
         {
             case AbilityShotType.PROJECTILE:
-                FireProjectile(origin, target, CalculateDamageDict());
+                FireProjectile(origin, target);
                 break;
 
             case AbilityShotType.ARC_AOE:
-                FireArcAoe(origin, target, CalculateDamageDict());
+                FireArcAoe(origin, target);
                 break;
 
             case AbilityShotType.RADIAL_AOE:
             case AbilityShotType.NOVA_AOE:
-                FireRadialAoe(origin, target, CalculateDamageDict());
+                FireRadialAoe(origin, target);
                 break;
         }
     }

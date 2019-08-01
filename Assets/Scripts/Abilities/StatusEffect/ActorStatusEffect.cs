@@ -4,20 +4,30 @@ using UnityEngine;
 
 public abstract class ActorStatusEffect
 {
-    readonly Actor target;
-    readonly Actor effectSource;
+    protected readonly Actor target;
 
     public float duration;
 
-    public abstract void OnApply();
-    public abstract void OnExpire();
-    public abstract void Update();
+    protected abstract void OnApply();
+    protected abstract void OnExpire();
+    public abstract void Update(float deltaTime);
 
-    public ActorStatusEffect(Actor target, Actor source)
+    protected float DurationUpdate(float dT)
+    {
+        if (dT > duration)
+        {
+            duration = 0;
+            return duration;
+        } else
+        {
+            duration -= dT;
+            return dT;
+        }
+    }
+
+    public ActorStatusEffect(Actor target)
     {
         this.target = target;
-        this.target.AddStatusEffect(this);
-        effectSource = source;
         OnApply();
     }
 }

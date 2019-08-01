@@ -43,7 +43,7 @@ public class HeroScrollWindow : MonoBehaviour
         }
         slot.gameObject.SetActive(true);
         SlotsInUse.Add(slot);
-
+        slot.callback = null;
         slot.SetSlot(hero);
     }
 

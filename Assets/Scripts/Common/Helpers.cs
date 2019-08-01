@@ -268,4 +268,3 @@ public class WeightList<T>
         Sum = 0;
     }
 }
-
