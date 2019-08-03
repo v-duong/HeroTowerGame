@@ -34,14 +34,19 @@ public abstract class ActorData
     public int BaseMagicPhasing { get; protected set; }
     public int BaseResolveRating { get; protected set; }
 
+    protected Dictionary<BonusType, StatBonus> statBonuses;
+    protected Dictionary<BonusType, StatBonus> temporaryBonuses;
+
     public ElementResistances Resistances { get; protected set; }
 
     public float movementSpeed;
 
-
-    protected ActorData() {
+    protected ActorData()
+    {
         Id = Guid.NewGuid();
         Resistances = new ElementResistances();
+        statBonuses = new Dictionary<BonusType, StatBonus>();
+        temporaryBonuses = new Dictionary<BonusType, StatBonus>();
     }
 
     public float GetCurrentHealth()
@@ -58,4 +63,51 @@ public abstract class ActorData
     {
         get { return GetCurrentHealth() <= 0.0f; }
     }
+
+    public void AddStatBonus(int value, BonusType type, ModifyType modifier)
+    {
+        if (!statBonuses.ContainsKey(type))
+            statBonuses.Add(type, new StatBonus());
+        statBonuses[type].AddBonus(modifier, value);
+    }
+
+    public void RemoveStatBonus(int value, BonusType type, ModifyType modifier)
+    {
+        statBonuses[type].RemoveBonus(modifier, value);
+    }
+
+    public void AddTemporaryBonus(int value, BonusType type, ModifyType modifier)
+    {
+        if (!temporaryBonuses.ContainsKey(type))
+            temporaryBonuses.Add(type, new StatBonus());
+        temporaryBonuses[type].AddBonus(modifier, value);
+        UpdateActorData();
+    }
+
+    public void RemoveTemporaryBonus(int value, BonusType type, ModifyType modifier)
+    {
+        temporaryBonuses[type].RemoveBonus(modifier, value);
+        UpdateActorData();
+    }
+
+    public void ClearTemporaryBonuses()
+    {
+        temporaryBonuses.Clear();
+        UpdateActorData();
+    }
+
+    public int CalculateActorStat(BonusType type, int stat)
+    {
+        return (int)Math.Round(CalculateActorStat(type, (double)stat), MidpointRounding.AwayFromZero);
+    }
+
+    public double CalculateActorStat(BonusType type, double stat)
+    {
+        StatBonus bonus = new StatBonus();
+        GetTotalStatBonus(type, bonus);
+        return bonus.CalculateStat(stat);
+    }
+
+    public abstract void UpdateActorData();
+    public abstract void GetTotalStatBonus(BonusType type, StatBonus bonus);
 }

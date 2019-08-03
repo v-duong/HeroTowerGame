@@ -12,6 +12,8 @@ public class Spawner : MonoBehaviour
     // Use this for initialization
     private void Start()
     {
+        this.transform.position = Helpers.ReturnTilePosition(StageManager.Instance.PathTilemap, this.transform.position);
+
         nodesToGoal = new List<List<Vector3>>();
 
         if (StageManager.Instance.WaveManager.GoalList.Count == 0)

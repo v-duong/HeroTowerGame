@@ -30,7 +30,8 @@ public class BattleManager : MonoBehaviour
             startedSpawn = true;
             this.SpawnWave();
         }
-        if (finishedSpawn && currentEnemyList.Count == 0 && !battleEnded) {
+        if (finishedSpawn && currentEnemyList.Count == 0 && !battleEnded)
+        {
             EndBattle(true);
             battleEnded = true;
         }
@@ -46,7 +47,7 @@ public class BattleManager : MonoBehaviour
         if (victory)
         {
             Debug.Log("VIC");
-            foreach(HeroData hero in GameManager.Instance.inBattleHeroes)
+            foreach (HeroData hero in GameManager.Instance.inBattleHeroes)
             {
                 hero.AddExperience(5000);
             }
@@ -79,11 +80,12 @@ public class BattleManager : MonoBehaviour
                 enemiesSpawned++;
             }
         }
-        if (currentWave+1 < Waves.Count)
+        if (currentWave + 1 < Waves.Count)
         {
             yield return new WaitForSeconds(waveToSpawn.delayUntilNextWave);
             StartCoroutine(SpawnWaveCo(currentWave + 1));
-        } else
+        }
+        else
         {
             finishedSpawn = true;
         }
@@ -99,7 +101,6 @@ public class BattleManager : MonoBehaviour
                 goalList = new List<Goal>();
                 foreach (var g in FindObjectsOfType<Goal>())
                 {
-                    g.transform.position = Helpers.ReturnCenterOfCell(g.transform.position);
                     goalList.Add(g);
                 }
                 goalList = goalList.OrderBy(x => x.goalIndex).ToList();
@@ -117,7 +118,6 @@ public class BattleManager : MonoBehaviour
                 spawnerList = new List<Spawner>();
                 foreach (var s in FindObjectsOfType<Spawner>())
                 {
-                    s.transform.position = Helpers.ReturnCenterOfCell(s.transform.position);
                     spawnerList.Add(s);
                 }
                 spawnerList = spawnerList.OrderBy(x => x.spawnerIndex).ToList();

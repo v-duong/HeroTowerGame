@@ -8,12 +8,13 @@ public class Goal : MonoBehaviour {
     public int goalIndex;
 
 	// Use this for initialization
-	void Awake () {
-        
-	}
-	
-	// Update is called once per frame
-	void Update () {
+	void Start () {
+        this.transform.position = Helpers.ReturnTilePosition(StageManager.Instance.PathTilemap, this.transform.position);
+
+    }
+
+    // Update is called once per frame
+    void Update () {
 		
 	}
 }

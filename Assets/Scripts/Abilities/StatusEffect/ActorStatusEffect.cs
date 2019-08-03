@@ -9,7 +9,7 @@ public abstract class ActorStatusEffect
     public float duration;
 
     protected abstract void OnApply();
-    protected abstract void OnExpire();
+    public abstract void OnExpire();
     public abstract void Update(float deltaTime);
 
     protected float DurationUpdate(float dT)

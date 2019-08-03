@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class BurningEffect : ActorStatusEffect
+public class BurnEffect : ActorStatusEffect
 {
     protected float damagePerSecond;
 
-    public BurningEffect(Actor target, double inputDamage, float duration) : base(target)
+    public BurnEffect(Actor target, double inputDamage, float duration) : base(target)
     {
         damagePerSecond = (float)(inputDamage * 0.5d);
         this.duration = duration;
@@ -17,7 +17,7 @@ public class BurningEffect : ActorStatusEffect
         
     }
 
-    protected override void OnExpire()
+    public override void OnExpire()
     {
         target.RemoveStatusEffect(this);
     }

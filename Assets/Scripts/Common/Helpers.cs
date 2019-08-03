@@ -19,6 +19,8 @@ public static class Helpers
 
     public static void GetDamageTypes(ElementType element, AbilityType abilityType, AbilityShotType shotType, List<GroupType> tags, List<BonusType> min, List<BonusType> max, List<BonusType> multi)
     {
+        multi.Add(BonusType.GLOBAL_DAMAGE);
+
         switch (element)
         {
             case ElementType.PHYSICAL:

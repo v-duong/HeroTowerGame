@@ -80,7 +80,7 @@ public abstract class Actor : MonoBehaviour
 
     public void ApplyDamage(Dictionary<ElementType, double> damage, AbilityStatusEffectDataContainer statusData, bool isHit = true)
     {
-        double total = 0, physicalDamage, fireDamage, coldDamage, lightningDamage, earthDamage, divineDamage, voidDamage;
+        double total = 0, physicalDamage = 0, fireDamage = 0, coldDamage = 0, lightningDamage = 0, earthDamage = 0, divineDamage = 0, voidDamage = 0;
 
         if (damage.ContainsKey(ElementType.PHYSICAL))
         {
@@ -92,11 +92,6 @@ public abstract class Actor : MonoBehaviour
         {
             fireDamage = (1.0 - Data.Resistances[ElementType.FIRE] / 100d) * damage[ElementType.FIRE];
             total += fireDamage;
-            if (Random.Range(0f, 100f) < statusData.burnChance)
-            {
-                Debug.Log(statusData.burnEffectiveness);
-                AddStatusEffect(new BurningEffect(this, damage[ElementType.FIRE] * statusData.burnEffectiveness, 3));
-            }
         }
 
         if (damage.ContainsKey(ElementType.COLD))
@@ -129,7 +124,45 @@ public abstract class Actor : MonoBehaviour
             total += voidDamage;
         }
 
+        Debug.Log(fireDamage);
+
         ModifyCurrentHealth(total);
+
+        if (physicalDamage != 0 && statusData.DidBleedProc())
+        {
+            AddStatusEffect(new BleedEffect(this, physicalDamage * statusData.bleedEffectiveness, statusData.bleedDuration));
+        }
+
+        if (fireDamage != 0 && statusData.DidBurnProc())
+        {
+            AddStatusEffect(new BurnEffect(this, fireDamage * statusData.burnEffectiveness, statusData.burnDuration));
+        }
+
+        if (coldDamage != 0 && statusData.DidChillProc())
+        {
+            AddStatusEffect(new ChillEffect(this, statusData.chillEffectiveness, statusData.chillDuration));
+        }
+
+        if (lightningDamage != 0 && statusData.DidElectrocuteProc())
+        {
+            AddStatusEffect(new ElectrocuteEffect(this, lightningDamage * statusData.electrocuteEffectiveness, statusData.electrocuteDuration));
+        }
+
+        if (earthDamage != 0 && statusData.DidFractureProc())
+        {
+            AddStatusEffect(new FractureEffect(this, statusData.fractureEffectiveness, statusData.fractureDuration));
+        }
+
+        if (divineDamage != 0 && statusData.DidPacifyProc())
+        {
+            AddStatusEffect(new PacifyEffect(this, statusData.pacifyEffectiveness, statusData.pacifyDuration));
+        }
+
+        if (voidDamage != 0 && statusData.DidRadiationProc())
+        {
+            AddStatusEffect(new RadiationEffect(this, voidDamage * statusData.radiationEffectiveness, statusData.radiationDuration));
+        }
+
     }
 
     public void ApplySingleElementDamage(ElementType element, double damage, bool isHit = true)

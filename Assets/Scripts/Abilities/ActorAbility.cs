@@ -8,7 +8,6 @@ using UnityEngine.Tilemaps;
 [Serializable]
 public class ActorAbility
 {
-    
     public readonly AbilityBase abilityBase;
     public int abilityLevel;
     public AbilityColliderContainer abilityCollider;
@@ -267,36 +266,51 @@ public class ActorAbility
         abilityStatusEffectData.bleedChance = (float)bleedChance.CalculateStat(0f);
         StatBonus bleedEffectiveness = GetTotalStatBonus(data, BonusType.BLEED_EFFECTIVENESS, BonusType.STATUS_EFFECT_DAMAGE, BonusType.DAMAGE_OVER_TIME);
         abilityStatusEffectData.bleedEffectiveness = (float)(bleedEffectiveness.CalculateStat(100f) / 100d);
+        StatBonus bleedDuration = GetTotalStatBonus(data, BonusType.BLEED_DURATION, BonusType.STATUS_EFFECT_DURATION);
+        abilityStatusEffectData.bleedDuration = (float)bleedDuration.CalculateStat(4f);
 
         StatBonus burnChance = GetTotalStatBonus(data, BonusType.BURN_CHANCE, BonusType.STATUS_EFFECT_CHANCE);
         abilityStatusEffectData.burnChance = (float)burnChance.CalculateStat(0f);
         StatBonus burnEffectiveness = GetTotalStatBonus(data, BonusType.BURN_EFFECTIVENESS, BonusType.STATUS_EFFECT_DAMAGE, BonusType.DAMAGE_OVER_TIME);
         abilityStatusEffectData.burnEffectiveness = (float)(burnEffectiveness.CalculateStat(100f) / 100d);
+        StatBonus burnDuration = GetTotalStatBonus(data, BonusType.BURN_DURATION, BonusType.STATUS_EFFECT_DURATION);
+        abilityStatusEffectData.burnDuration = (float)burnDuration.CalculateStat(2f);
 
         StatBonus chillChance = GetTotalStatBonus(data, BonusType.CHILL_CHANCE, BonusType.STATUS_EFFECT_CHANCE);
         abilityStatusEffectData.chillChance = (float)chillChance.CalculateStat(0f);
         StatBonus chillEffectiveness = GetTotalStatBonus(data, BonusType.CHILL_EFFECTIVENESS, BonusType.NONDAMAGE_STATUS_EFFECTIVENESS);
-        abilityStatusEffectData.burnEffectiveness = (float)(chillEffectiveness.CalculateStat(100f) / 100d);
+        abilityStatusEffectData.chillEffectiveness = (float)(chillEffectiveness.CalculateStat(100f) / 100d);
+        StatBonus chillDuration = GetTotalStatBonus(data, BonusType.CHILL_DURATION, BonusType.STATUS_EFFECT_DURATION);
+        abilityStatusEffectData.chillDuration = (float)chillDuration.CalculateStat(2f);
 
         StatBonus electrocuteChance = GetTotalStatBonus(data, BonusType.ELECTROCUTE_CHANCE, BonusType.STATUS_EFFECT_CHANCE);
         abilityStatusEffectData.electrocuteChance = (float)electrocuteChance.CalculateStat(0f);
         StatBonus electrocuteEffectiveness = GetTotalStatBonus(data, BonusType.ELECTROCUTE_EFFECTIVENESS, BonusType.STATUS_EFFECT_DAMAGE);
-        abilityStatusEffectData.burnEffectiveness = (float)(electrocuteEffectiveness.CalculateStat(100f) / 100d);
+        abilityStatusEffectData.electrocuteEffectiveness = (float)(electrocuteEffectiveness.CalculateStat(100f) / 100d);
+        StatBonus electrocuteDuration = GetTotalStatBonus(data, BonusType.ELECTROCUTE_DURATION, BonusType.STATUS_EFFECT_DURATION);
+        abilityStatusEffectData.electrocuteDuration = (float)electrocuteDuration.CalculateStat(2f);
 
         StatBonus fractureChance = GetTotalStatBonus(data, BonusType.FRACTURE_CHANCE, BonusType.STATUS_EFFECT_CHANCE);
         abilityStatusEffectData.fractureChance = (float)fractureChance.CalculateStat(0f);
         StatBonus fractureEffectiveness = GetTotalStatBonus(data, BonusType.FRACTURE_EFFECTIVENESS, BonusType.NONDAMAGE_STATUS_EFFECTIVENESS);
-        abilityStatusEffectData.burnEffectiveness = (float)(fractureEffectiveness.CalculateStat(100f) / 100d);
+        abilityStatusEffectData.fractureEffectiveness = (float)(fractureEffectiveness.CalculateStat(100f) / 100d);
+        StatBonus fractureDuration = GetTotalStatBonus(data, BonusType.FRACTURE_DURATION, BonusType.STATUS_EFFECT_DURATION);
+        abilityStatusEffectData.fractureDuration = (float)fractureDuration.CalculateStat(3f);
 
         StatBonus pacifyChance = GetTotalStatBonus(data, BonusType.PACIFY_CHANCE, BonusType.STATUS_EFFECT_CHANCE);
         abilityStatusEffectData.pacifyChance = (float)pacifyChance.CalculateStat(0f);
         StatBonus pacifyEffectiveness = GetTotalStatBonus(data, BonusType.PACIFY_EFFECTIVENESS, BonusType.NONDAMAGE_STATUS_EFFECTIVENESS);
-        abilityStatusEffectData.burnEffectiveness = (float)(pacifyEffectiveness.CalculateStat(100f) / 100d);
+        abilityStatusEffectData.pacifyEffectiveness = (float)(pacifyEffectiveness.CalculateStat(100f) / 100d);
+        StatBonus pacifyDuration = GetTotalStatBonus(data, BonusType.PACIFY_DURATION, BonusType.STATUS_EFFECT_DURATION);
+        abilityStatusEffectData.pacifyDuration = (float)pacifyDuration.CalculateStat(3f);
+
 
         StatBonus radiationChance = GetTotalStatBonus(data, BonusType.RADIATION_CHANCE, BonusType.STATUS_EFFECT_CHANCE);
         abilityStatusEffectData.radiationChance = (float)radiationChance.CalculateStat(0f);
         StatBonus radiationEffectiveness = GetTotalStatBonus(data, BonusType.RADIATION_EFFECTIVENESS, BonusType.STATUS_EFFECT_DAMAGE, BonusType.DAMAGE_OVER_TIME);
-        abilityStatusEffectData.burnEffectiveness = (float)(radiationEffectiveness.CalculateStat(100f) / 100d);
+        abilityStatusEffectData.radiationEffectiveness = (float)(radiationEffectiveness.CalculateStat(100f) / 100d);
+        StatBonus radiationDuration = GetTotalStatBonus(data, BonusType.RADIATION_DURATION, BonusType.STATUS_EFFECT_DURATION);
+        abilityStatusEffectData.radiationDuration = (float)radiationDuration.CalculateStat(5f);
     }
 
     protected void GetTotalStatBonus(HeroData data, StatBonus existingBonus, params BonusType[] types)
@@ -563,21 +577,124 @@ public class AbilityStatusEffectDataContainer
 {
     public float bleedChance;
     public float bleedEffectiveness;
+    public float bleedDuration;
     public float burnChance;
     public float burnEffectiveness;
+    public float burnDuration;
     public float chillChance;
     public float chillEffectiveness;
+    public float chillDuration;
     public float electrocuteChance;
     public float electrocuteEffectiveness;
+    public float electrocuteDuration;
     public float fractureChance;
     public float fractureEffectiveness;
+    public float fractureDuration;
     public float pacifyChance;
     public float pacifyEffectiveness;
+    public float pacifyDuration;
     public float radiationChance;
     public float radiationEffectiveness;
+    public float radiationDuration;
 
     public AbilityStatusEffectDataContainer DeepCopy()
     {
         return (AbilityStatusEffectDataContainer)this.MemberwiseClone();
     }
+
+    public bool DidBleedProc()
+    {
+        if (bleedChance <= 0)
+        {
+            return false;
+        }
+
+        if (bleedChance >= 100)
+        {
+            return true;
+        }
+        return UnityEngine.Random.Range(0f, 100f) <= bleedChance ? true : false;
+    }
+
+    public bool DidBurnProc()
+    {
+        if (burnChance <= 0)
+        {
+            return false;
+        }
+
+        if (burnChance >= 100)
+        {
+            return true;
+        }
+        return UnityEngine.Random.Range(0f, 100f) <= burnChance ? true : false;
+    }
+
+    public bool DidChillProc()
+    {
+        if (chillChance <= 0)
+        {
+            return false;
+        }
+
+        if (chillChance >= 100)
+        {
+            return true;
+        }
+        return UnityEngine.Random.Range(0f, 100f) <= chillChance ? true : false;
+    }
+
+    public bool DidElectrocuteProc()
+    {
+        if (electrocuteChance <= 0)
+        {
+            return false;
+        }
+
+        if (electrocuteChance >= 100)
+        {
+            return true;
+        }
+        return UnityEngine.Random.Range(0f, 100f) <= electrocuteChance ? true : false;
+    }
+
+    public bool DidFractureProc()
+    {
+        if (fractureChance <= 0)
+        {
+            return false;
+        }
+        if (fractureChance >= 100)
+        {
+            return true;
+        }
+        return UnityEngine.Random.Range(0f, 100f) <= fractureChance ? true : false;
+    }
+
+    public bool DidPacifyProc()
+    {
+        if (pacifyChance <= 0)
+        {
+            return false;
+        }
+        if (pacifyChance >= 100)
+        {
+            return true;
+        }
+        return UnityEngine.Random.Range(0f, 100f) <= pacifyChance ? true : false;
+    }
+
+    public bool DidRadiationProc()
+    {
+        if (radiationChance <= 0)
+        {
+            return false;
+        }
+        if (radiationChance >= 100)
+        {
+            return true;
+        }
+        return UnityEngine.Random.Range(0f, 100f) <= radiationChance ? true : false;
+    }
+
 }

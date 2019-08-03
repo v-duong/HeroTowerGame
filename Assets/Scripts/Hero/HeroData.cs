@@ -20,7 +20,6 @@ public class HeroData : ActorData
     public int AttackPhasing { get; private set; }
     public int MagicPhasing { get; private set; }
 
-    private Dictionary<BonusType, StatBonus> statBonuses;
     private Dictionary<BonusType, StatBonus> archetypeStatBonuses;
     private Dictionary<BonusType, StatBonus> attributeStatBonuses;
 
@@ -75,7 +74,6 @@ public class HeroData : ActorData
         assignedTeam = -1;
         equipList = new Equipment[10];
         archetypeList = new HeroArchetypeData[2];
-        statBonuses = new Dictionary<BonusType, StatBonus>();
         archetypeStatBonuses = new Dictionary<BonusType, StatBonus>();
         attributeStatBonuses = new Dictionary<BonusType, StatBonus>();
         abilitySlotList = new List<AbilitySlot>() { new AbilitySlot(0), new AbilitySlot(1) };
@@ -257,18 +255,6 @@ public class HeroData : ActorData
         }
     }
 
-    public void AddStatBonus(int value, BonusType type, ModifyType modifier)
-    {
-        if (!statBonuses.ContainsKey(type))
-            statBonuses.Add(type, new StatBonus());
-        statBonuses[type].AddBonus(modifier, value);
-    }
-
-    public void RemoveStatBonus(int value, BonusType type, ModifyType modifier)
-    {
-        statBonuses[type].RemoveBonus(modifier, value);
-    }
-
     public void AddArchetypeStatBonus(int value, BonusType type, ModifyType modifier)
     {
         if (!archetypeStatBonuses.ContainsKey(type))
@@ -283,6 +269,11 @@ public class HeroData : ActorData
         archetypeStatBonuses[type].RemoveBonus(modifier, value);
     }
 
+    public override void UpdateActorData()
+    {
+        UpdateHeroAllStats();
+    }
+
     public void UpdateHeroAllStats()
     {
         UpdateHeroAttributes();
@@ -295,22 +286,22 @@ public class HeroData : ActorData
         ApplyHealthBonuses();
         ApplySoulPointBonuses();
         CalculateDefenses();
-        AttackPhasing = CalculateHeroStat(BonusType.ATTACK_PHASING, BaseAttackPhasing);
-        MagicPhasing = CalculateHeroStat(BonusType.MAGIC_PHASING, BaseMagicPhasing);
+        AttackPhasing = CalculateActorStat(BonusType.ATTACK_PHASING, BaseAttackPhasing);
+        MagicPhasing = CalculateActorStat(BonusType.MAGIC_PHASING, BaseMagicPhasing);
     }
 
     private void UpdateHeroAttributes()
     {
-        Strength = (int)Math.Round(CalculateHeroStat(BonusType.STRENGTH, BaseStrength), MidpointRounding.AwayFromZero);
+        Strength = (int)Math.Round(CalculateActorStat(BonusType.STRENGTH, BaseStrength), MidpointRounding.AwayFromZero);
         ApplyStrengthBonuses();
 
-        Intelligence = (int)Math.Round(CalculateHeroStat(BonusType.INTELLIGENCE, BaseIntelligence), MidpointRounding.AwayFromZero);
+        Intelligence = (int)Math.Round(CalculateActorStat(BonusType.INTELLIGENCE, BaseIntelligence), MidpointRounding.AwayFromZero);
         ApplyIntelligenceBonuses();
 
-        Agility = (int)Math.Round(CalculateHeroStat(BonusType.AGILITY, BaseAgility), MidpointRounding.AwayFromZero);
+        Agility = (int)Math.Round(CalculateActorStat(BonusType.AGILITY, BaseAgility), MidpointRounding.AwayFromZero);
         ApplyAgilityBonuses();
 
-        Will = (int)Math.Round(CalculateHeroStat(BonusType.WILL, BaseWill), MidpointRounding.AwayFromZero);
+        Will = (int)Math.Round(CalculateActorStat(BonusType.WILL, BaseWill), MidpointRounding.AwayFromZero);
         ApplyWillBonuses();
     }
 
@@ -397,14 +388,14 @@ public class HeroData : ActorData
     private void ApplyHealthBonuses()
     {
         double percentage = CurrentHealth / MaximumHealth;
-        MaximumHealth = (int)Math.Round(CalculateHeroStat(BonusType.MAX_HEALTH, BaseHealth), MidpointRounding.AwayFromZero);
+        MaximumHealth = (int)Math.Round(CalculateActorStat(BonusType.MAX_HEALTH, BaseHealth), MidpointRounding.AwayFromZero);
         CurrentHealth = (float)(MaximumHealth * percentage);
     }
 
     private void ApplySoulPointBonuses()
     {
         double percentage = CurrentSoulPoints / MaximumSoulPoints;
-        MaximumSoulPoints = (int)Math.Round(CalculateHeroStat(BonusType.MAX_SOULPOINTS, BaseSoulPoints), MidpointRounding.AwayFromZero);
+        MaximumSoulPoints = (int)Math.Round(CalculateActorStat(BonusType.MAX_SOULPOINTS, BaseSoulPoints), MidpointRounding.AwayFromZero);
         CurrentSoulPoints = (float)(MaximumSoulPoints * percentage);
     }
 
@@ -426,22 +417,15 @@ public class HeroData : ActorData
             }
         }
 
-        Armor = CalculateHeroStat(BonusType.GLOBAL_ARMOR, BaseArmor + ArmorFromEquip);
-        MaximumManaShield = CalculateHeroStat(BonusType.GLOBAL_MAX_SHIELD, BaseManaShield + ShieldFromEquip);
-        DodgeRating = CalculateHeroStat(BonusType.GLOBAL_DODGE_RATING, BaseDodgeRating + DodgeFromEquip);
-        ResolveRating = CalculateHeroStat(BonusType.GLOBAL_RESOLVE_RATING, BaseResolveRating + ResolveFromEquip);
+        Armor = CalculateActorStat(BonusType.GLOBAL_ARMOR, BaseArmor + ArmorFromEquip);
+        MaximumManaShield = CalculateActorStat(BonusType.GLOBAL_MAX_SHIELD, BaseManaShield + ShieldFromEquip);
+        DodgeRating = CalculateActorStat(BonusType.GLOBAL_DODGE_RATING, BaseDodgeRating + DodgeFromEquip);
+        ResolveRating = CalculateActorStat(BonusType.GLOBAL_RESOLVE_RATING, BaseResolveRating + ResolveFromEquip);
     }
 
-    public int CalculateHeroStat(BonusType type, int stat)
+    public override void GetTotalStatBonus(BonusType type, StatBonus bonus)
     {
-        return (int)Math.Round(CalculateHeroStat(type, (double)stat), MidpointRounding.AwayFromZero);
-    }
-
-    public double CalculateHeroStat(BonusType type, double stat)
-    {
-        StatBonus bonus = new StatBonus();
         GetTotalStatBonus(type, null, bonus);
-        return bonus.CalculateStat(stat);
     }
 
     public void GetTotalStatBonus(BonusType type, Dictionary<BonusType, StatBonus> abilityBonusProperties, StatBonus inputStatBonus)
@@ -452,7 +436,7 @@ public class HeroData : ActorData
             resultBonus = new StatBonus();
         else
             resultBonus = inputStatBonus;
-        bool hasStatBonus = false, hasAttributeBonus = false, hasArchetypeBonus = false, hasAbilityBonus = false;
+        bool hasStatBonus = false, hasAttributeBonus = false, hasArchetypeBonus = false, hasAbilityBonus = false, hasTemporaryBonus = false;
 
         if (statBonuses.TryGetValue(type, out StatBonus statBonus))
             hasStatBonus = true;
@@ -461,17 +445,11 @@ public class HeroData : ActorData
         if (archetypeStatBonuses.TryGetValue(type, out StatBonus archetypeBonus))
             hasArchetypeBonus = true;
         if (abilityBonusProperties != null && abilityBonusProperties.TryGetValue(type, out abilityBonus))
-        {
             hasAbilityBonus = true;
-            if (abilityBonus.hasSetModifier)
-            {
-                resultBonus.hasSetModifier = true;
-                resultBonus.setModifier = abilityBonus.setModifier;
-                return;
-            }
-        }
+        if (temporaryBonuses.TryGetValue(type, out StatBonus temporaryBonus))
+            hasTemporaryBonus = true;
 
-        if (!hasAttributeBonus && !hasStatBonus && !hasArchetypeBonus && !hasAbilityBonus)
+        if (!hasAttributeBonus && !hasStatBonus && !hasArchetypeBonus && !hasAbilityBonus && !hasTemporaryBonus)
         {
             return;
         }
@@ -486,6 +464,17 @@ public class HeroData : ActorData
         {
             resultBonus.hasSetModifier = true;
             resultBonus.setModifier = statBonus.setModifier;
+            return;
+        }
+        else if (hasAbilityBonus && abilityBonus.hasSetModifier)
+        {
+            resultBonus.hasSetModifier = true;
+            resultBonus.setModifier = abilityBonus.setModifier;
+            return;
+        } else if (hasTemporaryBonus && temporaryBonus.hasSetModifier)
+        {
+            resultBonus.hasSetModifier = true;
+            resultBonus.setModifier = temporaryBonus.setModifier;
             return;
         }
 
@@ -512,6 +501,12 @@ public class HeroData : ActorData
             resultBonus.AddBonus(ModifyType.FLAT_ADDITION, abilityBonus.FlatModifier);
             resultBonus.AddBonus(ModifyType.ADDITIVE, abilityBonus.AdditiveModifier);
             resultBonus.AddBonus(ModifyType.MULTIPLY, (abilityBonus.CurrentMultiplier - 1) * 100);
+        }
+        if (hasTemporaryBonus)
+        {
+            resultBonus.AddBonus(ModifyType.FLAT_ADDITION, temporaryBonus.FlatModifier);
+            resultBonus.AddBonus(ModifyType.ADDITIVE, temporaryBonus.AdditiveModifier);
+            resultBonus.AddBonus(ModifyType.MULTIPLY, (temporaryBonus.CurrentMultiplier - 1) * 100);
         }
         return;
     }
