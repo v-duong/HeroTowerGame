@@ -34,7 +34,6 @@ public class Projectile : MonoBehaviour
     {
         if (!this.isActiveAndEnabled)
             return;
-        //Debug.Log(collision.gameObject);
         Actor actor = collision.gameObject.GetComponent<Actor>();
         Vector3 targetPosition;
         if (actor != null)

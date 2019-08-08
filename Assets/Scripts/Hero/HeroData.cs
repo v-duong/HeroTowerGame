@@ -423,12 +423,12 @@ public class HeroData : ActorData
         ResolveRating = CalculateActorStat(BonusType.GLOBAL_RESOLVE_RATING, BaseResolveRating + ResolveFromEquip);
     }
 
-    public override void GetTotalStatBonus(BonusType type, StatBonus bonus)
+    public void GetTotalStatBonus(BonusType type, StatBonus bonus)
     {
         GetTotalStatBonus(type, null, bonus);
     }
 
-    public void GetTotalStatBonus(BonusType type, Dictionary<BonusType, StatBonus> abilityBonusProperties, StatBonus inputStatBonus)
+    public override void GetTotalStatBonus(BonusType type, Dictionary<BonusType, StatBonus> abilityBonusProperties, StatBonus inputStatBonus)
     {
         StatBonus resultBonus;
         StatBonus abilityBonus = null;
@@ -471,7 +471,8 @@ public class HeroData : ActorData
             resultBonus.hasSetModifier = true;
             resultBonus.setModifier = abilityBonus.setModifier;
             return;
-        } else if (hasTemporaryBonus && temporaryBonus.hasSetModifier)
+        }
+        else if (hasTemporaryBonus && temporaryBonus.hasSetModifier)
         {
             resultBonus.hasSetModifier = true;
             resultBonus.setModifier = temporaryBonus.setModifier;
@@ -537,10 +538,28 @@ public class HeroData : ActorData
 
         public void SetAbilityToSlot(AbilityBase abilityBase, IAbilitySource source)
         {
-            Ability = new ActorAbility(abilityBase);
+            int layer;
+            if (abilityBase.targetType == AbilityTargetType.ENEMY)
+            {
+                layer = LayerMask.NameToLayer("EnemyDetect");
+            }
+            else if (abilityBase.targetType == AbilityTargetType.ALLY)
+            {
+                layer = LayerMask.NameToLayer("AllyDetect");
+            } else
+            {
+                layer = LayerMask.NameToLayer("BothDetect");
+            }
+
+            Ability = new ActorAbility(abilityBase, layer);
+            if (slot == 1)
+            {
+                Ability.SetAsSecondaryAbility();
+            }
             this.source = source;
             if (source.GetType() == typeof(HeroArchetypeData))
                 sourceType = AbilitySourceType.ARCHETYPE;
+
         }
 
         public int GetAbilityLevel()

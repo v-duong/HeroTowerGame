@@ -10,10 +10,14 @@ public abstract class Actor : MonoBehaviour
     protected List<ActorAbility> instancedAbilitiesList = new List<ActorAbility>();
     protected List<AbilityColliderContainer> abilityColliders = new List<AbilityColliderContainer>();
     protected int nextMovementNode;
+    protected bool isMoving;
+    public bool isBoss = false;
 
     public abstract ActorType GetActorType();
 
     public abstract void Death();
+
+    protected abstract void Move();
 
     public void UpdateStatusEffects()
     {
@@ -24,6 +28,23 @@ public abstract class Actor : MonoBehaviour
             statusEffects[index].Update(dT);
             index--;
         }
+    }
+
+    protected void Start()
+    {
+        InitializeHealthBar();
+    }
+
+    protected void Update()
+    {
+        UpdateStatusEffects();
+        if (!this.gameObject.activeSelf)
+            return;
+        if (isMoving)
+        {
+            Move();
+        }
+        healthBar.UpdatePosition(this.transform);
     }
 
     public void InitializeHealthBar()
@@ -45,6 +66,7 @@ public abstract class Actor : MonoBehaviour
     public void AddAbilityToList(ActorAbility ability)
     {
         instancedAbilitiesList.Add(ability);
+        ability.SetAbilityOwner(this);
 
         GameObject newObject = Instantiate(ResourceManager.Instance.AbilityContainerPrefab, transform);
         AbilityColliderContainer abilityContainer = newObject.GetComponent<AbilityColliderContainer>();
@@ -54,14 +76,11 @@ public abstract class Actor : MonoBehaviour
         ability.abilityCollider = abilityContainer;
 
         var collider = newObject.AddComponent<CircleCollider2D>();
-        collider.radius = ability.abilityBase.targetRange;
+        collider.radius = ability.abilityBase.targetRange + 0.5f;
         abilityContainer.abilityCollider = collider;
         collider.isTrigger = true;
 
-        if (ability.TargetType == AbilityTargetType.ENEMY)
-        {
-            collider.gameObject.layer = LayerMask.NameToLayer("EnemyDetect");
-        }
+        collider.gameObject.layer = ability.targetLayer;
     }
 
     public void ModifyCurrentHealth(double mod)
@@ -124,9 +143,12 @@ public abstract class Actor : MonoBehaviour
             total += voidDamage;
         }
 
-        Debug.Log(fireDamage);
+        Debug.Log(total);
 
-        ModifyCurrentHealth(total);
+        if (isBoss)
+            ModifyCurrentHealth(total * statusData.vsBossDamage);
+        else
+            ModifyCurrentHealth(total);
 
         if (physicalDamage != 0 && statusData.DidBleedProc())
         {
@@ -162,13 +184,18 @@ public abstract class Actor : MonoBehaviour
         {
             AddStatusEffect(new RadiationEffect(this, voidDamage * statusData.radiationEffectiveness, statusData.radiationDuration));
         }
-
     }
 
     public void ApplySingleElementDamage(ElementType element, double damage, bool isHit = true)
     {
         double finalDamage = ((1.0 - Data.Resistances[element] / 100d) * damage);
         ModifyCurrentHealth(finalDamage);
+    }
+
+    public void DisableActor()
+    {
+        this.gameObject.SetActive(false);
+        this.healthBar.gameObject.SetActive(false);
     }
 }
 

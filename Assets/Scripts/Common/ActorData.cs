@@ -104,10 +104,10 @@ public abstract class ActorData
     public double CalculateActorStat(BonusType type, double stat)
     {
         StatBonus bonus = new StatBonus();
-        GetTotalStatBonus(type, bonus);
+        GetTotalStatBonus(type, null, bonus);
         return bonus.CalculateStat(stat);
     }
 
     public abstract void UpdateActorData();
-    public abstract void GetTotalStatBonus(BonusType type, StatBonus bonus);
+    public abstract void GetTotalStatBonus(BonusType type, Dictionary<BonusType, StatBonus> abilityBonusProperties, StatBonus bonus);
 }

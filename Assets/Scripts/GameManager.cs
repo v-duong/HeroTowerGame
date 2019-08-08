@@ -7,15 +7,18 @@ public class GameManager : MonoBehaviour
 {
     public static GameManager Instance { get; private set; }
 
+    public PlayerStats PlayerStats { get; private set; }
+
     [SerializeField]
     protected Projectile projectilePrefab;
+
     public ProjectilePool ProjectilePool;
 
     [SerializeField]
     protected EnemyActor enemyPrefab;
+
     public EnemyPool EnemyPool;
 
-    public PlayerStats PlayerStats;
     public bool isInBattle;
     public List<HeroData> inBattleHeroes = new List<HeroData>();
     private string currentSceneName = "";
@@ -26,7 +29,6 @@ public class GameManager : MonoBehaviour
     {
         Instance = this;
     }
-
 
     private void Start()
     {
@@ -41,7 +43,7 @@ public class GameManager : MonoBehaviour
 #endif
 
         PlayerStats = new PlayerStats();
-        for (int i = 0; i < 80; i ++)
+        for (int i = 0; i < 80; i++)
         {
             Equipment equipment = Equipment.CreateRandomEquipment(100);
             equipment.SetRarity((RarityType)Random.Range(1, 4));
@@ -66,8 +68,12 @@ public class GameManager : MonoBehaviour
             //consumableWeightList.Add(ConsumableType.RESET_NORMAL, 0);
             //consumableWeightList.Add(ConsumableType.VALUE_REROLL, 0);
         }
-
         return consumableWeightList.ReturnWeightedRandom();
+    }
+
+    public void AddRandomConsumableToInventory()
+    {
+        PlayerStats.consumables[GetRandomConsumable()] += 1;
     }
 
     public void MoveToMainMenu()
@@ -77,7 +83,6 @@ public class GameManager : MonoBehaviour
 
         SceneManager.UnloadSceneAsync(currentSceneName);
         SceneManager.LoadScene("mainMenu", LoadSceneMode.Additive);
-        
     }
 
     public void MoveToBattle(StageInfoBase stageInfoBase)
@@ -89,9 +94,8 @@ public class GameManager : MonoBehaviour
         SceneManager.UnloadSceneAsync("mainMenu");
     }
 
-    IEnumerator LoadBattleRoutine(string sceneName, StageInfoBase stageInfoBase)
+    private IEnumerator LoadBattleRoutine(string sceneName, StageInfoBase stageInfoBase)
     {
-
         AsyncOperation asyncOperation = SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Additive);
         while (!asyncOperation.isDone)
         {
@@ -100,12 +104,12 @@ public class GameManager : MonoBehaviour
         StageManager.Instance.HighlightMap.gameObject.SetActive(false);
         Scene scene = SceneManager.GetSceneByName(sceneName);
         SceneManager.SetActiveScene(scene);
-        StageManager.Instance.WaveManager.SetWaves(stageInfoBase.enemyWaves);
-        
+        StageManager.Instance.BattleManager.SetStageBase(stageInfoBase);
+
         yield return LoadBattleUI(scene);
     }
 
-    IEnumerator LoadBattleUI(Scene sceneToMergeTo)
+    private IEnumerator LoadBattleUI(Scene sceneToMergeTo)
     {
         AsyncOperation asyncOperation = SceneManager.LoadSceneAsync("battleUI", LoadSceneMode.Additive);
         while (!asyncOperation.isDone)

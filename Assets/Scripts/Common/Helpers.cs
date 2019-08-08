@@ -220,19 +220,19 @@ public static class Helpers
         returnVal.z = z;
         return returnVal;
     }
-}
 
-public class WeightListItem<T>
-{
-    public T item;
-    public int weight;
-
-    public WeightListItem(T i, int w)
+    public static WeightList<string> CreateWeightListFromWeightBases(List<WeightBase> weightBases)
     {
-        item = i;
-        weight = w;
+        WeightList<string> ret = new WeightList<string>();
+        foreach(WeightBase weightBase in weightBases)
+        {
+            ret.Add(weightBase.idName, weightBase.weight);
+        }
+        return ret;
     }
 }
+
+
 
 public class WeightList<T>
 {
@@ -268,5 +268,17 @@ public class WeightList<T>
     {
         list.Clear();
         Sum = 0;
+    }
+
+    private class WeightListItem<T2>
+    {
+        public T2 item;
+        public int weight;
+
+        public WeightListItem(T2 i, int w)
+        {
+            item = i;
+            weight = w;
+        }
     }
 }

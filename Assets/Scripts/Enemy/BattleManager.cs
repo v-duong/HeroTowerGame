@@ -7,15 +7,20 @@ public class BattleManager : MonoBehaviour
 {
     private List<Spawner> spawnerList;
     private List<Goal> goalList;
-    public List<EnemyWave> Waves { get; private set; }
+    private Coroutine waveCoroutine;
+    private StageInfoBase stageInfo;
+
+    public IReadOnlyList<EnemyWave> Waves { get; private set; }
     public List<EnemyActor> currentEnemyList;
-    private int currentWave = 0;
+    public List<HeroData> activeHeroes = new List<HeroData>();
+
     public int enemiesSpawned;
     public bool startedSpawn = false;
     public bool finishedSpawn = false;
-    public List<HeroData> activeHeroes = new List<HeroData>();
     public int selectedTeam;
     public bool battleEnded = false;
+    public int playerHealth = 20;
+    public int stageLevel = 1;
 
     // Use this for initialization
     private void Start()
@@ -28,22 +33,56 @@ public class BattleManager : MonoBehaviour
         if (!startedSpawn && Waves != null)
         {
             startedSpawn = true;
-            this.SpawnWave();
+            this.SpawnWave(0);
         }
-        if (finishedSpawn && currentEnemyList.Count == 0 && !battleEnded)
+        if (!battleEnded)
         {
-            EndBattle(true);
-            battleEnded = true;
+            if (playerHealth <= 0)
+            {
+                EndBattle(false);
+                foreach (EnemyActor actor in currentEnemyList)
+                {
+                    actor.DisableActor();
+                }
+            }
+            if (finishedSpawn && currentEnemyList.Count == 0)
+            {
+                int consumableDrops = Random.Range(stageInfo.consumableDropCountMin, stageInfo.consumableDropCountMax + 1);
+                for (int i = 0; i < consumableDrops; i++)
+                    GameManager.Instance.AddRandomConsumableToInventory();
+
+                int equipmentDrops = Random.Range(stageInfo.equipmentDropCountMin, stageInfo.equipmentDropCountMax + 1);
+                if (stageInfo.equipmentDropList.Count == 0)
+                {
+                    for (int i = 0; i < equipmentDrops; i++)
+                        GameManager.Instance.PlayerStats.AddEquipmentToInventory(Equipment.CreateRandomEquipment(stageLevel));
+                }
+                else
+                {
+                    WeightList<string> weightList = Helpers.CreateWeightListFromWeightBases(stageInfo.equipmentDropList);
+                    for (int i = 0; i < equipmentDrops; i++)
+                    {
+                        EquipmentBase equipmentBase = ResourceManager.Instance.GetEquipmentBase(weightList.ReturnWeightedRandom());
+                        GameManager.Instance.PlayerStats.AddEquipmentToInventory(Equipment.CreateEquipmentFromBase(equipmentBase, stageLevel));
+                    }
+                }
+
+                EndBattle(true);
+            }
         }
     }
 
-    public void SetWaves(List<EnemyWave> waves)
+    public void SetStageBase(StageInfoBase stage)
     {
-        this.Waves = waves;
+        stageInfo = stage;
+        Waves = stage.enemyWaves;
+        stageLevel = stage.monsterLevel;
     }
 
     private void EndBattle(bool victory)
     {
+        StopAllCoroutines();
+        battleEnded = true;
         if (victory)
         {
             Debug.Log("VIC");
@@ -52,11 +91,15 @@ public class BattleManager : MonoBehaviour
                 hero.AddExperience(5000);
             }
         }
+        else
+        {
+            Debug.Log("FAIL");
+        }
     }
 
-    public void SpawnWave()
+    public void SpawnWave(int wave)
     {
-        StartCoroutine(SpawnWaveCo(currentWave));
+        waveCoroutine = StartCoroutine(SpawnWaveCo(wave));
         //currentWave++;
     }
 
@@ -64,17 +107,42 @@ public class BattleManager : MonoBehaviour
     {
         EnemyWave waveToSpawn = Waves[currentWave];
         EnemyBase enemyBase;
+        RarityType rarity;
+        Dictionary<BonusType, StatBonus> bonuses = new Dictionary<BonusType, StatBonus>();
         for (int i = 0; i < waveToSpawn.enemyList.Count; i++)
         {
             enemyBase = ResourceManager.Instance.GetEnemyBase(waveToSpawn.enemyList[i].enemyName);
+            rarity = waveToSpawn.enemyList[i].enemyRarity;
+
+            bonuses.Clear();
+            foreach (string affixName in waveToSpawn.enemyList[i].bonusProperties)
+            {
+                AffixBase affixBase = ResourceManager.Instance.GetAffixBase(affixName, AffixType.MONSTERMOD);
+                foreach (AffixBonusProperty prop in affixBase.affixBonuses)
+                {
+                    StatBonus bonus;
+                    if (bonuses.ContainsKey(prop.bonusType))
+                        bonus = bonuses[prop.bonusType];
+                    else
+                    {
+                        bonus = new StatBonus();
+                        bonuses.Add(prop.bonusType, bonus);
+                    }
+                    bonus.AddBonus(prop.modifyType, prop.minValue);
+                }
+            }
+
             for (int j = 0; j < waveToSpawn.enemyList[i].enemyCount; j++)
             {
                 Spawner spawner = SpawnerList[waveToSpawn.enemyList[i].spawnerIndex];
                 yield return new WaitForSeconds(waveToSpawn.delayBetweenSpawns);
 
-                var enemy = Instantiate(ResourceManager.Instance.EnemyPrefab, spawner.transform.position, spawner.transform.rotation);
-                enemy.GetComponent<EnemyActor>().ParentSpawner = spawner;
-                enemy.GetComponent<EnemyActor>().SetBase(enemyBase);
+                EnemyActor enemy = Instantiate(ResourceManager.Instance.EnemyPrefab, spawner.transform.position, spawner.transform.rotation).GetComponent<EnemyActor>();
+                enemy.ParentSpawner = spawner;
+                enemy.SetBase(enemyBase, rarity, stageInfo.monsterLevel);
+                enemy.Data.SetMobBonuses(bonuses);
+                if (enemyBase.isBoss || waveToSpawn.enemyList[i].isBossOverride)
+                    enemy.isBoss = true;
 
                 currentEnemyList.Add(enemy.GetComponent<EnemyActor>());
                 enemiesSpawned++;
@@ -83,7 +151,7 @@ public class BattleManager : MonoBehaviour
         if (currentWave + 1 < Waves.Count)
         {
             yield return new WaitForSeconds(waveToSpawn.delayUntilNextWave);
-            StartCoroutine(SpawnWaveCo(currentWave + 1));
+            waveCoroutine = StartCoroutine(SpawnWaveCo(currentWave + 1));
         }
         else
         {

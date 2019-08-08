@@ -83,8 +83,9 @@ public class AbilityBase
 
     [JsonProperty]
     public readonly bool hasLinkedAbility;
+    [JsonProperty]
+    public readonly bool useWeaponRange;
 
-    
 
 
     public MinMaxRange GetDamageAtLevel(ElementType e, int level)

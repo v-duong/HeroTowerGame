@@ -5,7 +5,6 @@ using UnityEngine.Tilemaps;
 
 public class HeroActor : Actor
 {
-    private bool isMoving = false;
     private List<Vector3> movementNodes;
 
     public new HeroData Data
@@ -37,7 +36,7 @@ public class HeroActor : Actor
         }
     }
 
-    void Move()
+    protected override void Move()
     {
         var dt = Time.deltaTime;
         if (movementNodes != null && nextMovementNode < movementNodes.Count)
@@ -85,18 +84,6 @@ public class HeroActor : Actor
         }
     }
 
-    void Update()
-    {
-        UpdateStatusEffects();
-        if (!this.gameObject.activeSelf)
-            return;
-        if (isMoving)
-        {
-            Move();
-            //healthBar.UpdatePosition(transform);
-        }
-    }
-
     void OnEnable()
     {
         foreach (var x in instancedAbilitiesList)
@@ -119,6 +106,8 @@ public class HeroActor : Actor
         {
             x.StopFiring(this);
         }
+
+        DisableActor();
     }
 
     public override ActorType GetActorType()

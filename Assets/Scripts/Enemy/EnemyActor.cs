@@ -2,6 +2,14 @@
 
 public class EnemyActor : Actor
 {
+    public RarityType enemyRarity;
+
+    [SerializeField]
+    public int spawnerOriginIndex;
+
+    [SerializeField]
+    public int indexOfGoal;
+
     public new EnemyData Data
     {
         get
@@ -14,47 +22,22 @@ public class EnemyActor : Actor
         }
     }
 
-    [SerializeField]
-    public int spawnerOriginIndex;
-
-    [SerializeField]
-    public int indexOfGoal;
-
-    public bool isBoss = false;
-
     public EnemyActor()
     {
-        Data = new EnemyData
-        {
-            MaximumHealth = 100,
-            movementSpeed = 5
-        };
+        isMoving = true;
+        Data = new EnemyData();
         Data.CurrentHealth = Data.MaximumHealth;
     }
 
     // Use this for initialization
-    private void Start()
+    private new void Start()
     {
+        base.Start();
+
         nextMovementNode = 1;
-        InitializeHealthBar();
     }
 
-    // Update is called once per frame
-    private void Update()
-    {
-        UpdateStatusEffects();
-        if (!this.gameObject.activeSelf)
-            return;
-        Move();
-        healthBar.UpdatePosition(this.transform);
-    }
-
-    public void SetBase(EnemyBase enemyBase)
-    {
-        Data.SetBase(enemyBase);
-    }
-
-    private void Move()
+    protected override void Move()
     {
         var dt = Time.deltaTime;
         var nodes = ParentSpawner.GetNodesToGoal(indexOfGoal);
@@ -69,6 +52,42 @@ public class EnemyActor : Actor
             {
                 nextMovementNode++;
             }
+        }
+        else
+        {
+            StageManager.Instance.BattleManager.playerHealth--;
+            Death();
+        }
+    }
+
+    public void SetBase(EnemyBase enemyBase, RarityType rarity, int level)
+    {
+        enemyRarity = rarity;
+        Data.SetBase(enemyBase, rarity, level);
+        foreach (EnemyBase.EnemyAbilityBase ability in enemyBase.abilitiesList)
+        {
+            AbilityBase abilityBase = ResourceManager.Instance.GetAbilityBase(ability.abilityName);
+
+            int layer;
+            if (abilityBase.targetType == AbilityTargetType.ENEMY)
+            {
+                layer = LayerMask.NameToLayer("AllyDetect");
+            }
+            else if (abilityBase.targetType == AbilityTargetType.ALLY)
+            {
+                layer = LayerMask.NameToLayer("EnemyDetect");
+            }
+            else
+            {
+                layer = LayerMask.NameToLayer("BothDetect");
+            }
+
+            ActorAbility actorAbility = new ActorAbility(abilityBase, layer);
+            actorAbility.SetDamageAndSpeedModifier((ability.damageMultiplier - 1f) * 100f, (ability.attackPerSecMultiplier - 1f) * 100f);
+            actorAbility.SetAbilityOwner(this);
+            actorAbility.UpdateAbilityStats(Data);
+            AddAbilityToList(actorAbility);
+            actorAbility.StartFiring(this);
         }
     }
 
@@ -85,11 +104,15 @@ public class EnemyActor : Actor
 
     public override void Death()
     {
-        StageManager.Instance.WaveManager.enemiesSpawned -= 1;
-        StageManager.Instance.WaveManager.currentEnemyList.Remove(this);
+        StageManager.Instance.BattleManager.enemiesSpawned -= 1;
+        StageManager.Instance.BattleManager.currentEnemyList.Remove(this);
 
-        this.gameObject.SetActive(false);
-        this.healthBar.gameObject.SetActive(false);
+        foreach (var x in instancedAbilitiesList)
+        {
+            x.StopFiring(this);
+        }
+
+        DisableActor();
     }
 
     public override ActorType GetActorType()

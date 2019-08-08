@@ -27,6 +27,16 @@ public class EnemyBase
     public readonly List<EnemyAbilityBase> abilitiesList;
     [JsonProperty]
     public readonly string spriteName;
+    [JsonProperty]
+    public readonly float attackTargetRange;
+    [JsonProperty]
+    public readonly float attackSpeed;
+    [JsonProperty]
+    public readonly float attackDamageMinMultiplier;
+    [JsonProperty]
+    public readonly float attackDamageMaxMultiplier;
+    [JsonProperty]
+    public readonly float attackCriticalChance;
 
     public class EnemyAbilityBase
     {
@@ -35,14 +45,16 @@ public class EnemyBase
         [JsonProperty]
         public float damageMultiplier;
         [JsonProperty]
-        public float cooldownMultiplier;
+        public float attackPerSecMultiplier;
     }
 }
 
 public enum EnemyType
 {
     NON_ATTACKER,
-    ATTACKER,
-    HIT_AND_RUN
+    TARGET_ATTACKER,
+    HIT_AND_RUN,
+    AURA_USER,
+    DEBUFFER
 }
 

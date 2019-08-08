@@ -16,7 +16,7 @@ public class Spawner : MonoBehaviour
 
         nodesToGoal = new List<List<Vector3>>();
 
-        if (StageManager.Instance.WaveManager.GoalList.Count == 0)
+        if (StageManager.Instance.BattleManager.GoalList.Count == 0)
         {
             nodesAreOutdated = true;
             return;
@@ -42,7 +42,7 @@ public class Spawner : MonoBehaviour
 
     private void UpdateNodes()
     {
-        foreach (var goal in StageManager.Instance.WaveManager.GoalList)
+        foreach (var goal in StageManager.Instance.BattleManager.GoalList)
         {
             nodesToGoal.Add(Pathfinding.FindPath(transform.position, goal.transform.position, StageManager.Instance.PathTilemap, false));
         }

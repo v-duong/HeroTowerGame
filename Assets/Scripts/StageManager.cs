@@ -8,7 +8,7 @@ public class StageManager : MonoBehaviour
     public static StageManager Instance { get; private set; }
     public int accumulatedConsumables;
 
-    private BattleManager _waveManager;
+    private BattleManager _battleManager;
     private Tilemap _pathTilemap;
     private GameObject _worldCanvas;
     private HighlightMap _highlightMap;
@@ -25,14 +25,14 @@ public class StageManager : MonoBehaviour
         }
     }
 
-    public BattleManager WaveManager
+    public BattleManager BattleManager
     {
         get
         {
-            if (_waveManager == null)
-                _waveManager = GameObject.FindGameObjectWithTag("WaveManager").GetComponent<BattleManager>();
+            if (_battleManager == null)
+                _battleManager = GameObject.FindGameObjectWithTag("WaveManager").GetComponent<BattleManager>();
 
-            return _waveManager;
+            return _battleManager;
         }
     }
     public GameObject WorldCanvas

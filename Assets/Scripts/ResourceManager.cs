@@ -169,9 +169,9 @@ public class ResourceManager : MonoBehaviour
                 return enchantmentList[id];
 
             case AffixType.MONSTERMOD:
-                if (enchantmentList == null)
-                    enchantmentList = LoadAffixes(type);
-                return enchantmentList[id];
+                if (monsterModList == null)
+                    monsterModList = LoadAffixes(type);
+                return monsterModList[id];
 
             default:
                 return null;

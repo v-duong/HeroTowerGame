@@ -6,19 +6,19 @@ public class LinkedActorAbility : ActorAbility
     private readonly Dictionary<ElementType, AbilityDamageBase> parentDamageLevels;
     private LinkedAbilityData linkedAbilityData;
 
-    public LinkedActorAbility(AbilityBase ability) : base(ability)
+    public LinkedActorAbility(AbilityBase ability, int layer) : base(ability, layer)
     {
     }
 
-    public LinkedActorAbility(LinkedAbilityData linkedAbility, Dictionary<ElementType, AbilityDamageBase> damageLevels)
-        : this(ResourceManager.Instance.GetAbilityBase(linkedAbility.abilityId))
+    public LinkedActorAbility(LinkedAbilityData linkedAbility, int layer, Dictionary<ElementType, AbilityDamageBase> damageLevels)
+        : this(ResourceManager.Instance.GetAbilityBase(linkedAbility.abilityId), layer)
     {
         this.linkedAbilityData = linkedAbility;
         this.parentDamageLevels = damageLevels;
     }
 
-    public LinkedActorAbility(LinkedAbilityData linkedAbility)
-    : this(ResourceManager.Instance.GetAbilityBase(linkedAbility.abilityId))
+    public LinkedActorAbility(LinkedAbilityData linkedAbility, int layer)
+    : this(ResourceManager.Instance.GetAbilityBase(linkedAbility.abilityId), layer)
     {
         this.linkedAbilityData = linkedAbility;
     }
