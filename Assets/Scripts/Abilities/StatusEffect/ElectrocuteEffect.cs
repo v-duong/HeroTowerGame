@@ -7,6 +7,7 @@ public class ElectrocuteEffect : ActorStatusEffect
 
     public ElectrocuteEffect(Actor target, double inputDamage, float duration) : base(target)
     {
+        effectType = EffectType.ELECTROCUTE;
         this.damage = (float)(inputDamage * 0.25d);
         this.duration = duration;
     }
@@ -28,7 +29,7 @@ public class ElectrocuteEffect : ActorStatusEffect
             hits = Physics2D.OverlapCircleAll(target.transform.position, 1.5f, LayerMask.GetMask("Hero"));
         }
 
-        int index = Random.Range(0, hits.Length - 1);
+        int index = Random.Range(0, hits.Length);
         Actor secondaryTarget = hits[index].gameObject.GetComponent<Actor>();
         
         target.ApplySingleElementDamage(ElementType.LIGHTNING, damage * timeElapsed, false);

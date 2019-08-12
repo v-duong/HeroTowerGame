@@ -30,7 +30,10 @@ public class ActorAbility
     public float TargetRange { get; private set; }
     public int ProjectileCount { get; private set; }
 
-    public AbilityStatusEffectDataContainer abilityStatusEffectData;
+    private float AreaScaling;
+    private float ProjectileScaling;
+
+    public AbilityOnHitDataContainer abilityOnHitData;
 
     public LinkedActorAbility LinkedAbility { get; private set; }
     private Dictionary<BonusType, StatBonus> abilityBonusProperties;
@@ -40,13 +43,17 @@ public class ActorAbility
 
     private bool firingRoutineRunning;
     private IEnumerator firingRoutine;
+    private ParticleSystem.EmitParams emitParams = new ParticleSystem.EmitParams();
 
     public ActorAbility(AbilityBase ability, int layer)
     {
         if (ability == null)
             return;
         abilityBase = ability;
-        abilityStatusEffectData = new AbilityStatusEffectDataContainer();
+        abilityOnHitData = new AbilityOnHitDataContainer
+        {
+            Type = abilityBase.abilityType
+        };
         abilityBonusProperties = new Dictionary<BonusType, StatBonus>();
 
         AreaLength = abilityBase.areaLength;
@@ -86,7 +93,6 @@ public class ActorAbility
 
     public void SetDamageAndSpeedModifier(float damage, float speed)
     {
-        Debug.Log(speed);
         StatBonus damageMod = new StatBonus();
         StatBonus speedMod = new StatBonus();
         damageMod.AddBonus(ModifyType.MULTIPLY, damage);
@@ -98,6 +104,7 @@ public class ActorAbility
     public void SetAbilityOwner(Actor actor)
     {
         AbilityOwner = actor;
+        abilityOnHitData.accuracy = (float)Helpers.GetEnemyAccuracyScaling(AbilityOwner.Data.Level);
         if (LinkedAbility != null)
             LinkedAbility.SetAbilityOwner(AbilityOwner);
     }
@@ -164,6 +171,8 @@ public class ActorAbility
 
     protected void UpdateAbilityBonusProperties()
     {
+        if (abilityBase.abilityType == AbilityType.AURA || abilityBase.abilityType == AbilityType.SELF_BUFF)
+            return;
         foreach (AbilityScalingBonusProperty bonusProperty in abilityBase.bonusProperties)
         {
             if (abilityBonusProperties.TryGetValue(bonusProperty.bonusType, out StatBonus temp))
@@ -181,15 +190,23 @@ public class ActorAbility
 
     protected void UpdateAbility_ShotType(ActorData data)
     {
+        AreaRadius = (float)GetTotalStatBonus(data, BonusType.AREA_RADIUS).CalculateStat(abilityBase.areaRadius) + 0.5f;
+        AreaScaling = AreaRadius / abilityBase.areaRadius;
+        if (abilityBase.abilityType == AbilityType.AURA || abilityBase.abilityType == AbilityType.SELF_BUFF)
+        {
+            TargetRange = (float)GetTotalStatBonus(data, BonusType.AURA_RANGE).CalculateStat(abilityBase.targetRange) + 0.5f;
+            return;
+        }
+
         ProjectileSpeed = (float)GetTotalStatBonus(data, BonusType.PROJECTILE_SPEED).CalculateStat(abilityBase.projectileSpeed);
         ProjectilePierce = GetTotalStatBonus(data, BonusType.PROJECTILE_PIERCE).CalculateStat(0);
         ProjectileCount = GetTotalStatBonus(data, BonusType.PROJECTILE_COUNT).CalculateStat(abilityBase.projectileCount);
-
-        AreaRadius = (float)GetTotalStatBonus(data, BonusType.AREA_RADIUS).CalculateStat(abilityBase.areaRadius) + 0.5f;
     }
 
     protected void UpdateAbility_AbilityType(HeroData data)
     {
+        if (abilityBase.abilityType == AbilityType.AURA || abilityBase.abilityType == AbilityType.SELF_BUFF)
+            return;
         StatBonus critBonus = new StatBonus();
         StatBonus critDamageBonus = new StatBonus();
 
@@ -247,7 +264,7 @@ public class ActorAbility
         }
 
         CriticalDamage = critDamageBonus.CalculateStat(50);
-        
+
         if (float.IsInfinity(Cooldown))
             Cooldown = 0.001f;
     }
@@ -411,57 +428,60 @@ public class ActorAbility
 
     protected void UpdateAbility_StatusBonuses(ActorData data)
     {
+        if (abilityBase.abilityType == AbilityType.AURA || abilityBase.abilityType == AbilityType.SELF_BUFF)
+            return;
+
         StatBonus bleedChance = GetTotalStatBonus(data, BonusType.BLEED_CHANCE, BonusType.STATUS_EFFECT_CHANCE);
-        abilityStatusEffectData.bleedChance = (float)bleedChance.CalculateStat(0f);
+        abilityOnHitData.bleedChance = (float)bleedChance.CalculateStat(0f);
         StatBonus bleedEffectiveness = GetTotalStatBonus(data, BonusType.BLEED_EFFECTIVENESS, BonusType.STATUS_EFFECT_DAMAGE, BonusType.DAMAGE_OVER_TIME);
-        abilityStatusEffectData.bleedEffectiveness = (float)(bleedEffectiveness.CalculateStat(100f) / 100d);
+        abilityOnHitData.bleedEffectiveness = (float)(bleedEffectiveness.CalculateStat(100f) / 100d);
         StatBonus bleedDuration = GetTotalStatBonus(data, BonusType.BLEED_DURATION, BonusType.STATUS_EFFECT_DURATION);
-        abilityStatusEffectData.bleedDuration = (float)bleedDuration.CalculateStat(4f);
+        abilityOnHitData.bleedDuration = (float)bleedDuration.CalculateStat(4f);
 
         StatBonus burnChance = GetTotalStatBonus(data, BonusType.BURN_CHANCE, BonusType.STATUS_EFFECT_CHANCE);
-        abilityStatusEffectData.burnChance = (float)burnChance.CalculateStat(0f);
+        abilityOnHitData.burnChance = (float)burnChance.CalculateStat(0f);
         StatBonus burnEffectiveness = GetTotalStatBonus(data, BonusType.BURN_EFFECTIVENESS, BonusType.STATUS_EFFECT_DAMAGE, BonusType.DAMAGE_OVER_TIME);
-        abilityStatusEffectData.burnEffectiveness = (float)(burnEffectiveness.CalculateStat(100f) / 100d);
+        abilityOnHitData.burnEffectiveness = (float)(burnEffectiveness.CalculateStat(100f) / 100d);
         StatBonus burnDuration = GetTotalStatBonus(data, BonusType.BURN_DURATION, BonusType.STATUS_EFFECT_DURATION);
-        abilityStatusEffectData.burnDuration = (float)burnDuration.CalculateStat(2f);
+        abilityOnHitData.burnDuration = (float)burnDuration.CalculateStat(2f);
 
         StatBonus chillChance = GetTotalStatBonus(data, BonusType.CHILL_CHANCE, BonusType.STATUS_EFFECT_CHANCE);
-        abilityStatusEffectData.chillChance = (float)chillChance.CalculateStat(0f);
+        abilityOnHitData.chillChance = (float)chillChance.CalculateStat(0f);
         StatBonus chillEffectiveness = GetTotalStatBonus(data, BonusType.CHILL_EFFECTIVENESS, BonusType.NONDAMAGE_STATUS_EFFECTIVENESS);
-        abilityStatusEffectData.chillEffectiveness = (float)(chillEffectiveness.CalculateStat(100f) / 100d);
+        abilityOnHitData.chillEffectiveness = (float)(chillEffectiveness.CalculateStat(100f) / 100d);
         StatBonus chillDuration = GetTotalStatBonus(data, BonusType.CHILL_DURATION, BonusType.STATUS_EFFECT_DURATION);
-        abilityStatusEffectData.chillDuration = (float)chillDuration.CalculateStat(2f);
+        abilityOnHitData.chillDuration = (float)chillDuration.CalculateStat(2f);
 
         StatBonus electrocuteChance = GetTotalStatBonus(data, BonusType.ELECTROCUTE_CHANCE, BonusType.STATUS_EFFECT_CHANCE);
-        abilityStatusEffectData.electrocuteChance = (float)electrocuteChance.CalculateStat(0f);
+        abilityOnHitData.electrocuteChance = (float)electrocuteChance.CalculateStat(0f);
         StatBonus electrocuteEffectiveness = GetTotalStatBonus(data, BonusType.ELECTROCUTE_EFFECTIVENESS, BonusType.STATUS_EFFECT_DAMAGE);
-        abilityStatusEffectData.electrocuteEffectiveness = (float)(electrocuteEffectiveness.CalculateStat(100f) / 100d);
+        abilityOnHitData.electrocuteEffectiveness = (float)(electrocuteEffectiveness.CalculateStat(100f) / 100d);
         StatBonus electrocuteDuration = GetTotalStatBonus(data, BonusType.ELECTROCUTE_DURATION, BonusType.STATUS_EFFECT_DURATION);
-        abilityStatusEffectData.electrocuteDuration = (float)electrocuteDuration.CalculateStat(2f);
+        abilityOnHitData.electrocuteDuration = (float)electrocuteDuration.CalculateStat(2f);
 
         StatBonus fractureChance = GetTotalStatBonus(data, BonusType.FRACTURE_CHANCE, BonusType.STATUS_EFFECT_CHANCE);
-        abilityStatusEffectData.fractureChance = (float)fractureChance.CalculateStat(0f);
+        abilityOnHitData.fractureChance = (float)fractureChance.CalculateStat(0f);
         StatBonus fractureEffectiveness = GetTotalStatBonus(data, BonusType.FRACTURE_EFFECTIVENESS, BonusType.NONDAMAGE_STATUS_EFFECTIVENESS);
-        abilityStatusEffectData.fractureEffectiveness = (float)(fractureEffectiveness.CalculateStat(100f) / 100d);
+        abilityOnHitData.fractureEffectiveness = (float)(fractureEffectiveness.CalculateStat(100f) / 100d);
         StatBonus fractureDuration = GetTotalStatBonus(data, BonusType.FRACTURE_DURATION, BonusType.STATUS_EFFECT_DURATION);
-        abilityStatusEffectData.fractureDuration = (float)fractureDuration.CalculateStat(3f);
+        abilityOnHitData.fractureDuration = (float)fractureDuration.CalculateStat(3f);
 
         StatBonus pacifyChance = GetTotalStatBonus(data, BonusType.PACIFY_CHANCE, BonusType.STATUS_EFFECT_CHANCE);
-        abilityStatusEffectData.pacifyChance = (float)pacifyChance.CalculateStat(0f);
+        abilityOnHitData.pacifyChance = (float)pacifyChance.CalculateStat(0f);
         StatBonus pacifyEffectiveness = GetTotalStatBonus(data, BonusType.PACIFY_EFFECTIVENESS, BonusType.NONDAMAGE_STATUS_EFFECTIVENESS);
-        abilityStatusEffectData.pacifyEffectiveness = (float)(pacifyEffectiveness.CalculateStat(100f) / 100d);
+        abilityOnHitData.pacifyEffectiveness = (float)(pacifyEffectiveness.CalculateStat(100f) / 100d);
         StatBonus pacifyDuration = GetTotalStatBonus(data, BonusType.PACIFY_DURATION, BonusType.STATUS_EFFECT_DURATION);
-        abilityStatusEffectData.pacifyDuration = (float)pacifyDuration.CalculateStat(3f);
+        abilityOnHitData.pacifyDuration = (float)pacifyDuration.CalculateStat(3f);
 
         StatBonus radiationChance = GetTotalStatBonus(data, BonusType.RADIATION_CHANCE, BonusType.STATUS_EFFECT_CHANCE);
-        abilityStatusEffectData.radiationChance = (float)radiationChance.CalculateStat(0f);
+        abilityOnHitData.radiationChance = (float)radiationChance.CalculateStat(0f);
         StatBonus radiationEffectiveness = GetTotalStatBonus(data, BonusType.RADIATION_EFFECTIVENESS, BonusType.STATUS_EFFECT_DAMAGE, BonusType.DAMAGE_OVER_TIME);
-        abilityStatusEffectData.radiationEffectiveness = (float)(radiationEffectiveness.CalculateStat(100f) / 100d);
+        abilityOnHitData.radiationEffectiveness = (float)(radiationEffectiveness.CalculateStat(100f) / 100d);
         StatBonus radiationDuration = GetTotalStatBonus(data, BonusType.RADIATION_DURATION, BonusType.STATUS_EFFECT_DURATION);
-        abilityStatusEffectData.radiationDuration = (float)radiationDuration.CalculateStat(5f);
+        abilityOnHitData.radiationDuration = (float)radiationDuration.CalculateStat(5f);
 
         StatBonus vsBossDamage = GetTotalStatBonus(data, BonusType.DAMAGE_VS_BOSS);
-        abilityStatusEffectData.vsBossDamage = 1f + ((float)vsBossDamage.CalculateStat(0f) / 100f);
+        abilityOnHitData.vsBossDamage = 1f + ((float)vsBossDamage.CalculateStat(0f) / 100f);
     }
 
     protected void GetTotalStatBonus(ActorData data, StatBonus existingBonus, params BonusType[] types)
@@ -501,6 +521,10 @@ public class ActorAbility
                     damage = damage * (1d + (CriticalDamage / 100d));
                 dict.Add(elementType, damage);
             }
+            else
+            {
+                dict.Add(elementType, 0);
+            }
         }
         return dict;
     }
@@ -509,7 +533,10 @@ public class ActorAbility
     {
         if (firingRoutine == null)
         {
-            firingRoutine = FiringRoutine();
+            if (abilityBase.abilityType == AbilityType.AURA || abilityBase.abilityType == AbilityType.SELF_BUFF)
+                firingRoutine = FiringRoutine_Aura();
+            else
+                firingRoutine = FiringRoutine_Attack();
             parent.StartCoroutine(firingRoutine);
             firingRoutineRunning = true;
         }
@@ -527,7 +554,7 @@ public class ActorAbility
         }
     }
 
-    private IEnumerator FiringRoutine()
+    private IEnumerator FiringRoutine_Attack()
     {
         bool fired = false;
         while (true)
@@ -566,6 +593,50 @@ public class ActorAbility
         }
     }
 
+    private IEnumerator FiringRoutine_Aura()
+    {
+        while (true)
+        {
+            switch (abilityBase.abilityType)
+            {
+                case AbilityType.AURA:
+                    ApplyStatBonusBuff(AbilityOwner, EffectType.AURA_BUFF);
+                    foreach (Actor target in targetList)
+                        ApplyStatBonusBuff(target, EffectType.AURA_BUFF);
+                    break;
+
+                case AbilityType.SELF_BUFF:
+                    ApplyStatBonusBuff(AbilityOwner, EffectType.SELF_BUFF);
+                    break;
+            }
+
+            yield return new WaitForSeconds(0.25f);
+        }
+    }
+
+    protected void ApplyStatBonusBuff(Actor target, EffectType effectType)
+    {
+        StatBonusBuffEffect buff = target.GetBuffStatusEffect(abilityBase.idName);
+        List<Tuple<BonusType, ModifyType, int>> bonuses = new List<Tuple<BonusType, ModifyType, int>>();
+        float strength = 0;
+        foreach (AbilityScalingBonusProperty bonusProperty in abilityBase.bonusProperties)
+        {
+            int buffValue = (int)(bonusProperty.initialValue + bonusProperty.growthValue * abilityLevel);
+            bonuses.Add(new Tuple<BonusType, ModifyType, int>(bonusProperty.bonusType, bonusProperty.modifyType, buffValue));
+            strength += buffValue;
+        }
+
+        if (buff != null)
+        {
+            buff.RefreshDuration(0.25f);
+            return;
+        }
+        else
+        {
+            target.AddStatusEffect(new StatBonusBuffEffect(target, bonuses, 0.25f, abilityBase.idName, effectType));
+        }
+    }
+
     protected void FireRadialAoe()
     {
         FireRadialAoe(abilityCollider.transform.position, CurrentTarget.transform.position);
@@ -584,11 +655,15 @@ public class ActorAbility
         if (abilityBase.abilityShotType == AbilityShotType.RADIAL_AOE)
         {
             hits = Physics2D.OverlapCircleAll(target, AreaRadius, targetMask);
+            emitParams.position = target;
         }
         else
         {
             hits = Physics2D.OverlapCircleAll(origin, AreaRadius, targetMask);
+            emitParams.position = origin;
         }
+
+        ParticleManager.Instance.EmitAbilityParticle(abilityBase.idName, emitParams, AreaScaling);
 
         Dictionary<ElementType, double> damageDict = CalculateDamageDict();
         foreach (Collider2D hit in hits)
@@ -596,7 +671,7 @@ public class ActorAbility
             Actor actor = hit.gameObject.GetComponent<Actor>();
             if (actor != null)
             {
-                actor.ApplyDamage(damageDict, abilityStatusEffectData);
+                actor.ApplyDamage(damageDict, abilityOnHitData);
             }
         }
     }
@@ -614,6 +689,8 @@ public class ActorAbility
         double arc = (abilityBase.projectileSpread / 2d);
         hits = Physics2D.OverlapCircleAll(origin, AreaRadius, targetMask);
 
+        ParticleManager.Instance.EmitAbilityParticle(abilityBase.idName, emitParams, AreaScaling);
+
         Dictionary<ElementType, double> damageDict = CalculateDamageDict();
         foreach (Collider2D hit in hits)
         {
@@ -622,7 +699,7 @@ public class ActorAbility
             {
                 Vector2 toActor = (actor.transform.position - origin);
                 if (Vector2.Angle(toActor, forward) < arc)
-                    actor.ApplyDamage(damageDict, abilityStatusEffectData);
+                    actor.ApplyDamage(damageDict, abilityOnHitData);
             }
         }
     }
@@ -717,14 +794,18 @@ public class ActorAbility
                 pooledProjectile.linkedAbility = LinkedAbility;
 
             pooledProjectile.projectileDamage = damageDict;
-            pooledProjectile.statusData = abilityStatusEffectData.DeepCopy();
+            pooledProjectile.statusData = abilityOnHitData.DeepCopy();
             pooledProjectile.gameObject.layer = targetLayer;
+            pooledProjectile.transform.up = (pooledProjectile.transform.position + pooledProjectile.currentHeading) - pooledProjectile.transform.position;
+            pooledProjectile.abilityId = abilityBase.idName;
         }
     }
 }
 
-public class AbilityStatusEffectDataContainer
+public class AbilityOnHitDataContainer
 {
+    public AbilityType Type;
+    public float accuracy;
     public float bleedChance;
     public float bleedEffectiveness;
     public float bleedDuration;
@@ -748,9 +829,9 @@ public class AbilityStatusEffectDataContainer
     public float radiationDuration;
     public float vsBossDamage;
 
-    public AbilityStatusEffectDataContainer DeepCopy()
+    public AbilityOnHitDataContainer DeepCopy()
     {
-        return (AbilityStatusEffectDataContainer)this.MemberwiseClone();
+        return (AbilityOnHitDataContainer)this.MemberwiseClone();
     }
 
     public bool DidBleedProc()
@@ -764,7 +845,7 @@ public class AbilityStatusEffectDataContainer
         {
             return true;
         }
-        return UnityEngine.Random.Range(0f, 100f) <= bleedChance ? true : false;
+        return UnityEngine.Random.Range(0f, 100f) < bleedChance ? true : false;
     }
 
     public bool DidBurnProc()
@@ -778,7 +859,7 @@ public class AbilityStatusEffectDataContainer
         {
             return true;
         }
-        return UnityEngine.Random.Range(0f, 100f) <= burnChance ? true : false;
+        return UnityEngine.Random.Range(0f, 100f) < burnChance ? true : false;
     }
 
     public bool DidChillProc()
@@ -792,7 +873,7 @@ public class AbilityStatusEffectDataContainer
         {
             return true;
         }
-        return UnityEngine.Random.Range(0f, 100f) <= chillChance ? true : false;
+        return UnityEngine.Random.Range(0f, 100f) < chillChance ? true : false;
     }
 
     public bool DidElectrocuteProc()
@@ -806,7 +887,7 @@ public class AbilityStatusEffectDataContainer
         {
             return true;
         }
-        return UnityEngine.Random.Range(0f, 100f) <= electrocuteChance ? true : false;
+        return UnityEngine.Random.Range(0f, 100f) < electrocuteChance ? true : false;
     }
 
     public bool DidFractureProc()
@@ -819,7 +900,7 @@ public class AbilityStatusEffectDataContainer
         {
             return true;
         }
-        return UnityEngine.Random.Range(0f, 100f) <= fractureChance ? true : false;
+        return UnityEngine.Random.Range(0f, 100f) < fractureChance ? true : false;
     }
 
     public bool DidPacifyProc()
@@ -832,7 +913,7 @@ public class AbilityStatusEffectDataContainer
         {
             return true;
         }
-        return UnityEngine.Random.Range(0f, 100f) <= pacifyChance ? true : false;
+        return UnityEngine.Random.Range(0f, 100f) < pacifyChance ? true : false;
     }
 
     public bool DidRadiationProc()
@@ -845,6 +926,6 @@ public class AbilityStatusEffectDataContainer
         {
             return true;
         }
-        return UnityEngine.Random.Range(0f, 100f) <= radiationChance ? true : false;
+        return UnityEngine.Random.Range(0f, 100f) < radiationChance ? true : false;
     }
 }

@@ -11,18 +11,24 @@ public class EnemyData : ActorData
     public EnemyData() : base()
     {
         Id = Guid.NewGuid();
+        BaseManaShield = 0;
+        CurrentManaShield = 0;
+        BaseSoulPoints = 0;
+        CurrentSoulPoints = 0;
+
         mobBonuses = new Dictionary<BonusType, StatBonus>();
     }
 
     public void SetBase(EnemyBase enemyBase, RarityType rarity, int level)
     {
         BaseData = enemyBase;
-        BaseHealth = (float)(Helpers.GetEnemyHealthScaling(level) * 15 * enemyBase.healthScaling);
+        Name = enemyBase.idName;
+        BaseHealth = (float)(Helpers.GetEnemyHealthScaling(level) * enemyBase.healthScaling);
         MaximumHealth = (int)BaseHealth;
         CurrentHealth = MaximumHealth;
         movementSpeed = enemyBase.movementSpeed;
-        minAttackDamage = (int)(enemyBase.attackDamageMinMultiplier * Helpers.GetEnemyHealthScaling(level) * 5);
-        maxAttackDamage = (int)(enemyBase.attackDamageMaxMultiplier * Helpers.GetEnemyHealthScaling(level) * 5);
+        minAttackDamage = (int)(enemyBase.attackDamageMinMultiplier * Helpers.GetEnemyDamageScaling(level));
+        maxAttackDamage = (int)(enemyBase.attackDamageMaxMultiplier * Helpers.GetEnemyDamageScaling(level));
         for (int i = 0; i < (int)ElementType.COUNT; i++)
         {
             ElementType element = (ElementType)i;
@@ -33,11 +39,15 @@ public class EnemyData : ActorData
     public override void UpdateActorData()
     {
         float healthPercent = CurrentHealth / MaximumHealth;
-        float shieldPercent = CurrentManaShield / MaximumManaShield;
         MaximumHealth = (int)CalculateActorStat(BonusType.MAX_HEALTH, BaseHealth);
         CurrentHealth = MaximumHealth * healthPercent;
-        MaximumManaShield = (int)CalculateActorStat(BonusType.GLOBAL_MAX_SHIELD, BaseManaShield);
-        CurrentManaShield = MaximumManaShield * shieldPercent;
+
+        if (MaximumManaShield != 0)
+        {
+            float shieldPercent = CurrentManaShield / MaximumManaShield;
+            MaximumManaShield = (int)CalculateActorStat(BonusType.GLOBAL_MAX_SHIELD, BaseManaShield);
+            CurrentManaShield = MaximumManaShield * shieldPercent;
+        }
         movementSpeed = (float)CalculateActorStat(BonusType.MOVEMENT_SPEED, BaseData.movementSpeed);
     }
 

@@ -57,7 +57,6 @@ public class InputManager : MonoBehaviour
                     }
                 }
                 spawnLocation = Helpers.ReturnTilePosition(StageManager.Instance.HighlightMap.tilemap, spawnLocation, -3);
-                Debug.Log(spawnLocation);
                 selectedHero.transform.position = spawnLocation;
                 selectedHero.gameObject.SetActive(true);
                 IsSummoningMode = false;
@@ -112,7 +111,7 @@ public class InputManager : MonoBehaviour
                         {
                             selectedHero = hero;
                             IsMovementMode = true;
-                            UIManager.Instance.BattleCharInfoPanel.data = hero.Data;
+                            UIManager.Instance.BattleCharInfoPanel.SetTarget(hero.Data);
                         }
                     }
                     else if (hit.collider.gameObject.layer == 12)
@@ -120,7 +119,7 @@ public class InputManager : MonoBehaviour
                         EnemyActor enemy = hit.collider.gameObject.GetComponent<EnemyActor>();
                         if (enemy != null)
                         {
-                            UIManager.Instance.BattleCharInfoPanel.data = enemy.Data;
+                            UIManager.Instance.BattleCharInfoPanel.SetTarget(enemy.Data);
                         }
                     }
                     return;

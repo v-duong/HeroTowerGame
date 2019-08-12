@@ -115,3 +115,14 @@ public class HeroActor : Actor
         return ActorType.ALLY;
     }
 }
+
+public enum TargetingType {
+    CLOSEST,
+    FURTHEST,
+    FIRST,
+    RANDOM,
+    LEAST_HEALTH,
+    MOST_HEALTH,
+    PRIORITIZE_RARITY
+}
+

@@ -28,7 +28,7 @@ public abstract class AffixedItem : Item
         if (prefixes.Count > 0 || suffixes.Count > 0)
         {
             List<Affix> temp = prefixes.Concat(suffixes).ToList();
-            return temp[Random.Range(0, temp.Count - 1)];
+            return temp[Random.Range(0, temp.Count)];
         }
         else
             return null;

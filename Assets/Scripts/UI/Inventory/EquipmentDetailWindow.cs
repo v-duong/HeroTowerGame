@@ -189,6 +189,8 @@ public class EquipmentDetailWindow : MonoBehaviour
         HeroDetailWindow.hero.EquipToSlot(equip, ui.SlotContext);
         this.gameObject.SetActive(false);
         ui.CloseCurrentWindow();
+        ui.CloseCurrentWindow();
         ui.HeroDetailWindow.UpdateWindow();
+        
     }
 }

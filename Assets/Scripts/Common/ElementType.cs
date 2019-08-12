@@ -1,6 +1,5 @@
-﻿using System.Collections;
+﻿using System;
 using System.Collections.Generic;
-using System;
 
 public enum ElementType
 {
@@ -16,40 +15,47 @@ public enum ElementType
 
 public class ElementResistances
 {
-    private readonly Dictionary<ElementType, int> dict;
+    private readonly Dictionary<ElementType, int> resists;
+    private readonly Dictionary<ElementType, int> resistCaps;
 
     public ElementResistances()
     {
-        dict = new Dictionary<ElementType, int>();
-        for(int i = 0; i < (int)ElementType.COUNT; i++)
+        resists = new Dictionary<ElementType, int>();
+        resistCaps = new Dictionary<ElementType, int>();
+        for (int i = 0; i < (int)ElementType.COUNT; i++)
         {
-            dict[(ElementType)i] = 0;
+            resists[(ElementType)i] = 0;
+            resistCaps[(ElementType)i] = 80;
         }
     }
 
     public ElementResistances(Dictionary<ElementType, int> value)
     {
-        dict = new Dictionary<ElementType, int>();
+        resists = new Dictionary<ElementType, int>();
         foreach (KeyValuePair<ElementType, int> e in value)
         {
-            dict[e.Key] = e.Value;
+            resists[e.Key] = e.Value;
         }
     }
 
     public int GetResistance(ElementType e)
     {
-        return dict[e];
+        return Math.Min(resists[e], resistCaps[e]);
+    }
+
+    public int GetUncapResistance(ElementType e)
+    {
+        return resists[e];
     }
 
     public void SetResistance(ElementType e, int value)
     {
-        dict[e] = value;
+        resists[e] = value;
     }
 
     public int this[ElementType i]
     {
-        get { return dict[i]; }
-        set { dict[i] = value; }
+        get { return GetResistance(i); }
+        set { resists[i] = value; }
     }
-
 }

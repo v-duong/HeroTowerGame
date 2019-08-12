@@ -14,12 +14,6 @@ public class HeroData : ActorData
     public int Agility { get; private set; }
     public int Will { get; private set; }
 
-    public int Armor { get; private set; }
-    public int DodgeRating { get; private set; }
-    public int ResolveRating { get; private set; }
-    public int AttackPhasing { get; private set; }
-    public int MagicPhasing { get; private set; }
-
     private Dictionary<BonusType, StatBonus> archetypeStatBonuses;
     private Dictionary<BonusType, StatBonus> attributeStatBonuses;
 

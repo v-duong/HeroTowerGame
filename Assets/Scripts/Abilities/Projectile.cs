@@ -3,6 +3,7 @@ using UnityEngine;
 
 public class Projectile : MonoBehaviour
 {
+    public string abilityId;
     public bool canHitAllies = false;
     public bool canHitEnemies = false;
     public float currentSpeed;
@@ -10,8 +11,10 @@ public class Projectile : MonoBehaviour
     public Dictionary<ElementType, double> projectileDamage;
     public Vector3 currentHeading;
     public LinkedActorAbility linkedAbility;
-    public AbilityStatusEffectDataContainer statusData;
+    public AbilityOnHitDataContainer statusData;
     public float inheritedDamagePercent;
+    private ParticleSystem.EmitParams emitParams = new ParticleSystem.EmitParams();
+    private float particleWaitTime = 0;
 
     //public List<AbilityEffect> attachedEffects;
 
@@ -26,7 +29,14 @@ public class Projectile : MonoBehaviour
         {
             ReturnToPool();
         }
+        emitParams.position = transform.position;
+        particleWaitTime -= Time.fixedDeltaTime;
+        if (particleWaitTime <= 0)
+            particleWaitTime = ParticleManager.Instance.EmitAbilityParticle(abilityId, emitParams, this.transform.localScale.x);
         Move();
+        //float angle = Vector3.Angle(transform.position, transform.position + currentHeading);
+        //transform.rotation = Quaternion.AngleAxis(angle, Vector3.forward);
+        transform.up = (transform.position + currentHeading * currentSpeed) - transform.position;
         timeToLive -= Time.fixedDeltaTime;
     }
 
@@ -40,13 +50,12 @@ public class Projectile : MonoBehaviour
         {
             targetPosition = actor.transform.position;
             actor.ApplyDamage(projectileDamage, statusData);
-        } else
+        }
+        else
         {
             return;
         }
 
-        var collider = GetComponent<Collider2D>();
-        collider.enabled = false;
         if (linkedAbility != null)
         {
             linkedAbility.Fire(this.transform.position, targetPosition);
@@ -58,7 +67,7 @@ public class Projectile : MonoBehaviour
     {
         float dt = Time.fixedDeltaTime;
         //this.transform.position += currentHeading.normalized * currentSpeed * dt;
-        this.transform.Translate(currentHeading.normalized * currentSpeed * dt);
+        this.transform.Translate(currentHeading.normalized * currentSpeed * dt, Space.World);
         return;
     }
 

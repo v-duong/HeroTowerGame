@@ -5,17 +5,24 @@ using UnityEngine;
 public class EnemyPool : ObjectPool<EnemyActor>
 {
 
-    public EnemyPool(EnemyActor prefab) : base(prefab, 10)
+    public EnemyPool(EnemyActor prefab) : base(prefab, 25)
     {
     }
 
-    public EnemyActor GetEnemy()
+    public EnemyActor GetEnemy(Transform inherit)
     {
-        return Get();
+        EnemyActor ret = Get();
+        ret.transform.position = inherit.transform.position;
+        return ret;
     }
 
     public override void ReturnToPool(EnemyActor item)
     {
         Return(item);
+    }
+
+    public void ReturnAll()
+    {
+        ReturnAllActive();
     }
 }

@@ -182,7 +182,25 @@ public static class Helpers
         // (Scaling*(EnemyScaling))^(level/1.5 - 22) * (level*levelFactor) + level*2
         double enemyFactor = Math.Pow(SCALING_FACTOR * ENEMY_SCALING, level / 1.5 - 23) * level * LEVEL_SCALING_FACTOR + level * 2;
 
-        return enemyFactor;
+        return enemyFactor * 15;
+    }
+
+    public static double GetEnemyDamageScaling(double level)
+    {
+        // formula
+        // (Scaling*(EnemyScaling))^(level/1.5 - 22) * (level*levelFactor) + level*2
+        double enemyFactor = Math.Pow(SCALING_FACTOR * ENEMY_SCALING, level / 1.5 - 23) * level * LEVEL_SCALING_FACTOR + level * 2;
+
+        return enemyFactor * 5;
+    }
+
+    public static double GetEnemyAccuracyScaling(double level)
+    {
+        // formula
+        // (Scaling*(EnemyScaling))^(level/1.5 - 22) * (level*levelFactor) + level*2
+        double enemyFactor = Math.Pow(SCALING_FACTOR * ENEMY_SCALING, level / 1.4 - 20) * level * LEVEL_SCALING_FACTOR + level * 4;
+
+        return enemyFactor * 4;
     }
 
     public static int GetRequiredExperience(int level)
@@ -254,8 +272,8 @@ public class WeightList<T>
             if (weight <= 0)
                 return x.item;
         }
-        Debug.Log("Did not return proper item. Error in sum or list");
-        return default;
+        Debug.Log("Did not return proper item. Error in sum or list?");
+        return list[UnityEngine.Random.Range(0, list.Count)].item;
     }
 
     public void Add(T item, int value)

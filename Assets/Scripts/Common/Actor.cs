@@ -6,6 +6,7 @@ public abstract class Actor : MonoBehaviour
     public ActorData Data { get; protected set; }
     public float actorTimeScale = 1f;
     private readonly List<ActorStatusEffect> statusEffects = new List<ActorStatusEffect>();
+    private readonly List<StatBonusBuffEffect> buffEffects = new List<StatBonusBuffEffect>();
     protected UIHealthBar healthBar;
     protected List<ActorAbility> instancedAbilitiesList = new List<ActorAbility>();
     protected List<AbilityColliderContainer> abilityColliders = new List<AbilityColliderContainer>();
@@ -50,17 +51,27 @@ public abstract class Actor : MonoBehaviour
     public void InitializeHealthBar()
     {
         healthBar = GetComponentInChildren<UIHealthBar>();
-        healthBar.Initialize(Data.MaximumHealth, Data.CurrentHealth, this.transform);
+        healthBar.Initialize(Data.MaximumHealth, Data.CurrentHealth, Data.MaximumManaShield, Data.CurrentManaShield, this.transform);
     }
 
     public void AddStatusEffect(ActorStatusEffect statusEffect)
     {
         statusEffects.Add(statusEffect);
+        if (statusEffect.effectType == EffectType.AURA_BUFF || statusEffect.effectType == EffectType.SELF_BUFF)
+            buffEffects.Add((StatBonusBuffEffect)statusEffect);
     }
 
     public void RemoveStatusEffect(ActorStatusEffect statusEffect)
     {
         statusEffects.Remove(statusEffect);
+        if (statusEffect.effectType == EffectType.AURA_BUFF || statusEffect.effectType == EffectType.SELF_BUFF)
+            buffEffects.Remove((StatBonusBuffEffect)statusEffect);
+    }
+
+    public StatBonusBuffEffect GetBuffStatusEffect(string statusName)
+    {
+        StatBonusBuffEffect buff = buffEffects.Find(x => x.BuffName.Equals(statusName));
+        return buff;
     }
 
     public void AddAbilityToList(ActorAbility ability)
@@ -90,20 +101,71 @@ public abstract class Actor : MonoBehaviour
         else
             Data.CurrentHealth -= (float)mod;
 
-        healthBar.UpdateHealthBar(Data.MaximumHealth, Data.CurrentHealth);
+        healthBar.UpdateHealthBar(Data.MaximumHealth, Data.CurrentHealth, Data.MaximumManaShield, Data.MaximumHealth);
         if (Data.CurrentHealth <= 0)
         {
             Death();
         }
     }
 
-    public void ApplyDamage(Dictionary<ElementType, double> damage, AbilityStatusEffectDataContainer statusData, bool isHit = true)
+    public double ModifyCurrentShield(double mod)
+    {
+        if (Data.CurrentManaShield == 0)
+            return mod;
+        else if (Data.CurrentManaShield - mod > Data.MaximumManaShield)
+        {
+            Data.CurrentManaShield = Data.MaximumManaShield;
+            return 0;
+        }
+        else if (Data.CurrentManaShield < mod)
+        {
+            mod -= Data.CurrentManaShield;
+            Data.CurrentManaShield = 0;
+            return mod;
+        }
+        else
+        {
+            Data.CurrentManaShield -= (float)mod;
+            return 0;
+        }
+    }
+
+    public void ApplyDamage(Dictionary<ElementType, double> damage, AbilityOnHitDataContainer onHitData, bool isHit = true)
     {
         double total = 0, physicalDamage = 0, fireDamage = 0, coldDamage = 0, lightningDamage = 0, earthDamage = 0, divineDamage = 0, voidDamage = 0;
 
+        if (isHit)
+        {
+            if (Data.AttackPhasing > 0 && onHitData.Type == AbilityType.ATTACK)
+            {
+                if (Data.AttackPhasing == 100 || Random.Range(0, 100) < Data.AttackPhasing)
+                    return;
+            }
+            else if (Data.MagicPhasing > 0 && onHitData.Type == AbilityType.SPELL)
+            {
+                if (Data.MagicPhasing == 100 || Random.Range(0, 100) < Data.MagicPhasing)
+                    return;
+            }
+            if (Data.DodgeRating > 0)
+            {
+                float dodgePercent = 1 - (onHitData.accuracy / (onHitData.accuracy + (Data.DodgeRating) / 2f));
+                dodgePercent = Mathf.Min(dodgePercent, 90f);
+                if (Random.Range(0,100f) < dodgePercent)
+                {
+                    return;
+                }
+            }
+        }
+
         if (damage.ContainsKey(ElementType.PHYSICAL))
         {
-            physicalDamage = (1.0 - Data.Resistances[ElementType.PHYSICAL] / 100d) * damage[ElementType.PHYSICAL];
+            float armorValue = 0;
+            if (isHit)
+            {
+                armorValue = Data.Armor / (float)(Data.Armor + physicalDamage);
+            }
+            float physicalResistance = Mathf.Min((1.0f - Data.Resistances[ElementType.PHYSICAL] / 100f) + armorValue, 0.95f);
+            physicalDamage = physicalResistance * damage[ElementType.PHYSICAL];
             total += physicalDamage;
         }
 
@@ -142,47 +204,49 @@ public abstract class Actor : MonoBehaviour
             voidDamage = (1.0 - Data.Resistances[ElementType.VOID] / 100d) * damage[ElementType.VOID];
             total += voidDamage;
         }
-
-        Debug.Log(total);
-
         if (isBoss)
-            ModifyCurrentHealth(total * statusData.vsBossDamage);
-        else
-            ModifyCurrentHealth(total);
+            total = total * onHitData.vsBossDamage;
+        total = ModifyCurrentShield(total);
+        ModifyCurrentHealth(total);
 
-        if (physicalDamage != 0 && statusData.DidBleedProc())
+        ApplyAfterHitEffects(damage, onHitData);
+    }
+
+    public void ApplyAfterHitEffects(Dictionary<ElementType, double> damage, AbilityOnHitDataContainer postDamageData)
+    {
+        if (damage[ElementType.PHYSICAL] != 0 && postDamageData.DidBleedProc())
         {
-            AddStatusEffect(new BleedEffect(this, physicalDamage * statusData.bleedEffectiveness, statusData.bleedDuration));
+            AddStatusEffect(new BleedEffect(this, damage[ElementType.PHYSICAL] * postDamageData.bleedEffectiveness, postDamageData.bleedDuration));
         }
 
-        if (fireDamage != 0 && statusData.DidBurnProc())
+        if (damage[ElementType.FIRE] != 0 && postDamageData.DidBurnProc())
         {
-            AddStatusEffect(new BurnEffect(this, fireDamage * statusData.burnEffectiveness, statusData.burnDuration));
+            AddStatusEffect(new BurnEffect(this, damage[ElementType.FIRE] * postDamageData.burnEffectiveness, postDamageData.burnDuration));
         }
 
-        if (coldDamage != 0 && statusData.DidChillProc())
+        if (damage[ElementType.COLD] != 0 && postDamageData.DidChillProc())
         {
-            AddStatusEffect(new ChillEffect(this, statusData.chillEffectiveness, statusData.chillDuration));
+            AddStatusEffect(new ChillEffect(this, postDamageData.chillEffectiveness, postDamageData.chillDuration));
         }
 
-        if (lightningDamage != 0 && statusData.DidElectrocuteProc())
+        if (damage[ElementType.LIGHTNING] != 0 && postDamageData.DidElectrocuteProc())
         {
-            AddStatusEffect(new ElectrocuteEffect(this, lightningDamage * statusData.electrocuteEffectiveness, statusData.electrocuteDuration));
+            AddStatusEffect(new ElectrocuteEffect(this, damage[ElementType.LIGHTNING] * postDamageData.electrocuteEffectiveness, postDamageData.electrocuteDuration));
         }
 
-        if (earthDamage != 0 && statusData.DidFractureProc())
+        if (damage[ElementType.EARTH] != 0 && postDamageData.DidFractureProc())
         {
-            AddStatusEffect(new FractureEffect(this, statusData.fractureEffectiveness, statusData.fractureDuration));
+            AddStatusEffect(new FractureEffect(this, postDamageData.fractureEffectiveness, postDamageData.fractureDuration));
         }
 
-        if (divineDamage != 0 && statusData.DidPacifyProc())
+        if (damage[ElementType.DIVINE] != 0 && postDamageData.DidPacifyProc())
         {
-            AddStatusEffect(new PacifyEffect(this, statusData.pacifyEffectiveness, statusData.pacifyDuration));
+            AddStatusEffect(new PacifyEffect(this, postDamageData.pacifyEffectiveness, postDamageData.pacifyDuration));
         }
 
-        if (voidDamage != 0 && statusData.DidRadiationProc())
+        if (damage[ElementType.VOID] != 0 && postDamageData.DidRadiationProc())
         {
-            AddStatusEffect(new RadiationEffect(this, voidDamage * statusData.radiationEffectiveness, statusData.radiationDuration));
+            AddStatusEffect(new RadiationEffect(this, damage[ElementType.VOID] * postDamageData.radiationEffectiveness, postDamageData.radiationDuration));
         }
     }
 

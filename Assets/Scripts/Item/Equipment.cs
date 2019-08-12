@@ -4,8 +4,7 @@ using System.Collections.Generic;
 public abstract class Equipment : AffixedItem
 {
     public static readonly int MaxLevelReq = 95;
-    public EquipmentBase Base { get { return ResourceManager.Instance.GetEquipmentBase(BaseId); } }
-    private string BaseId { get; set; }
+    public EquipmentBase Base;
     public float costModifier;
     public int levelRequirement;
     public int strRequirement;
@@ -28,7 +27,7 @@ public abstract class Equipment : AffixedItem
 
     protected Equipment(EquipmentBase e, int ilvl)
     {
-        BaseId = e.idName;
+        Base = e;
         Name = LocalizationManager.Instance.GetLocalizationText_Equipment(e.idName);
         costModifier = e.sellValue;
         strRequirement = e.strengthReq;

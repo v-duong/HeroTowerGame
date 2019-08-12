@@ -34,6 +34,12 @@ public abstract class ActorData
     public int BaseMagicPhasing { get; protected set; }
     public int BaseResolveRating { get; protected set; }
 
+    public int Armor { get; protected set; }
+    public int DodgeRating { get; protected set; }
+    public int ResolveRating { get; protected set; }
+    public int AttackPhasing { get; protected set; }
+    public int MagicPhasing { get; protected set; }
+
     protected Dictionary<BonusType, StatBonus> statBonuses;
     protected Dictionary<BonusType, StatBonus> temporaryBonuses;
 

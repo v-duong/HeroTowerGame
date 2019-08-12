@@ -7,4 +7,6 @@
     FRACTURE,       //reduced defenses (armor, shield, block/phasing)
     PACIFY,         //reduced damage
     RADIATION,     //dot to target + nearby enemies
+    SELF_BUFF,
+    AURA_BUFF
 }

@@ -6,6 +6,7 @@ public abstract class ActorStatusEffect
 {
     protected readonly Actor target;
 
+    public EffectType effectType;
     public float duration;
 
     protected abstract void OnApply();
@@ -23,6 +24,11 @@ public abstract class ActorStatusEffect
             duration -= dT;
             return dT;
         }
+    }
+
+    public void RefreshDuration(float duration)
+    {
+        duration = this.duration;
     }
 
     public ActorStatusEffect(Actor target)

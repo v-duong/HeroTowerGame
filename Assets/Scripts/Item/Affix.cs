@@ -3,14 +3,13 @@ using UnityEngine;
 
 public class Affix
 {
-    public AffixBase Base { get { return ResourceManager.Instance.GetAffixBase(BaseId, AffixType); } }
-    public string BaseId { get; private set; }
+    public AffixBase Base;
     private Dictionary<BonusType, int> affixValues;
     public AffixType AffixType { get; private set; }
 
     public Affix(AffixBase a, bool locked = false)
     {
-        BaseId = a.idName;
+        Base = a;
         affixValues = new Dictionary<BonusType, int>();
         AffixType = a.affixType;
         foreach (AffixBonusProperty mod in a.affixBonuses)
@@ -63,4 +62,5 @@ public class Affix
         }
         return s;
     }
+
 }

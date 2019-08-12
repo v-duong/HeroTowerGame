@@ -2,13 +2,11 @@
 
 public class ArchetypeItem : Item
 {
-    public ArchetypeBase Base { get { return ResourceManager.Instance.GetArchetypeBase(BaseId); } }
-    private string BaseId { get; set; }
-
+    public ArchetypeBase Base;
 
     protected ArchetypeItem(ArchetypeBase b)
     {
-        BaseId = b.idName;
+        Base = b;
         Name = LocalizationManager.Instance.GetLocalizationText_Archetype(b.idName);
     }
 

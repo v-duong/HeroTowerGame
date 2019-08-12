@@ -1,8 +1,10 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 
 public class EnemyActor : Actor
 {
     public RarityType enemyRarity;
+    public List<Affix> mobAffixes;
 
     [SerializeField]
     public int spawnerOriginIndex;
@@ -27,6 +29,7 @@ public class EnemyActor : Actor
         isMoving = true;
         Data = new EnemyData();
         Data.CurrentHealth = Data.MaximumHealth;
+        mobAffixes = new List<Affix>();
     }
 
     // Use this for initialization
@@ -42,6 +45,7 @@ public class EnemyActor : Actor
         var dt = Time.deltaTime;
         var nodes = ParentSpawner.GetNodesToGoal(indexOfGoal);
         if (nodes != null && nextMovementNode < nodes.Count)
+
         {
             //float dist = Vector3.Distance(nodes[nextMovementNode], this.transform.position);
             float dist = Vector3.SqrMagnitude(nodes[nextMovementNode] - this.transform.position);
@@ -64,6 +68,14 @@ public class EnemyActor : Actor
     {
         enemyRarity = rarity;
         Data.SetBase(enemyBase, rarity, level);
+        if (rarity == RarityType.RARE)
+        {
+            AddRandomMobAffixes(3);
+        }
+        else if (rarity == RarityType.UNCOMMON)
+        {
+            AddRandomMobAffixes(1);
+        }
         foreach (EnemyBase.EnemyAbilityBase ability in enemyBase.abilitiesList)
         {
             AbilityBase abilityBase = ResourceManager.Instance.GetAbilityBase(ability.abilityName);
@@ -85,9 +97,26 @@ public class EnemyActor : Actor
             ActorAbility actorAbility = new ActorAbility(abilityBase, layer);
             actorAbility.SetDamageAndSpeedModifier((ability.damageMultiplier - 1f) * 100f, (ability.attackPerSecMultiplier - 1f) * 100f);
             actorAbility.SetAbilityOwner(this);
-            actorAbility.UpdateAbilityStats(Data);
             AddAbilityToList(actorAbility);
+            actorAbility.UpdateAbilityStats(Data);
             actorAbility.StartFiring(this);
+        }
+    }
+
+    public void AddRandomMobAffixes(int affixCount)
+    {
+        List<string> bonusTags = new List<string>();
+        foreach (Affix a in mobAffixes)
+            bonusTags.Add(a.Base.BonusTagType);
+        for (int i = 0; i < affixCount; i++)
+        {
+            Affix affix = new Affix(ResourceManager.Instance.GetRandomAffixBase(AffixType.MONSTERMOD, Data.Level, null, bonusTags));
+            mobAffixes.Add(affix);
+            bonusTags.Add(affix.Base.BonusTagType);
+            foreach (AffixBonusProperty prop in affix.Base.affixBonuses)
+            {
+                Data.AddStatBonus(affix.GetAffixValue(prop.bonusType), prop.bonusType, prop.modifyType);
+            }
         }
     }
 

@@ -10,13 +10,16 @@ public class UIHealthBar : MonoBehaviour {
     private RectTransform m_healthBarFillArea;
     */
     [SerializeField]
-    private RectTransform _healthBarFill;
-    private Vector2 m_cachedHealthPercent = Vector2.one;
+    private RectTransform healthBarFill;
+    [SerializeField]
+    private RectTransform shieldBarFill;
+    private Vector2 currenthealthPercent = Vector2.one;
+    private Vector2 currentshieldPercent = Vector2.one;
 
-    public void Initialize(float maxHealth, float currentHealth, Transform actorTransform)
+    public void Initialize(float maxHealth, float currentHealth, float maxShield, float currentShield, Transform actorTransform)
     {
         this.transform.SetParent(StageManager.Instance.WorldCanvas.transform, false);
-        UpdateHealthBar(maxHealth, currentHealth);
+        UpdateHealthBar(maxHealth, currentHealth, maxShield, currentShield);
         UpdatePosition(actorTransform);
     }
 
@@ -28,10 +31,18 @@ public class UIHealthBar : MonoBehaviour {
         this.transform.position = newPos;
     }
 
-    public void UpdateHealthBar(float maxHealth, float currentHealth)
+    public void UpdateHealthBar(float maxHealth, float currentHealth, float maxShield, float currentShield)
     {
-        m_cachedHealthPercent.x = (float)(currentHealth / maxHealth);
-        _healthBarFill.anchorMax = m_cachedHealthPercent;
+        currenthealthPercent.x = (float)(currentHealth / maxHealth);
+        healthBarFill.anchorMax = currenthealthPercent;
+        if (maxShield != 0)
+        {
+            currentshieldPercent.x = (currentShield / maxShield);
+            shieldBarFill.anchorMax = currentshieldPercent;
+        } else
+        {
+            shieldBarFill.anchorMax = Vector2.zero;
+        }
 
         /*
         if (m_cachedHealthPercent.x == 1.0f)

@@ -14,11 +14,6 @@ public class GameManager : MonoBehaviour
 
     public ProjectilePool ProjectilePool;
 
-    [SerializeField]
-    protected EnemyActor enemyPrefab;
-
-    public EnemyPool EnemyPool;
-
     public bool isInBattle;
     public List<HeroData> inBattleHeroes = new List<HeroData>();
     private string currentSceneName = "";
@@ -85,15 +80,27 @@ public class GameManager : MonoBehaviour
         SceneManager.LoadScene("mainMenu", LoadSceneMode.Additive);
     }
 
+    /// <summary>
+    /// Loads loading scene and starts coroutine for the battle/stage loading.
+    /// </summary>
+    /// <param name="stageInfoBase"></param>
     public void MoveToBattle(StageInfoBase stageInfoBase)
     {
         SceneManager.LoadScene("loadingScene", LoadSceneMode.Additive);
         currentSceneName = "stage" + stageInfoBase.sceneAct + '-' + stageInfoBase.sceneStage;
+
         StartCoroutine(LoadBattleRoutine(currentSceneName, stageInfoBase));
+
         Camera.main.transform.position = new Vector3(0, 0, -10);
         SceneManager.UnloadSceneAsync("mainMenu");
     }
 
+    /// <summary>
+    ///  Loads battle/stage scene and sets active scene to it.
+    /// </summary>
+    /// <param name="sceneName"></param>
+    /// <param name="stageInfoBase"></param>
+    /// <returns></returns>
     private IEnumerator LoadBattleRoutine(string sceneName, StageInfoBase stageInfoBase)
     {
         AsyncOperation asyncOperation = SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Additive);
@@ -105,10 +112,16 @@ public class GameManager : MonoBehaviour
         Scene scene = SceneManager.GetSceneByName(sceneName);
         SceneManager.SetActiveScene(scene);
         StageManager.Instance.BattleManager.SetStageBase(stageInfoBase);
+        ParticleManager.Instance.ClearParticleSystems();
 
         yield return LoadBattleUI(scene);
     }
 
+    /// <summary>
+    /// Coroutine for loading the UI for battle scene. Instantiates actors for the selected hero team.
+    /// </summary>
+    /// <param name="sceneToMergeTo"></param>
+    /// <returns></returns>
     private IEnumerator LoadBattleUI(Scene sceneToMergeTo)
     {
         AsyncOperation asyncOperation = SceneManager.LoadSceneAsync("battleUI", LoadSceneMode.Additive);
@@ -119,7 +132,9 @@ public class GameManager : MonoBehaviour
         Scene scene = SceneManager.GetSceneByName("battleUI");
         SceneManager.MergeScenes(scene, sceneToMergeTo);
         SummonScrollWindow summonScroll = UIManager.Instance.SummonScrollWindow;
+
         inBattleHeroes.Clear();
+
         foreach (HeroData data in PlayerStats.heroTeams[0])
         {
             if (data == null)
@@ -132,6 +147,7 @@ public class GameManager : MonoBehaviour
             summonScroll.AddHeroActor(heroActor);
             inBattleHeroes.Add(data);
         }
+
         UIManager.Instance.LoadingScreen.endLoadingScreen = true;
         isInBattle = true;
     }

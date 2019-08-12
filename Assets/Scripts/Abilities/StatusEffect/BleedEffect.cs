@@ -8,6 +8,7 @@ public class BleedEffect : ActorStatusEffect
 
     public BleedEffect(Actor target, double inputDamage, float duration) : base(target)
     {
+        effectType = EffectType.BLEED;
         damagePerSecond = (float)(inputDamage * 0.2d);
         this.duration = duration;
         timeSinceLastCheck = 0;

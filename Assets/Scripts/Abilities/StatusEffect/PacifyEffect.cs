@@ -8,6 +8,7 @@ public class PacifyEffect : ActorStatusEffect
 
     public PacifyEffect(Actor target, double effectiveness, float duration) : base(target)
     {
+        effectType = EffectType.PACIFY;
         effectPower = (int)(effectiveness * -15);
         this.duration = duration;
     }

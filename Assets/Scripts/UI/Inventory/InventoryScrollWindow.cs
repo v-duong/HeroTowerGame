@@ -51,7 +51,7 @@ public class InventoryScrollWindow : MonoBehaviour
     {
         if (resetCallback)
             currentCallback = null;
-        if (!showingAllEquip)
+        if (!showingAllEquip || resetCallback)
         {
             ClearSlots();
             InitializeInventorySlots(GameManager.Instance.PlayerStats.EquipmentInventory, currentCallback);

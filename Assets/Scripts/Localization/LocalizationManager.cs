@@ -12,6 +12,7 @@ public class LocalizationManager : MonoBehaviour
     private static Dictionary<string, string> archetypeLocalizationData = new Dictionary<string, string>();
     private static Dictionary<string, string> equipmentLocalizationData = new Dictionary<string, string>();
     private static Dictionary<string, string> abilityLocalizationData = new Dictionary<string, string>();
+    private static Dictionary<string, string> enemyLocalizationData = new Dictionary<string, string>();
     private static ItemGenLocalization itemGenLocalization;
 
     private void Awake()
@@ -36,8 +37,12 @@ public class LocalizationManager : MonoBehaviour
         path = "json/localization/equipment." + locale;
         equipmentLocalizationData = JsonConvert.DeserializeObject<Dictionary<string, string>>(Resources.Load<TextAsset>(path).text);
 
+        path = "json/localization/enemy." + locale;
+        enemyLocalizationData = JsonConvert.DeserializeObject<Dictionary<string, string>>(Resources.Load<TextAsset>(path).text);
+
         path = "json/localization/itemgen." + locale;
         itemGenLocalization = JsonConvert.DeserializeObject<ItemGenLocalization>(Resources.Load<TextAsset>(path).text);
+
     }
 
     public string GetLocalizationText(string stringId)
@@ -150,6 +155,20 @@ public class LocalizationManager : MonoBehaviour
     public string GetLocalizationText_Archetype(string stringId)
     {
         if (archetypeLocalizationData.TryGetValue("equipment." + stringId, out string value))
+        {
+            if (value == "")
+                return stringId;
+            return value;
+        }
+        else
+        {
+            return stringId;
+        }
+    }
+
+    public string GetLocalizationText_Enemy(string stringId, string field)
+    {
+        if (enemyLocalizationData.TryGetValue("enemy." + stringId + field, out string value))
         {
             if (value == "")
                 return stringId;

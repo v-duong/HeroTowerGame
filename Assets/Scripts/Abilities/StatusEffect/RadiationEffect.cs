@@ -8,6 +8,7 @@ public class RadiationEffect : ActorStatusEffect
 
     public RadiationEffect(Actor target, double inputDamage, float duration) : base(target)
     {
+        effectType = EffectType.RADIATION;
         damagePerSecond = (float)(inputDamage / 24);
         this.duration = duration;
         timeSinceLastCheck = 0;
@@ -26,7 +27,6 @@ public class RadiationEffect : ActorStatusEffect
     {
         float tick = DurationUpdate(deltaTime);
         timeSinceLastCheck += tick;
-        Debug.Log(timeSinceLastCheck);
         if (timeSinceLastCheck >= DAMAGE_TICK_TIME)
         {
             timeSinceLastCheck -= DAMAGE_TICK_TIME;
@@ -49,7 +49,7 @@ public class RadiationEffect : ActorStatusEffect
             hits = Physics2D.OverlapCircleAll(target.transform.position, 1.5f, LayerMask.GetMask("Hero"));
         }
 
-        int index = Random.Range(0, hits.Length - 1);
+        int index = Random.Range(0, hits.Length);
 
         foreach (Collider2D c in hits)
         {

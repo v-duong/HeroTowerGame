@@ -8,6 +8,7 @@ public class FractureEffect : ActorStatusEffect
 
     public FractureEffect(Actor target, double effectiveness, float duration) : base(target)
     {
+        effectType = EffectType.FRACTURE;
         effectPower = (int)(-20 * 0.5d);
         this.duration = duration;
     }

@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.Tilemaps;
 
 public class StageManager : MonoBehaviour
@@ -35,6 +33,7 @@ public class StageManager : MonoBehaviour
             return _battleManager;
         }
     }
+
     public GameObject WorldCanvas
     {
         get
@@ -55,9 +54,7 @@ public class StageManager : MonoBehaviour
         }
     }
 
-
-
-    void Awake()
+    private void Awake()
     {
         Instance = this;
     }

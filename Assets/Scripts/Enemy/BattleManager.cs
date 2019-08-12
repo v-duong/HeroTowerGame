@@ -10,6 +10,8 @@ public class BattleManager : MonoBehaviour
     private Coroutine waveCoroutine;
     private StageInfoBase stageInfo;
 
+    public EnemyPool EnemyPool { get; private set; }
+
     public IReadOnlyList<EnemyWave> Waves { get; private set; }
     public List<EnemyActor> currentEnemyList;
     public List<HeroData> activeHeroes = new List<HeroData>();
@@ -40,33 +42,9 @@ public class BattleManager : MonoBehaviour
             if (playerHealth <= 0)
             {
                 EndBattle(false);
-                foreach (EnemyActor actor in currentEnemyList)
-                {
-                    actor.DisableActor();
-                }
             }
             if (finishedSpawn && currentEnemyList.Count == 0)
             {
-                int consumableDrops = Random.Range(stageInfo.consumableDropCountMin, stageInfo.consumableDropCountMax + 1);
-                for (int i = 0; i < consumableDrops; i++)
-                    GameManager.Instance.AddRandomConsumableToInventory();
-
-                int equipmentDrops = Random.Range(stageInfo.equipmentDropCountMin, stageInfo.equipmentDropCountMax + 1);
-                if (stageInfo.equipmentDropList.Count == 0)
-                {
-                    for (int i = 0; i < equipmentDrops; i++)
-                        GameManager.Instance.PlayerStats.AddEquipmentToInventory(Equipment.CreateRandomEquipment(stageLevel));
-                }
-                else
-                {
-                    WeightList<string> weightList = Helpers.CreateWeightListFromWeightBases(stageInfo.equipmentDropList);
-                    for (int i = 0; i < equipmentDrops; i++)
-                    {
-                        EquipmentBase equipmentBase = ResourceManager.Instance.GetEquipmentBase(weightList.ReturnWeightedRandom());
-                        GameManager.Instance.PlayerStats.AddEquipmentToInventory(Equipment.CreateEquipmentFromBase(equipmentBase, stageLevel));
-                    }
-                }
-
                 EndBattle(true);
             }
         }
@@ -77,18 +55,55 @@ public class BattleManager : MonoBehaviour
         stageInfo = stage;
         Waves = stage.enemyWaves;
         stageLevel = stage.monsterLevel;
+        EnemyPool = new EnemyPool(ResourceManager.Instance.EnemyPrefab);
     }
 
     private void EndBattle(bool victory)
     {
+        GameManager.Instance.ProjectilePool.ReturnAll();
+        EnemyPool.ReturnAll();
         StopAllCoroutines();
         battleEnded = true;
         if (victory)
         {
             Debug.Log("VIC");
+
             foreach (HeroData hero in GameManager.Instance.inBattleHeroes)
             {
-                hero.AddExperience(5000);
+                hero.AddExperience(stageInfo.baseExperience);
+            }
+            GameManager.Instance.PlayerStats.expStock += (int)(stageInfo.baseExperience * 0.25f);
+
+            // Get Consumables
+            int consumableDrops = Random.Range(stageInfo.consumableDropCountMin, stageInfo.consumableDropCountMax + 1);
+            for (int i = 0; i < consumableDrops; i++)
+                GameManager.Instance.AddRandomConsumableToInventory();
+
+            //Get Equipment
+            int equipmentDrops = Random.Range(stageInfo.equipmentDropCountMin, stageInfo.equipmentDropCountMax + 1);
+            if (stageInfo.equipmentDropList.Count == 0)
+            {
+                for (int i = 0; i < equipmentDrops; i++)
+                    GameManager.Instance.PlayerStats.AddEquipmentToInventory(Equipment.CreateRandomEquipment(stageLevel));
+            }
+            else
+            {
+                WeightList<string> weightList = Helpers.CreateWeightListFromWeightBases(stageInfo.equipmentDropList);
+                for (int i = 0; i < equipmentDrops; i++)
+                {
+                    string baseId = weightList.ReturnWeightedRandom();
+                    EquipmentBase equipmentBase = ResourceManager.Instance.GetEquipmentBase(baseId);
+                    GameManager.Instance.PlayerStats.AddEquipmentToInventory(Equipment.CreateEquipmentFromBase(equipmentBase, stageLevel));
+                }
+            }
+
+            //Get Archetype
+            if (stageInfo.archetypeDropList.Count != 0)
+            {
+                WeightList<string> weightList = Helpers.CreateWeightListFromWeightBases(stageInfo.archetypeDropList);
+                string baseId = weightList.ReturnWeightedRandom();
+                ArchetypeBase archetypeBase = ResourceManager.Instance.GetArchetypeBase(baseId);
+                GameManager.Instance.PlayerStats.AddArchetypeToInventory(ArchetypeItem.CreateArchetypeItem(archetypeBase, stageLevel));
             }
         }
         else
@@ -137,14 +152,15 @@ public class BattleManager : MonoBehaviour
                 Spawner spawner = SpawnerList[waveToSpawn.enemyList[i].spawnerIndex];
                 yield return new WaitForSeconds(waveToSpawn.delayBetweenSpawns);
 
-                EnemyActor enemy = Instantiate(ResourceManager.Instance.EnemyPrefab, spawner.transform.position, spawner.transform.rotation).GetComponent<EnemyActor>();
+                EnemyActor enemy = EnemyPool.GetEnemy(spawner.transform);
                 enemy.ParentSpawner = spawner;
+
                 enemy.SetBase(enemyBase, rarity, stageInfo.monsterLevel);
                 enemy.Data.SetMobBonuses(bonuses);
                 if (enemyBase.isBoss || waveToSpawn.enemyList[i].isBossOverride)
                     enemy.isBoss = true;
 
-                currentEnemyList.Add(enemy.GetComponent<EnemyActor>());
+                currentEnemyList.Add(enemy);
                 enemiesSpawned++;
             }
         }

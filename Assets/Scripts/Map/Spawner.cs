@@ -12,7 +12,7 @@ public class Spawner : MonoBehaviour
     // Use this for initialization
     private void Start()
     {
-        this.transform.position = Helpers.ReturnTilePosition(StageManager.Instance.PathTilemap, this.transform.position);
+        this.transform.position = Helpers.ReturnTilePosition(StageManager.Instance.PathTilemap, this.transform.position, -3);
 
         nodesToGoal = new List<List<Vector3>>();
 

@@ -1,21 +1,31 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using TMPro;
 using UnityEngine;
-using TMPro;
 
 public class BattleCharInfoPanel : MonoBehaviour
 {
     public TextMeshProUGUI text;
-    public ActorData data;
+    private ActorData data;
+    private string targetName;
 
     public void Update()
     {
         if (data == null || data.IsDead)
         {
+            targetName = null;
             data = null;
             text.text = "";
             return;
         }
-        text.text = "Health: " + data.CurrentHealth.ToString("F1") + "/" + data.MaximumHealth;
+        text.text = targetName + "\n";
+        if (data.CurrentHealth < 1 && data.CurrentHealth > 0)
+            text.text += "Health: " + data.CurrentHealth.ToString("F2") + "/" + data.MaximumHealth;
+        else
+            text.text += "Health: " + data.CurrentHealth.ToString("F0") + "/" + data.MaximumHealth;
+    }
+
+    public void SetTarget(ActorData data)
+    {
+        this.data = data;
+        targetName = LocalizationManager.Instance.GetLocalizationText_Enemy(data.Name, ".name");
     }
 }

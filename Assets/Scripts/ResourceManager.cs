@@ -15,7 +15,7 @@ public class ResourceManager : MonoBehaviour
     private GameObject heroPrefab;
 
     [SerializeField]
-    private GameObject enemyPrefab;
+    private EnemyActor enemyPrefab;
 
     [SerializeField]
     private GameObject abilityContainerPrefab;
@@ -38,7 +38,7 @@ public class ResourceManager : MonoBehaviour
     public int ArchetypeCount { get; private set; }
     private AssetBundle jsonBundle;
     public GameObject HeroPrefab => heroPrefab;
-    public GameObject EnemyPrefab => enemyPrefab;
+    public EnemyActor EnemyPrefab => enemyPrefab;
     public GameObject AbilityContainerPrefab => abilityContainerPrefab;
 
     public AbilityBase GetAbilityBase(string id)
@@ -238,6 +238,17 @@ public class ResourceManager : MonoBehaviour
         if (possibleAffixList.Count == 0)
             return null;
         return possibleAffixList.ReturnWeightedRandom();
+    }
+
+    public AbilityParticleSystem GetAbilityParticleSystem(string abilityId)
+    {
+        GameObject targetPrefab = Resources.Load("Prefabs/ParticleSystems/" + abilityId, typeof(GameObject)) as GameObject;
+        if (targetPrefab == null)
+            return null;
+
+        GameObject abs = Instantiate(targetPrefab);
+
+        return abs.GetComponent<AbilityParticleSystem>();
     }
 
     private void LoadAbilities()
