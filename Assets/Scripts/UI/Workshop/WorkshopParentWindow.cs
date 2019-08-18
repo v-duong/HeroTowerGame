@@ -10,6 +10,8 @@ public class WorkshopParentWindow : MonoBehaviour
     [SerializeField]
     private GameObject heroCreationPanel;
     [SerializeField]
+    private GameObject XpStockPanel;
+    [SerializeField]
     private GameObject categoryPanel;
     [HideInInspector]
     public GameObject currentWorkshopPanel = null;
@@ -17,6 +19,7 @@ public class WorkshopParentWindow : MonoBehaviour
     private void Awake()
     {
         Instance = this;
+        currentWorkshopPanel = itemCraftingPanel;
     }
 
     private void OnEnable()
@@ -31,8 +34,7 @@ public class WorkshopParentWindow : MonoBehaviour
 
     private void SetPanelActive(GameObject panel)
     {
-        itemCraftingPanel.SetActive(false);
-        heroCreationPanel.SetActive(false);
+        currentWorkshopPanel.SetActive(false);
         panel.SetActive(true);
         currentWorkshopPanel = panel;
     }
@@ -45,5 +47,10 @@ public class WorkshopParentWindow : MonoBehaviour
     public void SetHeroCreatePanelActive()
     {
         SetPanelActive(heroCreationPanel);
+    }
+
+    public void SetXpStockPanelActive()
+    {
+        SetPanelActive(XpStockPanel);
     }
 }

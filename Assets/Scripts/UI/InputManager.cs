@@ -4,16 +4,20 @@ using UnityEngine.EventSystems;
 
 public class InputManager : MonoBehaviour
 {
+    public static Camera mainCamera;
     public static InputManager Instance { get; private set; }
     public bool IsSummoningMode = false;
     public HeroActor selectedHero = null;
     public Action onSummonCallback = null;
     public bool IsMovementMode = false;
+    public float zoomRatio = 1.0f;
+
+    private float maxNegativeX, maxPositiveX;
+    private float maxNegativeY, maxPositiveY;
+    private Bounds currentBounds;
 
     private bool isDragging;
     private static float dragspeed = 0.35f;
-    private static Camera mainCamera;
-    private bool isRotating;    // Is the camera being rotated?
     private bool isZooming;     // Is the camera zooming?
     private static float speed = 3.0f;
 
@@ -22,6 +26,35 @@ public class InputManager : MonoBehaviour
         IsSummoningMode = true;
         selectedHero = actor;
         onSummonCallback = summonCallback;
+    }
+
+    public void SetCameraBounds(Bounds bounds)
+    {
+        currentBounds = bounds;
+        float ratio = (float)Screen.width / Screen.height;
+        maxNegativeX = bounds.center.x - bounds.extents.x + mainCamera.orthographicSize * ratio;
+        maxPositiveX = bounds.center.x + bounds.extents.x - mainCamera.orthographicSize * ratio;
+        maxNegativeY = bounds.center.y - bounds.extents.y + mainCamera.orthographicSize;
+        maxPositiveY = bounds.center.y + bounds.extents.y - mainCamera.orthographicSize;
+        if (maxNegativeY > maxPositiveY)
+        {
+            maxNegativeY = 0;
+            maxPositiveY = 0;
+        }
+        if (maxNegativeX > maxPositiveX)
+        {
+            maxNegativeX = 0;
+            maxPositiveX = 0;
+        }
+        //Debug.Log(maxNegativeX + " " + maxPositiveX + " " + maxNegativeY + " " + maxPositiveY);
+    }
+
+    public void ClampCameraPosition()
+    {
+        Vector3 changedPos = mainCamera.transform.position;
+        changedPos.x = Mathf.Clamp(changedPos.x, maxNegativeX, maxPositiveX);
+        changedPos.y = Mathf.Clamp(changedPos.y, maxNegativeY, maxPositiveY);
+        mainCamera.transform.position = changedPos;
     }
 
     private void Awake()
@@ -87,9 +120,10 @@ public class InputManager : MonoBehaviour
             Vector3 moveLocation = mainCamera.ScreenToWorldPoint(Input.mousePosition);
             moveLocation.z = -3;
 
-            if (Input.GetMouseButtonDown(0) && !EventSystem.current.IsPointerOverGameObject())
+            if (Input.GetMouseButtonDown(0))
             {
-                selectedHero.StartMovement(moveLocation);
+                if (!EventSystem.current.IsPointerOverGameObject())
+                    selectedHero.StartMovement(moveLocation);
                 IsMovementMode = false;
                 selectedHero = null;
             }
@@ -127,12 +161,22 @@ public class InputManager : MonoBehaviour
                 isDragging = true;
             }
 
+            if (Input.mouseScrollDelta.y != 0)
+            {
+                mainCamera.orthographicSize = Mathf.Clamp(mainCamera.orthographicSize - Input.mouseScrollDelta.y * 0.5f, 4f, 13f);
+                zoomRatio = mainCamera.orthographicSize / 7.0f;
+                SetCameraBounds(currentBounds);
+                ClampCameraPosition();
+            }
+
             if (!Input.GetMouseButton(0)) isDragging = false;
 
             if (isDragging)
             {
-                Vector3 move = new Vector3(Input.GetAxis("Mouse X") * dragspeed, Input.GetAxis("Mouse Y") * dragspeed, 0);
+                float speedMultiplier = zoomRatio;
+                Vector3 move = new Vector3(Input.GetAxis("Mouse X") * dragspeed * speedMultiplier, Input.GetAxis("Mouse Y") * dragspeed * speedMultiplier, 0);
                 mainCamera.transform.Translate(-move, Space.Self);
+                ClampCameraPosition();
             }
         }
     }

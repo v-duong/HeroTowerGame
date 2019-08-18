@@ -6,17 +6,21 @@ public abstract class AffixedItem : Item
 {
     public List<Affix> prefixes;
     public List<Affix> suffixes;
+    private bool currentPrefixesAreImmutable = false;
+    private bool currentSuffixesAreImmutable = false;
 
     public bool RerollValues()
     {
         if (prefixes.Count == 0 && suffixes.Count == 0)
             return false;
 
-        foreach (Affix affix in prefixes)
-            affix.RerollValue();
+        if (!currentPrefixesAreImmutable)
+            foreach (Affix affix in prefixes)
+                affix.RerollValue();
 
-        foreach (Affix affix in suffixes)
-            affix.RerollValue();
+        if (!currentSuffixesAreImmutable)
+            foreach (Affix affix in suffixes)
+                affix.RerollValue();
 
         UpdateItemStats();
 
@@ -46,7 +50,18 @@ public abstract class AffixedItem : Item
 
     public bool RemoveRandomAffix()
     {
-        return RemoveAffix(GetRandomAffix());
+        Affix affixToRemove;
+
+        if (currentPrefixesAreImmutable && currentSuffixesAreImmutable)
+            return false;
+        else if (currentPrefixesAreImmutable)
+            affixToRemove = GetRandomAffix(AffixType.SUFFIX);
+        else if (currentSuffixesAreImmutable)
+            affixToRemove = GetRandomAffix(AffixType.PREFIX);
+        else
+            affixToRemove = GetRandomAffix();
+
+        return RemoveAffix(affixToRemove);
     }
 
     public bool RemoveAffix(Affix affix)
@@ -73,9 +88,12 @@ public abstract class AffixedItem : Item
         if (prefixes.Count == 0 && suffixes.Count == 0 && Rarity == RarityType.NORMAL)
             return false;
 
-        prefixes.Clear();
-        suffixes.Clear();
-        if (setRarityToNormal)
+        if (!currentPrefixesAreImmutable)
+            prefixes.Clear();
+        if (!currentSuffixesAreImmutable)
+            suffixes.Clear();
+
+        if (setRarityToNormal && prefixes.Count == 0 && suffixes.Count == 0)
         {
             Rarity = RarityType.NORMAL;
             UpdateName();
@@ -88,20 +106,23 @@ public abstract class AffixedItem : Item
 
     public bool SetRarityToNormal()
     {
-       return ClearAffixes(true);
+        return ClearAffixes(true);
     }
 
     public bool RerollAffixesAtRarity()
     {
         int affixCap = GetAffixCap();
+        int affixCount = 0;
 
         if (Rarity == RarityType.NORMAL)
             return false;
         if (Rarity == RarityType.UNCOMMON)
         {
             ClearAffixes(false);
-            AddRandomAffix();
-            if (Random.Range(0, 2) == 0)
+            affixCount = prefixes.Count + suffixes.Count;
+            if (affixCount == 0)
+                AddRandomAffix();
+            if (affixCount == 1 && Random.Range(0, 2) == 0)
                 AddRandomAffix();
             UpdateName();
             return true;
@@ -109,13 +130,19 @@ public abstract class AffixedItem : Item
         else if (Rarity == RarityType.RARE || Rarity == RarityType.EPIC)
         {
             ClearAffixes(false);
-            for (int j = 0; j < affixCap + 1; j++)
+            affixCount = prefixes.Count + suffixes.Count;
+
+            // rolls the mimimum of 4 for rare and 5 for epics
+            for (int j = affixCount; j < affixCap + 1; j++)
                 AddRandomAffix();
-            int i = 0;
-            while ((Random.Range(0, 2) == 0) && i < (affixCap - 1))
+
+            affixCount = prefixes.Count + suffixes.Count;
+
+            // 50% roll to continue rolling affixes
+            while ((Random.Range(0, 2) == 0) && affixCount < (affixCap * 2))
             {
                 AddRandomAffix();
-                i++;
+                affixCount = prefixes.Count + suffixes.Count;
             }
             UpdateName();
             return true;
@@ -142,7 +169,7 @@ public abstract class AffixedItem : Item
             list = suffixes;
         foreach (Affix affix in list)
         {
-            returnList.Add(affix.Base.BonusTagType);
+            returnList.Add(affix.Base.AffixBonusTypeString);
         }
         return returnList;
     }

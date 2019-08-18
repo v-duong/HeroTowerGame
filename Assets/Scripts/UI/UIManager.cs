@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Linq;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -144,7 +146,7 @@ public class UIManager : MonoBehaviour
         }
     }
 
-    public ScrollRect InvWindowRect
+    private ScrollRect InvWindowRect
     {
         get
         {
@@ -204,7 +206,7 @@ public class UIManager : MonoBehaviour
         }
     }
 
-    public ScrollRect HeroWindowRect
+    private ScrollRect HeroWindowRect
     {
         get
         {
@@ -360,18 +362,20 @@ public class UIManager : MonoBehaviour
         OpenWindow(TeamWindow.gameObject);
     }
 
-    public void OpenHeroWindow(bool closeWindows = true)
+    public void OpenHeroWindow(bool closeWindows = true, Func<HeroData, bool> predicate = null)
     {
         if (closeWindows)
             CloseAllWindows();
-        OpenWindow(HeroWindowRect.gameObject);
+        HeroScrollContent.filterPredicate = predicate;
+        OpenWindow(HeroWindowRect.gameObject, closeWindows);
     }
+
 
     public void OpenWorkshopWindow(bool closeWindows = true)
     {
         if (closeWindows)
             CloseAllWindows();
-        OpenWindow(WorkshopParentWindow.gameObject);
+        OpenWindow(WorkshopParentWindow.gameObject, closeWindows);
         WorkshopParentWindow.Instance.SetItemCraftingPanelActive();
     }
 

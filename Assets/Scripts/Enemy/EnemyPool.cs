@@ -12,6 +12,7 @@ public class EnemyPool : ObjectPool<EnemyActor>
     public EnemyActor GetEnemy(Transform inherit)
     {
         EnemyActor ret = Get();
+        ret.Data.ClearData();
         ret.transform.position = inherit.transform.position;
         return ret;
     }

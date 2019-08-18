@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using UnityEngine;
+
 public class Weapon : Equipment
 {
     public const int LocalBonusStart = 0x800;
@@ -19,7 +19,7 @@ public class Weapon : Equipment
     public Weapon(EquipmentBase e, int ilvl) : base(e, ilvl)
     {
         weaponDamage = new Dictionary<ElementType, MinMaxRange>();
-        for(int i = 0; i < (int)ElementType.COUNT;i++)
+        for (int i = 0; i < (int)ElementType.COUNT; i++)
         {
             weaponDamage[(ElementType)i] = new MinMaxRange();
         }
@@ -74,7 +74,6 @@ public class Weapon : Equipment
 
     private void ResetDamageValues()
     {
-        
     }
 
     public MinMaxRange GetWeaponDamage(ElementType e)
@@ -96,7 +95,46 @@ public class Weapon : Equipment
         {
             case GroupType.ONE_HANDED_AXE:
             case GroupType.ONE_HANDED_SWORD:
+            case GroupType.ONE_HANDED_MACE:
+            case GroupType.FISTS:
                 tags.Add(GroupType.ONE_HANDED_WEAPON);
+                tags.Add(GroupType.MELEE_WEAPON);
+                tags.Add(GroupType.ATTACK_WEAPON);
+                break;
+
+            case GroupType.TWO_HANDED_AXE:
+            case GroupType.TWO_HANDED_SWORD:
+            case GroupType.TWO_HANDED_MACE:
+            case GroupType.SPEAR:
+                tags.Add(GroupType.TWO_HANDED_WEAPON);
+                tags.Add(GroupType.MELEE_WEAPON);
+                tags.Add(GroupType.ATTACK_WEAPON);
+                break;
+
+            case GroupType.BOW:
+            case GroupType.CROSSBOW:
+            case GroupType.TWO_HANDED_GUN:
+                tags.Add(GroupType.TWO_HANDED_WEAPON);
+                tags.Add(GroupType.RANGED_WEAPON);
+                tags.Add(GroupType.ATTACK_WEAPON);
+                break;
+
+            case GroupType.ONE_HANDED_GUN:
+                tags.Add(GroupType.ONE_HANDED_WEAPON);
+                tags.Add(GroupType.RANGED_WEAPON);
+                tags.Add(GroupType.ATTACK_WEAPON);
+                break;
+
+            case GroupType.WAND:
+                tags.Add(GroupType.ONE_HANDED_WEAPON);
+                tags.Add(GroupType.CASTER_WEAPON);
+                tags.Add(GroupType.RANGED_WEAPON);
+                break;
+
+            case GroupType.STAFF:
+                tags.Add(GroupType.TWO_HANDED_WEAPON);
+                tags.Add(GroupType.CASTER_WEAPON);
+                tags.Add(GroupType.ATTACK_WEAPON);
                 tags.Add(GroupType.MELEE_WEAPON);
                 break;
         }

@@ -178,7 +178,16 @@ public class ResourceManager : MonoBehaviour
         }
     }
 
-    public AffixBase GetRandomAffixBase(AffixType type, int ilvl = 0, HashSet<GroupType> tags = null, List<string> bonusTagList = null)
+    /// <summary>
+    ///
+    /// </summary>
+    /// <param name="type">Affix Category to Generate</param>
+    /// <param name="ilvl">Level of Target</param>
+    /// <param name="targetTypeTags">List of target's tags to determine base spawn weights</param>
+    /// <param name="affixBonusTypeStrings">List of strings to determine which affixes have already been applied to target</param>
+    /// <param name="weightModifiers">Values to multiply base spawn weight by if they match the group tags</param>
+    /// <returns></returns>
+    public AffixBase GetRandomAffixBase(AffixType type, int ilvl, HashSet<GroupType> targetTypeTags, List<string> affixBonusTypeStrings, Dictionary<GroupType, float> weightModifiers = null)
     {
         Dictionary<string, AffixBase> affixList;
 
@@ -209,27 +218,39 @@ public class ResourceManager : MonoBehaviour
                 break;
         }
 
-        if (tags == null)
+        if (targetTypeTags == null)
         {
-            tags = new HashSet<GroupType>() { GroupType.NO_GROUP };
+            targetTypeTags = new HashSet<GroupType>() { GroupType.NO_GROUP };
+        }
+        if (weightModifiers == null)
+        {
+            weightModifiers = new Dictionary<GroupType, float>();
         }
 
         WeightList<AffixBase> possibleAffixList = new WeightList<AffixBase>();
 
         foreach (AffixBase affixBase in affixList.Values)
         {
-            if (bonusTagList != null && bonusTagList.Count > 0)
-                if (bonusTagList.Contains(affixBase.BonusTagType))
+            float weightMultiplier = 1.0f;
+            // check if affix type has already been applied to target
+            if (affixBonusTypeStrings != null && affixBonusTypeStrings.Count > 0)
+                if (affixBonusTypeStrings.Contains(affixBase.AffixBonusTypeString))
                     continue;
             if (affixBase.spawnLevel <= ilvl)
             {
+                foreach (GroupType groupTag in affixBase.groupTypes)
+                {
+                    if (weightModifiers.ContainsKey(groupTag))
+                        weightMultiplier *= weightModifiers[groupTag];
+                }
+
                 foreach (AffixWeight affixWeight in affixBase.spawnWeight)
                 {
-                    if (tags.Contains(affixWeight.type) || affixWeight.type == GroupType.NO_GROUP)
+                    if (targetTypeTags.Contains(affixWeight.type) || affixWeight.type == GroupType.NO_GROUP)
                     {
                         if (affixWeight.weight == 0)
                             break;
-                        possibleAffixList.Add(affixBase, affixWeight.weight);
+                        possibleAffixList.Add(affixBase, (int)(affixWeight.weight * weightMultiplier));
                         break;
                     }
                 }
@@ -354,7 +375,7 @@ public class ResourceManager : MonoBehaviour
         //List<AffixBase> temp = DeserializeFromPath_Bundle<List<AffixBase>>(s);
         foreach (AffixBase affix in temp)
         {
-            affix.SetBonusTagType();
+            affix.SetAffixBonusTypeString();
             affixes.Add(affix.idName, affix);
         }
         return affixes;

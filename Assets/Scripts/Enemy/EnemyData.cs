@@ -19,6 +19,11 @@ public class EnemyData : ActorData
         mobBonuses = new Dictionary<BonusType, StatBonus>();
     }
 
+    public void ClearData()
+    {
+        mobBonuses.Clear();
+    }
+
     public void SetBase(EnemyBase enemyBase, RarityType rarity, int level)
     {
         BaseData = enemyBase;

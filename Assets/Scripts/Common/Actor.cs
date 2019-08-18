@@ -87,7 +87,7 @@ public abstract class Actor : MonoBehaviour
         ability.abilityCollider = abilityContainer;
 
         var collider = newObject.AddComponent<CircleCollider2D>();
-        collider.radius = ability.abilityBase.targetRange + 0.5f;
+        collider.radius = ability.abilityBase.targetRange;
         abilityContainer.abilityCollider = collider;
         collider.isTrigger = true;
 
@@ -149,7 +149,7 @@ public abstract class Actor : MonoBehaviour
             if (Data.DodgeRating > 0)
             {
                 float dodgePercent = 1 - (onHitData.accuracy / (onHitData.accuracy + (Data.DodgeRating) / 2f));
-                dodgePercent = Mathf.Min(dodgePercent, 90f);
+                dodgePercent = Mathf.Min(dodgePercent, 85f);
                 if (Random.Range(0,100f) < dodgePercent)
                 {
                     return;

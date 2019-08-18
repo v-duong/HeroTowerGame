@@ -189,7 +189,7 @@ public class ArchetypeUITreeWindow : MonoBehaviour
         primaryTreeParent.gameObject.SetActive(true);
         (primaryTreeParent.transform as RectTransform).anchoredPosition = new Vector2(0, 0);
         ScrollView.content = primaryTreeParent.rectTransform;
-        UIManager.Instance.OpenWindow(this.gameObject, false);
+        UIManager.Instance.OpenWindow(this.gameObject, true);
     }
 
     public void OpenSecondaryTree()
@@ -199,7 +199,7 @@ public class ArchetypeUITreeWindow : MonoBehaviour
         secondaryTreeParent.gameObject.SetActive(true);
         (secondaryTreeParent.transform as RectTransform).anchoredPosition = new Vector2(0, 0);
         ScrollView.content = secondaryTreeParent.rectTransform;
-        UIManager.Instance.OpenWindow(this.gameObject, false);
+        UIManager.Instance.OpenWindow(this.gameObject, true);
     }
 
     public void OpenPreviewTree(ArchetypeBase archetype)

@@ -14,6 +14,30 @@ public class ParticleManager : MonoBehaviour
 
     public float EmitAbilityParticle(string abilityId, ParticleSystem.EmitParams emitParams, float scaling)
     {
+        AbilityParticleSystem abilityPs = GetParticleSystem(abilityId);
+        if (abilityPs == null)
+            return 0;
+
+        emitParams.applyShapeToPosition = true;
+
+        abilityPs.Emit(emitParams, abilityPs.emitCount, scaling);
+        return abilityPs.waitUntilNextEmit;
+    }
+
+    public float EmitAbilityParticleArc(string abilityId, ParticleSystem.EmitParams emitParams, float scaling, float rotationAngle, Transform parent)
+    {
+        AbilityParticleSystem abilityPs = GetParticleSystem(abilityId);
+        if (abilityPs == null)
+            return 0;
+
+        emitParams.applyShapeToPosition = true;
+
+        abilityPs.Emit(emitParams, abilityPs.emitCount, scaling, rotationAngle, parent);
+        return abilityPs.waitUntilNextEmit;
+    }
+
+    private AbilityParticleSystem GetParticleSystem(string abilityId)
+    {
         if (!hasParticleEffect.ContainsKey(abilityId))
         {
             AbilityParticleSystem abs = ResourceManager.Instance.GetAbilityParticleSystem(abilityId);
@@ -29,16 +53,13 @@ public class ParticleManager : MonoBehaviour
         }
 
         if (hasParticleEffect[abilityId] == false)
-            return 0;
+            return null;
 
         particleSystems.TryGetValue(abilityId, out AbilityParticleSystem abilityPs);
-        if (abilityPs == null)
-            return 0;
-
-        emitParams.applyShapeToPosition = true;
-
-        abilityPs.Emit(emitParams, abilityPs.emitCount, scaling);
-        return abilityPs.waitUntilNextEmit;
+        if (abilityPs != null)
+            return abilityPs;
+        else
+            return null;
     }
 
     public void ClearParticleSystems()

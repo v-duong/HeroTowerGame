@@ -21,9 +21,9 @@ public class AffixBase
     public readonly List<AffixWeight> spawnWeight;
     [JsonProperty(ItemConverterType = typeof(StringEnumConverter))]
     public readonly List<GroupType> groupTypes;
-    public string BonusTagType { get; private set; }
+    public string AffixBonusTypeString { get; private set; }
 
-    public void SetBonusTagType()
+    public void SetAffixBonusTypeString()
     {
         int i = 0;
         string temp = "";
@@ -38,7 +38,7 @@ public class AffixBase
                 i++;
             }
         }
-        BonusTagType = temp;
+        AffixBonusTypeString = temp;
     }
 }
 

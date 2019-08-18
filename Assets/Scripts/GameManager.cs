@@ -148,6 +148,10 @@ public class GameManager : MonoBehaviour
             inBattleHeroes.Add(data);
         }
 
+        StageManager.Instance.DisplayMap.CompressBounds();
+        Bounds bounds = StageManager.Instance.DisplayMap.localBounds;
+        InputManager.Instance.SetCameraBounds(bounds);
+
         UIManager.Instance.LoadingScreen.endLoadingScreen = true;
         isInBattle = true;
     }

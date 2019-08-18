@@ -8,8 +8,10 @@ public class StageManager : MonoBehaviour
 
     private BattleManager _battleManager;
     private Tilemap _pathTilemap;
+    private Tilemap _displayMap;
     private GameObject _worldCanvas;
     private HighlightMap _highlightMap;
+    private Tilemap _obstacleMap;
 
     public Tilemap PathTilemap
     {
@@ -20,6 +22,29 @@ public class StageManager : MonoBehaviour
                 _pathTilemap = GameObject.FindGameObjectWithTag("PathMap").GetComponent<Tilemap>();
             }
             return _pathTilemap;
+        }
+    }
+    public Tilemap ObstacleMap
+    {
+        get
+        {
+            if (_obstacleMap == null)
+            {
+                _obstacleMap = GameObject.FindGameObjectWithTag("ObstacleMap").GetComponent<Tilemap>();
+            }
+            return _obstacleMap;
+        }
+    }
+
+    public Tilemap DisplayMap
+    {
+        get
+        {
+            if (_displayMap == null)
+            {
+                _displayMap = GameObject.FindGameObjectWithTag("DisplayMap").GetComponent<Tilemap>();
+            }
+            return _displayMap;
         }
     }
 

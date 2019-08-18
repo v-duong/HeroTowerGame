@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -10,10 +11,14 @@ public class HeroScrollWindow : MonoBehaviour
     private List<HeroSlot> SlotsInUse = new List<HeroSlot>();
     private Queue<HeroSlot> AvailableSlots = new Queue<HeroSlot>();
     private bool initialized = false;
+    public Func<HeroData, bool> filterPredicate = null;
 
     private void OnEnable()
     {
-        InitializeHeroSlots(GameManager.Instance.PlayerStats.HeroList);
+        if (filterPredicate == null)
+            InitializeHeroSlots(GameManager.Instance.PlayerStats.HeroList);
+        else
+            InitializeHeroSlots(GameManager.Instance.PlayerStats.HeroList, filterPredicate);
     }
 
     public void InitializeHeroSlots(IList<HeroData> list)
@@ -25,6 +30,20 @@ public class HeroScrollWindow : MonoBehaviour
         }
         SlotsInUse.Clear();
         foreach (HeroData hero in list)
+        {
+            AddHeroSlot(hero);
+        }
+    }
+
+    public void InitializeHeroSlots(IList<HeroData> list, Func<HeroData, bool> filter)
+    {
+        foreach (HeroSlot slot in SlotsInUse)
+        {
+            slot.gameObject.SetActive(false);
+            AvailableSlots.Enqueue(slot);
+        }
+        SlotsInUse.Clear();
+        foreach (HeroData hero in list.Where(filter))
         {
             AddHeroSlot(hero);
         }

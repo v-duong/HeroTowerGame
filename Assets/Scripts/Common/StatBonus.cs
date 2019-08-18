@@ -143,7 +143,7 @@ public class StatBonus
 
     public int CalculateStat(int stat)
     {
-        return (int)Math.Round(CalculateStat((double)stat), MidpointRounding.AwayFromZero);
+        return (int)CalculateStat((double)stat);
     }
 
     public double CalculateStat(double stat)

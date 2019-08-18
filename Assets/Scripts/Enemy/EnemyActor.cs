@@ -5,6 +5,11 @@ public class EnemyActor : Actor
 {
     public RarityType enemyRarity;
     public List<Affix> mobAffixes;
+    public Vector3 positionOffset;
+    public Vector3 rotatedOffset;
+
+    private bool skippedAngleChange = false;
+    private Vector3 previousHeading;
 
     [SerializeField]
     public int spawnerOriginIndex;
@@ -26,18 +31,20 @@ public class EnemyActor : Actor
 
     public EnemyActor()
     {
+        positionOffset = Vector3.zero;
         isMoving = true;
         Data = new EnemyData();
         Data.CurrentHealth = Data.MaximumHealth;
         mobAffixes = new List<Affix>();
+        previousHeading = Vector3.up;
     }
 
     // Use this for initialization
     private new void Start()
     {
         base.Start();
-
         nextMovementNode = 1;
+        CalculateRotatedOffset();
     }
 
     protected override void Move()
@@ -45,22 +52,63 @@ public class EnemyActor : Actor
         var dt = Time.deltaTime;
         var nodes = ParentSpawner.GetNodesToGoal(indexOfGoal);
         if (nodes != null && nextMovementNode < nodes.Count)
-
         {
             //float dist = Vector3.Distance(nodes[nextMovementNode], this.transform.position);
-            float dist = Vector3.SqrMagnitude(nodes[nextMovementNode] - this.transform.position);
+            Vector3 destination = nodes[nextMovementNode] + rotatedOffset;
 
-            this.transform.position = Vector3.MoveTowards(this.transform.position, nodes[nextMovementNode], Data.movementSpeed * dt * actorTimeScale);
+            this.transform.position = Vector3.MoveTowards(this.transform.position, destination, Data.movementSpeed * dt * actorTimeScale);
+
+            float dist = Vector3.SqrMagnitude(destination - this.transform.position);
 
             if (dist <= 0.1f * Data.movementSpeed * Data.movementSpeed * dt)
             {
                 nextMovementNode++;
+                CalculateRotatedOffset();
             }
         }
         else
         {
+            Debug.Log("END PATH");
             StageManager.Instance.BattleManager.playerHealth--;
             Death();
+        }
+    }
+
+    public void CalculateRotatedOffset()
+    {
+        var nodes = ParentSpawner.GetNodesToGoal(indexOfGoal);
+        float angle = 0;
+        Vector3 nextPos, heading;
+        Vector3 cellCenter = Helpers.ReturnTilePosition(StageManager.Instance.PathTilemap, transform.position, -3);
+        if (nextMovementNode + 1 < nodes.Count)
+        {
+            nextPos = nodes[nextMovementNode + 1];
+            heading = nextPos - nodes[nextMovementNode];
+            angle = Vector3.SignedAngle(previousHeading, heading.normalized, Vector3.forward);
+            if (angle > 0 && !skippedAngleChange && positionOffset.x * positionOffset.y > 0 || angle < 0 && !skippedAngleChange && positionOffset.x * positionOffset.y < 0)
+            {
+                skippedAngleChange = true;
+                return;
+            }
+        }
+        /*
+        else if (nextMovementNode < nodes.Count)
+        {
+            nextPos = nodes[nextMovementNode];
+            heading = nextPos - cellCenter;
+            angle = Vector3.SignedAngle(previousHeading, heading.normalized, Vector3.forward);
+        }
+        */
+        else
+        {
+            return;
+        }
+
+        skippedAngleChange = false;
+        previousHeading = heading.normalized;
+        if (angle != 0)
+        {
+            rotatedOffset = Quaternion.Euler(0, 0, angle) * rotatedOffset;
         }
     }
 
@@ -107,12 +155,12 @@ public class EnemyActor : Actor
     {
         List<string> bonusTags = new List<string>();
         foreach (Affix a in mobAffixes)
-            bonusTags.Add(a.Base.BonusTagType);
+            bonusTags.Add(a.Base.AffixBonusTypeString);
         for (int i = 0; i < affixCount; i++)
         {
             Affix affix = new Affix(ResourceManager.Instance.GetRandomAffixBase(AffixType.MONSTERMOD, Data.Level, null, bonusTags));
             mobAffixes.Add(affix);
-            bonusTags.Add(affix.Base.BonusTagType);
+            bonusTags.Add(affix.Base.AffixBonusTypeString);
             foreach (AffixBonusProperty prop in affix.Base.affixBonuses)
             {
                 Data.AddStatBonus(affix.GetAffixValue(prop.bonusType), prop.bonusType, prop.modifyType);

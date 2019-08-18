@@ -23,6 +23,7 @@ public class BattleManager : MonoBehaviour
     public bool battleEnded = false;
     public int playerHealth = 20;
     public int stageLevel = 1;
+    private int extraWaves = 0;
 
     // Use this for initialization
     private void Start()
@@ -43,7 +44,7 @@ public class BattleManager : MonoBehaviour
             {
                 EndBattle(false);
             }
-            if (finishedSpawn && currentEnemyList.Count == 0)
+            else if (finishedSpawn && currentEnemyList.Count == 0)
             {
                 EndBattle(true);
             }
@@ -67,12 +68,12 @@ public class BattleManager : MonoBehaviour
         if (victory)
         {
             Debug.Log("VIC");
-
+            int gainedExp = (int)(stageInfo.baseExperience * (stageInfo.expMultiplier + (extraWaves / 5)));
             foreach (HeroData hero in GameManager.Instance.inBattleHeroes)
             {
-                hero.AddExperience(stageInfo.baseExperience);
+                hero.AddExperience(gainedExp);
             }
-            GameManager.Instance.PlayerStats.expStock += (int)(stageInfo.baseExperience * 0.25f);
+            GameManager.Instance.PlayerStats.ModifyExpStock((int)(gainedExp * 0.25f));
 
             // Get Consumables
             int consumableDrops = Random.Range(stageInfo.consumableDropCountMin, stageInfo.consumableDropCountMax + 1);
@@ -154,6 +155,10 @@ public class BattleManager : MonoBehaviour
 
                 EnemyActor enemy = EnemyPool.GetEnemy(spawner.transform);
                 enemy.ParentSpawner = spawner;
+                Vector3 positionOffset = new Vector3(Random.Range(-0.5f, 0.5f), Random.Range(-0.5f, 0.5f), 0);
+                //Vector3 positionOffset = new Vector3(-0.5f, -0.5f, 0);
+                enemy.positionOffset = positionOffset;
+                enemy.rotatedOffset = positionOffset;
 
                 enemy.SetBase(enemyBase, rarity, stageInfo.monsterLevel);
                 enemy.Data.SetMobBonuses(bonuses);

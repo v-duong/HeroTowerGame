@@ -104,7 +104,7 @@ public abstract class ActorData
 
     public int CalculateActorStat(BonusType type, int stat)
     {
-        return (int)Math.Round(CalculateActorStat(type, (double)stat), MidpointRounding.AwayFromZero);
+        return (int)CalculateActorStat(type, (double)stat);
     }
 
     public double CalculateActorStat(BonusType type, double stat)

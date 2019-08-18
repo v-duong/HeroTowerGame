@@ -17,7 +17,7 @@ public static class Helpers
     private static List<BonusType> maxDamageTypes;
     private static List<BonusType> damageTypes;
 
-    public static void GetDamageTypes(ElementType element, AbilityType abilityType, AbilityShotType shotType, List<GroupType> tags, List<BonusType> min, List<BonusType> max, List<BonusType> multi)
+    public static void GetDamageTypes(ElementType element, AbilityType abilityType, AbilityShotType shotType, IList<GroupType> tags, List<BonusType> min, List<BonusType> max, List<BonusType> multi)
     {
         multi.Add(BonusType.GLOBAL_DAMAGE);
 
@@ -205,8 +205,7 @@ public static class Helpers
 
     public static int GetRequiredExperience(int level)
     {
-        double exp = Math.Pow(SCALING_FACTOR * ENEMY_SCALING, level * 50) * level * 20 * LEVEL_SCALING_FACTOR;
-
+        double exp = Math.Pow(SCALING_FACTOR, (level-1) * 1.333 - 30) * (level-1) * 500;
         return (int)exp;
     }
 

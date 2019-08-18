@@ -13,17 +13,6 @@ public class TilemapPath : MonoBehaviour {
 
     private void Start()
     {
-        Tilemap tilemap = this.gameObject.GetComponent<Tilemap>();
-        tilemap.CompressBounds();
-        foreach (var pos in tilemap.cellBounds.allPositionsWithin)
-        {
-            Vector3Int localPlace = new Vector3Int(pos.x, pos.y, pos.z);
-            Vector3 position = tilemap.CellToWorld(localPlace);
-            if (tilemap.HasTile(localPlace))
-            {
-                StageManager.Instance.HighlightMap.tilemap.SetTile(localPlace, null);
-            }
-        }
     }
 
 }

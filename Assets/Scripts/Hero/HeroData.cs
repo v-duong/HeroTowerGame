@@ -111,10 +111,14 @@ public class HeroData : ActorData
 
     public void AddExperience(int experience)
     {
+        if (Level >= 100)
+            return;
         Experience += experience;
-        while (Experience > Helpers.GetRequiredExperience(Level))
+        while (Experience >= Helpers.GetRequiredExperience(Level+1))
         {
             LevelUp();
+            if (Level >= 100)
+                break;
         }
     }
 
@@ -286,16 +290,16 @@ public class HeroData : ActorData
 
     private void UpdateHeroAttributes()
     {
-        Strength = (int)Math.Round(CalculateActorStat(BonusType.STRENGTH, BaseStrength), MidpointRounding.AwayFromZero);
+        Strength = (int)CalculateActorStat(BonusType.STRENGTH, BaseStrength);
         ApplyStrengthBonuses();
 
-        Intelligence = (int)Math.Round(CalculateActorStat(BonusType.INTELLIGENCE, BaseIntelligence), MidpointRounding.AwayFromZero);
+        Intelligence = (int)CalculateActorStat(BonusType.INTELLIGENCE, BaseIntelligence);
         ApplyIntelligenceBonuses();
 
-        Agility = (int)Math.Round(CalculateActorStat(BonusType.AGILITY, BaseAgility), MidpointRounding.AwayFromZero);
+        Agility = (int)CalculateActorStat(BonusType.AGILITY, BaseAgility);
         ApplyAgilityBonuses();
 
-        Will = (int)Math.Round(CalculateActorStat(BonusType.WILL, BaseWill), MidpointRounding.AwayFromZero);
+        Will = (int)CalculateActorStat(BonusType.WILL, BaseWill);
         ApplyWillBonuses();
     }
 
@@ -382,14 +386,14 @@ public class HeroData : ActorData
     private void ApplyHealthBonuses()
     {
         double percentage = CurrentHealth / MaximumHealth;
-        MaximumHealth = (int)Math.Round(CalculateActorStat(BonusType.MAX_HEALTH, BaseHealth), MidpointRounding.AwayFromZero);
+        MaximumHealth = (int)CalculateActorStat(BonusType.MAX_HEALTH, BaseHealth);
         CurrentHealth = (float)(MaximumHealth * percentage);
     }
 
     private void ApplySoulPointBonuses()
     {
         double percentage = CurrentSoulPoints / MaximumSoulPoints;
-        MaximumSoulPoints = (int)Math.Round(CalculateActorStat(BonusType.MAX_SOULPOINTS, BaseSoulPoints), MidpointRounding.AwayFromZero);
+        MaximumSoulPoints = (int)CalculateActorStat(BonusType.MAX_SOULPOINTS, BaseSoulPoints);
         CurrentSoulPoints = (float)(MaximumSoulPoints * percentage);
     }
 

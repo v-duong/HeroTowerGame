@@ -1,20 +1,30 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.UI;
+﻿using UnityEngine;
 
-public class UIHealthBar : MonoBehaviour {
-
+public class UIHealthBar : MonoBehaviour
+{
     /*
     [SerializeField]
     private RectTransform m_healthBarFillArea;
     */
+
     [SerializeField]
     private RectTransform healthBarFill;
+
     [SerializeField]
     private RectTransform shieldBarFill;
-    private Vector2 currenthealthPercent = Vector2.one;
-    private Vector2 currentshieldPercent = Vector2.one;
+
+    [SerializeField]
+    private RectTransform tempHealthBarFill;
+
+    [SerializeField]
+    private RectTransform tempShieldBarFill;
+
+    private Vector2 currentHealthPercent = Vector2.one;
+    private Vector2 currentShieldPercent = Vector2.one;
+
+    private bool recentlyDamagedHealth;
+    private bool recentlyDamagedShield;
+    private float barDelay = 0f;
 
     public void Initialize(float maxHealth, float currentHealth, float maxShield, float currentShield, Transform actorTransform)
     {
@@ -31,16 +41,73 @@ public class UIHealthBar : MonoBehaviour {
         this.transform.position = newPos;
     }
 
+    private void Update()
+    {
+        float scaleRatio = 1f / InputManager.Instance.zoomRatio;
+        this.transform.localScale = new Vector3(scaleRatio, scaleRatio, scaleRatio);
+
+        if (barDelay <= 0f)
+        {
+            if (recentlyDamagedHealth)
+            {
+                tempHealthBarFill.anchorMax = Vector2.Lerp(tempHealthBarFill.anchorMax, healthBarFill.anchorMax, 0.2f);
+            }
+            if (recentlyDamagedShield)
+            {
+                tempShieldBarFill.anchorMax = Vector2.Lerp(tempShieldBarFill.anchorMax, shieldBarFill.anchorMax, 0.2f);
+            }
+        }
+        else
+        {
+            barDelay -= Time.deltaTime;
+        }
+    }
+
     public void UpdateHealthBar(float maxHealth, float currentHealth, float maxShield, float currentShield)
     {
-        currenthealthPercent.x = (float)(currentHealth / maxHealth);
-        healthBarFill.anchorMax = currenthealthPercent;
+        float oldHealthPercent = currentHealthPercent.x;
+        currentHealthPercent.x = currentHealth / maxHealth;
+
+        if (oldHealthPercent > currentHealthPercent.x)
+        {
+            recentlyDamagedHealth = true;
+            if (barDelay <= 0f)
+            {
+                barDelay = 0.75f;
+                tempHealthBarFill.anchorMax = new Vector2(oldHealthPercent, 1);
+            }
+        }
+        else
+        {
+            tempHealthBarFill.anchorMax = currentHealthPercent;
+        }
+
+        healthBarFill.anchorMax = currentHealthPercent;
+
         if (maxShield != 0)
         {
-            currentshieldPercent.x = (currentShield / maxShield);
-            shieldBarFill.anchorMax = currentshieldPercent;
-        } else
+            float oldShieldPercent = currentShieldPercent.x;
+            currentShieldPercent.x = (currentShield / maxShield);
+
+            if (oldShieldPercent > currentShieldPercent.x)
+            {
+                recentlyDamagedShield = true;
+                if (barDelay <= 0f)
+                {
+                    barDelay = 0.75f;
+                    tempShieldBarFill.anchorMax = new Vector2(oldShieldPercent, 1);
+                }
+            }
+            else
+            {
+                tempShieldBarFill.anchorMax = currentShieldPercent;
+            }
+
+            shieldBarFill.anchorMax = currentShieldPercent;
+        }
+        else
         {
+            tempShieldBarFill.anchorMax = Vector2.zero;
             shieldBarFill.anchorMax = Vector2.zero;
         }
 

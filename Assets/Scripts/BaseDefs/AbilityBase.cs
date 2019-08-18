@@ -67,7 +67,7 @@ public class AbilityBase
     public readonly float flatDamageMultiplier;
 
     [JsonProperty(ItemConverterType = typeof(StringEnumConverter))]
-    public readonly List<GroupType> groupTypes;
+    private readonly List<GroupType> groupTypes;
 
     [JsonProperty(ItemConverterType = typeof(StringEnumConverter))]
     public readonly List<GroupType> weaponRestrictions;
@@ -84,9 +84,9 @@ public class AbilityBase
     [JsonProperty]
     public readonly bool hasLinkedAbility;
     [JsonProperty]
-    public readonly bool useWeaponRange;
-
-
+    public readonly bool useWeaponRangeForTargeting;
+    [JsonProperty]
+    public readonly bool useWeaponRangeForAOE;
 
     public MinMaxRange GetDamageAtLevel(ElementType e, int level)
     {
@@ -98,6 +98,11 @@ public class AbilityBase
         {
             return null;
         }
+    }
+
+    public IList<GroupType> GetGroupTypes()
+    {
+        return groupTypes.AsReadOnly();
     }
 }
 

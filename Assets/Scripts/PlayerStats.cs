@@ -7,10 +7,11 @@ public class PlayerStats
     public readonly static int maxArchetypeInventory = 100;
     public readonly static int maxAbilityInventory = 100;
     public readonly static int maxHeroes = 100;
+    public readonly static int maxExpStock = 2000000;
 
     public int gold;
     public int archetypeFragments;
-    public int expStock;
+    public int ExpStock { get; private set; }
 
     public Dictionary<ConsumableType, int> consumables;
 
@@ -46,7 +47,7 @@ public class PlayerStats
     {
         gold = 0;
         archetypeFragments = 0;
-        expStock = 0;
+        ExpStock = 0;
         consumables = new Dictionary<ConsumableType, int>();
         foreach (ConsumableType c in Enum.GetValues(typeof(ConsumableType)))
         {
@@ -97,6 +98,15 @@ public class PlayerStats
     {
         heroList.Remove(hero);
         return true;
+    }
+
+    public void ModifyExpStock(int value)
+    {
+        ExpStock += value;
+        if (ExpStock < 0)
+            ExpStock = 0;
+        if (ExpStock > maxExpStock)
+            ExpStock = maxExpStock;
     }
 }
 
