@@ -75,6 +75,7 @@ public class ItemCraftingPanel : MonoBehaviour
         foreach (Affix a in currentItem.prefixes)
         {
             prefixes.text += a.BuildAffixString(false);
+            //prefixes.text += "<align=\"right\">" + "T" + a.Base.tier + "</align>";
         }
         suffixes.text = "Suffixes\n";
 

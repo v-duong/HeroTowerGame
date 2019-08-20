@@ -12,6 +12,8 @@ public class WorkshopParentWindow : MonoBehaviour
     [SerializeField]
     private GameObject XpStockPanel;
     [SerializeField]
+    private GameObject AbilityExtractPanel;
+    [SerializeField]
     private GameObject categoryPanel;
     [HideInInspector]
     public GameObject currentWorkshopPanel = null;
@@ -52,5 +54,10 @@ public class WorkshopParentWindow : MonoBehaviour
     public void SetXpStockPanelActive()
     {
         SetPanelActive(XpStockPanel);
+    }
+
+    public void SetExtractAbilityPanelActive()
+    {
+        SetPanelActive(AbilityExtractPanel);
     }
 }

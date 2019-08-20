@@ -2,7 +2,7 @@
 
 public class ArchetypeItem : Item
 {
-    public ArchetypeBase Base;
+    public ArchetypeBase Base { get; private set; }
 
     protected ArchetypeItem(ArchetypeBase b)
     {

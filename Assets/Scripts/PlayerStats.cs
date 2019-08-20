@@ -8,16 +8,20 @@ public class PlayerStats
     public readonly static int maxAbilityInventory = 100;
     public readonly static int maxHeroes = 100;
     public readonly static int maxExpStock = 2000000;
+    public readonly static int maxItemFragments = 500000;
+    public readonly static int maxArchetypeFragments = 1000;
 
-    public int gold;
-    public int archetypeFragments;
+    public int ItemFragments { get; private set; }
+    public int ArchetypeFragments { get; private set; }
     public int ExpStock { get; private set; }
 
     public Dictionary<ConsumableType, int> consumables;
 
     private List<Equipment> equipmentInventory;
     private List<ArchetypeItem> archetypeInventory;
+    private List<AbilityStorageItem> abilityStorageInventory;
     private List<HeroData> heroList;
+
     public IList<Equipment> EquipmentInventory
     {
         get
@@ -34,6 +38,14 @@ public class PlayerStats
         }
     }
 
+    public IList<AbilityStorageItem> AbilityStorageInventory
+    {
+        get
+        {
+            return abilityStorageInventory.AsReadOnly();
+        }
+    }
+
     public IList<HeroData> HeroList
     {
         get
@@ -41,12 +53,13 @@ public class PlayerStats
             return heroList.AsReadOnly();
         }
     }
+
     public List<HeroData[]> heroTeams;
 
     public PlayerStats()
     {
-        gold = 0;
-        archetypeFragments = 0;
+        ItemFragments = 0;
+        ArchetypeFragments = 0;
         ExpStock = 0;
         consumables = new Dictionary<ConsumableType, int>();
         foreach (ConsumableType c in Enum.GetValues(typeof(ConsumableType)))
@@ -55,6 +68,7 @@ public class PlayerStats
         }
         equipmentInventory = new List<Equipment>();
         archetypeInventory = new List<ArchetypeItem>();
+        abilityStorageInventory = new List<AbilityStorageItem>();
         heroList = new List<HeroData>();
         heroTeams = new List<HeroData[]>();
         for (int i = 0; i < 5; i++)
@@ -72,6 +86,12 @@ public class PlayerStats
     public bool AddArchetypeToInventory(ArchetypeItem newArchetype)
     {
         archetypeInventory.Add(newArchetype);
+        return true;
+    }
+
+    public bool AddAbilityToInventory(AbilityStorageItem newAbility)
+    {
+        abilityStorageInventory.Add(newAbility);
         return true;
     }
 
@@ -94,6 +114,12 @@ public class PlayerStats
         return true;
     }
 
+    public bool RemoveAbilityFromInventory(AbilityStorageItem newAbility)
+    {
+        abilityStorageInventory.Remove(newAbility);
+        return true;
+    }
+
     public bool RemoveHeroFromList(HeroData hero)
     {
         heroList.Remove(hero);
@@ -107,6 +133,24 @@ public class PlayerStats
             ExpStock = 0;
         if (ExpStock > maxExpStock)
             ExpStock = maxExpStock;
+    }
+
+    public void ModifyItemFragments(int value)
+    {
+        ItemFragments += value;
+        if (ItemFragments < 0)
+            ItemFragments = 0;
+        if (ItemFragments > maxItemFragments)
+            ItemFragments = maxItemFragments;
+    }
+
+    public void ModifyArchetypeFragments(int value)
+    {
+        ArchetypeFragments += value;
+        if (ArchetypeFragments < 0)
+            ArchetypeFragments = 0;
+        if (ArchetypeFragments > maxArchetypeFragments)
+            ArchetypeFragments = maxArchetypeFragments;
     }
 }
 

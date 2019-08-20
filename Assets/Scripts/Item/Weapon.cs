@@ -97,45 +97,45 @@ public class Weapon : Equipment
             case GroupType.ONE_HANDED_SWORD:
             case GroupType.ONE_HANDED_MACE:
             case GroupType.FISTS:
-                tags.Add(GroupType.ONE_HANDED_WEAPON);
-                tags.Add(GroupType.MELEE_WEAPON);
                 tags.Add(GroupType.ATTACK_WEAPON);
+                tags.Add(GroupType.MELEE_WEAPON);
+                tags.Add(GroupType.ONE_HANDED_WEAPON);
                 break;
 
             case GroupType.TWO_HANDED_AXE:
             case GroupType.TWO_HANDED_SWORD:
             case GroupType.TWO_HANDED_MACE:
             case GroupType.SPEAR:
-                tags.Add(GroupType.TWO_HANDED_WEAPON);
                 tags.Add(GroupType.MELEE_WEAPON);
                 tags.Add(GroupType.ATTACK_WEAPON);
+                tags.Add(GroupType.TWO_HANDED_WEAPON);
                 break;
 
             case GroupType.BOW:
             case GroupType.CROSSBOW:
             case GroupType.TWO_HANDED_GUN:
-                tags.Add(GroupType.TWO_HANDED_WEAPON);
                 tags.Add(GroupType.RANGED_WEAPON);
                 tags.Add(GroupType.ATTACK_WEAPON);
+                tags.Add(GroupType.TWO_HANDED_WEAPON);
                 break;
 
             case GroupType.ONE_HANDED_GUN:
-                tags.Add(GroupType.ONE_HANDED_WEAPON);
                 tags.Add(GroupType.RANGED_WEAPON);
                 tags.Add(GroupType.ATTACK_WEAPON);
+                tags.Add(GroupType.ONE_HANDED_WEAPON);
                 break;
 
             case GroupType.WAND:
-                tags.Add(GroupType.ONE_HANDED_WEAPON);
                 tags.Add(GroupType.CASTER_WEAPON);
                 tags.Add(GroupType.RANGED_WEAPON);
+                tags.Add(GroupType.ONE_HANDED_WEAPON);
                 break;
 
             case GroupType.STAFF:
-                tags.Add(GroupType.TWO_HANDED_WEAPON);
                 tags.Add(GroupType.CASTER_WEAPON);
                 tags.Add(GroupType.ATTACK_WEAPON);
                 tags.Add(GroupType.MELEE_WEAPON);
+                tags.Add(GroupType.TWO_HANDED_WEAPON);
                 break;
         }
         return tags;

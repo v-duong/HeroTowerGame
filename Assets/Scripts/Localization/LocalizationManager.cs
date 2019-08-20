@@ -154,7 +154,7 @@ public class LocalizationManager : MonoBehaviour
 
     public string GetLocalizationText_Archetype(string stringId)
     {
-        if (archetypeLocalizationData.TryGetValue("equipment." + stringId, out string value))
+        if (archetypeLocalizationData.TryGetValue("archetype." + stringId, out string value))
         {
             if (value == "")
                 return stringId;

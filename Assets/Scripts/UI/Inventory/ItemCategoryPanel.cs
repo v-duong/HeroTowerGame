@@ -15,6 +15,11 @@ public class ItemCategoryPanel : MonoBehaviour
 
     public void ArchetypeButtonClick()
     {
-        UIManager.Instance.InvScrollContent.ShowAllArchetype();
+        UIManager.Instance.InvScrollContent.ShowAllArchetypes();
+    }
+
+    public void AbilityButtonClick()
+    {
+        UIManager.Instance.InvScrollContent.ShowAllAbility();
     }
 }

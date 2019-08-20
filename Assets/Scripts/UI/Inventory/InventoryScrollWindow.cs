@@ -10,7 +10,6 @@ public class InventoryScrollWindow : MonoBehaviour
 
     private InventorySlotPool _inventorySlotPool;
     private List<InventorySlot> SlotsInUse = new List<InventorySlot>();
-    private bool showingAllEquip = false;
     private Action<Item> currentCallback = null;
 
     public InventorySlotPool InventorySlotPool
@@ -20,6 +19,14 @@ public class InventoryScrollWindow : MonoBehaviour
             if (_inventorySlotPool == null)
                 _inventorySlotPool = new InventorySlotPool(SlotPrefab, GameManager.Instance.PlayerStats.EquipmentInventory.Count);
             return _inventorySlotPool;
+        }
+    }
+
+    private void InitializeInventorySlots(IList<AbilityStorageItem> abilityStorageInventory, Action<Item> callback = null)
+    {
+        foreach (AbilityStorageItem item in abilityStorageInventory)
+        {
+            AddInventorySlot(item, callback);
         }
     }
 
@@ -51,15 +58,14 @@ public class InventoryScrollWindow : MonoBehaviour
     {
         if (resetCallback)
             currentCallback = null;
-        if (!showingAllEquip || resetCallback)
+        if (resetCallback)
         {
             ClearSlots();
             InitializeInventorySlots(GameManager.Instance.PlayerStats.EquipmentInventory, currentCallback);
-            showingAllEquip = true;
         }
     }
 
-    public void ShowAllArchetype(bool resetCallback = true, bool addNullSlot = false)
+    public void ShowAllArchetypes(bool resetCallback = true, bool addNullSlot = false)
     {
         if (resetCallback)
             currentCallback = null;
@@ -67,7 +73,16 @@ public class InventoryScrollWindow : MonoBehaviour
         if (addNullSlot)
             AddInventorySlot(null);
         InitializeInventorySlots(GameManager.Instance.PlayerStats.ArchetypeInventory, currentCallback);
-        showingAllEquip = false;
+    }
+
+    public void ShowAllAbility(bool resetCallback = true, bool addNullSlot = false)
+    {
+        if (resetCallback)
+            currentCallback = null;
+        ClearSlots();
+        if (addNullSlot)
+            AddInventorySlot(null);
+        InitializeInventorySlots(GameManager.Instance.PlayerStats.AbilityStorageInventory, currentCallback);
     }
 
     public void ShowArchetypesFiltered(List<ArchetypeBase> filter, bool resetCallback = true, bool addNullSlot = false)
@@ -84,12 +99,10 @@ public class InventoryScrollWindow : MonoBehaviour
                 continue;
             AddInventorySlot(item, currentCallback);
         }
-        showingAllEquip = false;
     }
 
     public void ShowEquipmentBySlotType(EquipSlotType type)
     {
-        showingAllEquip = false;
         ClearSlots();
         List<Equipment> e = GameManager.Instance.PlayerStats.EquipmentInventory.Where(x => x.Base.equipSlot == type && !x.IsEquipped).ToList();
         foreach (Equipment equip in e)

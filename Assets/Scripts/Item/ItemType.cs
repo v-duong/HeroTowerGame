@@ -3,5 +3,6 @@
     ARMOR,
     WEAPON,
     ACCESSORY,
-    ARCHETYPE
+    ARCHETYPE,
+    ABILITY
 }

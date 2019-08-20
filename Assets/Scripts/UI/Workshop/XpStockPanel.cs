@@ -54,10 +54,17 @@ public class XpStockPanel : MonoBehaviour
     {
         UIManager.Instance.CloseCurrentWindow();
         selectedHero = hero;
-        levelSlider.value = selectedHero.Level + 1;
-        selectedLevel = selectedHero.Level + 1;
-        levelSlider.minValue = selectedHero.Level + 1;
+        UpdateSliderValues();
         UpdatePanels();
+    }
+
+    public void UpdateSliderValues()
+    {
+        GameManager.Instance.PlayerStats.ModifyExpStock(200000000);
+        int level = Mathf.Min(selectedHero.Level + 1, 100);
+        levelSlider.value = level;
+        selectedLevel = level;
+        levelSlider.minValue = level;
     }
 
     public void UpdatePanels()
@@ -118,7 +125,7 @@ public class XpStockPanel : MonoBehaviour
 
         heroSlot.GetComponentInChildren<TextMeshProUGUI>().text = selectedHero.Name + "\nLv " + selectedHero.Level + "\n\n" + selectedHero.Experience;
 
-        if (requiredExperience > GameManager.Instance.PlayerStats.ExpStock)
+        if (requiredExperience > GameManager.Instance.PlayerStats.ExpStock || selectedHero.Level == 100)
             confirmButton.interactable = false;
         else
             confirmButton.interactable = true;
@@ -140,9 +147,7 @@ public class XpStockPanel : MonoBehaviour
             return;
         GameManager.Instance.PlayerStats.ModifyExpStock(-requiredExperience);
         selectedHero.AddExperience(requiredExperience);
-        levelSlider.value = selectedHero.Level + 1;
-        selectedLevel = selectedHero.Level + 1;
-        levelSlider.minValue = selectedHero.Level + 1;
+        UpdateSliderValues();
         UpdatePanels();
     }
 }
