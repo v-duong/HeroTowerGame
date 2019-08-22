@@ -94,12 +94,22 @@ public abstract class Actor : MonoBehaviour
         collider.gameObject.layer = ability.targetLayer;
     }
 
-    public void ModifyCurrentHealth(double mod)
+    public List<AbilityBase> GetAbilitiesInList()
+    {
+        List<AbilityBase> ret = new List<AbilityBase>();
+        foreach (ActorAbility ability in instancedAbilitiesList)
+        {
+            ret.Add(ability.abilityBase);
+        }
+        return ret;
+    }
+
+    public void ModifyCurrentHealth(float mod)
     {
         if (Data.CurrentHealth - mod > Data.MaximumHealth)
             Data.CurrentHealth = Data.MaximumHealth;
         else
-            Data.CurrentHealth -= (float)mod;
+            Data.CurrentHealth -= mod;
 
         healthBar.UpdateHealthBar(Data.MaximumHealth, Data.CurrentHealth, Data.MaximumManaShield, Data.MaximumHealth);
         if (Data.CurrentHealth <= 0)
@@ -108,7 +118,7 @@ public abstract class Actor : MonoBehaviour
         }
     }
 
-    public double ModifyCurrentShield(double mod)
+    public float ModifyCurrentShield(float mod)
     {
         if (Data.CurrentManaShield == 0)
             return mod;
@@ -125,14 +135,15 @@ public abstract class Actor : MonoBehaviour
         }
         else
         {
-            Data.CurrentManaShield -= (float)mod;
+            Data.CurrentManaShield -= mod;
             return 0;
         }
     }
 
-    public void ApplyDamage(Dictionary<ElementType, double> damage, AbilityOnHitDataContainer onHitData, bool isHit = true)
+    public void ApplyDamage(Dictionary<ElementType, float> damage, AbilityOnHitDataContainer onHitData, bool isHit)
     {
-        double total = 0, physicalDamage = 0, fireDamage = 0, coldDamage = 0, lightningDamage = 0, earthDamage = 0, divineDamage = 0, voidDamage = 0;
+        float total = 0;
+        float physicalDamage = 0, fireDamage = 0, coldDamage = 0, lightningDamage = 0, earthDamage = 0, divineDamage = 0, voidDamage = 0;
 
         if (isHit)
         {
@@ -150,7 +161,7 @@ public abstract class Actor : MonoBehaviour
             {
                 float dodgePercent = 1 - (onHitData.accuracy / (onHitData.accuracy + (Data.DodgeRating) / 2f));
                 dodgePercent = Mathf.Min(dodgePercent, 85f);
-                if (Random.Range(0,100f) < dodgePercent)
+                if (Random.Range(0, 100f) < dodgePercent)
                 {
                     return;
                 }
@@ -162,97 +173,102 @@ public abstract class Actor : MonoBehaviour
             float armorValue = 0;
             if (isHit)
             {
-                armorValue = Data.Armor / (float)(Data.Armor + physicalDamage);
+                armorValue = Data.Armor / (Data.Armor + physicalDamage);
             }
-            float physicalResistance = Mathf.Min((1.0f - Data.Resistances[ElementType.PHYSICAL] / 100f) + armorValue, 0.95f);
+            float physicalResistance = Mathf.Min((1.0f - (Data.GetResistance(ElementType.PHYSICAL) - onHitData.physicalNegation) / 100f) + armorValue, 0.95f);
             physicalDamage = physicalResistance * damage[ElementType.PHYSICAL];
-            total += physicalDamage;
+            total += System.Math.Max(0, physicalDamage);
         }
 
         if (damage.ContainsKey(ElementType.FIRE))
         {
-            fireDamage = (1.0 - Data.Resistances[ElementType.FIRE] / 100d) * damage[ElementType.FIRE];
-            total += fireDamage;
+            fireDamage = (1f - (Data.GetResistance(ElementType.FIRE) - onHitData.fireNegation) / 100f) * damage[ElementType.FIRE];
+            total += System.Math.Max(0, fireDamage);
         }
 
         if (damage.ContainsKey(ElementType.COLD))
         {
-            coldDamage = (1.0 - Data.Resistances[ElementType.COLD] / 100d) * damage[ElementType.COLD];
-            total += coldDamage;
+            coldDamage = (1f - (Data.GetResistance(ElementType.COLD) - onHitData.coldNegation) / 100f) * damage[ElementType.COLD];
+            total += System.Math.Max(0, coldDamage);
         }
 
         if (damage.ContainsKey(ElementType.LIGHTNING))
         {
-            lightningDamage = (1.0 - Data.Resistances[ElementType.LIGHTNING] / 100d) * damage[ElementType.LIGHTNING];
-            total += lightningDamage;
+            lightningDamage = (1f - (Data.GetResistance(ElementType.LIGHTNING) - onHitData.lightningNegation) / 100f) * damage[ElementType.LIGHTNING];
+            total += System.Math.Max(0, lightningDamage);
         }
 
         if (damage.ContainsKey(ElementType.EARTH))
         {
-            earthDamage = (1.0 - Data.Resistances[ElementType.EARTH] / 100d) * damage[ElementType.EARTH];
-            total += earthDamage;
+            earthDamage = (1f - (Data.GetResistance(ElementType.EARTH) - onHitData.earthNegation) / 100f) * damage[ElementType.EARTH];
+            total += System.Math.Max(0, earthDamage);
         }
 
         if (damage.ContainsKey(ElementType.DIVINE))
         {
-            divineDamage = (1.0 - Data.Resistances[ElementType.DIVINE] / 100d) * damage[ElementType.DIVINE];
-            total += divineDamage;
+            divineDamage = (1f - (Data.GetResistance(ElementType.DIVINE) - onHitData.divineNegation) / 100f) * damage[ElementType.DIVINE];
+            total += System.Math.Max(0, divineDamage);
         }
 
         if (damage.ContainsKey(ElementType.VOID))
         {
-            voidDamage = (1.0 - Data.Resistances[ElementType.VOID] / 100d) * damage[ElementType.VOID];
-            total += voidDamage;
+            voidDamage = (1f - (Data.GetResistance(ElementType.VOID) - onHitData.voidNegation) / 100f) * damage[ElementType.VOID];
+            total += System.Math.Max(0, voidDamage);
         }
         if (isBoss)
             total = total * onHitData.vsBossDamage;
-        total = ModifyCurrentShield(total);
-        ModifyCurrentHealth(total);
 
-        ApplyAfterHitEffects(damage, onHitData);
+        total = ModifyCurrentShield(total);
+        if (Data.HealthIsHitsToKill && isHit && total >= 1f)
+            ModifyCurrentHealth(1);
+        else
+            ModifyCurrentHealth(total);
+
+        if (isHit)
+            ApplyAfterHitEffects(damage, onHitData);
     }
 
-    public void ApplyAfterHitEffects(Dictionary<ElementType, double> damage, AbilityOnHitDataContainer postDamageData)
+    public void ApplyAfterHitEffects(Dictionary<ElementType, float> damage, AbilityOnHitDataContainer postDamageData)
     {
         if (damage[ElementType.PHYSICAL] != 0 && postDamageData.DidBleedProc())
         {
-            AddStatusEffect(new BleedEffect(this, damage[ElementType.PHYSICAL] * postDamageData.bleedEffectiveness, postDamageData.bleedDuration));
+            AddStatusEffect(new BleedEffect(this, postDamageData.sourceActor, damage[ElementType.PHYSICAL] * postDamageData.bleedEffectiveness, postDamageData.bleedDuration));
         }
 
         if (damage[ElementType.FIRE] != 0 && postDamageData.DidBurnProc())
         {
-            AddStatusEffect(new BurnEffect(this, damage[ElementType.FIRE] * postDamageData.burnEffectiveness, postDamageData.burnDuration));
+            AddStatusEffect(new BurnEffect(this, postDamageData.sourceActor, damage[ElementType.FIRE] * postDamageData.burnEffectiveness, postDamageData.burnDuration));
         }
 
         if (damage[ElementType.COLD] != 0 && postDamageData.DidChillProc())
         {
-            AddStatusEffect(new ChillEffect(this, postDamageData.chillEffectiveness, postDamageData.chillDuration));
+            AddStatusEffect(new ChillEffect(this, postDamageData.sourceActor, postDamageData.chillEffectiveness, postDamageData.chillDuration));
         }
 
         if (damage[ElementType.LIGHTNING] != 0 && postDamageData.DidElectrocuteProc())
         {
-            AddStatusEffect(new ElectrocuteEffect(this, damage[ElementType.LIGHTNING] * postDamageData.electrocuteEffectiveness, postDamageData.electrocuteDuration));
+            AddStatusEffect(new ElectrocuteEffect(this, postDamageData.sourceActor, damage[ElementType.LIGHTNING] * postDamageData.electrocuteEffectiveness, postDamageData.electrocuteDuration));
         }
 
         if (damage[ElementType.EARTH] != 0 && postDamageData.DidFractureProc())
         {
-            AddStatusEffect(new FractureEffect(this, postDamageData.fractureEffectiveness, postDamageData.fractureDuration));
+            AddStatusEffect(new FractureEffect(this, postDamageData.sourceActor, postDamageData.fractureEffectiveness, postDamageData.fractureDuration));
         }
 
         if (damage[ElementType.DIVINE] != 0 && postDamageData.DidPacifyProc())
         {
-            AddStatusEffect(new PacifyEffect(this, postDamageData.pacifyEffectiveness, postDamageData.pacifyDuration));
+            AddStatusEffect(new PacifyEffect(this, postDamageData.sourceActor, postDamageData.pacifyEffectiveness, postDamageData.pacifyDuration));
         }
 
         if (damage[ElementType.VOID] != 0 && postDamageData.DidRadiationProc())
         {
-            AddStatusEffect(new RadiationEffect(this, damage[ElementType.VOID] * postDamageData.radiationEffectiveness, postDamageData.radiationDuration));
+            AddStatusEffect(new RadiationEffect(this, postDamageData.sourceActor, damage[ElementType.VOID] * postDamageData.radiationEffectiveness, postDamageData.radiationDuration));
         }
     }
 
-    public void ApplySingleElementDamage(ElementType element, double damage, bool isHit = true)
+    public void ApplySingleElementDamage(ElementType element, float damage, int resistanceNegation, bool isHit = true)
     {
-        double finalDamage = ((1.0 - Data.Resistances[element] / 100d) * damage);
+        float finalDamage = (1f - (Data.GetResistance(element) - resistanceNegation) / 100f) * damage;
         ModifyCurrentHealth(finalDamage);
     }
 

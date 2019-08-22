@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
 public class StatBonus
 {
@@ -8,8 +7,8 @@ public class StatBonus
     public List<float> MultiplyModifiers { get; private set; }
     public float CurrentMultiplier { get; private set; }
     public bool isStatOutdated;
-    public bool hasSetModifier;
-    public float setModifier;
+    public bool HasFixedModifier { get; private set; }
+    public float FixedModifier { get; private set; }
 
     public StatBonus()
     {
@@ -17,8 +16,8 @@ public class StatBonus
         AdditiveModifier = 0;
         MultiplyModifiers = new List<float>();
         CurrentMultiplier = 1.00f;
-        hasSetModifier = false;
-        setModifier = 0;
+        HasFixedModifier = false;
+        FixedModifier = 0;
         isStatOutdated = true;
     }
 
@@ -28,12 +27,12 @@ public class StatBonus
         AdditiveModifier = 0;
         MultiplyModifiers.Clear();
         CurrentMultiplier = 1.00f;
-        hasSetModifier = false;
-        setModifier = 0;
+        HasFixedModifier = false;
+        FixedModifier = 0;
         isStatOutdated = true;
     }
 
-    public void AddBonus(ModifyType type, double value)
+    public void AddBonus(ModifyType type, float value)
     {
         switch (type)
         {
@@ -50,13 +49,12 @@ public class StatBonus
                 return;
 
             case ModifyType.SET:
-                AddSetBonus(value);
+                AddFixedBonus(value);
                 return;
         }
     }
 
-
-    public void RemoveBonus(ModifyType type, double value)
+    public void RemoveBonus(ModifyType type, float value)
     {
         switch (type)
         {
@@ -73,7 +71,7 @@ public class StatBonus
                 return;
 
             case ModifyType.SET:
-                RemoveSetBonus(value);
+                RemoveFixedBonus(value);
                 return;
         }
     }
@@ -90,21 +88,21 @@ public class StatBonus
         isStatOutdated = true;
     }
 
-    private void AddSetBonus(double value)
+    private void AddFixedBonus(float value)
     {
-        hasSetModifier = true;
-        setModifier = (float)value;
+        HasFixedModifier = true;
+        FixedModifier = value;
     }
 
-    private void RemoveSetBonus(double value)
+    private void RemoveFixedBonus(float value)
     {
-        hasSetModifier = false;
-        setModifier = (float)value;
+        HasFixedModifier = false;
+        FixedModifier = value;
     }
 
-    private void AddToFlat(double value)
+    private void AddToFlat(float value)
     {
-        FlatModifier += (float)value;
+        FlatModifier += value;
         isStatOutdated = true;
     }
 
@@ -114,46 +112,40 @@ public class StatBonus
         isStatOutdated = true;
     }
 
-    private void AddToMultiply(double value)
+    private void AddToMultiply(float value)
     {
-        MultiplyModifiers.Add((float)value);
+        MultiplyModifiers.Add(value);
         UpdateCurrentMultiply();
         isStatOutdated = true;
     }
 
-    private void RemoveFromMultiply(double value)
+    private void RemoveFromMultiply(float value)
     {
-        MultiplyModifiers.Remove((float)value);
+        MultiplyModifiers.Remove(value);
         UpdateCurrentMultiply();
         isStatOutdated = true;
     }
 
     public void UpdateCurrentMultiply()
     {
-        double mult = 1.0d;
-        foreach (double i in MultiplyModifiers)
-            mult *= (1d + i / 100d);
-        CurrentMultiplier = (float)mult;
-    }
-
-    public void SetMultiply(double value)
-    {
-        CurrentMultiplier = (float)value;
+        float mult = 1.0f;
+        foreach (float i in MultiplyModifiers)
+            mult *= (1f + i / 100f);
+        CurrentMultiplier = mult;
     }
 
     public int CalculateStat(int stat)
     {
-        return (int)CalculateStat((double)stat);
+        return (int)CalculateStat((float)stat);
     }
 
-    public double CalculateStat(double stat)
+    public float CalculateStat(float stat)
     {
-        if (this.hasSetModifier)
-        {
-            this.isStatOutdated = false;
-            return this.setModifier;
-        }
         this.isStatOutdated = false;
-        return (stat + this.FlatModifier) * (1 + (double)(this.AdditiveModifier) / 100) * this.CurrentMultiplier;
+        if (HasFixedModifier)
+        {
+            return FixedModifier;
+        }
+        return (stat + FlatModifier) * (1f + (AdditiveModifier) / 100f) * CurrentMultiplier;
     }
 }

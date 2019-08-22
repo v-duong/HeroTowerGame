@@ -35,7 +35,7 @@ public class InventorySlot : MonoBehaviour
                 break;
             case ItemType.WEAPON:
                 Weapon weapon = item as Weapon;
-                double dps = (weapon.PhysicalDamage.min + weapon.PhysicalDamage.max) / 2d * weapon.AttackSpeed;
+                float dps = (weapon.PhysicalDamage.min + weapon.PhysicalDamage.max) / 2f * weapon.AttackSpeed;
                 infoText.text += "PDPS: " + dps.ToString("F2") + "\n";
                 break;
             default:

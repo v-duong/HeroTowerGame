@@ -48,9 +48,9 @@ public class ElementResistances
         return resists[e];
     }
 
-    public void SetResistance(ElementType e, int value)
+    public void SetResistanceCap(ElementType e, int value)
     {
-        resists[e] = value;
+        resistCaps[e] = value;
     }
 
     public int this[ElementType i]

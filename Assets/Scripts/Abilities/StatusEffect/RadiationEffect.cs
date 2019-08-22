@@ -6,10 +6,10 @@ public class RadiationEffect : ActorStatusEffect
     protected float damagePerSecond;
     protected float timeSinceLastCheck;
 
-    public RadiationEffect(Actor target, double inputDamage, float duration) : base(target)
+    public RadiationEffect(Actor target, Actor source, float inputDamage, float duration) : base(target)
     {
         effectType = EffectType.RADIATION;
-        damagePerSecond = (float)(inputDamage / 24);
+        damagePerSecond = inputDamage / 24f;
         this.duration = duration;
         timeSinceLastCheck = 0;
     }
@@ -54,7 +54,7 @@ public class RadiationEffect : ActorStatusEffect
         foreach (Collider2D c in hits)
         {
             Actor actor = c.gameObject.GetComponent<Actor>();
-            actor.ApplySingleElementDamage(ElementType.VOID, damagePerSecond, false);
+            actor.ApplySingleElementDamage(ElementType.VOID, damagePerSecond, Source.Data.VoidNegation, false);
         }
     }
 }

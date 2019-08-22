@@ -99,7 +99,7 @@ public class HeroArchetypeData : IAbilitySource
             else
                 hero.AddArchetypeStatBonus(bonus.growthValue, bonus.bonusType, bonus.modifyType);
         }
-        hero.UpdateHeroAllStats();
+        hero.UpdateActorData();
         return true;
     }
 
@@ -130,7 +130,7 @@ public class HeroArchetypeData : IAbilitySource
 
         nodeLevel.level--;
 
-        hero.UpdateHeroAllStats();
+        hero.UpdateActorData();
         return true;
     }
 

@@ -121,7 +121,7 @@ public class LocalizationManager : MonoBehaviour
         else if (ability.abilityType == AbilityType.ATTACK)
         {
             damageText = GetLocalizationText("UI_DEAL_DAMAGE_WEAPON");
-            double d = ability.weaponMultiplier + ability.weaponMultiplierScaling * level;
+            float d = ability.weaponMultiplier + ability.weaponMultiplierScaling * level;
             s += string.Format(damageText, d) + "\n";
         }
         return s;
@@ -180,7 +180,7 @@ public class LocalizationManager : MonoBehaviour
         }
     }
 
-    public string GetLocalizationText_BonusType(BonusType type, ModifyType modifyType, double value)
+    public string GetLocalizationText_BonusType(BonusType type, ModifyType modifyType, float value)
     {
         string output = "";
         if (commonLocalizationData.TryGetValue("bonusType." + type.ToString(), out output))

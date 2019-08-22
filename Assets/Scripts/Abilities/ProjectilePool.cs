@@ -13,6 +13,7 @@ public class ProjectilePool : ObjectPool<Projectile>
     public Projectile GetProjectile()
     {
         Projectile p = Get();
+        p.isOffscreen = false;
         return p;
     }
 

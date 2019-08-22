@@ -4,7 +4,7 @@ using UnityEngine;
 public class LinkedActorAbility : ActorAbility
 {
     private readonly Dictionary<ElementType, AbilityDamageBase> parentDamageLevels;
-    private LinkedAbilityData linkedAbilityData;
+    public LinkedAbilityData LinkedAbilityData { get; private set; }
 
     public LinkedActorAbility(AbilityBase ability, int layer) : base(ability, layer)
     {
@@ -13,30 +13,30 @@ public class LinkedActorAbility : ActorAbility
     public LinkedActorAbility(LinkedAbilityData linkedAbility, int layer, Dictionary<ElementType, AbilityDamageBase> damageLevels)
         : this(ResourceManager.Instance.GetAbilityBase(linkedAbility.abilityId), layer)
     {
-        this.linkedAbilityData = linkedAbility;
+        this.LinkedAbilityData = linkedAbility;
         this.parentDamageLevels = damageLevels;
     }
 
     public LinkedActorAbility(LinkedAbilityData linkedAbility, int layer)
     : this(ResourceManager.Instance.GetAbilityBase(linkedAbility.abilityId), layer)
     {
-        this.linkedAbilityData = linkedAbility;
+        this.LinkedAbilityData = linkedAbility;
     }
 
     public override void UpdateAbilityStats(HeroData data)
     {
         UpdateAbilityBonusProperties();
-        if (linkedAbilityData.inheritsDamage)
+        if (LinkedAbilityData.inheritsDamage)
         {
-            float damageModifier = linkedAbilityData.inheritDamagePercent + linkedAbilityData.inheritDamagePercentScaling * abilityLevel;
-            UpdateAbility_Damage(data, parentDamageLevels, damageModifier);
+            float damageModifier = LinkedAbilityData.inheritDamagePercent + LinkedAbilityData.inheritDamagePercentScaling * abilityLevel;
+            UpdateDamage(data, parentDamageLevels, damageModifier);
         }
         else
-            UpdateAbility_Damage(data, abilityBase.damageLevels);
+            UpdateDamage(data, abilityBase.damageLevels);
 
-        UpdateAbility_AbilityType(data);
-        UpdateAbility_ShotType(data);
-        UpdateAbility_StatusBonuses(data);
+        UpdateTypeParameters(data);
+        UpdateShotParameters(data);
+        UpdateOnHitDataBonuses(data);
     }
 
     public void Fire(Vector3 origin, Vector3 target)

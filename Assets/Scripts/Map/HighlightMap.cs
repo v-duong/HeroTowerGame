@@ -23,7 +23,6 @@ public class HighlightMap : MonoBehaviour
             Vector3 position = displayTiles.CellToWorld(localPlace);
             if (displayTiles.HasTile(localPlace) && !pathTiles.HasTile(localPlace) && !obstacleTiles.HasTile(localPlace))
             {
-                Debug.Log("TEST");
                 tilemap.SetTile(localPlace, highlightTile);
             }
         }

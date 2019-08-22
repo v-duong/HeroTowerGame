@@ -1,7 +1,9 @@
 ﻿using Newtonsoft.Json;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.U2D;
 
 public class ResourceManager : MonoBehaviour
 {
@@ -31,15 +33,19 @@ public class ResourceManager : MonoBehaviour
     private Dictionary<string, EnemyBase> enemyList;
     private Dictionary<string, StageInfoBase> stageList;
 
+    private Dictionary<string, Sprite> currentSpriteList;
+    private Dictionary<string, SpriteAtlas> loadedSpriteAtlases;
+
     public int AbilityCount { get; private set; }
     public int EquipmentCount { get; private set; }
     public int PrefixCount { get; private set; }
     public int SuffixCount { get; private set; }
     public int ArchetypeCount { get; private set; }
-    private AssetBundle jsonBundle;
     public GameObject HeroPrefab => heroPrefab;
     public EnemyActor EnemyPrefab => enemyPrefab;
     public GameObject AbilityContainerPrefab => abilityContainerPrefab;
+
+    private AssetBundle jsonBundle;
 
     public AbilityBase GetAbilityBase(string id)
     {
@@ -272,6 +278,49 @@ public class ResourceManager : MonoBehaviour
         return abs.GetComponent<AbilityParticleSystem>();
     }
 
+    public void LoadSpritesToBeUsed(HashSet<AbilityBase> abilityBases)
+    {
+        currentSpriteList = new Dictionary<string, Sprite>();
+        loadedSpriteAtlases = new Dictionary<string, SpriteAtlas>();
+        if (abilityBases.Count == 0)
+            return;
+        var spriteBundle = AssetBundle.LoadFromFile(Path.Combine(Application.streamingAssetsPath, "abilitysprites"));
+        SpriteAtlas[] atlases = spriteBundle.LoadAllAssets<SpriteAtlas>();
+        foreach(AbilityBase abilityBase in abilityBases)
+            foreach(SpriteAtlas atlas in atlases)
+            {
+                Sprite sprite = atlas.GetSprite(abilityBase.idName);
+                if (sprite != null)
+                {
+                    currentSpriteList.Add(abilityBase.idName, sprite);
+                    if (!loadedSpriteAtlases.ContainsKey(atlas.name))
+                        loadedSpriteAtlases.Add(atlas.name, atlas);
+                    break;
+                }
+            }
+
+        foreach(SpriteAtlas atlas in atlases)
+        {
+            if (!loadedSpriteAtlases.ContainsKey(atlas.name))
+                Resources.UnloadAsset(atlas);
+        }
+
+        spriteBundle.Unload(false);
+    }
+
+    public Sprite GetSprite(string abilityName)
+    {
+        if (currentSpriteList.TryGetValue(abilityName, out Sprite ret))
+            return ret;
+        else
+            return null;
+    }
+
+    public SpriteAtlas GetSpriteAtlas(string atlasName)
+    {
+        return loadedSpriteAtlases[atlasName];
+    }
+
     private void LoadAbilities()
     {
         abilityList = new Dictionary<string, AbilityBase>();
@@ -397,10 +446,16 @@ public class ResourceManager : MonoBehaviour
         Initialize();
     }
 
+    private void RequestAtlas(string name, System.Action<SpriteAtlas> callback)
+    {
+        SpriteAtlas atlas = loadedSpriteAtlases[name];
+        callback(atlas);
+    }
+         
     private void Initialize()
     {
         //jsonBundle = AssetBundle.LoadFromFile(Path.Combine(Application.streamingAssetsPath,"jsonfiles"));
-
+        SpriteAtlasManager.atlasRequested += RequestAtlas;
         LoadAbilities();
         LoadEquipment();
         prefixList = LoadAffixes(AffixType.PREFIX);

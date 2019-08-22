@@ -7,11 +7,11 @@ public class FractureEffect : ActorStatusEffect
     protected int physReduction;
     protected int elementalReduction;
 
-    public FractureEffect(Actor target, double effectiveness, float duration) : base(target)
+    public FractureEffect(Actor target, Actor source, float effectiveness, float duration) : base(target)
     {
         effectType = EffectType.FRACTURE;
-        physReduction = (int)(-10 * effectiveness);
-        elementalReduction = (int)(-5 * effectiveness);
+        physReduction = (int)(-10f * effectiveness);
+        elementalReduction = (int)(-5f * effectiveness);
         this.duration = duration;
     }
 

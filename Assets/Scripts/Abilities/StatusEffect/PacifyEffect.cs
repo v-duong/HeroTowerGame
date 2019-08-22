@@ -6,10 +6,10 @@ public class PacifyEffect : ActorStatusEffect
 {
     protected int effectPower;
 
-    public PacifyEffect(Actor target, double effectiveness, float duration) : base(target)
+    public PacifyEffect(Actor target, Actor source, float effectiveness, float duration) : base(target)
     {
         effectType = EffectType.PACIFY;
-        effectPower = (int)(effectiveness * -15);
+        effectPower = (int)(effectiveness * -15f);
         this.duration = duration;
     }
 

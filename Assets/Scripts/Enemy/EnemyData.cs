@@ -7,6 +7,7 @@ public class EnemyData : ActorData
     protected Dictionary<BonusType, StatBonus> mobBonuses;
     public int minAttackDamage;
     public int maxAttackDamage;
+    public List<ActorAbility> abilities;
 
     public EnemyData() : base()
     {
@@ -16,6 +17,7 @@ public class EnemyData : ActorData
         BaseSoulPoints = 0;
         CurrentSoulPoints = 0;
 
+        abilities = new List<ActorAbility>();
         mobBonuses = new Dictionary<BonusType, StatBonus>();
     }
 
@@ -43,91 +45,69 @@ public class EnemyData : ActorData
 
     public override void UpdateActorData()
     {
-        float healthPercent = CurrentHealth / MaximumHealth;
-        MaximumHealth = (int)CalculateActorStat(BonusType.MAX_HEALTH, BaseHealth);
-        CurrentHealth = MaximumHealth * healthPercent;
+        ApplyHealthBonuses();
+        ApplySoulPointBonuses();
+
+        MaximumManaShield = CalculateActorStat(BonusType.GLOBAL_MAX_SHIELD, BaseManaShield);
 
         if (MaximumManaShield != 0)
         {
             float shieldPercent = CurrentManaShield / MaximumManaShield;
-            MaximumManaShield = (int)CalculateActorStat(BonusType.GLOBAL_MAX_SHIELD, BaseManaShield);
             CurrentManaShield = MaximumManaShield * shieldPercent;
         }
-        movementSpeed = (float)CalculateActorStat(BonusType.MOVEMENT_SPEED, BaseData.movementSpeed);
+        movementSpeed = CalculateActorStat(BonusType.MOVEMENT_SPEED, BaseData.movementSpeed);
+
+        Armor = CalculateActorStat(BonusType.GLOBAL_ARMOR, BaseArmor);
+        DodgeRating = CalculateActorStat(BonusType.GLOBAL_DODGE_RATING, BaseDodgeRating);
+        ResolveRating = CalculateActorStat(BonusType.GLOBAL_RESOLVE_RATING, BaseResolveRating);
+        AttackPhasing = CalculateActorStat(BonusType.ATTACK_PHASING, BaseAttackPhasing);
+        MagicPhasing = CalculateActorStat(BonusType.MAGIC_PHASING, BaseMagicPhasing);
+
+        foreach(ActorAbility ability in abilities)
+        {
+            ability.UpdateAbilityStats(this);
+        }
+
+        base.UpdateActorData();
     }
 
-    public override void GetTotalStatBonus(BonusType type, Dictionary<BonusType, StatBonus> abilityBonusProperties, StatBonus bonus)
+    public override void GetTotalStatBonus(BonusType type, Dictionary<BonusType, StatBonus> abilityBonusProperties, StatBonus inputBonus)
     {
         StatBonus resultBonus;
         StatBonus abilityBonus = null;
-        if (bonus == null)
+        if (inputBonus == null)
             resultBonus = new StatBonus();
         else
-            resultBonus = bonus;
-        bool hasStatBonus = false, hasTemporaryBonus = false, hasMobBonus = false, hasAbilityBonus = false;
+            resultBonus = inputBonus;
+
+        List<StatBonus> bonuses = new List<StatBonus>();
 
         if (statBonuses.TryGetValue(type, out StatBonus statBonus))
-            hasStatBonus = true;
-        if (temporaryBonuses.TryGetValue(type, out StatBonus temporaryBonus))
-            hasTemporaryBonus = true;
+            bonuses.Add(statBonus);
         if (mobBonuses.TryGetValue(type, out StatBonus mobBonus))
-            hasMobBonus = true;
+            bonuses.Add(mobBonus);
         if (abilityBonusProperties != null && abilityBonusProperties.TryGetValue(type, out abilityBonus))
-            hasAbilityBonus = true;
+            bonuses.Add(abilityBonus);
+        if (temporaryBonuses.TryGetValue(type, out StatBonus temporaryBonus))
+            bonuses.Add(temporaryBonus);
 
-        if (!hasStatBonus && !hasTemporaryBonus && !hasMobBonus && !hasAbilityBonus)
+        if (bonuses.Count == 0)
         {
-            return;
-        }
-        else if (hasStatBonus && statBonus.hasSetModifier)
-        {
-            resultBonus.hasSetModifier = true;
-            resultBonus.setModifier = statBonus.setModifier;
-            return;
-        }
-        else if (hasMobBonus && mobBonus.hasSetModifier)
-        {
-            resultBonus.hasSetModifier = true;
-            resultBonus.setModifier = mobBonus.setModifier;
-            return;
-        }
-        else if (hasAbilityBonus && abilityBonus.hasSetModifier)
-        {
-            resultBonus.hasSetModifier = true;
-            resultBonus.setModifier = abilityBonus.setModifier;
-            return;
-        }
-        else if (hasTemporaryBonus && temporaryBonus.hasSetModifier)
-        {
-            resultBonus.hasSetModifier = true;
-            resultBonus.setModifier = temporaryBonus.setModifier;
             return;
         }
 
-        if (hasStatBonus)
+        foreach (StatBonus bonus in bonuses)
         {
-            resultBonus.AddBonus(ModifyType.FLAT_ADDITION, statBonus.FlatModifier);
-            resultBonus.AddBonus(ModifyType.ADDITIVE, statBonus.AdditiveModifier);
-            resultBonus.AddBonus(ModifyType.MULTIPLY, (statBonus.CurrentMultiplier - 1) * 100);
+            if (bonus.HasFixedModifier)
+            {
+                resultBonus.AddBonus(ModifyType.SET, bonus.FixedModifier);
+                return;
+            }
+            resultBonus.AddBonus(ModifyType.FLAT_ADDITION, bonus.FlatModifier);
+            resultBonus.AddBonus(ModifyType.ADDITIVE, bonus.AdditiveModifier);
+            resultBonus.AddBonus(ModifyType.MULTIPLY, (bonus.CurrentMultiplier - 1f) * 100f);
         }
-        if (hasTemporaryBonus)
-        {
-            resultBonus.AddBonus(ModifyType.FLAT_ADDITION, temporaryBonus.FlatModifier);
-            resultBonus.AddBonus(ModifyType.ADDITIVE, temporaryBonus.AdditiveModifier);
-            resultBonus.AddBonus(ModifyType.MULTIPLY, (temporaryBonus.CurrentMultiplier - 1) * 100);
-        }
-        if (hasMobBonus)
-        {
-            resultBonus.AddBonus(ModifyType.FLAT_ADDITION, mobBonus.FlatModifier);
-            resultBonus.AddBonus(ModifyType.ADDITIVE, mobBonus.AdditiveModifier);
-            resultBonus.AddBonus(ModifyType.MULTIPLY, (mobBonus.CurrentMultiplier - 1) * 100);
-        }
-        if (hasAbilityBonus)
-        {
-            resultBonus.AddBonus(ModifyType.FLAT_ADDITION, abilityBonus.FlatModifier);
-            resultBonus.AddBonus(ModifyType.ADDITIVE, abilityBonus.AdditiveModifier);
-            resultBonus.AddBonus(ModifyType.MULTIPLY, (abilityBonus.CurrentMultiplier - 1) * 100);
-        }
+
         return;
     }
 
@@ -135,5 +115,10 @@ public class EnemyData : ActorData
     {
         mobBonuses = dict;
         UpdateActorData();
+    }
+
+    public override int GetResistance(ElementType element)
+    {
+        return Resistances.GetUncapResistance(element);
     }
 }

@@ -6,10 +6,10 @@ public class ChillEffect : ActorStatusEffect
 {
     protected int effectPower;
 
-    public ChillEffect (Actor target, double effectiveness, float duration) : base(target)
+    public ChillEffect (Actor target, Actor source, float effectiveness, float duration) : base(target)
     {
         effectType = EffectType.CHILL;
-        effectPower = (int)(-10 * effectiveness);
+        effectPower = (int)(-10f * effectiveness);
         this.duration = duration;
     }
 

@@ -181,7 +181,10 @@ public enum DamageType
 
 public enum AbilityLinkType
 {
-    ON_HIT,
+    NONE,
+    ON_EVERY_HIT,
+    ON_FINAL_HIT,
+    ON_FIRST_HIT,
     TIME,
     ON_FADE,
 }

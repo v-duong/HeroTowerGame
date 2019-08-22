@@ -14,7 +14,6 @@ public class InputManager : MonoBehaviour
 
     private float maxNegativeX, maxPositiveX;
     private float maxNegativeY, maxPositiveY;
-    private Bounds currentBounds;
 
     private bool isDragging;
     private static float dragspeed = 0.35f;
@@ -28,9 +27,9 @@ public class InputManager : MonoBehaviour
         onSummonCallback = summonCallback;
     }
 
-    public void SetCameraBounds(Bounds bounds)
+    public void SetCameraBounds()
     {
-        currentBounds = bounds;
+        Bounds bounds = StageManager.Instance.stageBounds;
         float ratio = (float)Screen.width / Screen.height;
         maxNegativeX = bounds.center.x - bounds.extents.x + mainCamera.orthographicSize * ratio;
         maxPositiveX = bounds.center.x + bounds.extents.x - mainCamera.orthographicSize * ratio;
@@ -165,7 +164,7 @@ public class InputManager : MonoBehaviour
             {
                 mainCamera.orthographicSize = Mathf.Clamp(mainCamera.orthographicSize - Input.mouseScrollDelta.y * 0.5f, 4f, 13f);
                 zoomRatio = mainCamera.orthographicSize / 7.0f;
-                SetCameraBounds(currentBounds);
+                SetCameraBounds();
                 ClampCameraPosition();
             }
 

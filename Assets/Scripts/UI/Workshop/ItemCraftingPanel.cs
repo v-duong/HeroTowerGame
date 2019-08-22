@@ -100,7 +100,7 @@ public class ItemCraftingPanel : MonoBehaviour
         List<string> primDps = new List<string>();
         string physDamage = "";
         MinMaxRange range;
-        double dps;
+        float dps;
 
         for (int i = 1; i < (int)ElementType.DIVINE; i++)
         {
@@ -108,7 +108,7 @@ public class ItemCraftingPanel : MonoBehaviour
             if (!range.IsZero())
             {
                 hasElemental = true;
-                dps = (range.min + range.max) / 2d * weaponItem.AttackSpeed;
+                dps = (range.min + range.max) / 2f * weaponItem.AttackSpeed;
                 elementalDps.Add(LocalizationManager.BuildElementalDamageString(dps.ToString("F2"), (ElementType)i));
                 elementalDamage.Add(LocalizationManager.BuildElementalDamageString(range.min + "-" + range.max, (ElementType)i));
             }
@@ -118,7 +118,7 @@ public class ItemCraftingPanel : MonoBehaviour
         if (!range.IsZero())
         {
             hasPrimordial = true;
-            dps = (range.min + range.max) / 2d * weaponItem.AttackSpeed;
+            dps = (range.min + range.max) / 2f * weaponItem.AttackSpeed;
             primDps.Add(LocalizationManager.BuildElementalDamageString(dps.ToString("F2"), ElementType.DIVINE));
             primDamage.Add(LocalizationManager.BuildElementalDamageString(range.min + "-" + range.max, ElementType.DIVINE));
         }
@@ -127,7 +127,7 @@ public class ItemCraftingPanel : MonoBehaviour
         if (!range.IsZero())
         {
             hasPrimordial = true;
-            dps = (range.min + range.max) / 2d * weaponItem.AttackSpeed;
+            dps = (range.min + range.max) / 2f * weaponItem.AttackSpeed;
             primDps.Add(LocalizationManager.BuildElementalDamageString(dps.ToString("F2"), ElementType.VOID));
             primDamage.Add(LocalizationManager.BuildElementalDamageString(range.min + "-" + range.max, ElementType.VOID));
         }
@@ -135,7 +135,7 @@ public class ItemCraftingPanel : MonoBehaviour
 
         if (weaponItem.PhysicalDamage.min != 0 && weaponItem.PhysicalDamage.max != 0)
         {
-            dps = (weaponItem.PhysicalDamage.min + weaponItem.PhysicalDamage.max) / 2d * weaponItem.AttackSpeed;
+            dps = (weaponItem.PhysicalDamage.min + weaponItem.PhysicalDamage.max) / 2f * weaponItem.AttackSpeed;
             leftInfo.text += "Phys. DPS: " + dps.ToString("F2") + "\n";
             physDamage = "Phys. Damage: " + weaponItem.PhysicalDamage.min + "-" + weaponItem.PhysicalDamage.max + "\n";
         }

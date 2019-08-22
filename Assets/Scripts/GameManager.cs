@@ -133,24 +133,36 @@ public class GameManager : MonoBehaviour
         SceneManager.MergeScenes(scene, sceneToMergeTo);
         SummonScrollWindow summonScroll = UIManager.Instance.SummonScrollWindow;
 
+        HashSet<AbilityBase> abilitiesInUse = new HashSet<AbilityBase>();
         inBattleHeroes.Clear();
 
         foreach (HeroData data in PlayerStats.heroTeams[0])
         {
             if (data == null)
                 continue;
+
             GameObject actor = Instantiate(ResourceManager.Instance.HeroPrefab.gameObject);
             data.InitHeroActor(actor);
             HeroActor heroActor = actor.GetComponent<HeroActor>();
+
             if (heroActor == null)
                 continue;
+
+            foreach (AbilityBase abilityBase in heroActor.GetAbilitiesInList())
+                abilitiesInUse.Add(abilityBase);
+
             summonScroll.AddHeroActor(heroActor);
             inBattleHeroes.Add(data);
         }
 
+        foreach (AbilityBase abilityBase in abilitiesInUse)
+            Debug.Log(abilityBase.idName);
+
+        ResourceManager.Instance.LoadSpritesToBeUsed(abilitiesInUse);
         StageManager.Instance.DisplayMap.CompressBounds();
         Bounds bounds = StageManager.Instance.DisplayMap.localBounds;
-        InputManager.Instance.SetCameraBounds(bounds);
+        StageManager.Instance.stageBounds = bounds;
+        InputManager.Instance.SetCameraBounds();
 
         UIManager.Instance.LoadingScreen.endLoadingScreen = true;
         isInBattle = true;

@@ -71,7 +71,7 @@ public class HeroData : ActorData
         archetypeStatBonuses = new Dictionary<BonusType, StatBonus>();
         attributeStatBonuses = new Dictionary<BonusType, StatBonus>();
         abilitySlotList = new List<AbilitySlot>() { new AbilitySlot(0), new AbilitySlot(1) };
-        UpdateHeroAllStats();
+        UpdateActorData();
     }
 
     public static HeroData CreateNewHero(string name, ArchetypeItem primaryArchetype, ArchetypeItem subArchetype = null)
@@ -106,7 +106,7 @@ public class HeroData : ActorData
             BaseWill += SecondaryArchetype.WillGrowth / 2;
         }
 
-        UpdateHeroAllStats();
+        UpdateActorData();
     }
 
     public void AddExperience(int experience)
@@ -114,7 +114,7 @@ public class HeroData : ActorData
         if (Level >= 100)
             return;
         Experience += experience;
-        while (Experience >= Helpers.GetRequiredExperience(Level+1))
+        while (Experience >= Helpers.GetRequiredExperience(Level + 1))
         {
             LevelUp();
             if (Level >= 100)
@@ -211,7 +211,7 @@ public class HeroData : ActorData
         ApplyEquipmentBonuses(equip.prefixes);
         ApplyEquipmentBonuses(equip.suffixes);
         ApplyEquipmentBonuses(equip.innate);
-        UpdateHeroAllStats();
+        UpdateActorData();
 
         return true;
     }
@@ -225,7 +225,7 @@ public class HeroData : ActorData
         RemoveEquipmentBonuses(equip.prefixes);
         RemoveEquipmentBonuses(equip.suffixes);
         RemoveEquipmentBonuses(equip.innate);
-        UpdateHeroAllStats();
+        UpdateActorData();
         return true;
     }
 
@@ -269,17 +269,14 @@ public class HeroData : ActorData
 
     public override void UpdateActorData()
     {
-        UpdateHeroAllStats();
-    }
-
-    public void UpdateHeroAllStats()
-    {
         UpdateHeroAttributes();
         UpdateAbilities();
-        UpdateHeroDefenses();
+        UpdateDefenses();
+
+        base.UpdateActorData();
     }
 
-    public void UpdateHeroDefenses()
+    public void UpdateDefenses()
     {
         ApplyHealthBonuses();
         ApplySoulPointBonuses();
@@ -383,20 +380,6 @@ public class HeroData : ActorData
         attributeStatBonuses[bonus2].SetAdditive(debuffDamageMod);
     }
 
-    private void ApplyHealthBonuses()
-    {
-        double percentage = CurrentHealth / MaximumHealth;
-        MaximumHealth = (int)CalculateActorStat(BonusType.MAX_HEALTH, BaseHealth);
-        CurrentHealth = (float)(MaximumHealth * percentage);
-    }
-
-    private void ApplySoulPointBonuses()
-    {
-        double percentage = CurrentSoulPoints / MaximumSoulPoints;
-        MaximumSoulPoints = (int)CalculateActorStat(BonusType.MAX_SOULPOINTS, BaseSoulPoints);
-        CurrentSoulPoints = (float)(MaximumSoulPoints * percentage);
-    }
-
     public void CalculateDefenses()
     {
         int ArmorFromEquip = 0;
@@ -417,6 +400,11 @@ public class HeroData : ActorData
 
         Armor = CalculateActorStat(BonusType.GLOBAL_ARMOR, BaseArmor + ArmorFromEquip);
         MaximumManaShield = CalculateActorStat(BonusType.GLOBAL_MAX_SHIELD, BaseManaShield + ShieldFromEquip);
+        if (MaximumManaShield != 0)
+        {
+            float shieldPercent = CurrentManaShield / MaximumManaShield;
+            CurrentManaShield = MaximumManaShield * shieldPercent;
+        }
         DodgeRating = CalculateActorStat(BonusType.GLOBAL_DODGE_RATING, BaseDodgeRating + DodgeFromEquip);
         ResolveRating = CalculateActorStat(BonusType.GLOBAL_RESOLVE_RATING, BaseResolveRating + ResolveFromEquip);
     }
@@ -434,79 +422,37 @@ public class HeroData : ActorData
             resultBonus = new StatBonus();
         else
             resultBonus = inputStatBonus;
-        bool hasStatBonus = false, hasAttributeBonus = false, hasArchetypeBonus = false, hasAbilityBonus = false, hasTemporaryBonus = false;
+       
+        List<StatBonus> bonuses = new List<StatBonus>();
 
         if (statBonuses.TryGetValue(type, out StatBonus statBonus))
-            hasStatBonus = true;
+            bonuses.Add(statBonus);
         if (attributeStatBonuses.TryGetValue(type, out StatBonus attributeBonus))
-            hasAttributeBonus = true;
+            bonuses.Add(attributeBonus);
         if (archetypeStatBonuses.TryGetValue(type, out StatBonus archetypeBonus))
-            hasArchetypeBonus = true;
+            bonuses.Add(archetypeBonus);
         if (abilityBonusProperties != null && abilityBonusProperties.TryGetValue(type, out abilityBonus))
-            hasAbilityBonus = true;
+            bonuses.Add(abilityBonus);
         if (temporaryBonuses.TryGetValue(type, out StatBonus temporaryBonus))
-            hasTemporaryBonus = true;
+            bonuses.Add(temporaryBonus);
 
-        if (!hasAttributeBonus && !hasStatBonus && !hasArchetypeBonus && !hasAbilityBonus && !hasTemporaryBonus)
+        if (bonuses.Count == 0)
         {
-            return;
-        }
-
-        if (hasArchetypeBonus && archetypeBonus.hasSetModifier)
-        {
-            resultBonus.hasSetModifier = true;
-            resultBonus.setModifier = archetypeBonus.setModifier;
-            return;
-        }
-        else if (hasStatBonus && statBonus.hasSetModifier)
-        {
-            resultBonus.hasSetModifier = true;
-            resultBonus.setModifier = statBonus.setModifier;
-            return;
-        }
-        else if (hasAbilityBonus && abilityBonus.hasSetModifier)
-        {
-            resultBonus.hasSetModifier = true;
-            resultBonus.setModifier = abilityBonus.setModifier;
-            return;
-        }
-        else if (hasTemporaryBonus && temporaryBonus.hasSetModifier)
-        {
-            resultBonus.hasSetModifier = true;
-            resultBonus.setModifier = temporaryBonus.setModifier;
             return;
         }
 
-        if (hasStatBonus)
+        foreach (StatBonus bonus in bonuses)
         {
-            resultBonus.AddBonus(ModifyType.FLAT_ADDITION, statBonus.FlatModifier);
-            resultBonus.AddBonus(ModifyType.ADDITIVE, statBonus.AdditiveModifier);
-            resultBonus.AddBonus(ModifyType.MULTIPLY, (statBonus.CurrentMultiplier - 1) * 100);
+            if (bonus.HasFixedModifier)
+            {
+                resultBonus.AddBonus(ModifyType.SET, bonus.FixedModifier);
+                return;
+            }
+            resultBonus.AddBonus(ModifyType.FLAT_ADDITION, bonus.FlatModifier);
+            resultBonus.AddBonus(ModifyType.ADDITIVE, bonus.AdditiveModifier);
+            resultBonus.AddBonus(ModifyType.MULTIPLY, (bonus.CurrentMultiplier - 1f) * 100f);
         }
-        if (hasArchetypeBonus)
-        {
-            resultBonus.AddBonus(ModifyType.FLAT_ADDITION, archetypeBonus.FlatModifier);
-            resultBonus.AddBonus(ModifyType.ADDITIVE, archetypeBonus.AdditiveModifier);
-            resultBonus.AddBonus(ModifyType.MULTIPLY, (archetypeBonus.CurrentMultiplier - 1) * 100);
-        }
-        if (hasAttributeBonus)
-        {
-            resultBonus.AddBonus(ModifyType.FLAT_ADDITION, attributeBonus.FlatModifier);
-            resultBonus.AddBonus(ModifyType.ADDITIVE, attributeBonus.AdditiveModifier);
-            resultBonus.AddBonus(ModifyType.MULTIPLY, (attributeBonus.CurrentMultiplier - 1) * 100);
-        }
-        if (hasAbilityBonus)
-        {
-            resultBonus.AddBonus(ModifyType.FLAT_ADDITION, abilityBonus.FlatModifier);
-            resultBonus.AddBonus(ModifyType.ADDITIVE, abilityBonus.AdditiveModifier);
-            resultBonus.AddBonus(ModifyType.MULTIPLY, (abilityBonus.CurrentMultiplier - 1) * 100);
-        }
-        if (hasTemporaryBonus)
-        {
-            resultBonus.AddBonus(ModifyType.FLAT_ADDITION, temporaryBonus.FlatModifier);
-            resultBonus.AddBonus(ModifyType.ADDITIVE, temporaryBonus.AdditiveModifier);
-            resultBonus.AddBonus(ModifyType.MULTIPLY, (temporaryBonus.CurrentMultiplier - 1) * 100);
-        }
+
         return;
     }
 
@@ -520,6 +466,11 @@ public class HeroData : ActorData
                 abilitySlot.Ability.UpdateAbilityStats(this);
             }
         }
+    }
+
+    public override int GetResistance(ElementType element)
+    {
+        return Resistances[element];
     }
 
     private class AbilitySlot
@@ -544,7 +495,8 @@ public class HeroData : ActorData
             else if (abilityBase.targetType == AbilityTargetType.ALLY)
             {
                 layer = LayerMask.NameToLayer("AllyDetect");
-            } else
+            }
+            else
             {
                 layer = LayerMask.NameToLayer("BothDetect");
             }
@@ -557,7 +509,6 @@ public class HeroData : ActorData
             this.source = source;
             if (source.GetType() == typeof(HeroArchetypeData))
                 sourceType = AbilitySourceType.ARCHETYPE;
-
         }
 
         public int GetAbilityLevel()

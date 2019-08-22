@@ -160,7 +160,7 @@ public abstract class Equipment : AffixedItem
         }
     }
 
-    protected static double CalculateStat(double stat, BonusType bonusType, Dictionary<BonusType, StatBonus> dic)
+    protected static float CalculateStat(float stat, BonusType bonusType, Dictionary<BonusType, StatBonus> dic)
     {
         if (dic.TryGetValue(bonusType, out StatBonus bonus))
         {

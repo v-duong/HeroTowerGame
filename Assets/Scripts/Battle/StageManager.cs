@@ -5,6 +5,7 @@ public class StageManager : MonoBehaviour
 {
     public static StageManager Instance { get; private set; }
     public int accumulatedConsumables;
+    public Bounds stageBounds;
 
     private BattleManager _battleManager;
     private Tilemap _pathTilemap;

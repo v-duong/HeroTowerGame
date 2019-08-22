@@ -60,6 +60,7 @@ public enum GroupType
     EARTH,
     ELEMENTAL,
     NON_ELEMENTAL,
+    PRIMORDIAL,
     DIVINE,
     VOID,
     PHYSICAL,

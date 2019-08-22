@@ -3,18 +3,20 @@ using UnityEngine;
 
 public class Projectile : MonoBehaviour
 {
-    public string abilityId;
-    public bool canHitAllies = false;
-    public bool canHitEnemies = false;
+    public AbilityBase abilityBase;
+    public int pierceCount = 0;
     public float currentSpeed;
     public float timeToLive = 2.5f;
-    public Dictionary<ElementType, double> projectileDamage;
+    public Dictionary<ElementType, float> projectileDamage;
     public Vector3 currentHeading;
     public LinkedActorAbility linkedAbility;
     public AbilityOnHitDataContainer statusData;
     public float inheritedDamagePercent;
+    public bool isOffscreen = false;
+
     private ParticleSystem.EmitParams emitParams = new ParticleSystem.EmitParams();
     private float particleWaitTime = 0;
+    private List<Actor> targetsHit = new List<Actor>();
 
     //public List<AbilityEffect> attachedEffects;
 
@@ -22,45 +24,82 @@ public class Projectile : MonoBehaviour
     {
     }
 
+    private void OnBecameInvisible()
+    {
+        isOffscreen = true;
+    }
+
+    private void OnBecameVisible()
+    {
+        isOffscreen = false;
+    }
+
     // Update is called once per frame
     private void FixedUpdate()
     {
+        timeToLive -= Time.fixedDeltaTime;
         if (timeToLive <= 0)
         {
             ReturnToPool();
         }
+
+        if (isOffscreen)
+        {
+            Bounds bounds = StageManager.Instance.stageBounds;
+            if (transform.position.x < bounds.center.x - bounds.extents.x || transform.position.x > bounds.center.x + bounds.extents.x ||
+                transform.position.y < bounds.center.y - bounds.extents.y || transform.position.y > bounds.center.y + bounds.extents.y)
+            {
+                ReturnToPool();
+            }
+        }
+
         emitParams.position = transform.position;
         particleWaitTime -= Time.fixedDeltaTime;
         if (particleWaitTime <= 0)
-            particleWaitTime = ParticleManager.Instance.EmitAbilityParticle(abilityId, emitParams, this.transform.localScale.x);
+            particleWaitTime = ParticleManager.Instance.EmitAbilityParticle(abilityBase.idName, emitParams, this.transform.localScale.x);
         Move();
         //float angle = Vector3.Angle(transform.position, transform.position + currentHeading);
         //transform.rotation = Quaternion.AngleAxis(angle, Vector3.forward);
         transform.up = (transform.position + currentHeading * currentSpeed) - transform.position;
-        timeToLive -= Time.fixedDeltaTime;
     }
 
     public void OnTriggerEnter2D(Collider2D collision)
     {
         if (!this.isActiveAndEnabled)
             return;
+
         Actor actor = collision.gameObject.GetComponent<Actor>();
         Vector3 targetPosition;
-        if (actor != null)
+
+        if (actor != null && !targetsHit.Contains(actor))
         {
             targetPosition = actor.transform.position;
-            actor.ApplyDamage(projectileDamage, statusData);
+            actor.ApplyDamage(projectileDamage, statusData, true);
+            if (linkedAbility != null)
+            {
+                if (linkedAbility.LinkedAbilityData.type == AbilityLinkType.ON_EVERY_HIT ||
+                    (linkedAbility.LinkedAbilityData.type == AbilityLinkType.ON_FIRST_HIT && targetsHit.Count == 0))
+                {
+                    linkedAbility.Fire(this.transform.position, targetPosition);
+                }
+            }
+            targetsHit.Add(actor);
+            pierceCount--;
+
+            if (pierceCount < 0)
+            {
+                if (linkedAbility != null && linkedAbility.LinkedAbilityData.type == AbilityLinkType.ON_FINAL_HIT)
+                {
+                    linkedAbility.Fire(this.transform.position, targetPosition);
+                }
+                targetsHit.Clear();
+                ReturnToPool();
+            }
         }
         else
         {
             return;
         }
-
-        if (linkedAbility != null)
-        {
-            linkedAbility.Fire(this.transform.position, targetPosition);
-        }
-        ReturnToPool();
     }
 
     public void Move()

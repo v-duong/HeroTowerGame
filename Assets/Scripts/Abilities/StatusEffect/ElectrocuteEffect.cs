@@ -5,10 +5,10 @@ public class ElectrocuteEffect : ActorStatusEffect
     protected float damage;
     protected float timeElapsed;
 
-    public ElectrocuteEffect(Actor target, double inputDamage, float duration) : base(target)
+    public ElectrocuteEffect(Actor target, Actor source, float inputDamage, float duration) : base(target)
     {
         effectType = EffectType.ELECTROCUTE;
-        this.damage = (float)(inputDamage * 0.25d);
+        this.damage = inputDamage * 0.25f;
         this.duration = duration;
     }
 
@@ -32,8 +32,8 @@ public class ElectrocuteEffect : ActorStatusEffect
         int index = Random.Range(0, hits.Length);
         Actor secondaryTarget = hits[index].gameObject.GetComponent<Actor>();
         
-        target.ApplySingleElementDamage(ElementType.LIGHTNING, damage * timeElapsed, false);
-        secondaryTarget.ApplySingleElementDamage(ElementType.LIGHTNING, damage * timeElapsed, false);
+        target.ApplySingleElementDamage(ElementType.LIGHTNING, damage * timeElapsed, Source.Data.LightningNegation, false);
+        secondaryTarget.ApplySingleElementDamage(ElementType.LIGHTNING, damage * timeElapsed,Source.Data.LightningNegation, false);
 
         /*
         foreach(Collider2D c in hits)

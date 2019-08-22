@@ -6,13 +6,14 @@ public class BleedEffect : ActorStatusEffect
     protected Vector2 lastPosition;
     protected float timeSinceLastCheck;
 
-    public BleedEffect(Actor target, double inputDamage, float duration) : base(target)
+    public BleedEffect(Actor target, Actor source, float inputDamage, float duration) : base(target)
     {
         effectType = EffectType.BLEED;
-        damagePerSecond = (float)(inputDamage * 0.2d);
+        damagePerSecond = inputDamage * 0.2f;
         this.duration = duration;
         timeSinceLastCheck = 0;
         lastPosition = target.transform.position;
+        
     }
 
     protected override void OnApply()
@@ -37,7 +38,7 @@ public class BleedEffect : ActorStatusEffect
             lastPosition = position;
             additionalDamage = distance * damagePerSecond * 0.2f;
         }
-        target.ApplySingleElementDamage(ElementType.PHYSICAL, damagePerSecond * tick + additionalDamage, false);
+        target.ApplySingleElementDamage(ElementType.PHYSICAL, damagePerSecond * tick + additionalDamage, Source.Data.PhysicalNegation, false);
         if (duration <= 0)
             OnExpire();
     }

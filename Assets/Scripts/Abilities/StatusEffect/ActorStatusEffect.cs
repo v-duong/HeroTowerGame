@@ -5,6 +5,7 @@ using UnityEngine;
 public abstract class ActorStatusEffect
 {
     protected readonly Actor target;
+    public Actor Source { get; protected set; }
 
     public EffectType effectType;
     public float duration;
