@@ -72,6 +72,7 @@ public class HeroDetailWindow : MonoBehaviour
         if (hero.GetAbilityFromSlot(0) != null)
         {
             infoText.text += "Ability 1: " + hero.GetAbilityFromSlot(0).abilityBase.idName + "\n";
+            infoText.text += string.Format("{0:F2}", 1f / hero.GetAbilityFromSlot(0).Cooldown) + "/s\n";
             infoText.text += LocalizationManager.Instance.GetLocalizationText_AbilityCalculatedDamage(hero.GetAbilityFromSlot(0).damageBase);
         }
         if (hero.GetAbilityFromSlot(1) != null)
@@ -107,7 +108,6 @@ public class HeroDetailWindow : MonoBehaviour
         treeWindow.OpenPrimaryTree();
         if (treeWindow.hero != hero)
             treeWindow.InitializeTree(hero);
-        
     }
 
     public void ClickSecondaryTree()

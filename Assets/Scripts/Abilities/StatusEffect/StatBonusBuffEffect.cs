@@ -9,15 +9,17 @@ public class StatBonusBuffEffect : ActorStatusEffect
     public string BuffName { get; protected set; }
     protected List<Tuple<BonusType, ModifyType, int>> bonus;
 
-    public StatBonusBuffEffect(Actor target, List<Tuple<BonusType,ModifyType,int>> bonuses, float duration, string buffName, EffectType effectType) : base(target)
+    public StatBonusBuffEffect(Actor target, Actor source, List<Tuple<BonusType,ModifyType,int>> bonuses, float duration, string buffName, EffectType effectType) : base(target, source)
     {
         this.effectType = effectType;
         this.duration = duration;
         this.BuffName = buffName;
         bonus = bonuses;
+        BuffPower = 0;
         foreach(Tuple<BonusType, ModifyType, int> tuple in bonus)
         {
             target.Data.AddTemporaryBonus(tuple.Item3, tuple.Item1, tuple.Item2);
+            BuffPower += tuple.Item3;
         }
     }
 
@@ -41,4 +43,8 @@ public class StatBonusBuffEffect : ActorStatusEffect
             OnExpire();
     }
 
+    public override float GetEffectValue()
+    {
+        return BuffPower;
+    }
 }

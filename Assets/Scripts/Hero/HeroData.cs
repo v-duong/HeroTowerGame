@@ -14,6 +14,8 @@ public class HeroData : ActorData
     public int Agility { get; private set; }
     public int Will { get; private set; }
 
+    public int ArchetypePoints { get; private set; }
+
     private Dictionary<BonusType, StatBonus> archetypeStatBonuses;
     private Dictionary<BonusType, StatBonus> attributeStatBonuses;
 
@@ -63,7 +65,7 @@ public class HeroData : ActorData
         BaseResolveRating = 0;
         BaseAttackPhasing = 0;
         BaseMagicPhasing = 0;
-        movementSpeed = 3f;
+        movementSpeed = 2.5f;
         IsLocked = false;
         assignedTeam = -1;
         equipList = new Equipment[10];
@@ -89,6 +91,7 @@ public class HeroData : ActorData
         if (Level == 100)
             return;
         Level++;
+        ArchetypePoints++;
         BaseHealth += PrimaryArchetype.HealthGrowth;
         BaseSoulPoints += PrimaryArchetype.SoulPointGrowth;
         BaseStrength += PrimaryArchetype.StrengthGrowth;
@@ -273,6 +276,8 @@ public class HeroData : ActorData
         UpdateAbilities();
         UpdateDefenses();
 
+        movementSpeed = CalculateActorStat(BonusType.MOVEMENT_SPEED, 2.5f);
+
         base.UpdateActorData();
     }
 
@@ -445,7 +450,7 @@ public class HeroData : ActorData
         {
             if (bonus.HasFixedModifier)
             {
-                resultBonus.AddBonus(ModifyType.SET, bonus.FixedModifier);
+                resultBonus.AddBonus(ModifyType.FIXED_TO, bonus.FixedModifier);
                 return;
             }
             resultBonus.AddBonus(ModifyType.FLAT_ADDITION, bonus.FlatModifier);
@@ -470,7 +475,7 @@ public class HeroData : ActorData
 
     public override int GetResistance(ElementType element)
     {
-        return Resistances[element];
+        return ElementData[element];
     }
 
     private class AbilitySlot

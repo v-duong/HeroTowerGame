@@ -22,17 +22,9 @@ public class InventoryScrollWindow : MonoBehaviour
         }
     }
 
-    private void InitializeInventorySlots(IList<AbilityStorageItem> abilityStorageInventory, Action<Item> callback = null)
+    private void InitializeInventorySlots<T>(IList<T> itemInventory, Action<Item> callback = null) where T:Item
     {
-        foreach (AbilityStorageItem item in abilityStorageInventory)
-        {
-            AddInventorySlot(item, callback);
-        }
-    }
-
-    private void InitializeInventorySlots(IList<ArchetypeItem> archetypeInventory, Action<Item> callback = null)
-    {
-        foreach (ArchetypeItem item in archetypeInventory)
+        foreach (Item item in itemInventory)
         {
             AddInventorySlot(item, callback);
         }
@@ -40,15 +32,7 @@ public class InventoryScrollWindow : MonoBehaviour
 
     private void InitializeInventorySlots(IList<Equipment> equipmentInventory, Action<Item> callback = null)
     {
-        foreach (AffixedItem item in equipmentInventory)
-        {
-            AddInventorySlot(item, callback);
-        }
-    }
-
-    public void InitializeInventorySlots(IList<AffixedItem> list, Action<Item> callback = null)
-    {
-        foreach (AffixedItem item in list)
+        foreach (Equipment item in equipmentInventory)
         {
             AddInventorySlot(item, callback);
         }
@@ -97,6 +81,18 @@ public class InventoryScrollWindow : MonoBehaviour
         {
             if (filter.Contains(item.Base))
                 continue;
+            AddInventorySlot(item, currentCallback);
+        }
+    }
+
+    public void ShowEquipmentFiltered(Func<Equipment, bool> filter, bool resetCallback)
+    {
+        if (resetCallback)
+            currentCallback = null;
+        ClearSlots();
+
+        foreach (Equipment item in GameManager.Instance.PlayerStats.EquipmentInventory.Where(filter))
+        {
             AddInventorySlot(item, currentCallback);
         }
     }

@@ -1,5 +1,4 @@
-﻿
-public enum GroupType
+﻿public enum GroupType
 {
     NO_GROUP = 0,
     EQUIPMENT,
@@ -53,7 +52,8 @@ public enum GroupType
     SPEAR,
     BOW,
     CROSSBOW,
-    FISTS,
+    FIST,
+    DUAL_WIELD,
     FIRE = 0x100,
     COLD,
     LIGHTNING,

@@ -7,10 +7,10 @@ public class FractureEffect : ActorStatusEffect
     protected int physReduction;
     protected int elementalReduction;
 
-    public FractureEffect(Actor target, Actor source, float effectiveness, float duration) : base(target)
+    public FractureEffect(Actor target, Actor source, float effectiveness, float duration) : base(target, source)
     {
         effectType = EffectType.FRACTURE;
-        physReduction = (int)(-10f * effectiveness);
+        physReduction = (int)(-7f * effectiveness);
         elementalReduction = (int)(-5f * effectiveness);
         this.duration = duration;
     }
@@ -33,5 +33,10 @@ public class FractureEffect : ActorStatusEffect
         float tick = DurationUpdate(deltaTime);
         if (duration <= 0)
             OnExpire();
+    }
+
+    public override float GetEffectValue()
+    {
+        return physReduction;
     }
 }

@@ -39,7 +39,7 @@ public class EnemyData : ActorData
         for (int i = 0; i < (int)ElementType.COUNT; i++)
         {
             ElementType element = (ElementType)i;
-            Resistances[element] = enemyBase.resistances[i];
+            ElementData[element] = enemyBase.resistances[i];
         }
     }
 
@@ -74,7 +74,6 @@ public class EnemyData : ActorData
     public override void GetTotalStatBonus(BonusType type, Dictionary<BonusType, StatBonus> abilityBonusProperties, StatBonus inputBonus)
     {
         StatBonus resultBonus;
-        StatBonus abilityBonus = null;
         if (inputBonus == null)
             resultBonus = new StatBonus();
         else
@@ -86,7 +85,7 @@ public class EnemyData : ActorData
             bonuses.Add(statBonus);
         if (mobBonuses.TryGetValue(type, out StatBonus mobBonus))
             bonuses.Add(mobBonus);
-        if (abilityBonusProperties != null && abilityBonusProperties.TryGetValue(type, out abilityBonus))
+        if (abilityBonusProperties != null && abilityBonusProperties.TryGetValue(type, out StatBonus abilityBonus))
             bonuses.Add(abilityBonus);
         if (temporaryBonuses.TryGetValue(type, out StatBonus temporaryBonus))
             bonuses.Add(temporaryBonus);
@@ -100,7 +99,7 @@ public class EnemyData : ActorData
         {
             if (bonus.HasFixedModifier)
             {
-                resultBonus.AddBonus(ModifyType.SET, bonus.FixedModifier);
+                resultBonus.AddBonus(ModifyType.FIXED_TO, bonus.FixedModifier);
                 return;
             }
             resultBonus.AddBonus(ModifyType.FLAT_ADDITION, bonus.FlatModifier);
@@ -119,6 +118,6 @@ public class EnemyData : ActorData
 
     public override int GetResistance(ElementType element)
     {
-        return Resistances.GetUncapResistance(element);
+        return ElementData.GetUncapResistance(element);
     }
 }

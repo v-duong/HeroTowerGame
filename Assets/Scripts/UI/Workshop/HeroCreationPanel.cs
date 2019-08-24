@@ -55,8 +55,7 @@ public class HeroCreationPanel : MonoBehaviour
     public void PreviewTreeOnClick(int slotNum)
     {
         ArchetypeUITreeWindow treeWindow = UIManager.Instance.ArchetypeUITreeWindow;
-        
-        
+
         if (slotNum == 1)
         {
             if (primaryArchetype == null)

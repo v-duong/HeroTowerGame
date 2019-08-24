@@ -17,10 +17,9 @@ public static class Helpers
     private static List<BonusType> maxDamageTypes;
     private static List<BonusType> damageTypes;
 
-    public static void GetDamageTypes(ElementType element, AbilityType abilityType, AbilityShotType shotType, IList<GroupType> tags, List<BonusType> min, List<BonusType> max, List<BonusType> multi)
+    public static void GetDamageTypes(ElementType element, AbilityType abilityType, AbilityShotType shotType, ICollection<GroupType> tags, HashSet<BonusType> min, HashSet<BonusType> max, HashSet<BonusType> multi)
     {
-        multi.Add(BonusType.GLOBAL_DAMAGE);
-
+        /*
         switch (element)
         {
             case ElementType.PHYSICAL:
@@ -138,6 +137,20 @@ public static class Helpers
             default:
                 break;
         }
+        */
+
+        min.Add((BonusType)Enum.Parse(typeof(BonusType), "GLOBAL_" + element.ToString() + "_DAMAGE_MIN"));
+        max.Add((BonusType)Enum.Parse(typeof(BonusType), "GLOBAL_" + element.ToString() + "_DAMAGE_MAX"));
+        multi.Add((BonusType)Enum.Parse(typeof(BonusType), "GLOBAL_" + element.ToString() + "_DAMAGE"));
+
+        if (abilityType == AbilityType.ATTACK || abilityType == AbilityType.SPELL)
+        {
+            min.Add((BonusType)Enum.Parse(typeof(BonusType), abilityType.ToString() + "_" + element.ToString() + "_DAMAGE_MIN"));
+            max.Add((BonusType)Enum.Parse(typeof(BonusType), abilityType.ToString() + "_" + element.ToString() + "_DAMAGE_MAX"));
+            multi.UnionWith(GetWeaponDamageBonusTypes(abilityType, tags, element));
+        }
+
+        multi.Add(BonusType.GLOBAL_DAMAGE);
 
         if (abilityType == AbilityType.ATTACK)
         {
@@ -169,6 +182,117 @@ public static class Helpers
         {
             multi.Add(BonusType.RANGED_ATTACK_DAMAGE);
         }
+    }
+
+    public static List<BonusType> GetWeaponDamageBonusTypes(AbilityType abilityType, ICollection<GroupType> tags, ElementType element)
+    {
+        List<BonusType> weaponBonuses = new List<BonusType>();
+
+        foreach (GroupType groupTag in tags)
+        {
+            string weaponType = GetWeaponTypeString(groupTag);
+
+            if (!string.IsNullOrEmpty(weaponType))
+            {
+                if (Enum.TryParse(weaponType + "_GLOBAL_DAMAGE", out BonusType globalDamage))
+                    weaponBonuses.Add(globalDamage);
+
+                if (abilityType == AbilityType.ATTACK)
+                {
+                    if (element == ElementType.PHYSICAL)
+                        weaponBonuses.Add((BonusType)Enum.Parse(typeof(BonusType), weaponType + "_PHYSICAL_DAMAGE"));
+                    else if (element == ElementType.VOID || element == ElementType.DIVINE)
+                        weaponBonuses.Add((BonusType)Enum.Parse(typeof(BonusType), weaponType + "_PRIMORDIAL_DAMAGE"));
+                    else
+                        weaponBonuses.Add((BonusType)Enum.Parse(typeof(BonusType), weaponType + "_ELEMENTAL_DAMAGE"));
+                }
+                else if (abilityType == AbilityType.SPELL)
+                {
+                    weaponBonuses.Add((BonusType)Enum.Parse(typeof(BonusType), weaponType + "_SPELL_DAMAGE"));
+                }
+            }
+        }
+
+        return weaponBonuses;
+    }
+
+    public static void GetWeaponSecondaryBonusTypes(AbilityType abilityType, ICollection<GroupType> tags,
+        List<BonusType> critBonusTypes, List<BonusType> critDamageBonusTypes, List<BonusType> speedBonusTypes, List<BonusType> rangeBonusTypes)
+    {
+        foreach (GroupType groupTag in tags)
+        {
+            string weaponType = GetWeaponTypeString(groupTag);
+
+            if (!string.IsNullOrEmpty(weaponType))
+            {
+                if (abilityType == AbilityType.ATTACK)
+                {
+                    critBonusTypes.Add((BonusType)Enum.Parse(typeof(BonusType), weaponType + "_CRITICAL_CHANCE"));
+                    critDamageBonusTypes.Add((BonusType)Enum.Parse(typeof(BonusType), weaponType + "_CRITICAL_DAMAGE"));
+                    speedBonusTypes.Add((BonusType)Enum.Parse(typeof(BonusType), weaponType + "_ATTACK_SPEED"));
+                }
+                else if (abilityType == AbilityType.SPELL)
+                {
+                    speedBonusTypes.Add((BonusType)Enum.Parse(typeof(BonusType), weaponType + "_CAST_SPEED"));
+                }
+            }
+        }
+    }
+
+    private static string GetWeaponTypeString(GroupType groupTag)
+    {
+        string weaponType;
+        switch (groupTag)
+        {
+            case GroupType.ONE_HANDED_WEAPON:
+                weaponType = "ONE_HANDED";
+                break;
+
+            case GroupType.TWO_HANDED_WEAPON:
+                weaponType = "TWO_HANDED";
+                break;
+
+            case GroupType.ONE_HANDED_SWORD:
+            case GroupType.TWO_HANDED_SWORD:
+                weaponType = "SWORD";
+                break;
+
+            case GroupType.ONE_HANDED_AXE:
+            case GroupType.TWO_HANDED_AXE:
+                weaponType = "AXE";
+                break;
+
+            case GroupType.ONE_HANDED_MACE:
+            case GroupType.TWO_HANDED_MACE:
+                weaponType = "MACE";
+                break;
+
+            case GroupType.ONE_HANDED_GUN:
+            case GroupType.TWO_HANDED_GUN:
+                weaponType = "GUN";
+                break;
+
+            case GroupType.BOW:
+            case GroupType.CROSSBOW:
+                weaponType = "BOW";
+                break;
+
+            case GroupType.GRIMOIRE:
+            case GroupType.WAND:
+            case GroupType.STAFF:
+            case GroupType.SPEAR:
+            case GroupType.FIST:
+            case GroupType.MELEE_WEAPON:
+            case GroupType.RANGED_WEAPON:
+                weaponType = groupTag.ToString();
+                break;
+
+            default:
+                weaponType = string.Empty;
+                break;
+        }
+
+        return weaponType;
     }
 
     public static Vector3 ReturnCenterOfCell(Vector3 v)
@@ -205,7 +329,7 @@ public static class Helpers
 
     public static int GetRequiredExperience(int level)
     {
-        double exp = Math.Pow(SCALING_FACTOR, (level-1) * 1.333 - 30) * (level-1) * 500;
+        double exp = Math.Pow(SCALING_FACTOR, (level - 1) * 1.333 - 30) * (level - 1) * 500;
         return (int)exp;
     }
 
@@ -241,15 +365,13 @@ public static class Helpers
     public static WeightList<string> CreateWeightListFromWeightBases(List<WeightBase> weightBases)
     {
         WeightList<string> ret = new WeightList<string>();
-        foreach(WeightBase weightBase in weightBases)
+        foreach (WeightBase weightBase in weightBases)
         {
             ret.Add(weightBase.idName, weightBase.weight);
         }
         return ret;
     }
 }
-
-
 
 public class WeightList<T>
 {

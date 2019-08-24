@@ -96,7 +96,7 @@ public class Weapon : Equipment
             case GroupType.ONE_HANDED_AXE:
             case GroupType.ONE_HANDED_SWORD:
             case GroupType.ONE_HANDED_MACE:
-            case GroupType.FISTS:
+            case GroupType.FIST:
                 tags.Add(GroupType.ATTACK_WEAPON);
                 tags.Add(GroupType.MELEE_WEAPON);
                 tags.Add(GroupType.ONE_HANDED_WEAPON);

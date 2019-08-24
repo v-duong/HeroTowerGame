@@ -13,6 +13,7 @@ public abstract class ActorStatusEffect
     protected abstract void OnApply();
     public abstract void OnExpire();
     public abstract void Update(float deltaTime);
+    public abstract float GetEffectValue();
 
     protected float DurationUpdate(float dT)
     {
@@ -32,9 +33,10 @@ public abstract class ActorStatusEffect
         duration = this.duration;
     }
 
-    public ActorStatusEffect(Actor target)
+    public ActorStatusEffect(Actor target, Actor source)
     {
         this.target = target;
+        Source = source;
         OnApply();
     }
 }

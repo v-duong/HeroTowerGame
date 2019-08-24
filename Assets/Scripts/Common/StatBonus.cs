@@ -48,7 +48,7 @@ public class StatBonus
                 AddToMultiply(value);
                 return;
 
-            case ModifyType.SET:
+            case ModifyType.FIXED_TO:
                 AddFixedBonus(value);
                 return;
         }
@@ -70,7 +70,7 @@ public class StatBonus
                 RemoveFromMultiply(value);
                 return;
 
-            case ModifyType.SET:
+            case ModifyType.FIXED_TO:
                 RemoveFixedBonus(value);
                 return;
         }
@@ -146,6 +146,6 @@ public class StatBonus
         {
             return FixedModifier;
         }
-        return (stat + FlatModifier) * (1f + (AdditiveModifier) / 100f) * CurrentMultiplier;
+        return (stat + FlatModifier) * (1f + AdditiveModifier / 100f) * CurrentMultiplier;
     }
 }

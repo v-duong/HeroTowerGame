@@ -77,7 +77,7 @@ public class ArchetypeNodeInfoPanel : MonoBehaviour
                     else
                         bonusValue = bonusProperty.growthValue * (currentLevel);
 
-                    if (bonusValue == 0 && (bonusProperty.modifyType != ModifyType.MULTIPLY || bonusProperty.modifyType != ModifyType.SET))
+                    if (bonusValue == 0 && (bonusProperty.modifyType != ModifyType.MULTIPLY || bonusProperty.modifyType != ModifyType.FIXED_TO))
                         continue;
 
                     infoText.text += LocalizationManager.Instance.GetLocalizationText_BonusType(bonusProperty.bonusType, bonusProperty.modifyType, bonusValue);
@@ -94,7 +94,7 @@ public class ArchetypeNodeInfoPanel : MonoBehaviour
                     else
                         bonusValue = bonusProperty.growthValue * (currentLevel + 1);
 
-                    if (bonusValue == 0 && (bonusProperty.modifyType != ModifyType.MULTIPLY || bonusProperty.modifyType != ModifyType.SET))
+                    if (bonusValue == 0 && (bonusProperty.modifyType != ModifyType.MULTIPLY || bonusProperty.modifyType != ModifyType.FIXED_TO))
                         continue;
 
                     infoText.text += LocalizationManager.Instance.GetLocalizationText_BonusType(bonusProperty.bonusType, bonusProperty.modifyType, bonusValue);
@@ -122,7 +122,7 @@ public class ArchetypeNodeInfoPanel : MonoBehaviour
             foreach (NodeScalingBonusProperty bonusProperty in node.bonuses)
             {
                 bonusValue = bonusProperty.growthValue;
-                if (bonusValue == 0 && (bonusProperty.modifyType != ModifyType.MULTIPLY || bonusProperty.modifyType != ModifyType.SET))
+                if (bonusValue == 0 && (bonusProperty.modifyType != ModifyType.MULTIPLY || bonusProperty.modifyType != ModifyType.FIXED_TO))
                     continue;
 
                 infoText.text += LocalizationManager.Instance.GetLocalizationText_BonusType(bonusProperty.bonusType, bonusProperty.modifyType, bonusValue);
@@ -134,7 +134,7 @@ public class ArchetypeNodeInfoPanel : MonoBehaviour
                 foreach (NodeScalingBonusProperty bonusProperty in node.bonuses)
                 {
                     bonusValue = bonusProperty.growthValue * (node.maxLevel - 1) + bonusProperty.finalLevelValue;
-                    if (bonusValue == 0 && (bonusProperty.modifyType != ModifyType.MULTIPLY || bonusProperty.modifyType != ModifyType.SET))
+                    if (bonusValue == 0 && (bonusProperty.modifyType != ModifyType.MULTIPLY || bonusProperty.modifyType != ModifyType.FIXED_TO))
                         continue;
 
                     infoText.text += LocalizationManager.Instance.GetLocalizationText_BonusType(bonusProperty.bonusType, bonusProperty.modifyType, bonusValue);

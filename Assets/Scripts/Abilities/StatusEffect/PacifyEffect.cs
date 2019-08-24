@@ -6,7 +6,7 @@ public class PacifyEffect : ActorStatusEffect
 {
     protected int effectPower;
 
-    public PacifyEffect(Actor target, Actor source, float effectiveness, float duration) : base(target)
+    public PacifyEffect(Actor target, Actor source, float effectiveness, float duration) : base(target, source)
     {
         effectType = EffectType.PACIFY;
         effectPower = (int)(effectiveness * -15f);
@@ -29,5 +29,10 @@ public class PacifyEffect : ActorStatusEffect
         float tick = DurationUpdate(deltaTime);
         if (duration <= 0)
             OnExpire();
+    }
+
+    public override float GetEffectValue()
+    {
+        return effectPower;
     }
 }

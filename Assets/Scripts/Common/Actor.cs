@@ -3,6 +3,8 @@ using UnityEngine;
 
 public abstract class Actor : MonoBehaviour
 {
+    public const float BASE_SHIELD_RESTORE_DELAY = 3.0f;
+
     public ActorData Data { get; protected set; }
     public float actorTimeScale = 1f;
     private readonly List<ActorStatusEffect> statusEffects = new List<ActorStatusEffect>();
@@ -39,6 +41,9 @@ public abstract class Actor : MonoBehaviour
     protected void Update()
     {
         UpdateStatusEffects();
+        ApplyRegenEffects();
+        if (Data.IsDead)
+            Death();
         if (!this.gameObject.activeSelf)
             return;
         if (isMoving)
@@ -56,16 +61,32 @@ public abstract class Actor : MonoBehaviour
 
     public void AddStatusEffect(ActorStatusEffect statusEffect)
     {
-        statusEffects.Add(statusEffect);
         if (statusEffect.effectType == EffectType.AURA_BUFF || statusEffect.effectType == EffectType.SELF_BUFF)
             buffEffects.Add((StatBonusBuffEffect)statusEffect);
+        else
+        {
+            ActorStatusEffect existingStatus = statusEffects.Find(x => x.GetType() == statusEffect.GetType());
+
+            if (existingStatus != null)
+            {
+                if (existingStatus.GetEffectValue() < statusEffect.GetEffectValue())
+                    RemoveStatusEffect(existingStatus);
+                else
+                    return;
+            }
+
+            statusEffects.Add(statusEffect);
+        }
     }
 
     public void RemoveStatusEffect(ActorStatusEffect statusEffect)
     {
-        statusEffects.Remove(statusEffect);
         if (statusEffect.effectType == EffectType.AURA_BUFF || statusEffect.effectType == EffectType.SELF_BUFF)
             buffEffects.Remove((StatBonusBuffEffect)statusEffect);
+        else
+        {
+            statusEffects.Remove(statusEffect);
+        }
     }
 
     public StatBonusBuffEffect GetBuffStatusEffect(string statusName)
@@ -111,7 +132,7 @@ public abstract class Actor : MonoBehaviour
         else
             Data.CurrentHealth -= mod;
 
-        healthBar.UpdateHealthBar(Data.MaximumHealth, Data.CurrentHealth, Data.MaximumManaShield, Data.MaximumHealth);
+        healthBar.UpdateHealthBar(Data.MaximumHealth, Data.CurrentHealth, Data.MaximumManaShield, Data.CurrentManaShield);
         if (Data.CurrentHealth <= 0)
         {
             Death();
@@ -120,24 +141,47 @@ public abstract class Actor : MonoBehaviour
 
     public float ModifyCurrentShield(float mod)
     {
-        if (Data.CurrentManaShield == 0)
+        float remainingDamage;
+
+        if (Data.CurrentManaShield == 0 || Data.MaximumManaShield == 0)
             return mod;
-        else if (Data.CurrentManaShield - mod > Data.MaximumManaShield)
+
+        if (Data.CurrentManaShield - mod > Data.MaximumManaShield)
         {
             Data.CurrentManaShield = Data.MaximumManaShield;
-            return 0;
+            remainingDamage = 0;
         }
         else if (Data.CurrentManaShield < mod)
         {
-            mod -= Data.CurrentManaShield;
             Data.CurrentManaShield = 0;
-            return mod;
+            remainingDamage = mod - Data.CurrentManaShield;
         }
         else
         {
             Data.CurrentManaShield -= mod;
-            return 0;
+            remainingDamage = 0;
         }
+
+        if (mod > 0)
+        {
+            Data.CurrentShieldDelay = BASE_SHIELD_RESTORE_DELAY * Data.ShieldRestoreDelayModifier;
+        }
+
+        healthBar.UpdateHealthBar(Data.MaximumHealth, Data.CurrentHealth, Data.MaximumManaShield, Data.CurrentManaShield);
+
+        return remainingDamage;
+    }
+
+    public void ApplyRegenEffects()
+    {
+        if (Data.MaximumManaShield > 0)
+        {
+            float shieldModifier = Data.ShieldRegenRate;
+            if (Data.CurrentShieldDelay <= 0f)
+                shieldModifier += Data.ShieldRestoreRate;
+            ModifyCurrentShield(shieldModifier * Time.deltaTime);
+        }
+        ModifyCurrentHealth(Data.HealthRegenRate * Time.deltaTime);
     }
 
     public void ApplyDamage(Dictionary<ElementType, float> damage, AbilityOnHitDataContainer onHitData, bool isHit)
@@ -219,6 +263,7 @@ public abstract class Actor : MonoBehaviour
             total = total * onHitData.vsBossDamage;
 
         total = ModifyCurrentShield(total);
+
         if (Data.HealthIsHitsToKill && isHit && total >= 1f)
             ModifyCurrentHealth(1);
         else
@@ -269,6 +314,7 @@ public abstract class Actor : MonoBehaviour
     public void ApplySingleElementDamage(ElementType element, float damage, int resistanceNegation, bool isHit = true)
     {
         float finalDamage = (1f - (Data.GetResistance(element) - resistanceNegation) / 100f) * damage;
+        finalDamage = ModifyCurrentShield(finalDamage);
         ModifyCurrentHealth(finalDamage);
     }
 

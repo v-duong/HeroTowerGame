@@ -13,23 +13,26 @@ public enum ElementType
     COUNT
 }
 
-public class ElementResistances
+public class ElementalData
 {
     private readonly Dictionary<ElementType, int> resists;
     private readonly Dictionary<ElementType, int> resistCaps;
+    private readonly Dictionary<ElementType, int> negations;
 
-    public ElementResistances()
+    public ElementalData()
     {
         resists = new Dictionary<ElementType, int>();
         resistCaps = new Dictionary<ElementType, int>();
+        negations = new Dictionary<ElementType, int>();
         for (int i = 0; i < (int)ElementType.COUNT; i++)
         {
             resists[(ElementType)i] = 0;
             resistCaps[(ElementType)i] = 80;
+            negations[(ElementType)i] = 0;
         }
     }
 
-    public ElementResistances(Dictionary<ElementType, int> value)
+    public ElementalData(Dictionary<ElementType, int> value)
     {
         resists = new Dictionary<ElementType, int>();
         foreach (KeyValuePair<ElementType, int> e in value)
@@ -51,6 +54,16 @@ public class ElementResistances
     public void SetResistanceCap(ElementType e, int value)
     {
         resistCaps[e] = value;
+    }
+
+    public int GetNegation(ElementType e)
+    {
+        return negations[e];
+    }
+
+    public void SetNegation(ElementType e, int value)
+    {
+        negations[e] = value;
     }
 
     public int this[ElementType i]

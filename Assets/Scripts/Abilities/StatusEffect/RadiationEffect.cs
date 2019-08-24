@@ -6,7 +6,7 @@ public class RadiationEffect : ActorStatusEffect
     protected float damagePerSecond;
     protected float timeSinceLastCheck;
 
-    public RadiationEffect(Actor target, Actor source, float inputDamage, float duration) : base(target)
+    public RadiationEffect(Actor target, Actor source, float inputDamage, float duration) : base(target, source)
     {
         effectType = EffectType.RADIATION;
         damagePerSecond = inputDamage / 24f;
@@ -56,5 +56,10 @@ public class RadiationEffect : ActorStatusEffect
             Actor actor = c.gameObject.GetComponent<Actor>();
             actor.ApplySingleElementDamage(ElementType.VOID, damagePerSecond, Source.Data.VoidNegation, false);
         }
+    }
+
+    public override float GetEffectValue()
+    {
+        return damagePerSecond * (target.Data.GetResistance(ElementType.VOID) - Source.Data.VoidNegation) / 100f;
     }
 }

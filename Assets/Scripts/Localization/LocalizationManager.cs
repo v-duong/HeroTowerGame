@@ -207,7 +207,7 @@ public class LocalizationManager : MonoBehaviour
         {
             output += " x" + (1 + value / 100d).ToString("F2") + "\n";
         }
-        else if (modifyType == ModifyType.SET)
+        else if (modifyType == ModifyType.FIXED_TO)
         {
             output += " is" + value + "\n";
         }

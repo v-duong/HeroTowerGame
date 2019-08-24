@@ -6,7 +6,7 @@ public class BurnEffect : ActorStatusEffect
 {
     protected float damagePerSecond;
 
-    public BurnEffect(Actor target, Actor source, float inputDamage, float duration) : base(target)
+    public BurnEffect(Actor target, Actor source, float inputDamage, float duration) : base(target, source)
     {
         effectType = EffectType.BURNING;
         damagePerSecond = inputDamage * 0.5f;
@@ -29,5 +29,10 @@ public class BurnEffect : ActorStatusEffect
         target.ApplySingleElementDamage(ElementType.FIRE, damagePerSecond * tick, Source.Data.FireNegation, false);
         if (duration <= 0)
             OnExpire();
+    }
+
+    public override float GetEffectValue()
+    {
+        return damagePerSecond * (target.Data.GetResistance(ElementType.FIRE) - Source.Data.FireNegation) / 100f;
     }
 }

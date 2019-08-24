@@ -5,7 +5,7 @@ public class ElectrocuteEffect : ActorStatusEffect
     protected float damage;
     protected float timeElapsed;
 
-    public ElectrocuteEffect(Actor target, Actor source, float inputDamage, float duration) : base(target)
+    public ElectrocuteEffect(Actor target, Actor source, float inputDamage, float duration) : base(target, source)
     {
         effectType = EffectType.ELECTROCUTE;
         this.damage = inputDamage * 0.25f;
@@ -53,5 +53,10 @@ public class ElectrocuteEffect : ActorStatusEffect
         timeElapsed += tick;
         if (duration <= 0)
             OnExpire();
+    }
+
+    public override float GetEffectValue()
+    {
+        return damage * (target.Data.GetResistance(ElementType.LIGHTNING) - Source.Data.LightningNegation) / 100f;
     }
 }

@@ -1,25 +1,30 @@
-﻿using System.Collections;
+﻿using System;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using TMPro;
-using System;
 
 public class ItemCraftingPanel : MonoBehaviour
 {
     public AffixedItem currentItem;
     private Func<bool> selectedOption = null;
     private Button currentSelectedButton = null;
+
     [SerializeField]
     private ItemCraftingSlot itemSlot;
+
     [SerializeField]
     private TextMeshProUGUI prefixes;
+
     [SerializeField]
     private TextMeshProUGUI suffixes;
+
     [SerializeField]
     private TextMeshProUGUI leftInfo;
+
     [SerializeField]
     private TextMeshProUGUI rightInfo;
+
     [SerializeField]
     private Button confirmButton;
 
@@ -37,7 +42,8 @@ public class ItemCraftingPanel : MonoBehaviour
 
     public void ItemSlotOnClick()
     {
-        UIManager.Instance.OpenInventoryWindow(false, false);
+        UIManager.Instance.OpenInventoryWindow(false, false, false);
+        UIManager.Instance.InvScrollContent.ShowEquipmentFiltered(x => x.IsEquipped == false, true);
         UIManager.Instance.InvScrollContent.SetCallback(ItemSlotOnClick_Callback);
     }
 
@@ -132,7 +138,6 @@ public class ItemCraftingPanel : MonoBehaviour
             primDamage.Add(LocalizationManager.BuildElementalDamageString(range.min + "-" + range.max, ElementType.VOID));
         }
 
-
         if (weaponItem.PhysicalDamage.min != 0 && weaponItem.PhysicalDamage.max != 0)
         {
             dps = (weaponItem.PhysicalDamage.min + weaponItem.PhysicalDamage.max) / 2f * weaponItem.AttackSpeed;
@@ -203,6 +208,7 @@ public class ItemCraftingPanel : MonoBehaviour
             return;
         SetSelectedOption(currentItem.UpgradeNormalToUncommon);
     }
+
     public void NormalToRareOnClick(Button button)
     {
         if (currentItem == null)
@@ -223,16 +229,18 @@ public class ItemCraftingPanel : MonoBehaviour
         {
             selectedOption = option;
             confirmButton.interactable = true;
-        } else
+        }
+        else
         {
             selectedOption = null;
             confirmButton.interactable = false;
         }
-
     }
 
     public void ApplyActionOnClick()
     {
+        if (currentItem is Equipment equip && equip.IsEquipped)
+            return;
         selectedOption?.Invoke();
         UpdatePanels();
     }
