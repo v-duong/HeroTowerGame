@@ -115,7 +115,7 @@ public class EnemyActor : Actor
     public void SetBase(EnemyBase enemyBase, RarityType rarity, int level)
     {
         enemyRarity = rarity;
-        Data.SetBase(enemyBase, rarity, level);
+        Data.SetBase(enemyBase, rarity, level, this);
         if (rarity == RarityType.RARE)
         {
             AddRandomMobAffixes(3);
@@ -163,7 +163,7 @@ public class EnemyActor : Actor
             bonusTags.Add(affix.Base.AffixBonusTypeString);
             foreach (AffixBonusProperty prop in affix.Base.affixBonuses)
             {
-                Data.AddStatBonus(affix.GetAffixValue(prop.bonusType), prop.bonusType, prop.modifyType);
+                Data.AddStatBonus(prop.bonusType, prop.restriction, prop.modifyType, affix.GetAffixValue(prop.bonusType));
             }
         }
     }

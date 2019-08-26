@@ -147,7 +147,6 @@ public static class Helpers
         {
             min.Add((BonusType)Enum.Parse(typeof(BonusType), abilityType.ToString() + "_" + element.ToString() + "_DAMAGE_MIN"));
             max.Add((BonusType)Enum.Parse(typeof(BonusType), abilityType.ToString() + "_" + element.ToString() + "_DAMAGE_MAX"));
-            multi.UnionWith(GetWeaponDamageBonusTypes(abilityType, tags, element));
         }
 
         multi.Add(BonusType.GLOBAL_DAMAGE);

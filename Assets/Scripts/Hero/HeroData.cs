@@ -16,10 +16,9 @@ public class HeroData : ActorData
 
     public int ArchetypePoints { get; private set; }
 
-    private Dictionary<BonusType, StatBonus> archetypeStatBonuses;
+    //private Dictionary<BonusType, StatBonus> archetypeStatBonuses;
     private Dictionary<BonusType, StatBonus> attributeStatBonuses;
-
-    //private Dictionary<BonusType, StatBonusCollection> archetypeStatBonuses;
+    private Dictionary<BonusType, StatBonusCollection> archetypeStatBonuses;
 
     private Equipment[] equipList;
     private HeroArchetypeData[] archetypeList;
@@ -47,6 +46,7 @@ public class HeroData : ActorData
         CurrentManaShield = MaximumManaShield;
         CurrentSoulPoints = 50;
         HeroActor hero = actor.AddComponent<HeroActor>();
+        CurrentActor = hero;
         hero.Initialize(this);
     }
 
@@ -72,8 +72,8 @@ public class HeroData : ActorData
         assignedTeam = -1;
         equipList = new Equipment[10];
         archetypeList = new HeroArchetypeData[2];
-        archetypeStatBonuses = new Dictionary<BonusType, StatBonus>();
-        //archetypeStatBonuses = new Dictionary<BonusType, StatBonusCollection>();
+        //archetypeStatBonuses = new Dictionary<BonusType, StatBonus>();
+        archetypeStatBonuses = new Dictionary<BonusType, StatBonusCollection>();
         attributeStatBonuses = new Dictionary<BonusType, StatBonus>();
         abilitySlotList = new List<AbilitySlot>() { new AbilitySlot(0), new AbilitySlot(1) };
         UpdateActorData();
@@ -242,7 +242,7 @@ public class HeroData : ActorData
             foreach (AffixBonusProperty b in affix.Base.affixBonuses)
             {
                 if (b.bonusType < (BonusType)0x700) //ignore local mods
-                    AddStatBonus(affix.GetAffixValue(b.bonusType), b.bonusType, b.modifyType);
+                    AddStatBonus(b.bonusType, b.restriction, b.modifyType, affix.GetAffixValue(b.bonusType));
             }
         }
     }
@@ -254,27 +254,28 @@ public class HeroData : ActorData
             foreach (AffixBonusProperty b in affix.Base.affixBonuses)
             {
                 if (b.bonusType < (BonusType)0x700) //ignore local mods
-                    RemoveStatBonus(affix.GetAffixValue(b.bonusType), b.bonusType, b.modifyType);
+                    RemoveStatBonus(b.bonusType, b.restriction, b.modifyType, affix.GetAffixValue(b.bonusType));
             }
         }
     }
 
-    public void AddArchetypeStatBonus(float value, BonusType type, ModifyType modifier)
+    public void AddArchetypeStatBonus(BonusType type, GroupType restriction, ModifyType modifier, float value)
     {
         if (!archetypeStatBonuses.ContainsKey(type))
-            archetypeStatBonuses.Add(type, new StatBonus());
-        archetypeStatBonuses[type].AddBonus(modifier, value);
+            archetypeStatBonuses[type] = new StatBonusCollection();
+        archetypeStatBonuses[type].AddBonus(restriction, modifier, value);
     }
 
-    public void RemoveArchetypeStatBonus(float value, BonusType type, ModifyType modifier)
+    public void RemoveArchetypeStatBonus(BonusType type, GroupType restriction, ModifyType modifier, float value)
     {
         if (!archetypeStatBonuses.ContainsKey(type))
             return;
-        archetypeStatBonuses[type].RemoveBonus(modifier, value);
+        archetypeStatBonuses[type].RemoveBonus(restriction, modifier, value);
     }
 
     public override void UpdateActorData()
     {
+        groupTypes = GetGroupTypes();
         UpdateHeroAttributes();
         UpdateAbilities();
         UpdateDefenses();
@@ -417,29 +418,25 @@ public class HeroData : ActorData
         ResolveRating = CalculateActorStat(BonusType.GLOBAL_RESOLVE_RATING, BaseResolveRating + ResolveFromEquip);
     }
 
-    public void GetTotalStatBonus(BonusType type, StatBonus bonus)
-    {
-        GetTotalStatBonus(type, null, bonus);
-    }
-
-    public override void GetTotalStatBonus(BonusType type, Dictionary<BonusType, StatBonus> abilityBonusProperties, StatBonus inputStatBonus)
+    public override void GetTotalStatBonus(BonusType type, IEnumerable<GroupType> tags, Dictionary<BonusType, StatBonus> abilityBonusProperties, StatBonus inputStatBonus)
     {
         StatBonus resultBonus;
-        StatBonus abilityBonus = null;
         if (inputStatBonus == null)
             resultBonus = new StatBonus();
         else
             resultBonus = inputStatBonus;
-       
+
         List<StatBonus> bonuses = new List<StatBonus>();
 
-        if (statBonuses.TryGetValue(type, out StatBonus statBonus))
-            bonuses.Add(statBonus);
+        if (statBonuses.TryGetValue(type, out StatBonusCollection statBonus))
+            bonuses.Add(statBonus.GetTotalStatBonus(tags));
         if (attributeStatBonuses.TryGetValue(type, out StatBonus attributeBonus))
             bonuses.Add(attributeBonus);
-        if (archetypeStatBonuses.TryGetValue(type, out StatBonus archetypeBonus))
-            bonuses.Add(archetypeBonus);
-        if (abilityBonusProperties != null && abilityBonusProperties.TryGetValue(type, out abilityBonus))
+        if (archetypeStatBonuses.TryGetValue(type, out StatBonusCollection archetypeBonuses))
+        {
+            bonuses.Add(archetypeBonuses.GetTotalStatBonus(tags));
+        }
+        if (abilityBonusProperties != null && abilityBonusProperties.TryGetValue(type, out StatBonus abilityBonus))
             bonuses.Add(abilityBonus);
         if (temporaryBonuses.TryGetValue(type, out StatBonus temporaryBonus))
             bonuses.Add(temporaryBonus);
@@ -479,6 +476,31 @@ public class HeroData : ActorData
     public override int GetResistance(ElementType element)
     {
         return ElementData[element];
+    }
+
+    protected override HashSet<GroupType> GetGroupTypes()
+    {
+        return GetGroupTypes(true);
+    }
+
+    public HashSet<GroupType> GetGroupTypes(bool includeWeapons)
+    {
+        HashSet<GroupType> types = new HashSet<GroupType>() { GroupType.NO_GROUP };
+
+        foreach(Equipment equipment in equipList)
+        {
+            if (equipment == null)
+            {
+                continue;
+            }
+            types.UnionWith(equipment.GetGroupTypes());
+        }
+
+        if (CurrentActor != null)
+        {
+            types.UnionWith(CurrentActor.GetActorTags());
+        }
+        return types;
     }
 
     private class AbilitySlot

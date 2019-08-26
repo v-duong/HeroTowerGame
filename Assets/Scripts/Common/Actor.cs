@@ -53,6 +53,12 @@ public abstract class Actor : MonoBehaviour
         healthBar.UpdatePosition(this.transform);
     }
 
+    public HashSet<GroupType> GetActorTags()
+    {
+        HashSet<GroupType> tags = new HashSet<GroupType>();
+        return tags;
+    }
+
     public void InitializeHealthBar()
     {
         healthBar = GetComponentInChildren<UIHealthBar>();

@@ -55,6 +55,9 @@ public struct NodeScalingBonusProperty
     public readonly float growthValue;
     [JsonProperty]
     public readonly float finalLevelValue;
+    [JsonConverter(typeof(StringEnumConverter))]
+    [JsonProperty]
+    public readonly GroupType restriction;
 }
 
 public struct AbilityScalingBonusProperty
@@ -69,6 +72,9 @@ public struct AbilityScalingBonusProperty
     public readonly float initialValue;
     [JsonProperty]
     public readonly float growthValue;
+    [JsonConverter(typeof(StringEnumConverter))]
+    [JsonProperty]
+    public readonly GroupType restriction;
 }
 
 public enum NodeType

@@ -86,18 +86,19 @@ public class HeroArchetypeData : IAbilitySource
             AvailableAbilityList.Add(node.GetAbility());
         foreach (var bonus in node.bonuses)
         {
+            float bonusValue = 0f;
             if (nodeLevel.level == 1)
             {
-                hero.AddArchetypeStatBonus(bonus.growthValue, bonus.bonusType, bonus.modifyType);
-                if (nodeLevel.bonusLevels > 0)
-                {
-                    hero.AddArchetypeStatBonus(bonus.growthValue * nodeLevel.bonusLevels, bonus.bonusType, bonus.modifyType);
-                }
+                bonusValue = bonus.growthValue;
+                if (nodeLevel.bonusLevels > 0 && node.maxLevel > 1)
+                    bonusValue += bonus.growthValue * nodeLevel.bonusLevels;
             }
             else if (nodeLevel.level == node.maxLevel)
-                hero.AddArchetypeStatBonus(bonus.finalLevelValue, bonus.bonusType, bonus.modifyType);
+                bonusValue = bonus.finalLevelValue;
             else
-                hero.AddArchetypeStatBonus(bonus.growthValue, bonus.bonusType, bonus.modifyType);
+                bonusValue = bonus.growthValue;
+
+            hero.AddArchetypeStatBonus(bonus.bonusType, bonus.restriction, bonus.modifyType, bonusValue);
         }
         hero.UpdateActorData();
         return true;
@@ -114,18 +115,19 @@ public class HeroArchetypeData : IAbilitySource
 
         foreach (var bonus in node.bonuses)
         {
+            float bonusValue = 0f;
             if (nodeLevel.level == 1)
             {
-                hero.RemoveArchetypeStatBonus(bonus.growthValue, bonus.bonusType, bonus.modifyType);
-                if (nodeLevel.bonusLevels > 0)
-                {
-                    hero.RemoveArchetypeStatBonus(bonus.growthValue * nodeLevel.bonusLevels, bonus.bonusType, bonus.modifyType);
-                }
+                bonusValue = bonus.growthValue;
+                if (nodeLevel.bonusLevels > 0 && node.maxLevel > 1)
+                    bonusValue += bonus.growthValue * nodeLevel.bonusLevels;
             }
             else if (nodeLevel.level == node.maxLevel)
-                hero.RemoveArchetypeStatBonus(bonus.finalLevelValue, bonus.bonusType, bonus.modifyType);
+                bonusValue = bonus.finalLevelValue;
             else
-                hero.RemoveArchetypeStatBonus(bonus.growthValue, bonus.bonusType, bonus.modifyType);
+                bonusValue = bonus.growthValue;
+
+            hero.AddArchetypeStatBonus(bonus.bonusType, bonus.restriction, bonus.modifyType, bonusValue);
         }
 
         nodeLevel.level--;
@@ -141,7 +143,7 @@ public class HeroArchetypeData : IAbilitySource
 
         foreach (var bonus in node.bonuses)
             if (nodeLevel.level >= 1)
-                hero.AddArchetypeStatBonus(bonus.growthValue * value, bonus.bonusType, bonus.modifyType);
+                hero.AddArchetypeStatBonus(bonus.bonusType, bonus.restriction, bonus.modifyType, bonus.growthValue * value);
     }
 
     public void RemoveBonusLevels(ArchetypeSkillNode node, int value)
@@ -151,7 +153,7 @@ public class HeroArchetypeData : IAbilitySource
 
         foreach (var bonus in node.bonuses)
             if (nodeLevel.level >= 1)
-                hero.RemoveArchetypeStatBonus(bonus.growthValue * value, bonus.bonusType, bonus.modifyType);
+                hero.RemoveArchetypeStatBonus(bonus.bonusType, bonus.restriction, bonus.modifyType, bonus.growthValue * value);
     }
 
     public bool ContainsAbility(string id)

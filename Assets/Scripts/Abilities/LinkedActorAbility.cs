@@ -23,20 +23,36 @@ public class LinkedActorAbility : ActorAbility
         this.LinkedAbilityData = linkedAbility;
     }
 
-    public override void UpdateAbilityStats(HeroData data)
+    public void UpdateAbilityStats(HeroData data, IEnumerable<GroupType> tags)
     {
-        UpdateAbilityBonusProperties();
+        UpdateAbilityBonusProperties(tags);
         if (LinkedAbilityData.inheritsDamage)
         {
             float damageModifier = LinkedAbilityData.inheritDamagePercent + LinkedAbilityData.inheritDamagePercentScaling * abilityLevel;
-            UpdateDamage(data, parentDamageLevels, damageModifier);
+            UpdateDamage(data, parentDamageLevels,tags, damageModifier);
         }
         else
-            UpdateDamage(data, abilityBase.damageLevels);
+            UpdateDamage(data, abilityBase.damageLevels,tags);
 
-        UpdateTypeParameters(data);
-        UpdateShotParameters(data);
-        UpdateOnHitDataBonuses(data);
+        UpdateTypeParameters(data,tags);
+        UpdateShotParameters(data,tags);
+        UpdateOnHitDataBonuses(data,tags);
+    }
+
+    public void UpdateAbilityStats(EnemyData data, IEnumerable<GroupType> tags)
+    {
+        UpdateAbilityBonusProperties(tags);
+        if (LinkedAbilityData.inheritsDamage)
+        {
+            float damageModifier = LinkedAbilityData.inheritDamagePercent + LinkedAbilityData.inheritDamagePercentScaling * abilityLevel;
+            UpdateDamage(data, parentDamageLevels, tags, damageModifier);
+        }
+        else
+            UpdateDamage(data, abilityBase.damageLevels, tags);
+
+        UpdateTypeParameters(data, tags);
+        UpdateShotParameters(data, tags);
+        UpdateOnHitDataBonuses(data, tags);
     }
 
     public void Fire(Vector3 origin, Vector3 target)

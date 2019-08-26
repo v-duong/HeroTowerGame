@@ -205,10 +205,12 @@ public class StatBonusCollection
 
     public StatBonus GetTotalStatBonus(IEnumerable<GroupType> groupTypes)
     {
-        var intersectingTypes = GetGroupTypeIntersect(groupTypes).ToList();
-
         StatBonus returnBonus = new StatBonus();
 
+        if (groupTypes == null)
+            return returnBonus;
+
+        var intersectingTypes = GetGroupTypeIntersect(groupTypes).ToList();
         if (intersectingTypes.Count == 0)
             return returnBonus;
 

@@ -26,10 +26,11 @@ public class EnemyData : ActorData
         mobBonuses.Clear();
     }
 
-    public void SetBase(EnemyBase enemyBase, RarityType rarity, int level)
+    public void SetBase(EnemyBase enemyBase, RarityType rarity, int level, EnemyActor actor)
     {
         BaseData = enemyBase;
         Name = enemyBase.idName;
+        CurrentActor = actor;
         BaseHealth = (float)(Helpers.GetEnemyHealthScaling(level) * enemyBase.healthScaling);
         MaximumHealth = (int)BaseHealth;
         CurrentHealth = MaximumHealth;
@@ -45,6 +46,7 @@ public class EnemyData : ActorData
 
     public override void UpdateActorData()
     {
+        groupTypes = GetGroupTypes();
         ApplyHealthBonuses();
         ApplySoulPointBonuses();
 
@@ -71,7 +73,7 @@ public class EnemyData : ActorData
         base.UpdateActorData();
     }
 
-    public override void GetTotalStatBonus(BonusType type, Dictionary<BonusType, StatBonus> abilityBonusProperties, StatBonus inputBonus)
+    public override void GetTotalStatBonus(BonusType type, IEnumerable<GroupType> tags, Dictionary<BonusType, StatBonus> abilityBonusProperties, StatBonus inputBonus)
     {
         StatBonus resultBonus;
         if (inputBonus == null)
@@ -81,8 +83,10 @@ public class EnemyData : ActorData
 
         List<StatBonus> bonuses = new List<StatBonus>();
 
-        if (statBonuses.TryGetValue(type, out StatBonus statBonus))
-            bonuses.Add(statBonus);
+        if (statBonuses.TryGetValue(type, out StatBonusCollection statBonus))
+        {
+            bonuses.Add(statBonus.GetTotalStatBonus(tags));
+        }
         if (mobBonuses.TryGetValue(type, out StatBonus mobBonus))
             bonuses.Add(mobBonus);
         if (abilityBonusProperties != null && abilityBonusProperties.TryGetValue(type, out StatBonus abilityBonus))
@@ -119,5 +123,16 @@ public class EnemyData : ActorData
     public override int GetResistance(ElementType element)
     {
         return ElementData.GetUncapResistance(element);
+    }
+
+    protected override HashSet<GroupType> GetGroupTypes()
+    {
+        HashSet<GroupType> types = new HashSet<GroupType>() { GroupType.NO_GROUP };
+
+        if (CurrentActor != null)
+        {
+            types.UnionWith(CurrentActor.GetActorTags());
+        }
+        return types;
     }
 }
