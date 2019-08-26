@@ -1,26 +1,31 @@
-﻿using UnityEngine;
-using System.Collections;
-using System.Collections.Generic;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
+using System.Collections.Generic;
 
 public class AffixBase
 {
-
     [JsonProperty]
     public readonly string idName;
-    [JsonConverter(typeof(StringEnumConverter))][JsonProperty]
+
+    [JsonConverter(typeof(StringEnumConverter))]
+    [JsonProperty]
     public readonly AffixType affixType;
+
     [JsonProperty]
     public readonly int tier;
+
     [JsonProperty]
     public readonly int spawnLevel;
+
     [JsonProperty]
     public readonly List<AffixBonusProperty> affixBonuses;
+
     [JsonProperty]
     public readonly List<AffixWeight> spawnWeight;
+
     [JsonProperty(ItemConverterType = typeof(StringEnumConverter))]
     public readonly List<GroupType> groupTypes;
+
     public string AffixBonusTypeString { get; private set; }
 
     public void SetAffixBonusTypeString()
@@ -32,7 +37,7 @@ public class AffixBase
             temp += x.bonusType.ToString();
             temp += "_";
             temp += x.modifyType.ToString();
-            if (i+1 != affixBonuses.Count)
+            if (i + 1 != affixBonuses.Count)
             {
                 temp += "_";
                 i++;
@@ -44,20 +49,34 @@ public class AffixBase
 
 public struct AffixBonusProperty
 {
-    [JsonConverter(typeof(StringEnumConverter))][JsonProperty]
+    [JsonConverter(typeof(StringEnumConverter))]
+    [JsonProperty]
     public readonly BonusType bonusType;
-    [JsonConverter(typeof(StringEnumConverter))][JsonProperty]
+
+    [JsonConverter(typeof(StringEnumConverter))]
+    [JsonProperty]
     public readonly ModifyType modifyType;
+
     [JsonProperty]
-    public readonly int minValue;
+    public readonly float minValue;
+
     [JsonProperty]
-    public readonly int maxValue;
+    public readonly float maxValue;
+
+    [JsonProperty]
+    public readonly bool readAsFloat;
+
+    [JsonConverter(typeof(StringEnumConverter))]
+    [JsonProperty]
+    public readonly GroupType restriction;
 }
 
 public struct AffixWeight
 {
-    [JsonConverter(typeof(StringEnumConverter))][JsonProperty]
+    [JsonConverter(typeof(StringEnumConverter))]
+    [JsonProperty]
     public readonly GroupType type;
+
     [JsonProperty]
     public readonly int weight;
 }

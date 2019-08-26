@@ -52,9 +52,9 @@ public struct NodeScalingBonusProperty
     [JsonProperty]
     public readonly ModifyType modifyType;
     [JsonProperty]
-    public readonly int growthValue;
+    public readonly float growthValue;
     [JsonProperty]
-    public readonly int finalLevelValue;
+    public readonly float finalLevelValue;
 }
 
 public struct AbilityScalingBonusProperty

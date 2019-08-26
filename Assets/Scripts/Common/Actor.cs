@@ -177,7 +177,7 @@ public abstract class Actor : MonoBehaviour
         if (Data.MaximumManaShield > 0)
         {
             float shieldModifier = Data.ShieldRegenRate;
-            if (Data.CurrentShieldDelay <= 0f)
+            if (Data.CurrentShieldDelay <= 0f && Data.CurrentManaShield < Data.MaximumManaShield)
                 shieldModifier += Data.ShieldRestoreRate;
             ModifyCurrentShield(shieldModifier * Time.deltaTime);
         }
@@ -275,39 +275,39 @@ public abstract class Actor : MonoBehaviour
 
     public void ApplyAfterHitEffects(Dictionary<ElementType, float> damage, AbilityOnHitDataContainer postDamageData)
     {
-        if (damage[ElementType.PHYSICAL] != 0 && postDamageData.DidBleedProc())
+        if (damage[ElementType.PHYSICAL] != 0 && postDamageData.DidEffectProc(EffectType.BLEED))
         {
-            AddStatusEffect(new BleedEffect(this, postDamageData.sourceActor, damage[ElementType.PHYSICAL] * postDamageData.bleedEffectiveness, postDamageData.bleedDuration));
+            AddStatusEffect(new BleedEffect(this, postDamageData.sourceActor, damage[ElementType.PHYSICAL] * postDamageData.GetEffectEffectiveness(EffectType.BLEED), postDamageData.GetEffectDuration(EffectType.BLEED)));
         }
 
-        if (damage[ElementType.FIRE] != 0 && postDamageData.DidBurnProc())
+        if (damage[ElementType.FIRE] != 0 && postDamageData.DidEffectProc(EffectType.BURN))
         {
-            AddStatusEffect(new BurnEffect(this, postDamageData.sourceActor, damage[ElementType.FIRE] * postDamageData.burnEffectiveness, postDamageData.burnDuration));
+            AddStatusEffect(new BurnEffect(this, postDamageData.sourceActor, damage[ElementType.FIRE] * postDamageData.GetEffectEffectiveness(EffectType.BURN), postDamageData.GetEffectDuration(EffectType.BURN)));
         }
 
-        if (damage[ElementType.COLD] != 0 && postDamageData.DidChillProc())
+        if (damage[ElementType.COLD] != 0 && postDamageData.DidEffectProc(EffectType.CHILL))
         {
-            AddStatusEffect(new ChillEffect(this, postDamageData.sourceActor, postDamageData.chillEffectiveness, postDamageData.chillDuration));
+            AddStatusEffect(new ChillEffect(this, postDamageData.sourceActor, postDamageData.GetEffectEffectiveness(EffectType.CHILL), postDamageData.GetEffectDuration(EffectType.CHILL)));
         }
 
-        if (damage[ElementType.LIGHTNING] != 0 && postDamageData.DidElectrocuteProc())
+        if (damage[ElementType.LIGHTNING] != 0 && postDamageData.DidEffectProc(EffectType.ELECTROCUTE))
         {
-            AddStatusEffect(new ElectrocuteEffect(this, postDamageData.sourceActor, damage[ElementType.LIGHTNING] * postDamageData.electrocuteEffectiveness, postDamageData.electrocuteDuration));
+            AddStatusEffect(new ElectrocuteEffect(this, postDamageData.sourceActor, damage[ElementType.LIGHTNING] * postDamageData.GetEffectEffectiveness(EffectType.ELECTROCUTE), postDamageData.GetEffectDuration(EffectType.ELECTROCUTE)));
         }
 
-        if (damage[ElementType.EARTH] != 0 && postDamageData.DidFractureProc())
+        if (damage[ElementType.EARTH] != 0 && postDamageData.DidEffectProc(EffectType.FRACTURE))
         {
-            AddStatusEffect(new FractureEffect(this, postDamageData.sourceActor, postDamageData.fractureEffectiveness, postDamageData.fractureDuration));
+            AddStatusEffect(new FractureEffect(this, postDamageData.sourceActor, postDamageData.GetEffectEffectiveness(EffectType.FRACTURE), postDamageData.GetEffectDuration(EffectType.FRACTURE)));
         }
 
-        if (damage[ElementType.DIVINE] != 0 && postDamageData.DidPacifyProc())
+        if (damage[ElementType.DIVINE] != 0 && postDamageData.DidEffectProc(EffectType.PACIFY))
         {
-            AddStatusEffect(new PacifyEffect(this, postDamageData.sourceActor, postDamageData.pacifyEffectiveness, postDamageData.pacifyDuration));
+            AddStatusEffect(new PacifyEffect(this, postDamageData.sourceActor, postDamageData.GetEffectEffectiveness(EffectType.PACIFY), postDamageData.GetEffectDuration(EffectType.PACIFY)));
         }
 
-        if (damage[ElementType.VOID] != 0 && postDamageData.DidRadiationProc())
+        if (damage[ElementType.VOID] != 0 && postDamageData.DidEffectProc(EffectType.RADIATION))
         {
-            AddStatusEffect(new RadiationEffect(this, postDamageData.sourceActor, damage[ElementType.VOID] * postDamageData.radiationEffectiveness, postDamageData.radiationDuration));
+            AddStatusEffect(new RadiationEffect(this, postDamageData.sourceActor, damage[ElementType.VOID] * postDamageData.GetEffectEffectiveness(EffectType.RADIATION), postDamageData.GetEffectDuration(EffectType.RADIATION)));
         }
     }
 
@@ -320,8 +320,8 @@ public abstract class Actor : MonoBehaviour
 
     public void DisableActor()
     {
-        this.gameObject.SetActive(false);
-        this.healthBar.gameObject.SetActive(false);
+        gameObject.SetActive(false);
+        healthBar.gameObject.SetActive(false);
     }
 }
 

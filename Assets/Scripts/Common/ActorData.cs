@@ -82,19 +82,19 @@ public abstract class ActorData
         get { return GetCurrentHealth() <= 0.0f; }
     }
 
-    public void AddStatBonus(int value, BonusType type, ModifyType modifier)
+    public void AddStatBonus(float value, BonusType type, ModifyType modifier)
     {
         if (!statBonuses.ContainsKey(type))
             statBonuses.Add(type, new StatBonus());
         statBonuses[type].AddBonus(modifier, value);
     }
 
-    public void RemoveStatBonus(int value, BonusType type, ModifyType modifier)
+    public void RemoveStatBonus(float value, BonusType type, ModifyType modifier)
     {
         statBonuses[type].RemoveBonus(modifier, value);
     }
 
-    public void AddTemporaryBonus(int value, BonusType type, ModifyType modifier)
+    public void AddTemporaryBonus(float value, BonusType type, ModifyType modifier)
     {
         if (!temporaryBonuses.ContainsKey(type))
             temporaryBonuses.Add(type, new StatBonus());
@@ -102,7 +102,7 @@ public abstract class ActorData
         UpdateActorData();
     }
 
-    public void RemoveTemporaryBonus(int value, BonusType type, ModifyType modifier)
+    public void RemoveTemporaryBonus(float value, BonusType type, ModifyType modifier)
     {
         temporaryBonuses[type].RemoveBonus(modifier, value);
         UpdateActorData();
@@ -132,7 +132,7 @@ public abstract class ActorData
         MaximumHealth = (int)CalculateActorStat(BonusType.MAX_HEALTH, BaseHealth);
         CurrentHealth = (MaximumHealth * percentage);
 
-        float percentHealthRegen = CalculateActorStat(BonusType.PERCENT_HEALTH_REGEN, 0f) / 1000f;
+        float percentHealthRegen = CalculateActorStat(BonusType.PERCENT_HEALTH_REGEN, 0f) / 100f;
         
         HealthRegenRate = -(percentHealthRegen * MaximumHealth + CalculateActorStat(BonusType.HEALTH_REGEN, 0f));
     }
@@ -188,7 +188,7 @@ public abstract class ActorData
 
     public virtual void UpdateActorData()
     {
-        float percentShieldRegen = CalculateActorStat(BonusType.PERCENT_SHIELD_REGEN, 0f) / 1000f;
+        float percentShieldRegen = CalculateActorStat(BonusType.PERCENT_SHIELD_REGEN, 0f) / 100f;
         ShieldRegenRate = -(percentShieldRegen * MaximumManaShield + CalculateActorStat(BonusType.SHIELD_REGEN, 0f));
         ShieldRestoreRate = -(CalculateActorStat(BonusType.SHIELD_RESTORE_SPEED, 10f) / 100f * MaximumManaShield);
         ShieldRestoreDelayModifier = CalculateActorStat(BonusType.SHIELD_RESTORE_DELAY, 100f) / 100f;

@@ -49,7 +49,7 @@ public class ArchetypeNodeInfoPanel : MonoBehaviour
     public void UpdatePanel()
     {
         int currentLevel = archetypeData.GetNodeLevel(node);
-        int bonusValue;
+        float bonusValue;
         if (uiNode.isLevelable && !archetypeData.IsNodeMaxLevel(node))
             levelButton.interactable = true;
         else
@@ -106,7 +106,7 @@ public class ArchetypeNodeInfoPanel : MonoBehaviour
     public void UpdatePanel_Preview()
     {
         infoText.text = "";
-        int bonusValue;
+        float bonusValue;
         if (node.type == NodeType.ABILITY)
         {
             string[] strings = LocalizationManager.Instance.GetLocalizationText_Ability(node.abilityId);

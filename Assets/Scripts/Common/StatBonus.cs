@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 
 public class StatBonus
 {
@@ -30,6 +31,18 @@ public class StatBonus
         HasFixedModifier = false;
         FixedModifier = 0;
         isStatOutdated = true;
+    }
+
+    public void AddBonuses(StatBonus otherBonus, bool overwriteFixed = true)
+    {
+        FlatModifier += otherBonus.FlatModifier;
+        AdditiveModifier += otherBonus.AdditiveModifier;
+        MultiplyModifiers.AddRange(otherBonus.MultiplyModifiers);
+        if (otherBonus.HasFixedModifier && (HasFixedModifier && overwriteFixed || !HasFixedModifier))
+        {
+            HasFixedModifier = true;
+            FixedModifier = otherBonus.FixedModifier;
+        }
     }
 
     public void AddBonus(ModifyType type, float value)
@@ -147,5 +160,64 @@ public class StatBonus
             return FixedModifier;
         }
         return (stat + FlatModifier) * (1f + AdditiveModifier / 100f) * CurrentMultiplier;
+    }
+}
+
+public class StatBonusCollection
+{
+    private Dictionary<GroupType, StatBonus> statBonuses;
+
+    public StatBonusCollection()
+    {
+        statBonuses = new Dictionary<GroupType, StatBonus>();
+    }
+
+    public IEnumerable<GroupType> GetGroupTypeIntersect(IEnumerable<GroupType> types)
+    {
+        return statBonuses.Keys.Intersect(types);
+    }
+
+    public void AddBonus(GroupType type, ModifyType modifyType, float value)
+    {
+        if (!statBonuses.ContainsKey(type))
+            statBonuses[type] = new StatBonus();
+        statBonuses[type].AddBonus(modifyType, value);
+    }
+
+    public bool RemoveBonus(GroupType type, ModifyType modifyType, float value)
+    {
+        if (statBonuses.ContainsKey(type))
+        {
+            statBonuses[type].RemoveBonus(modifyType, value);
+            return true;
+        }
+        else
+            return false;
+    }
+
+    public StatBonus GetStatBonus(GroupType type)
+    {
+        if (statBonuses.ContainsKey(type))
+            return statBonuses[type];
+        else
+            return null;
+    }
+
+    public StatBonus GetTotalStatBonus(IEnumerable<GroupType> groupTypes)
+    {
+        var intersectingTypes = GetGroupTypeIntersect(groupTypes).ToList();
+
+        StatBonus returnBonus = new StatBonus();
+
+        if (intersectingTypes.Count == 0)
+            return returnBonus;
+
+        foreach (GroupType type in intersectingTypes)
+        {
+            returnBonus.AddBonuses(statBonuses[type]);
+        }
+        returnBonus.UpdateCurrentMultiply();
+
+        return returnBonus;
     }
 }

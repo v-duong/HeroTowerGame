@@ -286,8 +286,8 @@ public class ResourceManager : MonoBehaviour
             return;
         var spriteBundle = AssetBundle.LoadFromFile(Path.Combine(Application.streamingAssetsPath, "abilitysprites"));
         SpriteAtlas[] atlases = spriteBundle.LoadAllAssets<SpriteAtlas>();
-        foreach(AbilityBase abilityBase in abilityBases)
-            foreach(SpriteAtlas atlas in atlases)
+        foreach (AbilityBase abilityBase in abilityBases)
+            foreach (SpriteAtlas atlas in atlases)
             {
                 Sprite sprite = atlas.GetSprite(abilityBase.idName);
                 if (sprite != null)
@@ -299,7 +299,7 @@ public class ResourceManager : MonoBehaviour
                 }
             }
 
-        foreach(SpriteAtlas atlas in atlases)
+        foreach (SpriteAtlas atlas in atlases)
         {
             if (!loadedSpriteAtlases.ContainsKey(atlas.name))
                 Resources.UnloadAsset(atlas);
@@ -448,10 +448,13 @@ public class ResourceManager : MonoBehaviour
 
     private void RequestAtlas(string name, System.Action<SpriteAtlas> callback)
     {
-        SpriteAtlas atlas = loadedSpriteAtlases[name];
-        callback(atlas);
+        if (loadedSpriteAtlases.ContainsKey(name))
+        {
+            SpriteAtlas atlas = loadedSpriteAtlases[name];
+            callback(atlas);
+        }
     }
-         
+
     private void Initialize()
     {
         //jsonBundle = AssetBundle.LoadFromFile(Path.Combine(Application.streamingAssetsPath,"jsonfiles"));

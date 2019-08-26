@@ -1,7 +1,7 @@
 ﻿public enum EffectType
 {
     BLEED,          //physical dot, increased damage over distance
-    BURNING,        //fire dot
+    BURN,        //fire dot
     CHILL,          //slow, reduced regen
     ELECTROCUTE,    //delayed burst of aoe damage
     FRACTURE,       //reduced defenses (armor, shield, block/phasing)

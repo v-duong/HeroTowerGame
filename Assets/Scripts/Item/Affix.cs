@@ -4,17 +4,20 @@ using UnityEngine;
 public class Affix
 {
     public AffixBase Base;
-    private Dictionary<BonusType, int> affixValues;
+    private Dictionary<BonusType, float> affixValues;
     public AffixType AffixType { get; private set; }
 
     public Affix(AffixBase a, bool locked = false)
     {
         Base = a;
-        affixValues = new Dictionary<BonusType, int>();
+        affixValues = new Dictionary<BonusType, float>();
         AffixType = a.affixType;
         foreach (AffixBonusProperty mod in a.affixBonuses)
         {
-            affixValues.Add(mod.bonusType, Random.Range(mod.minValue, mod.maxValue + 1));
+            if (mod.readAsFloat)
+                affixValues.Add(mod.bonusType, Random.Range(mod.minValue, mod.maxValue ));
+            else
+                affixValues.Add(mod.bonusType, (int)Random.Range(mod.minValue, mod.maxValue));
         }
     }
 
@@ -27,12 +30,12 @@ public class Affix
         }
     }
 
-    public Dictionary<BonusType, int> GetAffixValues()
+    public Dictionary<BonusType, float> GetAffixValues()
     {
-        return new Dictionary<BonusType, int>(affixValues);
+        return new Dictionary<BonusType, float>(affixValues);
     }
 
-    public int GetAffixValue(BonusType type)
+    public float GetAffixValue(BonusType type)
     {
         return affixValues[type];
     }

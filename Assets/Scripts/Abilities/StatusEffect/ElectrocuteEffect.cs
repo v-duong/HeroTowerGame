@@ -31,9 +31,9 @@ public class ElectrocuteEffect : ActorStatusEffect
 
         int index = Random.Range(0, hits.Length);
         Actor secondaryTarget = hits[index].gameObject.GetComponent<Actor>();
-        
+
         target.ApplySingleElementDamage(ElementType.LIGHTNING, damage * timeElapsed, Source.Data.LightningNegation, false);
-        secondaryTarget.ApplySingleElementDamage(ElementType.LIGHTNING, damage * timeElapsed,Source.Data.LightningNegation, false);
+        secondaryTarget.ApplySingleElementDamage(ElementType.LIGHTNING, damage * timeElapsed, Source.Data.LightningNegation, false);
 
         /*
         foreach(Collider2D c in hits)
@@ -42,7 +42,6 @@ public class ElectrocuteEffect : ActorStatusEffect
             secondaryTarget.ApplySingleElementDamage(ElementType.LIGHTNING, damage * timeElapsed, false);
         }
         */
-
 
         target.RemoveStatusEffect(this);
     }

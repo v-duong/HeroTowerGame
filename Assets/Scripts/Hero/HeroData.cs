@@ -19,6 +19,8 @@ public class HeroData : ActorData
     private Dictionary<BonusType, StatBonus> archetypeStatBonuses;
     private Dictionary<BonusType, StatBonus> attributeStatBonuses;
 
+    //private Dictionary<BonusType, StatBonusCollection> archetypeStatBonuses;
+
     private Equipment[] equipList;
     private HeroArchetypeData[] archetypeList;
     private List<AbilitySlot> abilitySlotList;
@@ -71,6 +73,7 @@ public class HeroData : ActorData
         equipList = new Equipment[10];
         archetypeList = new HeroArchetypeData[2];
         archetypeStatBonuses = new Dictionary<BonusType, StatBonus>();
+        //archetypeStatBonuses = new Dictionary<BonusType, StatBonusCollection>();
         attributeStatBonuses = new Dictionary<BonusType, StatBonus>();
         abilitySlotList = new List<AbilitySlot>() { new AbilitySlot(0), new AbilitySlot(1) };
         UpdateActorData();
@@ -256,14 +259,14 @@ public class HeroData : ActorData
         }
     }
 
-    public void AddArchetypeStatBonus(int value, BonusType type, ModifyType modifier)
+    public void AddArchetypeStatBonus(float value, BonusType type, ModifyType modifier)
     {
         if (!archetypeStatBonuses.ContainsKey(type))
             archetypeStatBonuses.Add(type, new StatBonus());
         archetypeStatBonuses[type].AddBonus(modifier, value);
     }
 
-    public void RemoveArchetypeStatBonus(int value, BonusType type, ModifyType modifier)
+    public void RemoveArchetypeStatBonus(float value, BonusType type, ModifyType modifier)
     {
         if (!archetypeStatBonuses.ContainsKey(type))
             return;

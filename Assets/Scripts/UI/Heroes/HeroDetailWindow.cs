@@ -71,14 +71,17 @@ public class HeroDetailWindow : MonoBehaviour
 
         if (hero.GetAbilityFromSlot(0) != null)
         {
-            infoText.text += "Ability 1: " + hero.GetAbilityFromSlot(0).abilityBase.idName + "\n";
-            infoText.text += string.Format("{0:F2}", 1f / hero.GetAbilityFromSlot(0).Cooldown) + "/s\n";
-            infoText.text += LocalizationManager.Instance.GetLocalizationText_AbilityCalculatedDamage(hero.GetAbilityFromSlot(0).damageBase);
+            ActorAbility firstSlotAbility = hero.GetAbilityFromSlot(0);
+            infoText.text += "Ability 1: " + firstSlotAbility.abilityBase.idName + "\n";
+            infoText.text += string.Format("{0:F2}/s, {1:F1}%, x{2:F2}", 1f / firstSlotAbility.Cooldown, firstSlotAbility.CriticalChance, 1f + firstSlotAbility.CriticalDamage / 100f) + "\n";
+            infoText.text += LocalizationManager.Instance.GetLocalizationText_AbilityCalculatedDamage(firstSlotAbility.damageBase);
         }
         if (hero.GetAbilityFromSlot(1) != null)
         {
-            infoText.text += "Ability 2: " + hero.GetAbilityFromSlot(1).abilityBase.idName + "\n";
-            infoText.text += LocalizationManager.Instance.GetLocalizationText_AbilityCalculatedDamage(hero.GetAbilityFromSlot(1).damageBase);
+            ActorAbility secondSlotAbility = hero.GetAbilityFromSlot(1);
+            infoText.text += "Ability 2: " + secondSlotAbility.abilityBase.idName + "\n";
+            infoText.text += string.Format("{0:F2}/s, {1:F1}%, x{2:F2}", 1f / secondSlotAbility.Cooldown, secondSlotAbility.CriticalChance, 1f + secondSlotAbility.CriticalDamage / 100f) + "\n";
+            infoText.text += LocalizationManager.Instance.GetLocalizationText_AbilityCalculatedDamage(secondSlotAbility.damageBase);
         }
 
         foreach (HeroEquipmentSlot slot in equipSlots)
@@ -105,16 +108,12 @@ public class HeroDetailWindow : MonoBehaviour
 
     public void ClickPrimaryTree()
     {
-        treeWindow.OpenPrimaryTree();
-        if (treeWindow.hero != hero)
-            treeWindow.InitializeTree(hero);
+        treeWindow.OpenArchetypeTree(hero, treeWindow.hero != hero, 0);
     }
 
     public void ClickSecondaryTree()
     {
-        treeWindow.OpenSecondaryTree();
-        if (treeWindow.hero != hero)
-            treeWindow.InitializeTree(hero);
+        treeWindow.OpenArchetypeTree(hero, treeWindow.hero != hero, 1);
     }
 
     public void ClickAbilitySlot(int slot)
