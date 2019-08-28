@@ -20,11 +20,20 @@ public class HeroSlot : MonoBehaviour
     public void SetSlot(HeroData hero)
     {
         this.hero = hero;
-        nameText.text = hero.Name;
-        archetypeText.text = hero.PrimaryArchetype.Base.idName;
+        nameText.text = hero.Name + "\n";
+        nameText.text += "<size=80%>" +  hero.PrimaryArchetype.Base.idName + "</size>";
         if (hero.SecondaryArchetype != null)
         {
-            archetypeText.text += "\n" + hero.SecondaryArchetype.Base.idName;
+            nameText.text += "\n" + "<size=80%>" + hero.SecondaryArchetype.Base.idName + "</size>";
+        }
+        archetypeText.text = "";
+        if (hero.GetAbilityFromSlot(0) != null)
+        {
+            archetypeText.text += hero.GetAbilityFromSlot(0).abilityBase.idName + "\n";
+        }
+        if (hero.GetAbilityFromSlot(1) != null)
+        {
+            archetypeText.text += hero.GetAbilityFromSlot(1).abilityBase.idName;
         }
         UpdateSlot();
     }

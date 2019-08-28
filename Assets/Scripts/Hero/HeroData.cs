@@ -18,6 +18,7 @@ public class HeroData : ActorData
 
     //private Dictionary<BonusType, StatBonus> archetypeStatBonuses;
     private Dictionary<BonusType, StatBonus> attributeStatBonuses;
+
     private Dictionary<BonusType, StatBonusCollection> archetypeStatBonuses;
 
     private Equipment[] equipList;
@@ -55,6 +56,7 @@ public class HeroData : ActorData
         Name = name;
         Level = 0;
         Experience = 0;
+        ArchetypePoints = 0;
         BaseHealth = 100;
         BaseSoulPoints = 50;
         BaseManaShield = 0;
@@ -181,19 +183,32 @@ public class HeroData : ActorData
     {
         if (equip.IsEquipped)
             return false;
-        if (equipList[(int)slot] != null)
-            UnequipFromSlot(slot);
 
-        if (equip.Base.equipSlot != EquipSlotType.RING)
-        {
-            if (equip.Base.equipSlot != slot)
-                return false;
-        }
-        else
+        if (equip.Base.equipSlot == EquipSlotType.RING)
         {
             if (slot != EquipSlotType.RING_SLOT_1 && slot != EquipSlotType.RING_SLOT_2)
                 return false;
         }
+        else if (equip.Base.equipSlot == EquipSlotType.WEAPON)
+        {
+            if (slot == EquipSlotType.OFF_HAND)
+            {
+                if (equipList[(int)EquipSlotType.WEAPON] == null || equipList[(int)EquipSlotType.WEAPON].GetGroupTypes().Contains(GroupType.TWO_HANDED_WEAPON))
+                    slot = EquipSlotType.WEAPON;
+            }
+            else if (equip.GetGroupTypes().Contains(GroupType.TWO_HANDED_WEAPON))
+            {
+                if (slot == EquipSlotType.WEAPON && equipList[(int)EquipSlotType.OFF_HAND] != null)
+                    UnequipFromSlot(EquipSlotType.OFF_HAND);
+                else if (slot == EquipSlotType.OFF_HAND)
+                    slot = EquipSlotType.WEAPON;
+            }
+        }
+        else if (equip.Base.equipSlot != slot)
+            return false;
+
+        if (equipList[(int)slot] != null)
+            UnequipFromSlot(slot);
 
         switch (slot)
         {
@@ -222,11 +237,20 @@ public class HeroData : ActorData
         return true;
     }
 
+    public bool ModifyArchetypePoints(int mod)
+    {
+        if (ArchetypePoints + mod < 0)
+            return false;
+        ArchetypePoints += mod;
+        return true;
+    }
+
     public bool UnequipFromSlot(EquipSlotType slot)
     {
         if (equipList[(int)slot] == null)
             return false;
         Equipment equip = equipList[(int)slot];
+        equipList[(int)slot] = null;
         equip.equippedToHero = null;
         RemoveEquipmentBonuses(equip.prefixes);
         RemoveEquipmentBonuses(equip.suffixes);
@@ -349,11 +373,11 @@ public class HeroData : ActorData
     {
         /*
          * +1% Dodge per 5 Agi
-         * +1% Attack/Cast Speed per 25 Agi
+         * +1% Attack/Cast Speed per 20 Agi
          */
         int dodgeRatingMod = (int)Math.Round(Agility / 5d, MidpointRounding.AwayFromZero);
-        int attackSpeedMod = (int)Math.Round(Agility / 25d, MidpointRounding.AwayFromZero);
-        int castSpeedMod = (int)Math.Round(Agility / 25d, MidpointRounding.AwayFromZero);
+        int attackSpeedMod = (int)Math.Round(Agility / 20d, MidpointRounding.AwayFromZero);
+        int castSpeedMod = (int)Math.Round(Agility / 20d, MidpointRounding.AwayFromZero);
 
         if (!attributeStatBonuses.ContainsKey(BonusType.GLOBAL_DODGE_RATING))
             attributeStatBonuses.Add(BonusType.GLOBAL_DODGE_RATING, new StatBonus());
@@ -487,7 +511,7 @@ public class HeroData : ActorData
     {
         HashSet<GroupType> types = new HashSet<GroupType>() { GroupType.NO_GROUP };
 
-        foreach(Equipment equipment in equipList)
+        foreach (Equipment equipment in equipList)
         {
             if (equipment == null)
             {
@@ -495,6 +519,9 @@ public class HeroData : ActorData
             }
             types.UnionWith(equipment.GetGroupTypes());
         }
+
+        if (equipList[(int)EquipSlotType.WEAPON] is Weapon && equipList[(int)EquipSlotType.OFF_HAND] is Weapon)
+            types.Add(GroupType.DUAL_WIELD);
 
         if (CurrentActor != null)
         {

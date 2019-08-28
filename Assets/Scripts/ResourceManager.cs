@@ -290,6 +290,13 @@ public class ResourceManager : MonoBehaviour
             foreach (SpriteAtlas atlas in atlases)
             {
                 Sprite sprite = atlas.GetSprite(abilityBase.idName);
+
+                if (!string.IsNullOrEmpty(abilityBase.effectSprite))
+                {
+                    sprite = atlas.GetSprite(abilityBase.effectSprite);
+                    Debug.Log(sprite);
+                }
+
                 if (sprite != null)
                 {
                     currentSpriteList.Add(abilityBase.idName, sprite);

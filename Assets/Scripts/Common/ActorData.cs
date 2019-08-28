@@ -189,8 +189,8 @@ public abstract class ActorData
     {
 
         float percentShieldRegen = CalculateActorStat(BonusType.PERCENT_SHIELD_REGEN, 0f) / 100f;
-        ShieldRegenRate = -(percentShieldRegen * MaximumManaShield + CalculateActorStat(BonusType.SHIELD_REGEN, 0f));
-        ShieldRestoreRate = -(CalculateActorStat(BonusType.SHIELD_RESTORE_SPEED, 10f) / 100f * MaximumManaShield);
+        ShieldRegenRate = (percentShieldRegen * MaximumManaShield + CalculateActorStat(BonusType.SHIELD_REGEN, 0f));
+        ShieldRestoreRate = (CalculateActorStat(BonusType.SHIELD_RESTORE_SPEED, 10f) / 100f * MaximumManaShield);
         ShieldRestoreDelayModifier = CalculateActorStat(BonusType.SHIELD_RESTORE_DELAY, 100f) / 100f;
 
         PhysicalNegation = GetMultiStatBonus(null, groupTypes, BonusType.PHYSICAL_RESISTANCE_NEGATION).CalculateStat(0);

@@ -1,11 +1,11 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
+
 public class HeroEquipmentSlot : MonoBehaviour
 {
     [SerializeField]
     private EquipSlotType slot;
+
     public Text slotText;
 
     public EquipSlotType EquipSlot => slot;
@@ -19,13 +19,18 @@ public class HeroEquipmentSlot : MonoBehaviour
         ui.SlotContext = slot;
         if (slot == EquipSlotType.RING_SLOT_1 || slot == EquipSlotType.RING_SLOT_2)
         {
-            ui.InvScrollContent.ShowEquipmentBySlotType(EquipSlotType.RING);
+            ui.InvScrollContent.ShowEquipmentFiltered(x => x.Base.equipSlot == EquipSlotType.RING, true);
+        }
+        else if (slot == EquipSlotType.OFF_HAND)
+        {
+            ui.InvScrollContent.ShowEquipmentFiltered(
+                x => (x.IsEquipped == false) &&
+                ((x.Base.equipSlot == EquipSlotType.OFF_HAND) ||
+                (x.Base.equipSlot == EquipSlotType.WEAPON && x.GetGroupTypes().Contains(GroupType.ONE_HANDED_WEAPON))), true);
         }
         else
         {
-            ui.InvScrollContent.ShowEquipmentBySlotType(slot);
+            ui.InvScrollContent.ShowEquipmentFiltered(x => x.Base.equipSlot == slot, true);
         }
     }
-
-    
 }

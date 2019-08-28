@@ -23,11 +23,13 @@ public class InventorySlot : MonoBehaviour
             slotImage.color = Color.cyan;
             return;
         }
+        nameText.text = item.Name + "\n";
 
         switch (item.GetItemType())
         {
             case ItemType.ARMOR:
                 Armor armor = item as Armor;
+                nameText.text += armor.Base.group;
                 infoText.text += "AR: " + armor.armor + "\n";
                 infoText.text += "MS: " + armor.shield + "\n";
                 infoText.text += "DR: " + armor.dodgeRating + "\n";
@@ -35,6 +37,7 @@ public class InventorySlot : MonoBehaviour
                 break;
             case ItemType.WEAPON:
                 Weapon weapon = item as Weapon;
+                nameText.text += weapon.Base.group;
                 float dps = (weapon.PhysicalDamage.min + weapon.PhysicalDamage.max) / 2f * weapon.AttackSpeed;
                 infoText.text += "PDPS: " + dps.ToString("F2") + "\n";
                 break;
@@ -43,7 +46,6 @@ public class InventorySlot : MonoBehaviour
         }
 
         slotImage.color = Helpers.ReturnRarityColor(item.Rarity);
-        nameText.text = item.Name;
     }
 
     public void OnItemSlotClick()

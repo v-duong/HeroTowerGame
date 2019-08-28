@@ -138,6 +138,29 @@ public class Weapon : Equipment
                 tags.Add(GroupType.TWO_HANDED_WEAPON);
                 break;
         }
+        switch (Base.group)
+        {
+            case GroupType.ONE_HANDED_AXE:
+            case GroupType.TWO_HANDED_AXE:
+                tags.Add(GroupType.AXE_TYPE);
+                break;
+            case GroupType.ONE_HANDED_SWORD:
+            case GroupType.TWO_HANDED_SWORD:
+                tags.Add(GroupType.SWORD_TYPE);
+                break;
+            case GroupType.ONE_HANDED_MACE:
+            case GroupType.TWO_HANDED_MACE:
+                tags.Add(GroupType.MACE_TYPE);
+                break;
+            case GroupType.SPEAR:
+            case GroupType.STAFF:
+                tags.Add(GroupType.POLE_TYPE);
+                break;
+            case GroupType.TWO_HANDED_GUN:
+            case GroupType.ONE_HANDED_GUN:
+                tags.Add(GroupType.GUN_TYPE);
+                break;
+        }
         return tags;
     }
 }

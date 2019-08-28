@@ -147,6 +147,20 @@ public static class Helpers
         {
             min.Add((BonusType)Enum.Parse(typeof(BonusType), abilityType.ToString() + "_" + element.ToString() + "_DAMAGE_MIN"));
             max.Add((BonusType)Enum.Parse(typeof(BonusType), abilityType.ToString() + "_" + element.ToString() + "_DAMAGE_MAX"));
+            multi.Add((BonusType)Enum.Parse(typeof(BonusType), abilityType.ToString() + "_" + element.ToString() + "_DAMAGE"));
+            switch(element)
+            {
+                case ElementType.FIRE:
+                case ElementType.COLD:
+                case ElementType.LIGHTNING:
+                case ElementType.EARTH:
+                    multi.Add((BonusType)Enum.Parse(typeof(BonusType), abilityType.ToString() + "_ELEMENTAL_DAMAGE"));
+                    break;
+                case ElementType.DIVINE:
+                case ElementType.VOID:
+                    multi.Add((BonusType)Enum.Parse(typeof(BonusType), abilityType.ToString() + "_PRIMORDIAL_DAMAGE"));
+                    break;
+            }
         }
 
         multi.Add(BonusType.GLOBAL_DAMAGE);

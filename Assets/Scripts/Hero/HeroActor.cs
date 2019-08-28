@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
@@ -50,7 +49,8 @@ public class HeroActor : Actor
             {
                 nextMovementNode++;
             }
-        } else
+        }
+        else
         {
             isMoving = false;
         }
@@ -84,15 +84,15 @@ public class HeroActor : Actor
         }
     }
 
-    void OnEnable()
+    private void OnEnable()
     {
         foreach (var x in instancedAbilitiesList)
         {
-            x.StartFiring(this);
+                x.StartFiring(this);
         }
     }
 
-    void OnDisable()
+    private void OnDisable()
     {
         foreach (var x in instancedAbilitiesList)
         {
@@ -116,7 +116,8 @@ public class HeroActor : Actor
     }
 }
 
-public enum TargetingType {
+public enum TargetingType
+{
     CLOSEST,
     FURTHEST,
     FIRST,
@@ -125,4 +126,3 @@ public enum TargetingType {
     MOST_HEALTH,
     PRIORITIZE_RARITY
 }
-

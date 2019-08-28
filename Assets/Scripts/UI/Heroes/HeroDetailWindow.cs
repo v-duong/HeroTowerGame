@@ -34,6 +34,7 @@ public class HeroDetailWindow : MonoBehaviour
     public void UpdateWindow()
     {
         nameText.text = hero.Name;
+        float dps = 0;
 
         if (hero.IsLocked)
         {
@@ -73,15 +74,14 @@ public class HeroDetailWindow : MonoBehaviour
         {
             ActorAbility firstSlotAbility = hero.GetAbilityFromSlot(0);
             infoText.text += "Ability 1: " + firstSlotAbility.abilityBase.idName + "\n";
-            infoText.text += string.Format("{0:F2}/s, {1:F1}%, x{2:F2}", 1f / firstSlotAbility.Cooldown, firstSlotAbility.CriticalChance, 1f + firstSlotAbility.CriticalDamage / 100f) + "\n";
-            infoText.text += LocalizationManager.Instance.GetLocalizationText_AbilityCalculatedDamage(firstSlotAbility.damageBase);
+            infoText.text += GetAbilityDetailString(firstSlotAbility);
+
         }
         if (hero.GetAbilityFromSlot(1) != null)
         {
             ActorAbility secondSlotAbility = hero.GetAbilityFromSlot(1);
             infoText.text += "Ability 2: " + secondSlotAbility.abilityBase.idName + "\n";
-            infoText.text += string.Format("{0:F2}/s, {1:F1}%, x{2:F2}", 1f / secondSlotAbility.Cooldown, secondSlotAbility.CriticalChance, 1f + secondSlotAbility.CriticalDamage / 100f) + "\n";
-            infoText.text += LocalizationManager.Instance.GetLocalizationText_AbilityCalculatedDamage(secondSlotAbility.damageBase);
+            infoText.text += GetAbilityDetailString(secondSlotAbility);
         }
 
         foreach (HeroEquipmentSlot slot in equipSlots)
@@ -96,6 +96,26 @@ public class HeroDetailWindow : MonoBehaviour
                 slot.slotText.text = e.Name;
             }
         }
+    }
+
+    private string GetAbilityDetailString(ActorAbility ability)
+    {
+        string s = ""; float dps = 0;
+        if (ability.IsUsable)
+        {
+            if (ability.DualWielding && ability.AlternatesAttacks)
+                dps = (ability.GetApproxDPS(false) + ability.GetApproxDPS(true)) / 2f;
+            else
+                dps = ability.GetApproxDPS(false);
+            s += string.Format("Approx. DPS: {0:F1}\n", dps);
+            s += string.Format("{0:F2}/s, {1:F1}%, x{2:F2}\n", 1f / ability.Cooldown, ability.MainCriticalChance,  ability.CriticalDamage);
+            s += LocalizationManager.Instance.GetLocalizationText_AbilityCalculatedDamage(ability.mainDamageBase);
+        }
+        else
+        {
+            s += "Ability unusable with current weapon type\n";
+        }
+        return s;
     }
 
     public void SetActiveToggle()

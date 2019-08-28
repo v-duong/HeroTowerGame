@@ -22,7 +22,7 @@ public class InventoryScrollWindow : MonoBehaviour
         }
     }
 
-    private void InitializeInventorySlots<T>(IList<T> itemInventory, Action<Item> callback = null) where T:Item
+    private void InitializeInventorySlots<T>(IList<T> itemInventory, Action<Item> callback = null) where T : Item
     {
         foreach (Item item in itemInventory)
         {
@@ -101,6 +101,16 @@ public class InventoryScrollWindow : MonoBehaviour
     {
         ClearSlots();
         List<Equipment> e = GameManager.Instance.PlayerStats.EquipmentInventory.Where(x => x.Base.equipSlot == type && !x.IsEquipped).ToList();
+        foreach (Equipment equip in e)
+        {
+            AddInventorySlot(equip, currentCallback);
+        }
+    }
+
+    public void ShowEquipmentBySlotType(EquipSlotType[] types)
+    {
+        ClearSlots();
+        List<Equipment> e = GameManager.Instance.PlayerStats.EquipmentInventory.Where(x => types.Contains(x.Base.equipSlot) && !x.IsEquipped).ToList();
         foreach (Equipment equip in e)
         {
             AddInventorySlot(equip, currentCallback);

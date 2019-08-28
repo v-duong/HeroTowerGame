@@ -114,7 +114,7 @@ public abstract class Actor : MonoBehaviour
         ability.abilityCollider = abilityContainer;
 
         var collider = newObject.AddComponent<CircleCollider2D>();
-        collider.radius = ability.abilityBase.targetRange;
+        collider.radius = ability.TargetRange;
         abilityContainer.abilityCollider = collider;
         collider.isTrigger = true;
 
@@ -182,9 +182,9 @@ public abstract class Actor : MonoBehaviour
     {
         if (Data.MaximumManaShield > 0)
         {
-            float shieldModifier = Data.ShieldRegenRate;
+            float shieldModifier = -Data.ShieldRegenRate;
             if (Data.CurrentShieldDelay <= 0f && Data.CurrentManaShield < Data.MaximumManaShield)
-                shieldModifier += Data.ShieldRestoreRate;
+                shieldModifier += -Data.ShieldRestoreRate;
             ModifyCurrentShield(shieldModifier * Time.deltaTime);
         }
         ModifyCurrentHealth(Data.HealthRegenRate * Time.deltaTime);
@@ -223,9 +223,10 @@ public abstract class Actor : MonoBehaviour
             float armorValue = 0;
             if (isHit)
             {
-                armorValue = Data.Armor / (Data.Armor + physicalDamage);
+                armorValue = Data.Armor / (Data.Armor + damage[ElementType.PHYSICAL]);
             }
             float physicalResistance = Mathf.Min((1.0f - (Data.GetResistance(ElementType.PHYSICAL) - onHitData.physicalNegation) / 100f) + armorValue, 0.95f);
+            //Debug.Log(Data.GetResistance(ElementType.PHYSICAL) + " " + onHitData.physicalNegation + " " + damage[ElementType.PHYSICAL]);
             physicalDamage = physicalResistance * damage[ElementType.PHYSICAL];
             total += System.Math.Max(0, physicalDamage);
         }

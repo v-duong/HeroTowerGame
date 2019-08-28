@@ -199,6 +199,7 @@ public class ArchetypeUITreeWindow : MonoBehaviour
     public void OpenArchetypeTree(HeroData hero, bool rebuildTree, int treeIndex)
     {
         UIManager.Instance.ArchetypeNodeInfoPanel.SetPreviewMode(false);
+        UIManager.Instance.ArchetypeNodeInfoPanel.hero = hero;
 
         if (treeIndex == 0)
         {

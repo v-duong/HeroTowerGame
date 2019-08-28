@@ -11,8 +11,8 @@ public class ActorAbility
     public readonly AbilityBase abilityBase;
     public int abilityLevel;
     public AbilityColliderContainer abilityCollider;
-    public Dictionary<ElementType, MinMaxRange> damageBase = new Dictionary<ElementType, MinMaxRange>();
-    public AbilityTargetType TargetType { get; private set; }
+    public Dictionary<ElementType, MinMaxRange> mainDamageBase = new Dictionary<ElementType, MinMaxRange>();
+    public Dictionary<ElementType, MinMaxRange> offhandDamageBase = new Dictionary<ElementType, MinMaxRange>();
     public int targetLayer;
     public int targetMask;
     public bool isSecondaryAbility;
@@ -25,12 +25,16 @@ public class ActorAbility
     public float ProjectileSize { get; private set; }
     public float ProjectileSpeed { get; private set; }
     public int ProjectilePierce { get; private set; }
-    public float CriticalChance { get; private set; }
-    public int CriticalDamage { get; private set; }
+    public float MainCriticalChance { get; private set; }
+    public float OffhandCriticalChance { get; private set; }
+    public float CriticalDamage { get; private set; }
     public float TargetRange { get; private set; }
     public int ProjectileCount { get; private set; }
+    public bool IsUsable { get; private set; }
+    private bool attackWithMainHand;
+    public bool AlternatesAttacks { get; private set; }
+    public bool DualWielding { get; private set; }
 
-    private ActorData actorData;
     private float AreaScaling;
     private float ProjectileScaling;
     private Dictionary<BonusType, StatBonus> abilityBonuses;
@@ -64,11 +68,13 @@ public class ActorAbility
         ProjectileSize = abilityBase.projectileSize;
         ProjectileSpeed = abilityBase.projectileSpeed;
 
-        CriticalChance = abilityBase.baseCritical;
-        CriticalDamage = 50;
+        MainCriticalChance = abilityBase.baseCritical;
+        CriticalDamage = 1.50f;
         ProjectileCount = abilityBase.projectileCount;
         TargetRange = abilityBase.targetRange;
         targetLayer = layer;
+        attackWithMainHand = true;
+        AlternatesAttacks = !abilityBase.useBothWeaponsForDual;
 
         if (LayerMask.LayerToName(targetLayer) == "EnemyDetect")
             targetMask = LayerMask.GetMask("Enemy");
@@ -153,6 +159,15 @@ public class ActorAbility
     public virtual void UpdateAbilityStats(HeroData data)
     {
         IEnumerable<GroupType> tags = data.groupTypes;
+        if (abilityBase.weaponRestrictions.Count > 0)
+        {
+            if (tags.Intersect(abilityBase.weaponRestrictions).Count() == 0)
+            {
+                IsUsable = false;
+                return;
+            }
+        }
+        IsUsable = true;
         UpdateAbilityBonusProperties(tags);
         UpdateDamage(data, abilityBase.damageLevels, tags);
         UpdateTypeParameters(data, tags);
@@ -166,6 +181,7 @@ public class ActorAbility
 
     public virtual void UpdateAbilityStats(EnemyData data)
     {
+        IsUsable = true;
         IEnumerable<GroupType> tags = data.groupTypes;
         UpdateAbilityBonusProperties(tags);
         UpdateDamage(data, abilityBase.damageLevels, tags);
@@ -257,7 +273,7 @@ public class ActorAbility
             StatBonus speedBonus = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.CAST_SPEED, BonusType.GLOBAL_ABILITY_SPEED);
             StatBonus rangeBonus = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.SPELL_RANGE);
 
-            CriticalChance = critBonus.CalculateStat(abilityBase.baseCritical);
+            MainCriticalChance = critBonus.CalculateStat(abilityBase.baseCritical);
             Cooldown = 1f / speedBonus.CalculateStat(abilityBase.attacksPerSec);
             TargetRange = rangeBonus.CalculateStat(abilityBase.targetRange);
         }
@@ -274,14 +290,32 @@ public class ActorAbility
 
             if (data.GetEquipmentInSlot(EquipSlotType.WEAPON) is Weapon weapon)
             {
-                Cooldown = 1f / speedBonus.CalculateStat(weapon.AttackSpeed);
+                float weaponSpeed = weapon.AttackSpeed;
+                float mainCritical = weapon.CriticalChance;
+                float range = weapon.WeaponRange;
+                if (data.GetEquipmentInSlot(EquipSlotType.OFF_HAND) is Weapon offhand)
+                {
+                    if (AlternatesAttacks)
+                    {
+                        OffhandCriticalChance = critBonus.CalculateStat(offhand.CriticalChance);
+                    }
+                    else
+                    {
+                        mainCritical = (mainCritical + weapon.CriticalChance) / 2f;
+                    }
+                    range = (range + offhand.WeaponRange) / 2f;
+                    weaponSpeed = (weaponSpeed + offhand.AttackSpeed) / 2f;
+                }
+
+                Cooldown = 1f / speedBonus.CalculateStat(weaponSpeed);
+                MainCriticalChance = critBonus.CalculateStat(mainCritical);
+
                 if (abilityBase.useWeaponRangeForTargeting)
                 {
-                    TargetRange = rangeBonus.CalculateStat(weapon.WeaponRange);
+                    TargetRange = rangeBonus.CalculateStat(range);
                 }
                 else
                     TargetRange = rangeBonus.CalculateStat(abilityBase.targetRange);
-                CriticalChance = critBonus.CalculateStat(weapon.CriticalChance);
             }
             else
             {
@@ -293,11 +327,11 @@ public class ActorAbility
                 else
                     TargetRange = rangeBonus.CalculateStat(abilityBase.targetRange);
                 Cooldown = 1f / speedBonus.CalculateStat(1f);
-                CriticalChance = critBonus.CalculateStat(3.5f);
+                MainCriticalChance = critBonus.CalculateStat(3.5f);
             }
         }
 
-        CriticalDamage = critDamageBonus.CalculateStat(50);
+        CriticalDamage = 1f + critDamageBonus.CalculateStat(50)/100f;
 
         if (float.IsInfinity(Cooldown))
             Cooldown = 0.001f;
@@ -313,7 +347,7 @@ public class ActorAbility
             StatBonus speedBonus = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.CAST_SPEED, BonusType.GLOBAL_ABILITY_SPEED);
             StatBonus rangeBonus = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.SPELL_RANGE);
 
-            CriticalChance = critBonus.CalculateStat(abilityBase.baseCritical);
+            MainCriticalChance = critBonus.CalculateStat(abilityBase.baseCritical);
             Cooldown = (1 / speedBonus.CalculateStat(abilityBase.attacksPerSec));
             TargetRange = rangeBonus.CalculateStat(abilityBase.targetRange);
         }
@@ -330,17 +364,17 @@ public class ActorAbility
                 data.GetMultiStatBonus(rangeBonus, abilityBonuses, tags, BonusType.RANGED_ATTACK_RANGE);
             }
 
-            CriticalChance = critBonus.CalculateStat(data.BaseData.attackCriticalChance);
+            MainCriticalChance = critBonus.CalculateStat(data.BaseData.attackCriticalChance);
             Cooldown = (1 / speedBonus.CalculateStat(data.BaseData.attackSpeed));
             TargetRange = rangeBonus.CalculateStat(data.BaseData.attackTargetRange);
         }
-        CriticalDamage = critDamageBonus.CalculateStat(50);
+        CriticalDamage = 1f + critDamageBonus.CalculateStat(50) / 100f;
 
         if (float.IsInfinity(Cooldown))
             Cooldown = 0.001f;
     }
 
-    protected void UpdateDamage(HeroData data, Dictionary<ElementType, AbilityDamageBase> damageLevels, IEnumerable<GroupType> tags, float flatDamageModifier = 1.0f)
+    protected void UpdateDamage(HeroData data, Dictionary<ElementType, AbilityDamageBase> damageLevels, IEnumerable<GroupType> tags, float finalDamageModifier = 1.0f)
     {
         if (abilityBase.abilityType == AbilityType.AURA || abilityBase.abilityType == AbilityType.SELF_BUFF)
             return;
@@ -348,37 +382,64 @@ public class ActorAbility
         StatBonus minBonus, maxBonus, multiBonus;
         AbilityType abilityType = abilityBase.abilityType;
         List<GroupType> damageTags = new List<GroupType>(abilityBase.GetGroupTypes());
-        Weapon weapon = null;
+        Weapon mainWeapon = null, offWeapon = null;
+        float flatDamageMod = abilityBase.flatDamageMultiplier;
+        DualWielding = false;
 
         if (data.GetEquipmentInSlot(EquipSlotType.WEAPON) is Weapon)
         {
-            weapon = data.GetEquipmentInSlot(EquipSlotType.WEAPON) as Weapon;
+            mainWeapon = data.GetEquipmentInSlot(EquipSlotType.WEAPON) as Weapon;
+        }
+        if (data.GetEquipmentInSlot(EquipSlotType.OFF_HAND) is Weapon)
+        {
+            offWeapon = data.GetEquipmentInSlot(EquipSlotType.OFF_HAND) as Weapon;
+            DualWielding = true;
         }
 
         for (int i = 0; i < (int)ElementType.COUNT; i++)
         {
             ElementType element = (ElementType)i;
-            float minDamage = 0, maxDamage = 0;
+            float mainMinDamage = 0, mainMaxDamage = 0, offMinDamage = 0, offMaxDamage = 0, baseMinDamage = 0, baseMaxDamage = 0;
 
             if (damageLevels.ContainsKey(element))
             {
                 MinMaxRange abilityBaseDamage = damageLevels[element].damage[abilityLevel];
-                minDamage = abilityBaseDamage.min;
-                maxDamage = abilityBaseDamage.max;
+                baseMinDamage = abilityBaseDamage.min;
+                baseMaxDamage = abilityBaseDamage.max;
             }
             if (abilityBase.abilityType == AbilityType.ATTACK)
             {
                 float weaponMulti = abilityBase.weaponMultiplier + abilityBase.weaponMultiplierScaling * abilityLevel;
-                if (weapon != null)
+                flatDamageMod = weaponMulti;
+                if (mainWeapon != null)
                 {
-                    MinMaxRange weaponDamage = weapon.GetWeaponDamage(element);
-                    minDamage = weaponDamage.min * weaponMulti;
-                    maxDamage = weaponDamage.max * weaponMulti;
+                    MinMaxRange mainWeaponDamage = mainWeapon.GetWeaponDamage(element);
+
+                    mainMinDamage = mainWeaponDamage.min * weaponMulti;
+                    mainMaxDamage = mainWeaponDamage.max * weaponMulti;
+
+                    if (DualWielding)
+                    {
+                        MinMaxRange offWeaponDamage = offWeapon.GetWeaponDamage(element);
+
+                        if (AlternatesAttacks)
+                        {
+                            offMinDamage = offWeaponDamage.min * weaponMulti;
+                            offMaxDamage = offWeaponDamage.max * weaponMulti;
+                        }
+                        else
+                        {
+                            mainMinDamage *= 0.55f;
+                            mainMaxDamage *= 0.55f;
+                            mainMinDamage += offWeaponDamage.min * weaponMulti * 0.55f;
+                            mainMaxDamage += offWeaponDamage.max * weaponMulti * 0.55f;
+                        }
+                    }
                 }
                 else if (element == ElementType.PHYSICAL)
                 {
-                    minDamage = 3 * weaponMulti;
-                    maxDamage = 6 * weaponMulti;
+                    mainMinDamage = 3 * weaponMulti;
+                    mainMaxDamage = 6 * weaponMulti;
                 }
             }
 
@@ -392,23 +453,45 @@ public class ActorAbility
             maxBonus = data.GetMultiStatBonus(abilityBonuses, tags, max.ToArray());
             multiBonus = data.GetMultiStatBonus(abilityBonuses, tags, multi.ToArray());
 
-            minDamage += minBonus.CalculateStat(0) * abilityBase.flatDamageMultiplier;
-            maxDamage += maxBonus.CalculateStat(0) * abilityBase.flatDamageMultiplier;
+            float addedFlatMin = minBonus.CalculateStat(0) * flatDamageMod;
+            float addedFlatMax = maxBonus.CalculateStat(0) * flatDamageMod;
 
-            minDamage = multiBonus.CalculateStat(minDamage);
-            maxDamage = multiBonus.CalculateStat(maxDamage);
-
-            MinMaxRange newDamageRange = new MinMaxRange
+            mainMinDamage = multiBonus.CalculateStat(mainMinDamage + addedFlatMin + baseMinDamage);
+            mainMaxDamage = multiBonus.CalculateStat(mainMaxDamage + addedFlatMax + baseMaxDamage);
+            MinMaxRange newMainDamageRange = new MinMaxRange
             {
-                min = (int)(minDamage * flatDamageModifier),
-                max = (int)(maxDamage * flatDamageModifier)
+                min = (int)(mainMinDamage * finalDamageModifier),
+                max = (int)(mainMaxDamage * finalDamageModifier)
             };
 
-            if (newDamageRange.IsZero())
-                damageBase.Remove(element);
+            if (newMainDamageRange.IsZero())
+            {
+                mainDamageBase.Remove(element);
+            }
             else
             {
-                damageBase[element] = newDamageRange;
+                mainDamageBase[element] = newMainDamageRange;
+            }
+
+            if (DualWielding && AlternatesAttacks)
+            {
+                offMinDamage = multiBonus.CalculateStat(offMinDamage + addedFlatMin + baseMinDamage);
+                offMaxDamage = multiBonus.CalculateStat(offMaxDamage + addedFlatMax + baseMinDamage);
+
+                MinMaxRange newOffDamageRange = new MinMaxRange
+                {
+                    min = (int)(offMinDamage * finalDamageModifier),
+                    max = (int)(offMaxDamage * finalDamageModifier)
+                };
+
+                if (newOffDamageRange.IsZero())
+                {
+                    offhandDamageBase.Remove(element);
+                }
+                else
+                {
+                    offhandDamageBase[element] = newOffDamageRange;
+                }
             }
         }
     }
@@ -461,10 +544,10 @@ public class ActorAbility
             };
 
             if (newDamageRange.IsZero())
-                damageBase.Remove(element);
+                mainDamageBase.Remove(element);
             else
             {
-                damageBase[element] = newDamageRange;
+                mainDamageBase[element] = newDamageRange;
             }
         }
     }
@@ -482,46 +565,46 @@ public class ActorAbility
         abilityOnHitData.SetEffectEffectiveness(EffectType.BLEED, bleedEffectiveness.CalculateStat(100f) / 100f * bleedSpeed);
         abilityOnHitData.SetEffectDuration(EffectType.BLEED, bleedDuration.CalculateStat(4f) / bleedSpeed);
 
-        StatBonus burnChance = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.BURN_CHANCE, BonusType.STATUS_EFFECT_CHANCE);
-        StatBonus burnEffectiveness = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.BURN_EFFECTIVENESS, BonusType.STATUS_EFFECT_DAMAGE, BonusType.DAMAGE_OVER_TIME);
-        StatBonus burnDuration = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.BURN_DURATION, BonusType.STATUS_EFFECT_DURATION);
+        StatBonus burnChance = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.BURN_CHANCE, BonusType.STATUS_EFFECT_CHANCE, BonusType.ELEMENTAL_STATUS_EFFECT_CHANCE);
+        StatBonus burnEffectiveness = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.BURN_EFFECTIVENESS, BonusType.STATUS_EFFECT_DAMAGE, BonusType.DAMAGE_OVER_TIME, BonusType.ELEMENTAL_STATUS_EFFECT_EFFECTIVENESS);
+        StatBonus burnDuration = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.BURN_DURATION, BonusType.STATUS_EFFECT_DURATION, BonusType.ELEMENTAL_STATUS_EFFECT_DURATION);
         float burnSpeed = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.BURN_SPEED).CalculateStat(100f) / 100f;
         abilityOnHitData.SetEffectChance(EffectType.BURN, burnChance.CalculateStat(0f));
         abilityOnHitData.SetEffectEffectiveness(EffectType.BURN, burnEffectiveness.CalculateStat(100f) / 100f * burnSpeed);
         abilityOnHitData.SetEffectDuration(EffectType.BURN, burnDuration.CalculateStat(2f) / burnSpeed);
 
-        StatBonus chillChance = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.CHILL_CHANCE, BonusType.STATUS_EFFECT_CHANCE);
-        StatBonus chillEffectiveness = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.CHILL_EFFECTIVENESS, BonusType.NONDAMAGE_STATUS_EFFECTIVENESS);
-        StatBonus chillDuration = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.CHILL_DURATION, BonusType.STATUS_EFFECT_DURATION);
+        StatBonus chillChance = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.CHILL_CHANCE, BonusType.STATUS_EFFECT_CHANCE, BonusType.ELEMENTAL_STATUS_EFFECT_CHANCE);
+        StatBonus chillEffectiveness = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.CHILL_EFFECTIVENESS, BonusType.NONDAMAGE_STATUS_EFFECTIVENESS, BonusType.ELEMENTAL_STATUS_EFFECT_EFFECTIVENESS);
+        StatBonus chillDuration = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.CHILL_DURATION, BonusType.STATUS_EFFECT_DURATION, BonusType.ELEMENTAL_STATUS_EFFECT_DURATION);
         abilityOnHitData.SetEffectChance(EffectType.CHILL, chillChance.CalculateStat(0f));
         abilityOnHitData.SetEffectEffectiveness(EffectType.CHILL, chillEffectiveness.CalculateStat(100f) / 100f);
         abilityOnHitData.SetEffectDuration(EffectType.CHILL, chillDuration.CalculateStat(2f));
 
-        StatBonus electrocuteChance = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.ELECTROCUTE_CHANCE, BonusType.STATUS_EFFECT_CHANCE);
-        StatBonus electrocuteEffectiveness = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.ELECTROCUTE_EFFECTIVENESS, BonusType.STATUS_EFFECT_DAMAGE);
-        StatBonus electrocuteDuration = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.ELECTROCUTE_DURATION, BonusType.STATUS_EFFECT_DURATION);
+        StatBonus electrocuteChance = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.ELECTROCUTE_CHANCE, BonusType.STATUS_EFFECT_CHANCE, BonusType.ELEMENTAL_STATUS_EFFECT_CHANCE);
+        StatBonus electrocuteEffectiveness = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.ELECTROCUTE_EFFECTIVENESS, BonusType.STATUS_EFFECT_DAMAGE, BonusType.ELEMENTAL_STATUS_EFFECT_EFFECTIVENESS);
+        StatBonus electrocuteDuration = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.ELECTROCUTE_DURATION, BonusType.STATUS_EFFECT_DURATION, BonusType.ELEMENTAL_STATUS_EFFECT_DURATION);
         float electrocuteSpeed = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.ELECTROCUTE_SPEED).CalculateStat(100f) / 100f;
         abilityOnHitData.SetEffectChance(EffectType.ELECTROCUTE, electrocuteChance.CalculateStat(0f));
         abilityOnHitData.SetEffectEffectiveness(EffectType.ELECTROCUTE, electrocuteEffectiveness.CalculateStat(100f) / 100f * electrocuteSpeed);
         abilityOnHitData.SetEffectDuration(EffectType.ELECTROCUTE, electrocuteDuration.CalculateStat(2f) / electrocuteSpeed);
 
-        StatBonus fractureChance = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.FRACTURE_CHANCE, BonusType.STATUS_EFFECT_CHANCE);
-        StatBonus fractureEffectiveness = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.FRACTURE_EFFECTIVENESS, BonusType.NONDAMAGE_STATUS_EFFECTIVENESS);
-        StatBonus fractureDuration = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.FRACTURE_DURATION, BonusType.STATUS_EFFECT_DURATION);
+        StatBonus fractureChance = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.FRACTURE_CHANCE, BonusType.STATUS_EFFECT_CHANCE, BonusType.ELEMENTAL_STATUS_EFFECT_CHANCE);
+        StatBonus fractureEffectiveness = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.FRACTURE_EFFECTIVENESS, BonusType.NONDAMAGE_STATUS_EFFECTIVENESS, BonusType.ELEMENTAL_STATUS_EFFECT_EFFECTIVENESS);
+        StatBonus fractureDuration = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.FRACTURE_DURATION, BonusType.STATUS_EFFECT_DURATION, BonusType.ELEMENTAL_STATUS_EFFECT_DURATION);
         abilityOnHitData.SetEffectChance(EffectType.FRACTURE, fractureChance.CalculateStat(0f));
         abilityOnHitData.SetEffectEffectiveness(EffectType.FRACTURE, fractureEffectiveness.CalculateStat(100f) / 100f);
         abilityOnHitData.SetEffectDuration(EffectType.FRACTURE, fractureDuration.CalculateStat(3f));
 
-        StatBonus pacifyChance = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.PACIFY_CHANCE, BonusType.STATUS_EFFECT_CHANCE);
-        StatBonus pacifyEffectiveness = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.PACIFY_EFFECTIVENESS, BonusType.NONDAMAGE_STATUS_EFFECTIVENESS);
-        StatBonus pacifyDuration = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.PACIFY_DURATION, BonusType.STATUS_EFFECT_DURATION);
+        StatBonus pacifyChance = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.PACIFY_CHANCE, BonusType.STATUS_EFFECT_CHANCE, BonusType.PRIMORDIAL_STATUS_EFFECT_CHANCE);
+        StatBonus pacifyEffectiveness = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.PACIFY_EFFECTIVENESS, BonusType.NONDAMAGE_STATUS_EFFECTIVENESS, BonusType.PRIMORDIAL_STATUS_EFFECT_EFFECTIVENESS);
+        StatBonus pacifyDuration = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.PACIFY_DURATION, BonusType.STATUS_EFFECT_DURATION, BonusType.PRIMORDIAL_STATUS_EFFECT_DURATION);
         abilityOnHitData.SetEffectChance(EffectType.PACIFY, pacifyChance.CalculateStat(0f));
         abilityOnHitData.SetEffectEffectiveness(EffectType.PACIFY, pacifyEffectiveness.CalculateStat(100f) / 100f);
         abilityOnHitData.SetEffectDuration(EffectType.PACIFY, pacifyDuration.CalculateStat(3f));
 
-        StatBonus radiationChance = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.RADIATION_CHANCE, BonusType.STATUS_EFFECT_CHANCE);
-        StatBonus radiationEffectiveness = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.RADIATION_EFFECTIVENESS, BonusType.STATUS_EFFECT_DAMAGE, BonusType.DAMAGE_OVER_TIME);
-        StatBonus radiationDuration = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.RADIATION_DURATION, BonusType.STATUS_EFFECT_DURATION);
+        StatBonus radiationChance = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.RADIATION_CHANCE, BonusType.STATUS_EFFECT_CHANCE, BonusType.PRIMORDIAL_STATUS_EFFECT_CHANCE);
+        StatBonus radiationEffectiveness = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.RADIATION_EFFECTIVENESS, BonusType.STATUS_EFFECT_DAMAGE, BonusType.DAMAGE_OVER_TIME, BonusType.PRIMORDIAL_STATUS_EFFECT_EFFECTIVENESS);
+        StatBonus radiationDuration = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.RADIATION_DURATION, BonusType.STATUS_EFFECT_DURATION, BonusType.PRIMORDIAL_STATUS_EFFECT_DURATION);
         float radiationSpeed = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.RADIATION_SPEED).CalculateStat(100f) / 100f;
         abilityOnHitData.SetEffectChance(EffectType.RADIATION, radiationChance.CalculateStat(0f));
         abilityOnHitData.SetEffectEffectiveness(EffectType.RADIATION, radiationEffectiveness.CalculateStat(100f) / 100f * radiationSpeed);
@@ -552,44 +635,63 @@ public class ActorAbility
         abilityOnHitData.voidNegation = voidNegate.CalculateStat(0);
     }
 
-    public Dictionary<ElementType, float> CalculateDamageDict()
+    public Dictionary<ElementType, float> CalculateDamageValues()
     {
         var values = Enum.GetValues(typeof(ElementType));
-        float damage = 0;
+        float damage = 0, critChance;
         bool isCrit = false;
-        Dictionary<ElementType, float> dict = new Dictionary<ElementType, float>();
-        if (UnityEngine.Random.Range(0f, 100f) < CriticalChance)
+        Dictionary<ElementType, float> returnDict = new Dictionary<ElementType, float>();
+
+        Dictionary<ElementType, MinMaxRange> dicToUse;
+
+        if (attackWithMainHand)
+        {
+            dicToUse = mainDamageBase;
+            critChance = MainCriticalChance;
+        }
+        else
+        {
+            dicToUse = offhandDamageBase;
+            critChance = OffhandCriticalChance;
+        }
+
+        if (UnityEngine.Random.Range(0f, 100f) < critChance)
         {
             isCrit = true;
         }
         foreach (ElementType elementType in values)
         {
-            if (damageBase.ContainsKey(elementType))
+            if (dicToUse.ContainsKey(elementType))
             {
-                damage = UnityEngine.Random.Range(damageBase[elementType].min, damageBase[elementType].max + 1);
+                damage = UnityEngine.Random.Range(dicToUse[elementType].min, dicToUse[elementType].max + 1);
                 if (isCrit)
-                    damage = damage * (1f + (CriticalDamage / 100f));
-                dict.Add(elementType, damage);
+                    damage = damage * CriticalDamage;
+                returnDict.Add(elementType, damage);
             }
             else
             {
-                dict.Add(elementType, 0);
+                returnDict.Add(elementType, 0);
             }
         }
-        return dict;
+
+        if (DualWielding && AlternatesAttacks)
+            attackWithMainHand = !attackWithMainHand;
+
+        return returnDict;
     }
 
     public void StartFiring(Actor parent)
     {
-        if (firingRoutine == null)
-        {
-            if (abilityBase.abilityType == AbilityType.AURA || abilityBase.abilityType == AbilityType.SELF_BUFF)
-                firingRoutine = FiringRoutine_Aura();
-            else
-                firingRoutine = FiringRoutine_Attack();
-            parent.StartCoroutine(firingRoutine);
-            firingRoutineRunning = true;
-        }
+        if (IsUsable)
+            if (firingRoutine == null)
+            {
+                if (abilityBase.abilityType == AbilityType.AURA || abilityBase.abilityType == AbilityType.SELF_BUFF)
+                    firingRoutine = FiringRoutine_Aura();
+                else
+                    firingRoutine = FiringRoutine_Attack();
+                parent.StartCoroutine(firingRoutine);
+                firingRoutineRunning = true;
+            }
     }
 
     public void StopFiring(Actor parent)
@@ -607,6 +709,7 @@ public class ActorAbility
     private IEnumerator FiringRoutine_Attack()
     {
         bool fired = false;
+        attackWithMainHand = true;
         while (true)
         {
             if (CurrentTarget != null)
@@ -627,6 +730,13 @@ public class ActorAbility
 
                     case AbilityShotType.NOVA_AOE:
                         FireRadialAoe();
+                        break;
+
+                    case AbilityShotType.HITSCAN_SINGLE:
+                        FireHitscan();
+                        break;
+
+                    case AbilityShotType.LINEAR_AOE:
                         break;
                 }
                 fired = true;
@@ -715,7 +825,7 @@ public class ActorAbility
 
         ParticleManager.Instance.EmitAbilityParticle(abilityBase.idName, emitParams, AreaScaling);
 
-        Dictionary<ElementType, float> damageDict = CalculateDamageDict();
+        Dictionary<ElementType, float> damageDict = CalculateDamageValues();
         foreach (Collider2D hit in hits)
         {
             Actor actor = hit.gameObject.GetComponent<Actor>();
@@ -724,6 +834,17 @@ public class ActorAbility
                 actor.ApplyDamage(damageDict, abilityOnHitData, true);
             }
         }
+    }
+
+    protected void FireHitscan()
+    {
+        FireHitscan(abilityCollider.transform.position, CurrentTarget.transform.position);
+    }
+
+    protected void FireHitscan(Vector3 origin, Vector3 target)
+    {
+        Dictionary<ElementType, float> damageDict = CalculateDamageValues();
+        CurrentTarget.ApplyDamage(damageDict, abilityOnHitData, true);
     }
 
     protected void FireArcAoe()
@@ -743,7 +864,7 @@ public class ActorAbility
         float angle = Vector2.SignedAngle(Vector2.up, forward) + (180f - abilityBase.projectileSpread) / 2;
         ParticleManager.Instance.EmitAbilityParticleArc(abilityBase.idName, emitParams, AreaScaling, angle, AbilityOwner.transform);
 
-        Dictionary<ElementType, float> damageDict = CalculateDamageDict();
+        Dictionary<ElementType, float> damageDict = CalculateDamageValues();
         foreach (Collider2D hit in hits)
         {
             Actor actor = hit.gameObject.GetComponent<Actor>();
@@ -765,21 +886,24 @@ public class ActorAbility
             Tilemap tilemap = StageManager.Instance.PathTilemap;
             Vector3? nextNode;
             Vector2 currentPosition = abilityCollider.transform.position;
-            float threshold = 2 + UnityEngine.Random.Range(0f, 1f);
-
+            //float threshold = 1 + UnityEngine.Random.Range(0f, 1f);
+            float threshold = 0.05f + UnityEngine.Random.Range(0f, 0.1f);
             //Grab next movement steps for enemy then calculate enemy move time to
             //that node. If travel time of projectile and enemy of node are within
             //error then shoot toward that node.
             //Only calculate few nodes ahead for performance and game balance.
+
             for (int i = 0; i < 5; i++)
             {
                 nextNode = enemy.GetMovementNode(i);
                 if (nextNode != null)
                 {
                     float enemyMoveTime = i / enemySpeed;
-                    Vector2 projDirectionToNode = ((Vector2)nextNode - currentPosition).normalized * ProjectileSpeed * enemyMoveTime;
-                    float distance = ((Vector2)nextNode - (currentPosition + projDirectionToNode)).sqrMagnitude;
-                    if (distance < threshold)
+                    float projectileTimeToNode = Vector2.Distance((Vector2)nextNode, currentPosition) / ProjectileSpeed;
+                    //float distance = ((Vector2)nextNode - (currentPosition + projDirectionToNode)).magnitude;
+                    float timeDifference = Math.Abs(enemyMoveTime - projectileTimeToNode);
+
+                    if (timeDifference < threshold)
                     {
                         FireProjectile(abilityCollider.transform.position, (Vector3)nextNode);
                         return;
@@ -819,7 +943,7 @@ public class ActorAbility
             spreadAngle = abilityBase.projectileSpread;
         }
 
-        Dictionary<ElementType, float> damageDict = CalculateDamageDict();
+        Dictionary<ElementType, float> damageDict = CalculateDamageValues();
 
         AbilityOnHitDataContainer OnHitCopy = abilityOnHitData.DeepCopy();
 
@@ -856,6 +980,35 @@ public class ActorAbility
             pooledProjectile.pierceCount = ProjectilePierce;
             pooledProjectile.GetComponent<SpriteRenderer>().sprite = ResourceManager.Instance.GetSprite(abilityBase.idName);
         }
+    }
+
+    public float GetApproxDPS(bool getOffhand)
+    {
+        Dictionary<ElementType, MinMaxRange> damage;
+        float criticalChance, total = 0;
+
+        if (!getOffhand)
+        {
+            damage = mainDamageBase;
+            criticalChance = MainCriticalChance / 100f;
+        }
+        else
+        {
+            damage = offhandDamageBase;
+            criticalChance = OffhandCriticalChance / 100f;
+        }
+
+        foreach (ElementType element in Enum.GetValues(typeof(ElementType)))
+        {
+            if (damage.ContainsKey(element))
+            {
+                total += damage[element].min + damage[element].max;
+            }
+        }
+
+        total = total / 2f;
+        float dps = (total * (1 - criticalChance) + total * criticalChance * CriticalDamage / 100) * (1f / Cooldown);
+        return dps;
     }
 }
 

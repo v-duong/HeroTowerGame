@@ -87,6 +87,8 @@ public class AbilityBase
     public readonly bool useWeaponRangeForTargeting;
     [JsonProperty]
     public readonly bool useWeaponRangeForAOE;
+    [JsonProperty]
+    public readonly bool useBothWeaponsForDual;
 
     public MinMaxRange GetDamageAtLevel(ElementType e, int level)
     {

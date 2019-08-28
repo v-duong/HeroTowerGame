@@ -9,6 +9,7 @@ public class ArchetypeNodeInfoPanel : MonoBehaviour
     public TextMeshProUGUI infoText;
     public ArchetypeUITreeNode uiNode;
     public Button levelButton;
+    public HeroData hero;
     private bool isPreviewMode;
 
     public void OnEnable()
@@ -50,7 +51,7 @@ public class ArchetypeNodeInfoPanel : MonoBehaviour
     {
         int currentLevel = archetypeData.GetNodeLevel(node);
         float bonusValue;
-        if (uiNode.isLevelable && !archetypeData.IsNodeMaxLevel(node))
+        if (uiNode.isLevelable && !archetypeData.IsNodeMaxLevel(node) && hero.ArchetypePoints>0)
             levelButton.interactable = true;
         else
             levelButton.interactable = false;
@@ -145,9 +146,10 @@ public class ArchetypeNodeInfoPanel : MonoBehaviour
 
     public void LevelUpNode()
     {
-        if (archetypeData.IsNodeMaxLevel(node))
+        if (archetypeData.IsNodeMaxLevel(node) || hero.ArchetypePoints == 0)
             return;
         archetypeData.LevelUpNode(node);
+        hero.ModifyArchetypePoints(-1);
         UpdatePanel();
         uiNode.UpdateNode();
         if (archetypeData.IsNodeMaxLevel(node))
