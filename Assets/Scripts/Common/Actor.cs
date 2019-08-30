@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public abstract class Actor : MonoBehaviour
@@ -31,6 +32,13 @@ public abstract class Actor : MonoBehaviour
             statusEffects[index].Update(dT);
             index--;
         }
+
+        index = buffEffects.Count - 1;
+        while (index >= 0)
+        {
+            buffEffects[index].Update(dT);
+            index--;
+        }
     }
 
     protected void Start()
@@ -44,13 +52,13 @@ public abstract class Actor : MonoBehaviour
         ApplyRegenEffects();
         if (Data.IsDead)
             Death();
-        if (!this.gameObject.activeSelf)
+        if (!gameObject.activeSelf)
             return;
         if (isMoving)
         {
             Move();
         }
-        healthBar.UpdatePosition(this.transform);
+        healthBar.UpdatePosition(transform);
     }
 
     public HashSet<GroupType> GetActorTags()
@@ -62,12 +70,12 @@ public abstract class Actor : MonoBehaviour
     public void InitializeHealthBar()
     {
         healthBar = GetComponentInChildren<UIHealthBar>();
-        healthBar.Initialize(Data.MaximumHealth, Data.CurrentHealth, Data.MaximumManaShield, Data.CurrentManaShield, this.transform);
+        healthBar.Initialize(Data.MaximumHealth, Data.CurrentHealth, Data.MaximumManaShield, Data.CurrentManaShield, transform);
     }
 
     public void AddStatusEffect(ActorStatusEffect statusEffect)
     {
-        if (statusEffect.effectType == EffectType.AURA_BUFF || statusEffect.effectType == EffectType.SELF_BUFF)
+        if (statusEffect.effectType == EffectType.BUFF || statusEffect.effectType == EffectType.DEBUFF)
             buffEffects.Add((StatBonusBuffEffect)statusEffect);
         else
         {
@@ -87,7 +95,7 @@ public abstract class Actor : MonoBehaviour
 
     public void RemoveStatusEffect(ActorStatusEffect statusEffect)
     {
-        if (statusEffect.effectType == EffectType.AURA_BUFF || statusEffect.effectType == EffectType.SELF_BUFF)
+        if (statusEffect.effectType == EffectType.BUFF || statusEffect.effectType == EffectType.DEBUFF)
             buffEffects.Remove((StatBonusBuffEffect)statusEffect);
         else
         {
@@ -95,10 +103,10 @@ public abstract class Actor : MonoBehaviour
         }
     }
 
-    public StatBonusBuffEffect GetBuffStatusEffect(string statusName)
+    public List<StatBonusBuffEffect> GetBuffStatusEffect(string statusName)
     {
-        StatBonusBuffEffect buff = buffEffects.Find(x => x.BuffName.Equals(statusName));
-        return buff;
+        List<StatBonusBuffEffect> buffs = buffEffects.FindAll(x => x.BuffName.Equals(statusName));
+        return buffs;
     }
 
     public void AddAbilityToList(ActorAbility ability)
@@ -187,7 +195,7 @@ public abstract class Actor : MonoBehaviour
                 shieldModifier += -Data.ShieldRestoreRate;
             ModifyCurrentShield(shieldModifier * Time.deltaTime);
         }
-        ModifyCurrentHealth(Data.HealthRegenRate * Time.deltaTime);
+        ModifyCurrentHealth(-Data.HealthRegenRate * Time.deltaTime);
     }
 
     public void ApplyDamage(Dictionary<ElementType, float> damage, AbilityOnHitDataContainer onHitData, bool isHit)
@@ -209,7 +217,7 @@ public abstract class Actor : MonoBehaviour
             }
             if (Data.DodgeRating > 0)
             {
-                float dodgePercent = 1 - (onHitData.accuracy / (onHitData.accuracy + (Data.DodgeRating) / 2f));
+                float dodgePercent = 1 - (onHitData.accuracy / (onHitData.accuracy + Data.DodgeRating / 2f));
                 dodgePercent = Mathf.Min(dodgePercent, 85f);
                 if (Random.Range(0, 100f) < dodgePercent)
                 {
@@ -225,7 +233,7 @@ public abstract class Actor : MonoBehaviour
             {
                 armorValue = Data.Armor / (Data.Armor + damage[ElementType.PHYSICAL]);
             }
-            float physicalResistance = Mathf.Min((1.0f - (Data.GetResistance(ElementType.PHYSICAL) - onHitData.physicalNegation) / 100f) + armorValue, 0.95f);
+            float physicalResistance = Mathf.Min(1.0f - (Data.GetResistance(ElementType.PHYSICAL) - onHitData.physicalNegation) / 100f + armorValue, 0.95f);
             //Debug.Log(Data.GetResistance(ElementType.PHYSICAL) + " " + onHitData.physicalNegation + " " + damage[ElementType.PHYSICAL]);
             physicalDamage = physicalResistance * damage[ElementType.PHYSICAL];
             total += System.Math.Max(0, physicalDamage);
@@ -315,6 +323,43 @@ public abstract class Actor : MonoBehaviour
         if (damage[ElementType.VOID] != 0 && postDamageData.DidEffectProc(EffectType.RADIATION))
         {
             AddStatusEffect(new RadiationEffect(this, postDamageData.sourceActor, damage[ElementType.VOID] * postDamageData.GetEffectEffectiveness(EffectType.RADIATION), postDamageData.GetEffectDuration(EffectType.RADIATION)));
+        }
+
+        float chanceRoll = 1.0f;
+        foreach (AbilityOnHitDataContainer.OnHitBuffEffect onHitEffect in postDamageData.onHitEffects)
+        {
+            if (onHitEffect.chance < 1.0f)
+            {
+                if (!onHitEffect.useLastRoll)
+                    chanceRoll = Random.Range(0f, 1f);
+                if (chanceRoll > onHitEffect.chance)
+                    continue;
+            }
+
+            string buffName = postDamageData.abilityName + onHitEffect.bonusType.ToString() + onHitEffect.modifyType.ToString();
+            List<StatBonusBuffEffect> buffs = GetBuffStatusEffect(buffName);
+            if (buffs.Count >= onHitEffect.stacks)
+            {
+                float lowestDuration = 100f;
+                StatBonusBuffEffect buff = null;
+                foreach(StatBonusBuffEffect b in buffs)
+                {
+                    if (b.duration < lowestDuration)
+                        buff = b;
+                }
+                buff.RefreshDuration(onHitEffect.duration);
+                return;
+            }
+
+            List<System.Tuple<BonusType, ModifyType, float>> bonuses = new List<System.Tuple<BonusType, ModifyType, float>>
+            {
+                new System.Tuple<BonusType, ModifyType, float>(onHitEffect.bonusType, onHitEffect.modifyType, onHitEffect.power)
+            };
+
+
+            Debug.Log(onHitEffect.duration);
+
+            AddStatusEffect(new StatBonusBuffEffect(this, postDamageData.sourceActor, bonuses, onHitEffect.duration, buffName, EffectType.DEBUFF));
         }
     }
 

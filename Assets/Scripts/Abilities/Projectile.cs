@@ -56,7 +56,7 @@ public class Projectile : MonoBehaviour
         emitParams.position = transform.position;
         particleWaitTime -= Time.fixedDeltaTime;
         if (particleWaitTime <= 0)
-            particleWaitTime = ParticleManager.Instance.EmitAbilityParticle(abilityBase.idName, emitParams, this.transform.localScale.x);
+            particleWaitTime = ParticleManager.Instance.EmitAbilityParticle(abilityBase.idName, emitParams, transform.localScale.x);
         Move();
         //float angle = Vector3.Angle(transform.position, transform.position + currentHeading);
         //transform.rotation = Quaternion.AngleAxis(angle, Vector3.forward);
@@ -65,7 +65,7 @@ public class Projectile : MonoBehaviour
 
     public void OnTriggerEnter2D(Collider2D collision)
     {
-        if (!this.isActiveAndEnabled)
+        if (!isActiveAndEnabled)
             return;
 
         Actor actor = collision.gameObject.GetComponent<Actor>();
@@ -80,7 +80,7 @@ public class Projectile : MonoBehaviour
                 if (linkedAbility.LinkedAbilityData.type == AbilityLinkType.ON_EVERY_HIT ||
                     (linkedAbility.LinkedAbilityData.type == AbilityLinkType.ON_FIRST_HIT && targetsHit.Count == 0))
                 {
-                    linkedAbility.Fire(this.transform.position, targetPosition);
+                    linkedAbility.Fire(transform.position, targetPosition);
                 }
             }
             targetsHit.Add(actor);
@@ -90,7 +90,7 @@ public class Projectile : MonoBehaviour
             {
                 if (linkedAbility != null && linkedAbility.LinkedAbilityData.type == AbilityLinkType.ON_FINAL_HIT)
                 {
-                    linkedAbility.Fire(this.transform.position, targetPosition);
+                    linkedAbility.Fire(transform.position, targetPosition);
                 }
                 targetsHit.Clear();
                 ReturnToPool();
@@ -106,7 +106,7 @@ public class Projectile : MonoBehaviour
     {
         float dt = Time.fixedDeltaTime;
         //this.transform.position += currentHeading.normalized * currentSpeed * dt;
-        this.transform.Translate(currentHeading.normalized * currentSpeed * dt, Space.World);
+        transform.Translate(currentHeading.normalized * currentSpeed * dt, Space.World);
         return;
     }
 

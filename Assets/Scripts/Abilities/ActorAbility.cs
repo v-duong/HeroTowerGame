@@ -34,6 +34,7 @@ public class ActorAbility
     private bool attackWithMainHand;
     public bool AlternatesAttacks { get; private set; }
     public bool DualWielding { get; private set; }
+    public EffectType BuffType { get; private set; }
 
     private float AreaScaling;
     private float ProjectileScaling;
@@ -57,6 +58,7 @@ public class ActorAbility
         abilityBase = ability;
         abilityOnHitData = new AbilityOnHitDataContainer
         {
+            abilityName = abilityBase.idName,
             Type = abilityBase.abilityType
         };
         abilityBonuses = new Dictionary<BonusType, StatBonus>();
@@ -75,6 +77,13 @@ public class ActorAbility
         targetLayer = layer;
         attackWithMainHand = true;
         AlternatesAttacks = !abilityBase.useBothWeaponsForDual;
+
+        if (abilityBase.targetType == AbilityTargetType.ENEMY)
+        {
+            BuffType = EffectType.DEBUFF;
+        }
+        else
+            BuffType = EffectType.BUFF;
 
         if (LayerMask.LayerToName(targetLayer) == "EnemyDetect")
             targetMask = LayerMask.GetMask("Enemy");
@@ -247,7 +256,7 @@ public class ActorAbility
     protected void UpdateShotParameters(EnemyData data, IEnumerable<GroupType> tags)
     {
         AreaRadius = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.AREA_RADIUS).CalculateStat(abilityBase.areaRadius);
-        AreaScaling = (AreaRadius) / abilityBase.areaRadius;
+        AreaScaling = AreaRadius / abilityBase.areaRadius;
         if (abilityBase.abilityType == AbilityType.AURA || abilityBase.abilityType == AbilityType.SELF_BUFF)
         {
             TargetRange = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.AURA_RANGE).CalculateStat(abilityBase.targetRange);
@@ -331,7 +340,7 @@ public class ActorAbility
             }
         }
 
-        CriticalDamage = 1f + critDamageBonus.CalculateStat(50)/100f;
+        CriticalDamage = 1f + (critDamageBonus.CalculateStat(50) / 100f);
 
         if (float.IsInfinity(Cooldown))
             Cooldown = 0.001f;
@@ -348,7 +357,7 @@ public class ActorAbility
             StatBonus rangeBonus = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.SPELL_RANGE);
 
             MainCriticalChance = critBonus.CalculateStat(abilityBase.baseCritical);
-            Cooldown = (1 / speedBonus.CalculateStat(abilityBase.attacksPerSec));
+            Cooldown = 1 / speedBonus.CalculateStat(abilityBase.attacksPerSec);
             TargetRange = rangeBonus.CalculateStat(abilityBase.targetRange);
         }
         else if (abilityBase.abilityType == AbilityType.ATTACK)
@@ -365,10 +374,10 @@ public class ActorAbility
             }
 
             MainCriticalChance = critBonus.CalculateStat(data.BaseData.attackCriticalChance);
-            Cooldown = (1 / speedBonus.CalculateStat(data.BaseData.attackSpeed));
+            Cooldown = 1 / speedBonus.CalculateStat(data.BaseData.attackSpeed);
             TargetRange = rangeBonus.CalculateStat(data.BaseData.attackTargetRange);
         }
-        CriticalDamage = 1f + critDamageBonus.CalculateStat(50) / 100f;
+        CriticalDamage = 1f + (critDamageBonus.CalculateStat(50) / 100f);
 
         if (float.IsInfinity(Cooldown))
             Cooldown = 0.001f;
@@ -633,6 +642,12 @@ public class ActorAbility
 
         StatBonus voidNegate = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.VOID_RESISTANCE_NEGATION, BonusType.PRIMORDIAL_RESISTANCE_NEGATION);
         abilityOnHitData.voidNegation = voidNegate.CalculateStat(0);
+
+        abilityOnHitData.onHitEffects.Clear();
+        foreach (AbilityAppliedEffect appliedEffect in abilityBase.appliedEffects)
+        {
+            abilityOnHitData.onHitEffects.Add(new AbilityOnHitDataContainer.OnHitBuffEffect(appliedEffect, abilityLevel));
+        }
     }
 
     public Dictionary<ElementType, float> CalculateDamageValues()
@@ -760,41 +775,47 @@ public class ActorAbility
             switch (abilityBase.abilityType)
             {
                 case AbilityType.AURA:
-                    ApplyStatBonusBuff(AbilityOwner, EffectType.AURA_BUFF);
+                    ApplyAuraBuff(AbilityOwner);
                     foreach (Actor target in targetList)
-                        ApplyStatBonusBuff(target, EffectType.AURA_BUFF);
+                        ApplyAuraBuff(target);
                     break;
 
                 case AbilityType.SELF_BUFF:
-                    ApplyStatBonusBuff(AbilityOwner, EffectType.SELF_BUFF);
+                    ApplyAuraBuff(AbilityOwner);
                     break;
             }
 
-            yield return new WaitForSeconds(0.25f);
+            yield return new WaitForSeconds(0.33f);
         }
     }
 
-    protected void ApplyStatBonusBuff(Actor target, EffectType effectType)
+    protected void ApplyAuraBuff(Actor target)
     {
-        StatBonusBuffEffect buff = target.GetBuffStatusEffect(abilityBase.idName);
-        List<Tuple<BonusType, ModifyType, int>> bonuses = new List<Tuple<BonusType, ModifyType, int>>();
+        StatBonusBuffEffect buff = null;
+        List<StatBonusBuffEffect> buffs = target.GetBuffStatusEffect(abilityBase.idName);
+        if (buffs.Count > 0)
+            buff = buffs[0];
+        List<Tuple<BonusType, ModifyType, float>> bonuses = new List<Tuple<BonusType, ModifyType, float>>();
         float strength = 0;
-        foreach (AbilityScalingBonusProperty bonusProperty in abilityBase.bonusProperties)
+        foreach (AbilityAppliedEffect effect in abilityBase.appliedEffects)
         {
-            int buffValue = (int)(bonusProperty.initialValue + bonusProperty.growthValue * abilityLevel);
-            bonuses.Add(new Tuple<BonusType, ModifyType, int>(bonusProperty.bonusType, bonusProperty.modifyType, buffValue));
+            float buffValue = effect.initialValue + effect.growthValue * abilityLevel;
+            bonuses.Add(new Tuple<BonusType, ModifyType, float>(effect.bonusType, effect.modifyType, buffValue));
             strength += buffValue;
         }
 
         if (buff != null)
         {
-            buff.RefreshDuration(0.5f);
-            return;
+            if (strength <= buff.BuffPower)
+            {
+                buff.RefreshDuration(0.5f);
+                return;
+            }
+            else
+                buff.OnExpire();
         }
-        else
-        {
-            target.AddStatusEffect(new StatBonusBuffEffect(target, AbilityOwner, bonuses, 0.5f, abilityBase.idName, effectType));
-        }
+
+        target.AddStatusEffect(new StatBonusBuffEffect(target, AbilityOwner, bonuses, 0.5f, abilityBase.idName, BuffType));
     }
 
     protected void FireRadialAoe()
@@ -857,7 +878,7 @@ public class ActorAbility
         Collider2D[] hits;
 
         Vector2 forward = target - origin;
-        float arc = (abilityBase.projectileSpread / 2f);
+        float arc = abilityBase.projectileSpread / 2f;
         hits = Physics2D.OverlapCircleAll(origin, AreaRadius, targetMask);
 
         emitParams.position = origin;
@@ -870,7 +891,7 @@ public class ActorAbility
             Actor actor = hit.gameObject.GetComponent<Actor>();
             if (actor != null)
             {
-                Vector2 toActor = (actor.transform.position - origin);
+                Vector2 toActor = actor.transform.position - origin;
                 if (Vector2.Angle(toActor, forward) < arc)
                     actor.ApplyDamage(damageDict, abilityOnHitData, true);
             }
@@ -956,7 +977,7 @@ public class ActorAbility
 
             if (isSpread)
             {
-                angleMultiplier = (int)Math.Round((i / 2f), MidpointRounding.AwayFromZero);
+                angleMultiplier = (int)Math.Round(i / 2f, MidpointRounding.AwayFromZero);
                 if (i % 2 == 0)
                 {
                     angleMultiplier *= -1;
@@ -1007,80 +1028,7 @@ public class ActorAbility
         }
 
         total = total / 2f;
-        float dps = (total * (1 - criticalChance) + total * criticalChance * CriticalDamage / 100) * (1f / Cooldown);
+        float dps = ((total * (1 - criticalChance)) + (total * criticalChance * CriticalDamage / 100)) * (1f / Cooldown);
         return dps;
-    }
-}
-
-public class AbilityOnHitDataContainer
-{
-    public class EffectData
-    {
-        public float chance = 0;
-        public float effectiveness = 0;
-        public float duration = 0;
-    }
-
-    public AbilityType Type;
-    public Actor sourceActor;
-    public float accuracy;
-    public int physicalNegation;
-    public int fireNegation;
-    public int coldNegation;
-    public int lightningNegation;
-    public int earthNegation;
-    public int divineNegation;
-    public int voidNegation;
-
-    public float vsBossDamage;
-
-    private readonly Dictionary<EffectType, EffectData> effectData;
-
-    public float GetEffectChance(EffectType type) => effectData[type].chance;
-
-    public void SetEffectChance(EffectType type, float value) => effectData[type].chance = value;
-
-    public float GetEffectEffectiveness(EffectType type) => effectData[type].effectiveness;
-
-    public void SetEffectEffectiveness(EffectType type, float value) => effectData[type].effectiveness = value;
-
-    public float GetEffectDuration(EffectType type) => effectData[type].duration;
-
-    public void SetEffectDuration(EffectType type, float value) => effectData[type].duration = value;
-
-    public EffectData GetEffectData(EffectType type) => effectData[type];
-
-    public AbilityOnHitDataContainer()
-    {
-        effectData = new Dictionary<EffectType, EffectData>
-        {
-            { EffectType.BLEED, new EffectData() },
-            { EffectType.BURN, new EffectData() },
-            { EffectType.CHILL, new EffectData() },
-            { EffectType.ELECTROCUTE, new EffectData() },
-            { EffectType.FRACTURE, new EffectData() },
-            { EffectType.PACIFY, new EffectData() },
-            { EffectType.RADIATION, new EffectData() }
-        };
-    }
-
-    public AbilityOnHitDataContainer DeepCopy()
-    {
-        return (AbilityOnHitDataContainer)MemberwiseClone();
-    }
-
-    public bool DidEffectProc(EffectType effectType)
-    {
-        float chance = GetEffectChance(effectType);
-        if (chance <= 0)
-        {
-            return false;
-        }
-
-        if (chance >= 100)
-        {
-            return true;
-        }
-        return UnityEngine.Random.Range(0f, 100f) < chance ? true : false;
     }
 }

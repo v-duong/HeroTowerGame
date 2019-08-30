@@ -120,10 +120,10 @@ public class HeroDetailWindow : MonoBehaviour
 
     public void SetActiveToggle()
     {
-        if (!this.gameObject.activeSelf)
-            this.gameObject.SetActive(true);
+        if (!gameObject.activeSelf)
+            gameObject.SetActive(true);
         else
-            this.gameObject.SetActive(false);
+            gameObject.SetActive(false);
     }
 
     public void ClickPrimaryTree()

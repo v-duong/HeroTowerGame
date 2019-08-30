@@ -28,7 +28,7 @@ public class EquipmentDetailWindow : MonoBehaviour
 
     public void UpdateWindowEquipment()
     {
-        this.GetComponent<Outline>().effectColor = Helpers.ReturnRarityColor(equip.Rarity);
+        GetComponent<Outline>().effectColor = Helpers.ReturnRarityColor(equip.Rarity);
         NameBackground.color = Helpers.ReturnRarityColor(equip.Rarity);
         nameText.text = equip.Name;
         infoText.text = "";
@@ -175,7 +175,7 @@ public class EquipmentDetailWindow : MonoBehaviour
         UIManager ui = UIManager.Instance;
         if (type == 0)
         {
-            RectTransform t = this.GetComponent<RectTransform>();
+            RectTransform t = GetComponent<RectTransform>();
             t.sizeDelta = ui.itemWindowSize;
             t.anchoredPosition = new Vector2((ui.referenceResolution.x - ui.itemWindowSize.x) / 2, (ui.itemWindowSize.y - ui.referenceResolution.y) / 2);
         }
@@ -185,7 +185,7 @@ public class EquipmentDetailWindow : MonoBehaviour
     {
         UIManager ui = UIManager.Instance;
         HeroDetailWindow.hero.EquipToSlot(equip, ui.SlotContext);
-        this.gameObject.SetActive(false);
+        gameObject.SetActive(false);
         ui.CloseCurrentWindow();
         ui.CloseCurrentWindow();
         ui.HeroDetailWindow.UpdateWindow();

@@ -8,7 +8,7 @@ public class ElectrocuteEffect : ActorStatusEffect
     public ElectrocuteEffect(Actor target, Actor source, float inputDamage, float duration) : base(target, source)
     {
         effectType = EffectType.ELECTROCUTE;
-        this.damage = inputDamage * 0.25f;
+        damage = inputDamage * 0.25f;
         this.duration = duration;
     }
 

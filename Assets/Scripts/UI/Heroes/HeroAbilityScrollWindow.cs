@@ -53,7 +53,7 @@ public class HeroAbilityScrollWindow : MonoBehaviour
         }
         else
         {
-            slot = Instantiate(SlotPrefab, this.transform);
+            slot = Instantiate(SlotPrefab, transform);
         }
         slot.gameObject.SetActive(true);
         SlotsInUse.Push(slot);

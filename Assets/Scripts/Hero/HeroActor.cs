@@ -26,12 +26,12 @@ public class HeroActor : Actor
         if (data.GetAbilityFromSlot(0) != null)
         {
             ActorAbility firstAbility = data.GetAbilityFromSlot(0);
-            this.AddAbilityToList(firstAbility);
+            AddAbilityToList(firstAbility);
         }
         if (data.GetAbilityFromSlot(1) != null)
         {
             ActorAbility secondAbility = data.GetAbilityFromSlot(1);
-            this.AddAbilityToList(secondAbility);
+            AddAbilityToList(secondAbility);
         }
     }
 
@@ -43,7 +43,7 @@ public class HeroActor : Actor
             Vector3 vector = movementNodes[nextMovementNode] - transform.position;
             float dist = vector.sqrMagnitude;
 
-            this.transform.position = Vector3.MoveTowards(this.transform.position, movementNodes[nextMovementNode], Data.movementSpeed * dt * actorTimeScale);
+            transform.position = Vector3.MoveTowards(transform.position, movementNodes[nextMovementNode], Data.movementSpeed * dt * actorTimeScale);
 
             if (dist <= 0.15f * Data.movementSpeed * dt)
             {

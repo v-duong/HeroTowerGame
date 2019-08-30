@@ -214,7 +214,7 @@ public class ArchetypeUITreeWindow : MonoBehaviour
             ScrollView.content = secondaryTreeParent.rectTransform;
         }
 
-        UIManager.Instance.OpenWindow(this.gameObject, true);
+        UIManager.Instance.OpenWindow(gameObject, true);
 
         if (rebuildTree)
         {
@@ -230,7 +230,7 @@ public class ArchetypeUITreeWindow : MonoBehaviour
         secondaryTreeParent.gameObject.SetActive(false);
         primaryTreeParent.gameObject.SetActive(true);
         ScrollView.content = primaryTreeParent.rectTransform;
-        UIManager.Instance.OpenWindow(this.gameObject, false);
+        UIManager.Instance.OpenWindow(gameObject, false);
         BuildArchetypeTree(archetype);
         SetTreeStartingView(0);
     }

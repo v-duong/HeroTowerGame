@@ -13,14 +13,14 @@ public class LinkedActorAbility : ActorAbility
     public LinkedActorAbility(LinkedAbilityData linkedAbility, int layer, Dictionary<ElementType, AbilityDamageBase> damageLevels)
         : this(ResourceManager.Instance.GetAbilityBase(linkedAbility.abilityId), layer)
     {
-        this.LinkedAbilityData = linkedAbility;
-        this.parentDamageLevels = damageLevels;
+        LinkedAbilityData = linkedAbility;
+        parentDamageLevels = damageLevels;
     }
 
     public LinkedActorAbility(LinkedAbilityData linkedAbility, int layer)
     : this(ResourceManager.Instance.GetAbilityBase(linkedAbility.abilityId), layer)
     {
-        this.LinkedAbilityData = linkedAbility;
+        LinkedAbilityData = linkedAbility;
     }
 
     public void UpdateAbilityStats(HeroData data, IEnumerable<GroupType> tags)

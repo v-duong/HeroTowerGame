@@ -130,7 +130,7 @@ public class InventoryScrollWindow : MonoBehaviour
     {
         InventorySlot slot;
         slot = InventorySlotPool.GetSlot();
-        slot.gameObject.transform.SetParent(this.transform, false);
+        slot.gameObject.transform.SetParent(transform, false);
         SlotsInUse.Add(slot);
         slot.item = item;
         slot.onClickAction = callback;

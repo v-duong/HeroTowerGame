@@ -40,6 +40,20 @@ public class ArchetypeSkillNode
         }
         return abilityBase;
     }
+
+    public string GetBonusInfoString(int currentLevel)
+    {
+        string s = "";
+        foreach(NodeScalingBonusProperty bonus in bonuses)
+        {
+            float value = bonus.GetBonusValueAtLevel(currentLevel, maxLevel);
+            if (value == 0 && (bonus.modifyType != ModifyType.MULTIPLY || bonus.modifyType != ModifyType.FIXED_TO))
+                continue;
+
+            s += LocalizationManager.Instance.GetLocalizationText_BonusType(bonus.bonusType, bonus.modifyType, value);
+        }
+        return s;
+    }
 }
 
 
@@ -58,6 +72,18 @@ public struct NodeScalingBonusProperty
     [JsonConverter(typeof(StringEnumConverter))]
     [JsonProperty]
     public readonly GroupType restriction;
+
+    public float GetBonusValueAtLevel(int level, int maxLevel)
+    {
+        if (maxLevel == 1)
+            return growthValue;
+        else if (level != maxLevel)
+            return growthValue * level;
+        else if (level == maxLevel)
+            return growthValue * (maxLevel - 1) + finalLevelValue;
+        else
+            return 0;
+    }
 }
 
 public struct AbilityScalingBonusProperty
@@ -76,6 +102,7 @@ public struct AbilityScalingBonusProperty
     [JsonProperty]
     public readonly GroupType restriction;
 }
+
 
 public enum NodeType
 {

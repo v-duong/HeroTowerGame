@@ -50,8 +50,7 @@ public class ArchetypeNodeInfoPanel : MonoBehaviour
     public void UpdatePanel()
     {
         int currentLevel = archetypeData.GetNodeLevel(node);
-        float bonusValue;
-        if (uiNode.isLevelable && !archetypeData.IsNodeMaxLevel(node) && hero.ArchetypePoints>0)
+        if (uiNode.isLevelable && !archetypeData.IsNodeMaxLevel(node) && hero.ArchetypePoints > 0)
             levelButton.interactable = true;
         else
             levelButton.interactable = false;
@@ -66,40 +65,26 @@ public class ArchetypeNodeInfoPanel : MonoBehaviour
         }
         else
         {
+            if (currentLevel == 0)
+            {
+                infoText.text += "<b>Level 1: </b>\n";
+                infoText.text += node.GetBonusInfoString(1);
+                if (node.maxLevel > 1)
+                {
+                    infoText.text += "<b>Level " + (node.maxLevel) + ":</b>\n";
+                    infoText.text += node.GetBonusInfoString(node.maxLevel);
+                }
+                return;
+            }
             if (currentLevel != 0)
             {
-                infoText.text += "<b>Current Level: " + currentLevel + "</b>\n";
-
-                foreach (NodeScalingBonusProperty bonusProperty in node.bonuses)
-                {
-                    if (currentLevel == node.maxLevel && node.maxLevel > 1)
-
-                        bonusValue = bonusProperty.growthValue * (currentLevel - 1) + bonusProperty.finalLevelValue;
-                    else
-                        bonusValue = bonusProperty.growthValue * (currentLevel);
-
-                    if (bonusValue == 0 && (bonusProperty.modifyType != ModifyType.MULTIPLY || bonusProperty.modifyType != ModifyType.FIXED_TO))
-                        continue;
-
-                    infoText.text += LocalizationManager.Instance.GetLocalizationText_BonusType(bonusProperty.bonusType, bonusProperty.modifyType, bonusValue);
-                }
+                infoText.text += "<b>Current: Level " + currentLevel + "</b>\n";
+                infoText.text += node.GetBonusInfoString(currentLevel);
             }
             if (currentLevel != node.maxLevel)
             {
-                infoText.text += "<b>Next Level: " + (currentLevel + 1) + "</b>\n";
-
-                foreach (NodeScalingBonusProperty bonusProperty in node.bonuses)
-                {
-                    if (currentLevel == node.maxLevel - 1 && node.maxLevel > 1)
-                        bonusValue = bonusProperty.growthValue * (currentLevel) + bonusProperty.finalLevelValue;
-                    else
-                        bonusValue = bonusProperty.growthValue * (currentLevel + 1);
-
-                    if (bonusValue == 0 && (bonusProperty.modifyType != ModifyType.MULTIPLY || bonusProperty.modifyType != ModifyType.FIXED_TO))
-                        continue;
-
-                    infoText.text += LocalizationManager.Instance.GetLocalizationText_BonusType(bonusProperty.bonusType, bonusProperty.modifyType, bonusValue);
-                }
+                infoText.text += "<b>Next: Level " + (currentLevel + 1) + "</b>\n";
+                infoText.text += node.GetBonusInfoString(currentLevel + 1);
             }
         }
     }
@@ -130,7 +115,7 @@ public class ArchetypeNodeInfoPanel : MonoBehaviour
             }
             if (node.maxLevel != 1)
             {
-                infoText.text += "<b>Level " + (node.maxLevel) + ":</b>\n";
+                infoText.text += "<b>Level " + node.maxLevel + ":</b>\n";
 
                 foreach (NodeScalingBonusProperty bonusProperty in node.bonuses)
                 {

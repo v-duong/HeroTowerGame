@@ -17,8 +17,8 @@ public class ArchetypeUITreeNode : MonoBehaviour
 
     public void SetNode(ArchetypeSkillNode n, HeroArchetypeData data, bool isPreviewMode)
     {
-        this.node = n;
-        this.archetypeData = data;
+        node = n;
+        archetypeData = data;
 
         this.isPreviewMode = isPreviewMode;
 

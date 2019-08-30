@@ -304,7 +304,7 @@ public class HeroData : ActorData
         UpdateAbilities();
         UpdateDefenses();
 
-        movementSpeed = CalculateActorStat(BonusType.MOVEMENT_SPEED, 2.5f);
+        movementSpeed = GetMultiStatBonus(groupTypes, BonusType.MOVEMENT_SPEED).CalculateStat(2.5f);
 
         base.UpdateActorData();
     }
@@ -314,22 +314,22 @@ public class HeroData : ActorData
         ApplyHealthBonuses();
         ApplySoulPointBonuses();
         CalculateDefenses();
-        AttackPhasing = CalculateActorStat(BonusType.ATTACK_PHASING, BaseAttackPhasing);
-        MagicPhasing = CalculateActorStat(BonusType.MAGIC_PHASING, BaseMagicPhasing);
+        AttackPhasing = GetMultiStatBonus(groupTypes, BonusType.ATTACK_PHASING).CalculateStat(BaseAttackPhasing);
+        MagicPhasing = GetMultiStatBonus(groupTypes, BonusType.MAGIC_PHASING).CalculateStat(BaseMagicPhasing);
     }
 
     private void UpdateHeroAttributes()
     {
-        Strength = (int)CalculateActorStat(BonusType.STRENGTH, BaseStrength);
+        Strength = (int)GetMultiStatBonus(groupTypes, BonusType.STRENGTH).CalculateStat(BaseStrength);
         ApplyStrengthBonuses();
 
-        Intelligence = (int)CalculateActorStat(BonusType.INTELLIGENCE, BaseIntelligence);
+        Intelligence = (int)GetMultiStatBonus(groupTypes, BonusType.INTELLIGENCE).CalculateStat(BaseIntelligence);
         ApplyIntelligenceBonuses();
 
-        Agility = (int)CalculateActorStat(BonusType.AGILITY, BaseAgility);
+        Agility = (int)GetMultiStatBonus(groupTypes, BonusType.AGILITY).CalculateStat(BaseAgility);
         ApplyAgilityBonuses();
 
-        Will = (int)CalculateActorStat(BonusType.WILL, BaseWill);
+        Will = (int)GetMultiStatBonus(groupTypes, BonusType.WILL).CalculateStat(BaseWill);
         ApplyWillBonuses();
     }
 
@@ -419,11 +419,11 @@ public class HeroData : ActorData
         int ShieldFromEquip = 0;
         int DodgeFromEquip = 0;
         int ResolveFromEquip = 0;
-        foreach (Equipment e in equipList)
+        foreach (Equipment equippedItem in equipList)
         {
-            if (e != null && e.GetItemType() == ItemType.ARMOR)
+            if (equippedItem != null && equippedItem.GetItemType() == ItemType.ARMOR)
             {
-                Armor equip = e as Armor;
+                Armor equip = equippedItem as Armor;
                 ArmorFromEquip += equip.armor;
                 ShieldFromEquip += equip.shield;
                 DodgeFromEquip += equip.dodgeRating;
@@ -431,15 +431,15 @@ public class HeroData : ActorData
             }
         }
 
-        Armor = CalculateActorStat(BonusType.GLOBAL_ARMOR, BaseArmor + ArmorFromEquip);
-        MaximumManaShield = CalculateActorStat(BonusType.GLOBAL_MAX_SHIELD, BaseManaShield + ShieldFromEquip);
+        Armor = GetMultiStatBonus(groupTypes, BonusType.GLOBAL_ARMOR).CalculateStat(BaseArmor + ArmorFromEquip);
+        MaximumManaShield = GetMultiStatBonus(groupTypes, BonusType.GLOBAL_MAX_SHIELD).CalculateStat(BaseManaShield + ShieldFromEquip);
         if (MaximumManaShield != 0)
         {
             float shieldPercent = CurrentManaShield / MaximumManaShield;
             CurrentManaShield = MaximumManaShield * shieldPercent;
         }
-        DodgeRating = CalculateActorStat(BonusType.GLOBAL_DODGE_RATING, BaseDodgeRating + DodgeFromEquip);
-        ResolveRating = CalculateActorStat(BonusType.GLOBAL_RESOLVE_RATING, BaseResolveRating + ResolveFromEquip);
+        DodgeRating = GetMultiStatBonus(groupTypes, BonusType.GLOBAL_DODGE_RATING).CalculateStat(BaseDodgeRating + DodgeFromEquip);
+        ResolveRating = GetMultiStatBonus(groupTypes, BonusType.GLOBAL_RESOLVE_RATING).CalculateStat(BaseResolveRating + ResolveFromEquip);
     }
 
     public override void GetTotalStatBonus(BonusType type, IEnumerable<GroupType> tags, Dictionary<BonusType, StatBonus> abilityBonusProperties, StatBonus inputStatBonus)
@@ -520,7 +520,7 @@ public class HeroData : ActorData
             types.UnionWith(equipment.GetGroupTypes());
         }
 
-        if (equipList[(int)EquipSlotType.WEAPON] is Weapon && equipList[(int)EquipSlotType.OFF_HAND] is Weapon)
+        if (GetEquipmentInSlot(EquipSlotType.WEAPON) is Weapon && GetEquipmentInSlot(EquipSlotType.OFF_HAND) is Weapon)
             types.Add(GroupType.DUAL_WIELD);
 
         if (CurrentActor != null)

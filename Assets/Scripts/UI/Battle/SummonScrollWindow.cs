@@ -10,7 +10,7 @@ public class SummonScrollWindow : MonoBehaviour
 
     public void AddHeroActor(HeroActor actor)
     {
-        SummonScrollSlot slot = Instantiate(prefab, this.transform);
+        SummonScrollSlot slot = Instantiate(prefab, transform);
         slot.SetActor(actor);
         summonSlots.Add(slot);
     }

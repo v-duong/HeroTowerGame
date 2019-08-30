@@ -28,7 +28,7 @@ public class UIHealthBar : MonoBehaviour
 
     public void Initialize(float maxHealth, float currentHealth, float maxShield, float currentShield, Transform actorTransform)
     {
-        this.transform.SetParent(StageManager.Instance.WorldCanvas.transform, false);
+        transform.SetParent(StageManager.Instance.WorldCanvas.transform, false);
         UpdateHealthBar(maxHealth, currentHealth, maxShield, currentShield);
         UpdatePosition(actorTransform);
     }
@@ -38,13 +38,13 @@ public class UIHealthBar : MonoBehaviour
         Vector2 newPos = actorTransform.position;
         newPos.y += 0.75f;
         newPos = RectTransformUtility.WorldToScreenPoint(Camera.main, newPos);
-        this.transform.position = newPos;
+        transform.position = newPos;
     }
 
     private void Update()
     {
         float scaleRatio = 1f / InputManager.Instance.zoomRatio;
-        this.transform.localScale = new Vector3(scaleRatio, scaleRatio, scaleRatio);
+        transform.localScale = new Vector3(scaleRatio, scaleRatio, scaleRatio);
 
         if (barDelay <= 0f)
         {
@@ -87,7 +87,7 @@ public class UIHealthBar : MonoBehaviour
         if (maxShield != 0)
         {
             float oldShieldPercent = currentShieldPercent.x;
-            currentShieldPercent.x = (currentShield / maxShield);
+            currentShieldPercent.x = currentShield / maxShield;
 
             if (oldShieldPercent > currentShieldPercent.x)
             {

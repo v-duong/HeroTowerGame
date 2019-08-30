@@ -74,6 +74,8 @@ public class AbilityBase
 
     [JsonProperty]
     public readonly List<AbilityScalingBonusProperty> bonusProperties;
+    [JsonProperty]
+    public readonly List<AbilityAppliedEffect> appliedEffects;
 
     [JsonProperty]
     public readonly string effectSprite;
@@ -145,7 +147,7 @@ public class MinMaxRange
     }
 }
 
-public class LinkedAbilityData
+public struct LinkedAbilityData
 {
     [JsonProperty]
     public readonly string abilityId;
@@ -213,5 +215,31 @@ public enum AbilityTargetType
     ENEMY,
     ALLY,
     ALL,
+    SELF,
     NONE
+}
+
+public struct AbilityAppliedEffect
+{
+    [JsonConverter(typeof(StringEnumConverter))]
+    [JsonProperty]
+    public readonly BonusType bonusType;
+    [JsonConverter(typeof(StringEnumConverter))]
+    [JsonProperty]
+    public readonly ModifyType modifyType;
+    [JsonConverter(typeof(StringEnumConverter))]
+    [JsonProperty]
+    public readonly AbilityTargetType targetType;
+    [JsonProperty]
+    public readonly float chance;
+    [JsonProperty]
+    public readonly float initialValue;
+    [JsonProperty]
+    public readonly float growthValue;
+    [JsonProperty]
+    public readonly float duration;
+    [JsonProperty]
+    public readonly int stacks;
+    [JsonProperty]
+    public readonly bool useLastRoll;
 }

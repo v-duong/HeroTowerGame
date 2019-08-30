@@ -9,7 +9,7 @@ public class Goal : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
-        this.transform.position = Helpers.ReturnTilePosition(StageManager.Instance.PathTilemap, this.transform.position, -3);
+        transform.position = Helpers.ReturnTilePosition(StageManager.Instance.PathTilemap, transform.position, -3);
 
     }
 

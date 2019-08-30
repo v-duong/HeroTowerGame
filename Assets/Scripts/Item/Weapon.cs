@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using UnityEngine;
 
 public class Weapon : Equipment
 {
@@ -160,7 +161,11 @@ public class Weapon : Equipment
             case GroupType.ONE_HANDED_GUN:
                 tags.Add(GroupType.GUN_TYPE);
                 break;
+            case GroupType.BOW:
+                tags.Add(GroupType.BOW_TYPE);
+                break;
         }
+
         return tags;
     }
 }

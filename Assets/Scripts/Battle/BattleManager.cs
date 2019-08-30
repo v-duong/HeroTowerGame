@@ -36,7 +36,7 @@ public class BattleManager : MonoBehaviour
         if (!startedSpawn && Waves != null)
         {
             startedSpawn = true;
-            this.SpawnWave(0);
+            SpawnWave(0);
         }
         if (!battleEnded)
         {

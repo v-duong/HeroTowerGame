@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 public abstract class ActorData
 {
@@ -39,6 +40,7 @@ public abstract class ActorData
     public int ResolveRating { get; protected set; }
     public int AttackPhasing { get; protected set; }
     public int MagicPhasing { get; protected set; }
+    public float DamageTakenModifier { get; protected set; }
 
     public int PhysicalNegation { get => ElementData.GetNegation(ElementType.PHYSICAL); set => ElementData.SetNegation(ElementType.PHYSICAL, value); }
     public int FireNegation { get => ElementData.GetNegation(ElementType.FIRE); set => ElementData.SetNegation(ElementType.FIRE, value); }
@@ -113,58 +115,45 @@ public abstract class ActorData
         UpdateActorData();
     }
 
-    public int CalculateActorStat(BonusType type, int stat)
-    {
-        return (int)CalculateActorStat(type, (float)stat);
-    }
-
-    public float CalculateActorStat(BonusType type, float stat)
-    {
-        StatBonus bonus = new StatBonus();
-        GetTotalStatBonus(type, groupTypes, null, bonus);
-        return bonus.CalculateStat(stat);
-    }
-
     protected void ApplyHealthBonuses()
     {
         float percentage = CurrentHealth / MaximumHealth;
-        MaximumHealth = (int)CalculateActorStat(BonusType.MAX_HEALTH, BaseHealth);
-        CurrentHealth = (MaximumHealth * percentage);
+        MaximumHealth = (int)GetMultiStatBonus(groupTypes, BonusType.MAX_HEALTH).CalculateStat(BaseHealth);
+        CurrentHealth = MaximumHealth * percentage;
 
-        float percentHealthRegen = CalculateActorStat(BonusType.PERCENT_HEALTH_REGEN, 0f) / 100f;
-
-        HealthRegenRate = -(percentHealthRegen * MaximumHealth + CalculateActorStat(BonusType.HEALTH_REGEN, 0f));
+        float percentHealthRegen = GetMultiStatBonus(groupTypes, BonusType.PERCENT_HEALTH_REGEN).CalculateStat(0f) / 100f;
+        HealthRegenRate = percentHealthRegen * MaximumHealth + GetMultiStatBonus(groupTypes, BonusType.HEALTH_REGEN).CalculateStat(0f);
     }
 
     protected void ApplySoulPointBonuses()
     {
         float percentage = CurrentSoulPoints / MaximumSoulPoints;
-        MaximumSoulPoints = (int)CalculateActorStat(BonusType.MAX_SOULPOINTS, BaseSoulPoints);
-        CurrentSoulPoints = (MaximumSoulPoints * percentage);
+        MaximumSoulPoints = (int)GetMultiStatBonus(groupTypes, BonusType.MAX_SOULPOINTS).CalculateStat(BaseSoulPoints);
+        CurrentSoulPoints = MaximumSoulPoints * percentage;
     }
 
     protected void ApplyResistanceBonuses()
     {
-        ElementData.SetResistanceCap(ElementType.FIRE, (int)GetMultiStatBonus(null, groupTypes, BonusType.MAX_FIRE_RESISTANCE, BonusType.MAX_ELEMENTAL_RESISTANCES, BonusType.MAX_ALL_NONPHYSICAL_RESISTANCES)
+        ElementData.SetResistanceCap(ElementType.FIRE, (int)GetMultiStatBonus(groupTypes, BonusType.MAX_FIRE_RESISTANCE, BonusType.MAX_ELEMENTAL_RESISTANCES, BonusType.MAX_ALL_NONPHYSICAL_RESISTANCES)
             .CalculateStat(80f));
-        ElementData.SetResistanceCap(ElementType.COLD, (int)GetMultiStatBonus(null, groupTypes, BonusType.MAX_COLD_RESISTANCE, BonusType.MAX_ELEMENTAL_RESISTANCES, BonusType.MAX_ALL_NONPHYSICAL_RESISTANCES)
+        ElementData.SetResistanceCap(ElementType.COLD, (int)GetMultiStatBonus(groupTypes, BonusType.MAX_COLD_RESISTANCE, BonusType.MAX_ELEMENTAL_RESISTANCES, BonusType.MAX_ALL_NONPHYSICAL_RESISTANCES)
             .CalculateStat(80f));
-        ElementData.SetResistanceCap(ElementType.LIGHTNING, (int)GetMultiStatBonus(null, groupTypes, BonusType.MAX_LIGHTNING_RESISTANCE, BonusType.MAX_ELEMENTAL_RESISTANCES, BonusType.MAX_ALL_NONPHYSICAL_RESISTANCES)
+        ElementData.SetResistanceCap(ElementType.LIGHTNING, (int)GetMultiStatBonus(groupTypes, BonusType.MAX_LIGHTNING_RESISTANCE, BonusType.MAX_ELEMENTAL_RESISTANCES, BonusType.MAX_ALL_NONPHYSICAL_RESISTANCES)
             .CalculateStat(80f));
-        ElementData.SetResistanceCap(ElementType.EARTH, (int)GetMultiStatBonus(null, groupTypes, BonusType.MAX_EARTH_RESISTANCE, BonusType.MAX_ELEMENTAL_RESISTANCES, BonusType.MAX_ALL_NONPHYSICAL_RESISTANCES)
+        ElementData.SetResistanceCap(ElementType.EARTH, (int)GetMultiStatBonus(groupTypes, BonusType.MAX_EARTH_RESISTANCE, BonusType.MAX_ELEMENTAL_RESISTANCES, BonusType.MAX_ALL_NONPHYSICAL_RESISTANCES)
             .CalculateStat(80f));
-        ElementData.SetResistanceCap(ElementType.DIVINE, (int)GetMultiStatBonus(null, groupTypes, BonusType.MAX_DIVINE_RESISTANCE, BonusType.MAX_PRIMORDIAL_RESISTANCES, BonusType.MAX_ALL_NONPHYSICAL_RESISTANCES)
+        ElementData.SetResistanceCap(ElementType.DIVINE, (int)GetMultiStatBonus(groupTypes, BonusType.MAX_DIVINE_RESISTANCE, BonusType.MAX_PRIMORDIAL_RESISTANCES, BonusType.MAX_ALL_NONPHYSICAL_RESISTANCES)
             .CalculateStat(80f));
-        ElementData.SetResistanceCap(ElementType.VOID, (int)GetMultiStatBonus(null, groupTypes, BonusType.MAX_VOID_RESISTANCE, BonusType.MAX_PRIMORDIAL_RESISTANCES, BonusType.MAX_ALL_NONPHYSICAL_RESISTANCES)
+        ElementData.SetResistanceCap(ElementType.VOID, (int)GetMultiStatBonus(groupTypes, BonusType.MAX_VOID_RESISTANCE, BonusType.MAX_PRIMORDIAL_RESISTANCES, BonusType.MAX_ALL_NONPHYSICAL_RESISTANCES)
             .CalculateStat(80f));
 
-        ElementData[ElementType.PHYSICAL] = (int)GetMultiStatBonus(null, groupTypes, BonusType.PHYSICAL_RESISTANCE).CalculateStat(0f);
-        ElementData[ElementType.FIRE] = (int)GetMultiStatBonus(null, groupTypes, BonusType.FIRE_RESISTANCE, BonusType.ELEMENTAL_RESISTANCES, BonusType.ALL_NONPHYSICAL_RESISTANCES).CalculateStat(0f);
-        ElementData[ElementType.COLD] = (int)GetMultiStatBonus(null, groupTypes, BonusType.COLD_RESISTANCE, BonusType.ELEMENTAL_RESISTANCES, BonusType.ALL_NONPHYSICAL_RESISTANCES).CalculateStat(0f);
-        ElementData[ElementType.LIGHTNING] = (int)GetMultiStatBonus(null, groupTypes, BonusType.LIGHTNING_RESISTANCE, BonusType.ELEMENTAL_RESISTANCES, BonusType.ALL_NONPHYSICAL_RESISTANCES).CalculateStat(0f);
-        ElementData[ElementType.EARTH] = (int)GetMultiStatBonus(null, groupTypes, BonusType.EARTH_RESISTANCE, BonusType.ELEMENTAL_RESISTANCES, BonusType.ALL_NONPHYSICAL_RESISTANCES).CalculateStat(0f);
-        ElementData[ElementType.DIVINE] = (int)GetMultiStatBonus(null, groupTypes, BonusType.DIVINE_RESISTANCE, BonusType.PRIMORDIAL_RESISTANCES, BonusType.ALL_NONPHYSICAL_RESISTANCES).CalculateStat(0f);
-        ElementData[ElementType.VOID] = (int)GetMultiStatBonus(null, groupTypes, BonusType.VOID_RESISTANCE, BonusType.PRIMORDIAL_RESISTANCES, BonusType.ALL_NONPHYSICAL_RESISTANCES).CalculateStat(0f);
+        ElementData[ElementType.PHYSICAL] = (int)GetMultiStatBonus(groupTypes, BonusType.PHYSICAL_RESISTANCE).CalculateStat(0f);
+        ElementData[ElementType.FIRE] = (int)GetMultiStatBonus(groupTypes, BonusType.FIRE_RESISTANCE, BonusType.ELEMENTAL_RESISTANCES, BonusType.ALL_NONPHYSICAL_RESISTANCES).CalculateStat(0f);
+        ElementData[ElementType.COLD] = (int)GetMultiStatBonus(groupTypes, BonusType.COLD_RESISTANCE, BonusType.ELEMENTAL_RESISTANCES, BonusType.ALL_NONPHYSICAL_RESISTANCES).CalculateStat(0f);
+        ElementData[ElementType.LIGHTNING] = (int)GetMultiStatBonus(groupTypes, BonusType.LIGHTNING_RESISTANCE, BonusType.ELEMENTAL_RESISTANCES, BonusType.ALL_NONPHYSICAL_RESISTANCES).CalculateStat(0f);
+        ElementData[ElementType.EARTH] = (int)GetMultiStatBonus(groupTypes, BonusType.EARTH_RESISTANCE, BonusType.ELEMENTAL_RESISTANCES, BonusType.ALL_NONPHYSICAL_RESISTANCES).CalculateStat(0f);
+        ElementData[ElementType.DIVINE] = (int)GetMultiStatBonus(groupTypes, BonusType.DIVINE_RESISTANCE, BonusType.PRIMORDIAL_RESISTANCES, BonusType.ALL_NONPHYSICAL_RESISTANCES).CalculateStat(0f);
+        ElementData[ElementType.VOID] = (int)GetMultiStatBonus(groupTypes, BonusType.VOID_RESISTANCE, BonusType.PRIMORDIAL_RESISTANCES, BonusType.ALL_NONPHYSICAL_RESISTANCES).CalculateStat(0f);
     }
 
     public void GetMultiStatBonus(StatBonus existingBonus, Dictionary<BonusType, StatBonus> abilityBonusProperties, IEnumerable<GroupType> tags, params BonusType[] types)
@@ -185,21 +174,31 @@ public abstract class ActorData
         return bonus;
     }
 
+    public StatBonus GetMultiStatBonus(IEnumerable<GroupType> tags, params BonusType[] types)
+    {
+        StatBonus bonus = new StatBonus();
+        foreach (BonusType bonusType in types)
+        {
+            GetTotalStatBonus(bonusType, tags, null, bonus);
+        }
+        return bonus;
+    }
+
     public virtual void UpdateActorData()
     {
+        float percentShieldRegen = GetMultiStatBonus(groupTypes, BonusType.PERCENT_SHIELD_REGEN).CalculateStat(0f) / 100f;
+        ShieldRegenRate = percentShieldRegen * MaximumManaShield + GetMultiStatBonus(groupTypes, BonusType.SHIELD_REGEN).CalculateStat(0f);
+        ShieldRestoreRate = GetMultiStatBonus(groupTypes, BonusType.SHIELD_RESTORE_SPEED).CalculateStat(0.1f) * MaximumManaShield;
+        ShieldRestoreDelayModifier = GetMultiStatBonus(groupTypes, BonusType.SHIELD_RESTORE_DELAY).CalculateStat(100f) / 100f;
+        DamageTakenModifier = GetMultiStatBonus(groupTypes, BonusType.DAMAGE_TAKEN).CalculateStat(100f);
 
-        float percentShieldRegen = CalculateActorStat(BonusType.PERCENT_SHIELD_REGEN, 0f) / 100f;
-        ShieldRegenRate = (percentShieldRegen * MaximumManaShield + CalculateActorStat(BonusType.SHIELD_REGEN, 0f));
-        ShieldRestoreRate = (CalculateActorStat(BonusType.SHIELD_RESTORE_SPEED, 10f) / 100f * MaximumManaShield);
-        ShieldRestoreDelayModifier = CalculateActorStat(BonusType.SHIELD_RESTORE_DELAY, 100f) / 100f;
-
-        PhysicalNegation = GetMultiStatBonus(null, groupTypes, BonusType.PHYSICAL_RESISTANCE_NEGATION).CalculateStat(0);
-        FireNegation = GetMultiStatBonus(null, groupTypes, BonusType.FIRE_RESISTANCE_NEGATION, BonusType.ELEMENTAL_RESISTANCE_NEGATION).CalculateStat(0);
-        ColdNegation = GetMultiStatBonus(null, groupTypes, BonusType.COLD_RESISTANCE_NEGATION, BonusType.ELEMENTAL_RESISTANCE_NEGATION).CalculateStat(0);
-        LightningNegation = GetMultiStatBonus(null, groupTypes, BonusType.LIGHTNING_RESISTANCE_NEGATION, BonusType.ELEMENTAL_RESISTANCE_NEGATION).CalculateStat(0);
-        EarthNegation = GetMultiStatBonus(null, groupTypes, BonusType.EARTH_RESISTANCE_NEGATION, BonusType.ELEMENTAL_RESISTANCE_NEGATION).CalculateStat(0);
-        DivineNegation = GetMultiStatBonus(null, groupTypes, BonusType.DIVINE_RESISTANCE_NEGATION, BonusType.PRIMORDIAL_RESISTANCE_NEGATION).CalculateStat(0);
-        VoidNegation = GetMultiStatBonus(null, groupTypes, BonusType.VOID_RESISTANCE_NEGATION, BonusType.PRIMORDIAL_RESISTANCE_NEGATION).CalculateStat(0);
+        PhysicalNegation = GetMultiStatBonus(groupTypes, BonusType.PHYSICAL_RESISTANCE_NEGATION).CalculateStat(0);
+        FireNegation = GetMultiStatBonus(groupTypes, BonusType.FIRE_RESISTANCE_NEGATION, BonusType.ELEMENTAL_RESISTANCE_NEGATION).CalculateStat(0);
+        ColdNegation = GetMultiStatBonus(groupTypes, BonusType.COLD_RESISTANCE_NEGATION, BonusType.ELEMENTAL_RESISTANCE_NEGATION).CalculateStat(0);
+        LightningNegation = GetMultiStatBonus(groupTypes, BonusType.LIGHTNING_RESISTANCE_NEGATION, BonusType.ELEMENTAL_RESISTANCE_NEGATION).CalculateStat(0);
+        EarthNegation = GetMultiStatBonus(groupTypes, BonusType.EARTH_RESISTANCE_NEGATION, BonusType.ELEMENTAL_RESISTANCE_NEGATION).CalculateStat(0);
+        DivineNegation = GetMultiStatBonus(groupTypes, BonusType.DIVINE_RESISTANCE_NEGATION, BonusType.PRIMORDIAL_RESISTANCE_NEGATION).CalculateStat(0);
+        VoidNegation = GetMultiStatBonus(groupTypes, BonusType.VOID_RESISTANCE_NEGATION, BonusType.PRIMORDIAL_RESISTANCE_NEGATION).CalculateStat(0);
     }
 
     protected abstract HashSet<GroupType> GetGroupTypes();

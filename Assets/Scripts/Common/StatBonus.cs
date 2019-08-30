@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 
 public class StatBonus
 {
@@ -143,7 +144,7 @@ public class StatBonus
     {
         float mult = 1.0f;
         foreach (float i in MultiplyModifiers)
-            mult *= (1f + i / 100f);
+            mult *= 1f + i / 100f;
         CurrentMultiplier = mult;
     }
 
@@ -154,7 +155,7 @@ public class StatBonus
 
     public float CalculateStat(float stat)
     {
-        this.isStatOutdated = false;
+        isStatOutdated = false;
         if (HasFixedModifier)
         {
             return FixedModifier;
@@ -216,6 +217,7 @@ public class StatBonusCollection
 
         foreach (GroupType type in intersectingTypes)
         {
+            Debug.Log(type);
             returnBonus.AddBonuses(statBonuses[type]);
         }
         returnBonus.UpdateCurrentMultiply();

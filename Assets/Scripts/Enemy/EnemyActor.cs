@@ -56,9 +56,9 @@ public class EnemyActor : Actor
             //float dist = Vector3.Distance(nodes[nextMovementNode], this.transform.position);
             Vector3 destination = nodes[nextMovementNode] + rotatedOffset;
 
-            this.transform.position = Vector3.MoveTowards(this.transform.position, destination, Data.movementSpeed * dt * actorTimeScale);
+            transform.position = Vector3.MoveTowards(transform.position, destination, Data.movementSpeed * dt * actorTimeScale);
 
-            float dist = Vector3.SqrMagnitude(destination - this.transform.position);
+            float dist = Vector3.SqrMagnitude(destination - transform.position);
 
             if (dist <= 0.1f * Data.movementSpeed * Data.movementSpeed * dt)
             {
