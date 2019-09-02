@@ -13528,6 +13528,7 @@ MonoBehaviour:
   - {fileID: 589175623}
   - {fileID: 1857993323}
   - {fileID: 1915909780}
+  offHandSlot: {fileID: 1915909780}
   lockButton: {fileID: 81932865}
 --- !u!114 &831156774
 MonoBehaviour:

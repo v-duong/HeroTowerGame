@@ -13,10 +13,9 @@ public class BleedEffect : ActorStatusEffect
         this.duration = duration;
         timeSinceLastCheck = 0;
         lastPosition = target.transform.position;
-        
     }
 
-    protected override void OnApply()
+    public override void OnApply()
     {
     }
 

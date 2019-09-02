@@ -294,7 +294,6 @@ public class ResourceManager : MonoBehaviour
                 if (!string.IsNullOrEmpty(abilityBase.effectSprite))
                 {
                     sprite = atlas.GetSprite(abilityBase.effectSprite);
-                    Debug.Log(sprite);
                 }
 
                 if (sprite != null)

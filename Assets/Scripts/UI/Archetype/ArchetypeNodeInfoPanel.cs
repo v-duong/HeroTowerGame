@@ -59,8 +59,8 @@ public class ArchetypeNodeInfoPanel : MonoBehaviour
         if (node.type == NodeType.ABILITY)
         {
             string[] strings = LocalizationManager.Instance.GetLocalizationText_Ability(node.abilityId);
-            infoText.text += "<b>" + strings[0] + " Lv" + archetypeData.GetAbilityLevel() + "</b>\n";
-            infoText.text += LocalizationManager.Instance.GetLocalizationText_AbilityBaseDamage(archetypeData.GetAbilityLevel(), node.GetAbility());
+            infoText.text += "<b>" + strings[0] + " Lv" + hero.GetAbilityLevel() + "</b>\n";
+            infoText.text += LocalizationManager.Instance.GetLocalizationText_AbilityBaseDamage(hero.GetAbilityLevel(), node.GetAbility());
             infoText.text += strings[1];
         }
         else

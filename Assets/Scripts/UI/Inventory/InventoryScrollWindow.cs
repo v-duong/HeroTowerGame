@@ -5,12 +5,22 @@ using UnityEngine;
 
 public class InventoryScrollWindow : MonoBehaviour
 {
+    private enum LastViewType
+    {
+        NONE,
+        ALL_EQUIPMENT,
+        ALL_ARCHETYPE,
+        ALL_ABILITY_CORE
+    }
+
     [SerializeField]
     private InventorySlot SlotPrefab;
 
     private InventorySlotPool _inventorySlotPool;
     private List<InventorySlot> SlotsInUse = new List<InventorySlot>();
     private Action<Item> currentCallback = null;
+
+    private LastViewType lastView = LastViewType.NONE;
 
     public InventorySlotPool InventorySlotPool
     {
@@ -42,11 +52,9 @@ public class InventoryScrollWindow : MonoBehaviour
     {
         if (resetCallback)
             currentCallback = null;
-        if (resetCallback)
-        {
-            ClearSlots();
-            InitializeInventorySlots(GameManager.Instance.PlayerStats.EquipmentInventory, currentCallback);
-        }
+        ClearSlots();
+        InitializeInventorySlots(GameManager.Instance.PlayerStats.EquipmentInventory, currentCallback);
+        lastView = LastViewType.ALL_EQUIPMENT;
     }
 
     public void ShowAllArchetypes(bool resetCallback = true, bool addNullSlot = false)
@@ -85,11 +93,13 @@ public class InventoryScrollWindow : MonoBehaviour
         }
     }
 
-    public void ShowEquipmentFiltered(Func<Equipment, bool> filter, bool resetCallback)
+    public void ShowEquipmentFiltered(Func<Equipment, bool> filter, bool resetCallback, bool addNullSlot)
     {
         if (resetCallback)
             currentCallback = null;
         ClearSlots();
+        if (addNullSlot)
+            AddInventorySlot(null);
 
         foreach (Equipment item in GameManager.Instance.PlayerStats.EquipmentInventory.Where(filter))
         {
@@ -131,6 +141,7 @@ public class InventoryScrollWindow : MonoBehaviour
         InventorySlot slot;
         slot = InventorySlotPool.GetSlot();
         slot.gameObject.transform.SetParent(transform, false);
+        slot.gameObject.transform.SetAsLastSibling();
         SlotsInUse.Add(slot);
         slot.item = item;
         slot.onClickAction = callback;
@@ -168,7 +179,6 @@ public class InventorySlotPool : ObjectPool<InventorySlot>
 
     public override void ReturnToPool(InventorySlot item)
     {
-        item.transform.SetParent(null, false);
         Return(item);
     }
 }

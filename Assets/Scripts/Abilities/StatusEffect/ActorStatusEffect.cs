@@ -1,8 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-
-public abstract class ActorStatusEffect
+﻿public abstract class ActorStatusEffect
 {
     protected readonly Actor target;
     public Actor Source { get; protected set; }
@@ -10,9 +6,12 @@ public abstract class ActorStatusEffect
     public EffectType effectType;
     public float duration;
 
-    protected abstract void OnApply();
+    public abstract void OnApply();
+
     public abstract void OnExpire();
+
     public abstract void Update(float deltaTime);
+
     public abstract float GetEffectValue();
 
     protected float DurationUpdate(float dT)
@@ -21,7 +20,8 @@ public abstract class ActorStatusEffect
         {
             duration = 0;
             return duration;
-        } else
+        }
+        else
         {
             duration -= dT;
             return dT;
@@ -30,14 +30,13 @@ public abstract class ActorStatusEffect
 
     public void RefreshDuration(float duration)
     {
-        duration = this.duration;
+        if (this.duration < duration)
+            this.duration = duration;
     }
 
     public ActorStatusEffect(Actor target, Actor source)
     {
         this.target = target;
         Source = source;
-        OnApply();
     }
 }
-

@@ -13,7 +13,7 @@ public class BurnEffect : ActorStatusEffect
         this.duration = duration;
     }
 
-    protected override void OnApply()
+    public override void OnApply()
     {
         
     }

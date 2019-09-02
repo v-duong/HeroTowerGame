@@ -30,6 +30,7 @@ public class HeroData : ActorData
     public int assignedTeam;
 
     public bool IsLocked;
+    public bool isDualWielding;
 
     private HeroData() : base()
     {
@@ -71,6 +72,7 @@ public class HeroData : ActorData
         BaseMagicPhasing = 0;
         movementSpeed = 2.5f;
         IsLocked = false;
+        isDualWielding = false;
         assignedTeam = -1;
         equipList = new Equipment[10];
         archetypeList = new HeroArchetypeData[2];
@@ -152,6 +154,7 @@ public class HeroData : ActorData
             }
             abilitySlotList[slot].SetAbilityToSlot(ability, source);
         }
+        source.OnEquip(ability, this, slot);
         UpdateAbilities();
         return true;
     }
@@ -160,6 +163,8 @@ public class HeroData : ActorData
     {
         if (slot >= 3)
             return false;
+        IAbilitySource source = abilitySlotList[slot].source;
+        source.OnUnequip(abilitySlotList[slot].Ability.abilityBase, this, slot);
         abilitySlotList[slot].ClearAbility();
         return true;
     }
@@ -169,9 +174,17 @@ public class HeroData : ActorData
         return abilitySlotList[slot].Ability;
     }
 
-    public int GetAbilitySlotLevel(int slot)
+    public int GetAbilityLevel(AbilityBase ability)
     {
-        return abilitySlotList[slot].GetAbilityLevel();
+        return GetAbilityLevel();
+    }
+
+    public int GetAbilityLevel()
+    {
+        if (Level != 100)
+            return (int)((Level - 1) / 2d);
+        else
+            return 50;
     }
 
     public Equipment GetEquipmentInSlot(EquipSlotType slot)
@@ -232,6 +245,13 @@ public class HeroData : ActorData
         ApplyEquipmentBonuses(equip.prefixes);
         ApplyEquipmentBonuses(equip.suffixes);
         ApplyEquipmentBonuses(equip.innate);
+
+        if (GetEquipmentInSlot(EquipSlotType.WEAPON) is Weapon && GetEquipmentInSlot(EquipSlotType.OFF_HAND) is Weapon && !isDualWielding)
+        {
+            isDualWielding = true;
+            AddStatBonus(BonusType.GLOBAL_ATTACK_SPEED, GroupType.DUAL_WIELD, ModifyType.MULTIPLY, 10f);
+        }
+
         UpdateActorData();
 
         return true;
@@ -255,6 +275,13 @@ public class HeroData : ActorData
         RemoveEquipmentBonuses(equip.prefixes);
         RemoveEquipmentBonuses(equip.suffixes);
         RemoveEquipmentBonuses(equip.innate);
+
+        if (isDualWielding && !(GetEquipmentInSlot(EquipSlotType.WEAPON) is Weapon && GetEquipmentInSlot(EquipSlotType.OFF_HAND) is Weapon))
+        {
+            isDualWielding = false;
+            RemoveStatBonus(BonusType.GLOBAL_ATTACK_SPEED, GroupType.DUAL_WIELD, ModifyType.MULTIPLY, 10f);
+        }
+
         UpdateActorData();
         return true;
     }
@@ -299,12 +326,12 @@ public class HeroData : ActorData
 
     public override void UpdateActorData()
     {
-        groupTypes = GetGroupTypes();
+        GroupTypes = GetGroupTypes();
         UpdateHeroAttributes();
         UpdateAbilities();
         UpdateDefenses();
 
-        movementSpeed = GetMultiStatBonus(groupTypes, BonusType.MOVEMENT_SPEED).CalculateStat(2.5f);
+        movementSpeed = GetMultiStatBonus(GroupTypes, BonusType.MOVEMENT_SPEED).CalculateStat(2.5f);
 
         base.UpdateActorData();
     }
@@ -314,22 +341,22 @@ public class HeroData : ActorData
         ApplyHealthBonuses();
         ApplySoulPointBonuses();
         CalculateDefenses();
-        AttackPhasing = GetMultiStatBonus(groupTypes, BonusType.ATTACK_PHASING).CalculateStat(BaseAttackPhasing);
-        MagicPhasing = GetMultiStatBonus(groupTypes, BonusType.MAGIC_PHASING).CalculateStat(BaseMagicPhasing);
+        AttackPhasing = GetMultiStatBonus(GroupTypes, BonusType.ATTACK_PHASING).CalculateStat(BaseAttackPhasing);
+        MagicPhasing = GetMultiStatBonus(GroupTypes, BonusType.MAGIC_PHASING).CalculateStat(BaseMagicPhasing);
     }
 
     private void UpdateHeroAttributes()
     {
-        Strength = (int)GetMultiStatBonus(groupTypes, BonusType.STRENGTH).CalculateStat(BaseStrength);
+        Strength = (int)GetMultiStatBonus(GroupTypes, BonusType.STRENGTH).CalculateStat(BaseStrength);
         ApplyStrengthBonuses();
 
-        Intelligence = (int)GetMultiStatBonus(groupTypes, BonusType.INTELLIGENCE).CalculateStat(BaseIntelligence);
+        Intelligence = (int)GetMultiStatBonus(GroupTypes, BonusType.INTELLIGENCE).CalculateStat(BaseIntelligence);
         ApplyIntelligenceBonuses();
 
-        Agility = (int)GetMultiStatBonus(groupTypes, BonusType.AGILITY).CalculateStat(BaseAgility);
+        Agility = (int)GetMultiStatBonus(GroupTypes, BonusType.AGILITY).CalculateStat(BaseAgility);
         ApplyAgilityBonuses();
 
-        Will = (int)GetMultiStatBonus(groupTypes, BonusType.WILL).CalculateStat(BaseWill);
+        Will = (int)GetMultiStatBonus(GroupTypes, BonusType.WILL).CalculateStat(BaseWill);
         ApplyWillBonuses();
     }
 
@@ -431,15 +458,21 @@ public class HeroData : ActorData
             }
         }
 
-        Armor = GetMultiStatBonus(groupTypes, BonusType.GLOBAL_ARMOR).CalculateStat(BaseArmor + ArmorFromEquip);
-        MaximumManaShield = GetMultiStatBonus(groupTypes, BonusType.GLOBAL_MAX_SHIELD).CalculateStat(BaseManaShield + ShieldFromEquip);
+        Armor = GetMultiStatBonus(GroupTypes, BonusType.GLOBAL_ARMOR).CalculateStat(BaseArmor + ArmorFromEquip);
+        MaximumManaShield = GetMultiStatBonus(GroupTypes, BonusType.GLOBAL_MAX_SHIELD).CalculateStat(BaseManaShield + ShieldFromEquip);
         if (MaximumManaShield != 0)
         {
             float shieldPercent = CurrentManaShield / MaximumManaShield;
             CurrentManaShield = MaximumManaShield * shieldPercent;
         }
-        DodgeRating = GetMultiStatBonus(groupTypes, BonusType.GLOBAL_DODGE_RATING).CalculateStat(BaseDodgeRating + DodgeFromEquip);
-        ResolveRating = GetMultiStatBonus(groupTypes, BonusType.GLOBAL_RESOLVE_RATING).CalculateStat(BaseResolveRating + ResolveFromEquip);
+        DodgeRating = GetMultiStatBonus(GroupTypes, BonusType.GLOBAL_DODGE_RATING).CalculateStat(BaseDodgeRating + DodgeFromEquip);
+        ResolveRating = GetMultiStatBonus(GroupTypes, BonusType.GLOBAL_RESOLVE_RATING).CalculateStat(BaseResolveRating + ResolveFromEquip);
+
+        int statusThreshold = (int)(ResolveRating / 5f / 100f);
+        int statusResistance = (int)(ResolveRating / 15f / 100f);
+
+        AfflictedStatusDamageResistance = GetMultiStatBonus(GroupTypes, BonusType.AFFLICTED_STATUS_DAMAGE_RESISTANCE).CalculateStat(1f + statusResistance);
+        AfflictedStatusThreshold = GetMultiStatBonus(GroupTypes, BonusType.AFFLICTED_STATUS_THRESHOLD).CalculateStat(1f + statusThreshold);
     }
 
     public override void GetTotalStatBonus(BonusType type, IEnumerable<GroupType> tags, Dictionary<BonusType, StatBonus> abilityBonusProperties, StatBonus inputStatBonus)
@@ -489,10 +522,11 @@ public class HeroData : ActorData
     {
         foreach (AbilitySlot abilitySlot in abilitySlotList)
         {
-            if (abilitySlot.Ability != null)
+            ActorAbility actorAbility = abilitySlot.Ability;
+            if (actorAbility != null)
             {
-                abilitySlot.UpdateAbilityLevel();
-                abilitySlot.Ability.UpdateAbilityStats(this);
+                actorAbility.UpdateAbilityLevel(GetAbilityLevel(actorAbility.abilityBase));
+                actorAbility.UpdateAbilityStats(this);
             }
         }
     }
@@ -566,16 +600,6 @@ public class HeroData : ActorData
             this.source = source;
             if (source.GetType() == typeof(HeroArchetypeData))
                 sourceType = AbilitySourceType.ARCHETYPE;
-        }
-
-        public int GetAbilityLevel()
-        {
-            return source.GetAbilityLevel();
-        }
-
-        public void UpdateAbilityLevel()
-        {
-            Ability.UpdateAbilityLevel(GetAbilityLevel());
         }
 
         public void ClearAbility()

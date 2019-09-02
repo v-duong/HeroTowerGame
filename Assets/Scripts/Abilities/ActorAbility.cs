@@ -35,6 +35,7 @@ public class ActorAbility
     public bool AlternatesAttacks { get; private set; }
     public bool DualWielding { get; private set; }
     public EffectType BuffType { get; private set; }
+    private AuraBuffBonusContainer auraBuffBonus;
 
     private float AreaScaling;
     private float ProjectileScaling;
@@ -77,6 +78,11 @@ public class ActorAbility
         targetLayer = layer;
         attackWithMainHand = true;
         AlternatesAttacks = !abilityBase.useBothWeaponsForDual;
+
+        auraBuffBonus = new AuraBuffBonusContainer
+        {
+            cachedAuraBonuses = new List<Tuple<BonusType, ModifyType, float>>()
+        };
 
         if (abilityBase.targetType == AbilityTargetType.ENEMY)
         {
@@ -162,12 +168,12 @@ public class ActorAbility
     {
         abilityLevel = level;
         if (LinkedAbility != null)
-            LinkedAbility.abilityLevel = level;
+            LinkedAbility.UpdateAbilityLevel(level);
     }
 
     public virtual void UpdateAbilityStats(HeroData data)
     {
-        IEnumerable<GroupType> tags = data.groupTypes;
+        IEnumerable<GroupType> tags = data.GroupTypes;
         if (abilityBase.weaponRestrictions.Count > 0)
         {
             if (tags.Intersect(abilityBase.weaponRestrictions).Count() == 0)
@@ -177,6 +183,7 @@ public class ActorAbility
             }
         }
         IsUsable = true;
+        auraBuffBonus.isOutdated = true;
         UpdateAbilityBonusProperties(tags);
         UpdateDamage(data, abilityBase.damageLevels, tags);
         UpdateTypeParameters(data, tags);
@@ -191,7 +198,8 @@ public class ActorAbility
     public virtual void UpdateAbilityStats(EnemyData data)
     {
         IsUsable = true;
-        IEnumerable<GroupType> tags = data.groupTypes;
+        auraBuffBonus.isOutdated = true;
+        IEnumerable<GroupType> tags = data.GroupTypes;
         UpdateAbilityBonusProperties(tags);
         UpdateDamage(data, abilityBase.damageLevels, tags);
         UpdateTypeParameters(data, tags);
@@ -424,32 +432,38 @@ public class ActorAbility
                 {
                     MinMaxRange mainWeaponDamage = mainWeapon.GetWeaponDamage(element);
 
-                    mainMinDamage = mainWeaponDamage.min * weaponMulti;
-                    mainMaxDamage = mainWeaponDamage.max * weaponMulti;
+                    mainMinDamage = (mainWeaponDamage.min + baseMinDamage) * weaponMulti;
+                    mainMaxDamage = (mainWeaponDamage.max + baseMaxDamage) * weaponMulti;
 
                     if (DualWielding)
                     {
                         MinMaxRange offWeaponDamage = offWeapon.GetWeaponDamage(element);
 
-                        if (AlternatesAttacks)
+                        offMinDamage = (offWeaponDamage.min + baseMinDamage) * weaponMulti;
+                        offMaxDamage = (offWeaponDamage.max + baseMaxDamage) * weaponMulti;
+
+                        if (!AlternatesAttacks)
                         {
-                            offMinDamage = offWeaponDamage.min * weaponMulti;
-                            offMaxDamage = offWeaponDamage.max * weaponMulti;
-                        }
-                        else
-                        {
-                            mainMinDamage *= 0.55f;
-                            mainMaxDamage *= 0.55f;
-                            mainMinDamage += offWeaponDamage.min * weaponMulti * 0.55f;
-                            mainMaxDamage += offWeaponDamage.max * weaponMulti * 0.55f;
+                            mainMinDamage = (mainMinDamage + offMinDamage) * 0.55f;
+                            mainMaxDamage = (mainMaxDamage + offMaxDamage) * 0.55f;
                         }
                     }
                 }
-                else if (element == ElementType.PHYSICAL)
+                else
                 {
-                    mainMinDamage = 3 * weaponMulti;
-                    mainMaxDamage = 6 * weaponMulti;
+                    if (element == ElementType.PHYSICAL)
+                    {
+                        baseMinDamage += 2;
+                        baseMaxDamage += 6;
+                    }
+                    mainMinDamage = baseMinDamage * weaponMulti;
+                    mainMaxDamage = baseMaxDamage * weaponMulti;
                 }
+            }
+            else
+            {
+                mainMinDamage = baseMinDamage;
+                mainMaxDamage = baseMaxDamage;
             }
 
             HashSet<BonusType> min = new HashSet<BonusType>();
@@ -465,8 +479,9 @@ public class ActorAbility
             float addedFlatMin = minBonus.CalculateStat(0) * flatDamageMod;
             float addedFlatMax = maxBonus.CalculateStat(0) * flatDamageMod;
 
-            mainMinDamage = multiBonus.CalculateStat(mainMinDamage + addedFlatMin + baseMinDamage);
-            mainMaxDamage = multiBonus.CalculateStat(mainMaxDamage + addedFlatMax + baseMaxDamage);
+            mainMinDamage = multiBonus.CalculateStat(mainMinDamage + addedFlatMin);
+            mainMaxDamage = multiBonus.CalculateStat(mainMaxDamage + addedFlatMax);
+
             MinMaxRange newMainDamageRange = new MinMaxRange
             {
                 min = (int)(mainMinDamage * finalDamageModifier),
@@ -681,11 +696,7 @@ public class ActorAbility
                 damage = UnityEngine.Random.Range(dicToUse[elementType].min, dicToUse[elementType].max + 1);
                 if (isCrit)
                     damage = damage * CriticalDamage;
-                returnDict.Add(elementType, damage);
-            }
-            else
-            {
-                returnDict.Add(elementType, 0);
+                returnDict.Add(elementType, damage * abilityBase.hitDamageModifier);
             }
         }
 
@@ -785,7 +796,7 @@ public class ActorAbility
                     break;
             }
 
-            yield return new WaitForSeconds(0.33f);
+            yield return new WaitForSeconds(0.5f);
         }
     }
 
@@ -795,27 +806,32 @@ public class ActorAbility
         List<StatBonusBuffEffect> buffs = target.GetBuffStatusEffect(abilityBase.idName);
         if (buffs.Count > 0)
             buff = buffs[0];
-        List<Tuple<BonusType, ModifyType, float>> bonuses = new List<Tuple<BonusType, ModifyType, float>>();
-        float strength = 0;
-        foreach (AbilityAppliedEffect effect in abilityBase.appliedEffects)
-        {
-            float buffValue = effect.initialValue + effect.growthValue * abilityLevel;
-            bonuses.Add(new Tuple<BonusType, ModifyType, float>(effect.bonusType, effect.modifyType, buffValue));
-            strength += buffValue;
-        }
 
+        if (auraBuffBonus.isOutdated)
+        {
+            auraBuffBonus.cachedAuraBonuses = new List<Tuple<BonusType, ModifyType, float>>();
+            auraBuffBonus.auraStrength = 0;
+            foreach (AbilityAppliedEffect effect in abilityBase.appliedEffects)
+            {
+                float buffValue = effect.initialValue + effect.growthValue * abilityLevel;
+                auraBuffBonus.cachedAuraBonuses.Add(new Tuple<BonusType, ModifyType, float>(effect.bonusType, effect.modifyType, buffValue));
+                auraBuffBonus.auraStrength += buffValue;
+            }
+            auraBuffBonus.isOutdated = false;
+        }
         if (buff != null)
         {
-            if (strength <= buff.BuffPower)
+            if (auraBuffBonus.auraStrength == buff.BuffPower)
             {
-                buff.RefreshDuration(0.5f);
+                buff.RefreshDuration(0.75f);
                 return;
             }
+            else if (auraBuffBonus.auraStrength < buff.BuffPower)
+                return;
             else
                 buff.OnExpire();
         }
-
-        target.AddStatusEffect(new StatBonusBuffEffect(target, AbilityOwner, bonuses, 0.5f, abilityBase.idName, BuffType));
+        target.AddStatusEffect(new StatBonusBuffEffect(target, AbilityOwner, auraBuffBonus.cachedAuraBonuses, 0.75f, abilityBase.idName, BuffType));
     }
 
     protected void FireRadialAoe()
@@ -852,7 +868,7 @@ public class ActorAbility
             Actor actor = hit.gameObject.GetComponent<Actor>();
             if (actor != null)
             {
-                actor.ApplyDamage(damageDict, abilityOnHitData, true);
+                ApplyDamageToActor(actor, damageDict, abilityOnHitData, true);
             }
         }
     }
@@ -865,7 +881,7 @@ public class ActorAbility
     protected void FireHitscan(Vector3 origin, Vector3 target)
     {
         Dictionary<ElementType, float> damageDict = CalculateDamageValues();
-        CurrentTarget.ApplyDamage(damageDict, abilityOnHitData, true);
+        ApplyDamageToActor(CurrentTarget, damageDict, abilityOnHitData, true);
     }
 
     protected void FireArcAoe()
@@ -893,7 +909,7 @@ public class ActorAbility
             {
                 Vector2 toActor = actor.transform.position - origin;
                 if (Vector2.Angle(toActor, forward) < arc)
-                    actor.ApplyDamage(damageDict, abilityOnHitData, true);
+                    ApplyDamageToActor(actor, damageDict, abilityOnHitData, true);
             }
         }
     }
@@ -1030,5 +1046,34 @@ public class ActorAbility
         total = total / 2f;
         float dps = ((total * (1 - criticalChance)) + (total * criticalChance * CriticalDamage / 100)) * (1f / Cooldown);
         return dps;
+    }
+
+    public void ApplyDamageToActor(Actor target, Dictionary<ElementType, float> damage, AbilityOnHitDataContainer onHitDataContainer, bool isHit)
+    {
+        if (abilityBase.hitCount > 1)
+        {
+            AbilityOwner.StartCoroutine(ApplyMultiHitDamage(target, damage, onHitDataContainer, isHit));
+        }
+        else
+        {
+            target.ApplyDamage(damage, onHitDataContainer, isHit);
+        }
+    }
+
+    private IEnumerator ApplyMultiHitDamage(Actor target, Dictionary<ElementType, float> damage, AbilityOnHitDataContainer onHitDataContainer, bool isHit)
+    {
+        float delayBetweenHits = abilityBase.delayBetweenHits;
+        for (int i = 0; i < abilityBase.hitCount; i++)
+        {
+            target.ApplyDamage(damage, onHitDataContainer, isHit);
+            yield return new WaitForSeconds(delayBetweenHits);
+        }
+    }
+
+    private class AuraBuffBonusContainer
+    {
+        public List<Tuple<BonusType, ModifyType, float>> cachedAuraBonuses;
+        public float auraStrength = 0;
+        public bool isOutdated = true;
     }
 }

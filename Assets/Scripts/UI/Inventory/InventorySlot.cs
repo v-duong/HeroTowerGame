@@ -57,6 +57,11 @@ public class InventorySlot : MonoBehaviour
         }
         else
         {
+            if (item == null)
+            {
+
+                return;
+            }
             switch (item.GetItemType())
             {
                 case ItemType.ARMOR:
@@ -68,14 +73,6 @@ public class InventorySlot : MonoBehaviour
             }
             EquipmentDetailWindow itemWindow = UIManager.Instance.EquipDetailWindow;
             itemWindow.SetTransform(0);
-            if (UIManager.Instance.IsEquipSelectMode)
-            {
-                itemWindow.EquipButtonParent.SetActive(true);
-            }
-            else
-            {
-                itemWindow.EquipButtonParent.SetActive(false);
-            }
             UIManager.Instance.OpenWindow(itemWindow.gameObject, false);
             itemWindow.equip = (Equipment)item;
             itemWindow.inventorySlot = this;

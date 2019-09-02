@@ -1,19 +1,24 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System;
 using UnityEngine;
 
 public class ChillEffect : ActorStatusEffect
 {
+    public const int CHILL_EFFECT_CAP = 50;
+    public const float BASE_CHILL_EFFECT = -10F;
+    public const float BASE_CHILL_THRESHOLD = 0.1F;
     protected int effectPower;
 
-    public ChillEffect (Actor target, Actor source, float effectiveness, float duration) : base(target, source)
+    public ChillEffect(Actor target, Actor source, float effectiveness, float duration) : base(target, source)
     {
         effectType = EffectType.CHILL;
-        effectPower = (int)(-10f * effectiveness);
+        effectPower = (int)effectiveness;
+        Debug.Log(effectPower);
+        effectPower = Math.Max(effectPower, -CHILL_EFFECT_CAP);
+        effectPower = Math.Min(effectPower, CHILL_EFFECT_CAP);
         this.duration = duration;
     }
 
-    protected override void OnApply()
+    public override void OnApply()
     {
         target.Data.AddTemporaryBonus(effectPower, BonusType.MOVEMENT_SPEED, ModifyType.MULTIPLY);
         target.Data.AddTemporaryBonus(effectPower, BonusType.SHIELD_REGEN, ModifyType.MULTIPLY);

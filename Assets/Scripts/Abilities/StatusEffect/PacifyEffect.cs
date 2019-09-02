@@ -1,19 +1,22 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using System;
 
 public class PacifyEffect : ActorStatusEffect
 {
+    public const int PACIFY_EFFECT_CAP = 35;
+    public const float BASE_PACIFY_EFFECT = -10F;
+    public const float BASE_PACIFY_THRESHOLD = 0.1F;
     protected int effectPower;
 
     public PacifyEffect(Actor target, Actor source, float effectiveness, float duration) : base(target, source)
     {
         effectType = EffectType.PACIFY;
-        effectPower = (int)(effectiveness * -15f);
+        effectPower = (int)effectiveness;
+        effectPower = Math.Max(effectPower, -PACIFY_EFFECT_CAP);
+        effectPower = Math.Min(effectPower, PACIFY_EFFECT_CAP);
         this.duration = duration;
     }
 
-    protected override void OnApply()
+    public override void OnApply()
     {
         target.Data.AddTemporaryBonus(effectPower, BonusType.GLOBAL_DAMAGE, ModifyType.MULTIPLY);
     }

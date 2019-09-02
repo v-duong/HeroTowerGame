@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -12,5 +13,9 @@ public enum AbilitySourceType
 
 public interface IAbilitySource
 {
-    int GetAbilityLevel();
+    string SourceName { get; }
+    AbilitySourceType AbilitySourceType { get; }
+    void OnEquip(AbilityBase ability, HeroData hero, int slot);
+    void OnUnequip(AbilityBase ability, HeroData hero, int slot);
+    Tuple<HeroData, int> GetEquippedHeroAndSlot(AbilityBase ability);
 }

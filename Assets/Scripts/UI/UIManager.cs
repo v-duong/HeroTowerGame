@@ -37,8 +37,6 @@ public class UIManager : MonoBehaviour
     private ItemCraftingPanel _itemCraftingPanel;
     private StageSelectPanel _stageSelectPanel;
 
-    public EquipSlotType SlotContext;
-    public bool IsEquipSelectMode = false;
     public GameObject currentWindow;
     public Stack<GameObject> previousWindows = new Stack<GameObject>();
 

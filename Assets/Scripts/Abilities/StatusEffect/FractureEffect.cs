@@ -1,30 +1,34 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class FractureEffect : ActorStatusEffect
 {
-    protected int physReduction;
-    protected int elementalReduction;
+    public const int FRACTURE_EFFECT_CAP = 25;
+    public const float BASE_FRACTURE_EFFECT = -5F;
+    public const float BASE_FRACTURE_THRESHOLD = 0.1F;
+    protected int resistanceReduction;
 
     public FractureEffect(Actor target, Actor source, float effectiveness, float duration) : base(target, source)
     {
         effectType = EffectType.FRACTURE;
-        physReduction = (int)(-7f * effectiveness);
-        elementalReduction = (int)(-5f * effectiveness);
+        resistanceReduction = (int)effectiveness;
+        resistanceReduction = Math.Max(resistanceReduction, -FRACTURE_EFFECT_CAP);
+        resistanceReduction = Math.Min(resistanceReduction, FRACTURE_EFFECT_CAP);
         this.duration = duration;
     }
 
-    protected override void OnApply()
+    public override void OnApply()
     {
-        target.Data.AddTemporaryBonus(physReduction, BonusType.PHYSICAL_RESISTANCE, ModifyType.FLAT_ADDITION);
-        target.Data.AddTemporaryBonus(elementalReduction, BonusType.ELEMENTAL_RESISTANCES, ModifyType.FLAT_ADDITION);
+        target.Data.AddTemporaryBonus(resistanceReduction, BonusType.PHYSICAL_RESISTANCE, ModifyType.FLAT_ADDITION);
+        target.Data.AddTemporaryBonus(resistanceReduction, BonusType.ELEMENTAL_RESISTANCES, ModifyType.FLAT_ADDITION);
     }
 
     public override void OnExpire()
     {
-        target.Data.RemoveTemporaryBonus(physReduction, BonusType.PHYSICAL_RESISTANCE, ModifyType.FLAT_ADDITION);
-        target.Data.RemoveTemporaryBonus(elementalReduction, BonusType.ELEMENTAL_RESISTANCES, ModifyType.FLAT_ADDITION);
+        target.Data.RemoveTemporaryBonus(resistanceReduction, BonusType.PHYSICAL_RESISTANCE, ModifyType.FLAT_ADDITION);
+        target.Data.RemoveTemporaryBonus(resistanceReduction, BonusType.ELEMENTAL_RESISTANCES, ModifyType.FLAT_ADDITION);
         target.RemoveStatusEffect(this);
     }
 
@@ -37,6 +41,6 @@ public class FractureEffect : ActorStatusEffect
 
     public override float GetEffectValue()
     {
-        return physReduction;
+        return resistanceReduction;
     }
 }

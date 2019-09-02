@@ -23,6 +23,7 @@ public class HeroDetailWindow : MonoBehaviour
     public static HeroData hero;
 
     public List<HeroEquipmentSlot> equipSlots;
+    public HeroEquipmentSlot offHandSlot;
     public Button lockButton;
 
     public void OnEnable()
@@ -75,7 +76,6 @@ public class HeroDetailWindow : MonoBehaviour
             ActorAbility firstSlotAbility = hero.GetAbilityFromSlot(0);
             infoText.text += "Ability 1: " + firstSlotAbility.abilityBase.idName + "\n";
             infoText.text += GetAbilityDetailString(firstSlotAbility);
-
         }
         if (hero.GetAbilityFromSlot(1) != null)
         {
@@ -95,6 +95,15 @@ public class HeroDetailWindow : MonoBehaviour
             {
                 slot.slotText.text = e.Name;
             }
+            if (slot.EquipSlot == EquipSlotType.WEAPON)
+                if (e is Weapon && e.GetGroupTypes().Contains(GroupType.TWO_HANDED_WEAPON))
+                {
+                    offHandSlot.GetComponent<Button>().interactable = false;
+                }
+                else
+                {
+                    offHandSlot.GetComponent<Button>().interactable = true;
+                }
         }
     }
 
@@ -108,7 +117,7 @@ public class HeroDetailWindow : MonoBehaviour
             else
                 dps = ability.GetApproxDPS(false);
             s += string.Format("Approx. DPS: {0:F1}\n", dps);
-            s += string.Format("{0:F2}/s, {1:F1}%, x{2:F2}\n", 1f / ability.Cooldown, ability.MainCriticalChance,  ability.CriticalDamage);
+            s += string.Format("{0:F2}/s, {1:F1}%, x{2:F2}\n", 1f / ability.Cooldown, ability.MainCriticalChance, ability.CriticalDamage);
             s += LocalizationManager.Instance.GetLocalizationText_AbilityCalculatedDamage(ability.mainDamageBase);
         }
         else
@@ -160,6 +169,15 @@ public class HeroDetailWindow : MonoBehaviour
     {
         if (hero != null)
             hero.AddExperience(5000);
+        UpdateWindow();
+    }
+
+    public void ItemEquip(Item item, EquipSlotType equipSlot)
+    {
+        if (item == null)
+            hero.UnequipFromSlot(equipSlot);
+        else
+            hero.EquipToSlot(item as Equipment, equipSlot);
         UpdateWindow();
     }
 }

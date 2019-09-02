@@ -46,26 +46,29 @@ public class EnemyData : ActorData
 
     public override void UpdateActorData()
     {
-        groupTypes = GetGroupTypes();
+        GroupTypes = GetGroupTypes();
         ApplyHealthBonuses();
         ApplySoulPointBonuses();
 
-        MaximumManaShield = GetMultiStatBonus(groupTypes, BonusType.GLOBAL_MAX_SHIELD).CalculateStat(BaseManaShield);
+        MaximumManaShield = GetMultiStatBonus(GroupTypes, BonusType.GLOBAL_MAX_SHIELD).CalculateStat(BaseManaShield);
 
         if (MaximumManaShield != 0)
         {
             float shieldPercent = CurrentManaShield / MaximumManaShield;
             CurrentManaShield = MaximumManaShield * shieldPercent;
         }
-        movementSpeed = GetMultiStatBonus(groupTypes, BonusType.MOVEMENT_SPEED).CalculateStat(BaseData.movementSpeed);
+        movementSpeed = GetMultiStatBonus(GroupTypes, BonusType.MOVEMENT_SPEED).CalculateStat(BaseData.movementSpeed);
 
-        Armor = GetMultiStatBonus(groupTypes, BonusType.GLOBAL_ARMOR).CalculateStat(BaseArmor);
-        DodgeRating = GetMultiStatBonus(groupTypes,BonusType.GLOBAL_DODGE_RATING).CalculateStat(BaseDodgeRating);
-        ResolveRating = GetMultiStatBonus(groupTypes,BonusType.GLOBAL_RESOLVE_RATING).CalculateStat(BaseResolveRating);
-        AttackPhasing = GetMultiStatBonus(groupTypes,BonusType.ATTACK_PHASING).CalculateStat(BaseAttackPhasing);
-        MagicPhasing = GetMultiStatBonus(groupTypes,BonusType.MAGIC_PHASING).CalculateStat(BaseMagicPhasing);
+        Armor = GetMultiStatBonus(GroupTypes, BonusType.GLOBAL_ARMOR).CalculateStat(BaseArmor);
+        DodgeRating = GetMultiStatBonus(GroupTypes,BonusType.GLOBAL_DODGE_RATING).CalculateStat(BaseDodgeRating);
+        ResolveRating = GetMultiStatBonus(GroupTypes,BonusType.GLOBAL_RESOLVE_RATING).CalculateStat(BaseResolveRating);
+        AttackPhasing = GetMultiStatBonus(GroupTypes,BonusType.ATTACK_PHASING).CalculateStat(BaseAttackPhasing);
+        MagicPhasing = GetMultiStatBonus(GroupTypes,BonusType.MAGIC_PHASING).CalculateStat(BaseMagicPhasing);
 
-        foreach(ActorAbility ability in abilities)
+        AfflictedStatusDamageResistance = GetMultiStatBonus(GroupTypes, BonusType.AFFLICTED_STATUS_DAMAGE_RESISTANCE).CalculateStat(1f);
+        AfflictedStatusThreshold = GetMultiStatBonus(GroupTypes, BonusType.AFFLICTED_STATUS_THRESHOLD).CalculateStat(1f);
+
+        foreach (ActorAbility ability in abilities)
         {
             ability.UpdateAbilityStats(this);
         }

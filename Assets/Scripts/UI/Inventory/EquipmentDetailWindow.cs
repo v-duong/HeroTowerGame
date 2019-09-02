@@ -26,6 +26,8 @@ public class EquipmentDetailWindow : MonoBehaviour
 
     public Image NameBackground;
 
+    public Action<Item> callback;
+
     public void UpdateWindowEquipment()
     {
         GetComponent<Outline>().effectColor = Helpers.ReturnRarityColor(equip.Rarity);
@@ -183,12 +185,6 @@ public class EquipmentDetailWindow : MonoBehaviour
 
     public void OnEquipClick()
     {
-        UIManager ui = UIManager.Instance;
-        HeroDetailWindow.hero.EquipToSlot(equip, ui.SlotContext);
-        gameObject.SetActive(false);
-        ui.CloseCurrentWindow();
-        ui.CloseCurrentWindow();
-        ui.HeroDetailWindow.UpdateWindow();
-        
+        callback?.Invoke(equip);   
     }
 }

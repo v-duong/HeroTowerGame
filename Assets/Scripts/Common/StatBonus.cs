@@ -217,7 +217,6 @@ public class StatBonusCollection
 
         foreach (GroupType type in intersectingTypes)
         {
-            Debug.Log(type);
             returnBonus.AddBonuses(statBonuses[type]);
         }
         returnBonus.UpdateCurrentMultiply();

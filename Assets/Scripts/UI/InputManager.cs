@@ -88,6 +88,7 @@ public class InputManager : MonoBehaviour
                     {
                     }
                 }
+
                 spawnLocation = Helpers.ReturnTilePosition(StageManager.Instance.HighlightMap.tilemap, spawnLocation, -3);
                 selectedHero.transform.position = spawnLocation;
                 selectedHero.gameObject.SetActive(true);

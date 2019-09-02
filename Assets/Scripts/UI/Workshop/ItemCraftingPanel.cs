@@ -43,7 +43,7 @@ public class ItemCraftingPanel : MonoBehaviour
     public void ItemSlotOnClick()
     {
         UIManager.Instance.OpenInventoryWindow(false, false, false);
-        UIManager.Instance.InvScrollContent.ShowEquipmentFiltered(x => x.IsEquipped == false, true);
+        UIManager.Instance.InvScrollContent.ShowEquipmentFiltered(x => x.IsEquipped == false, true, true);
         UIManager.Instance.InvScrollContent.SetCallback(ItemSlotOnClick_Callback);
     }
 

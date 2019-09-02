@@ -23,7 +23,7 @@ public class StatBonusBuffEffect : ActorStatusEffect
         }
     }
 
-    protected override void OnApply()
+    public override void OnApply()
     {
     }
 

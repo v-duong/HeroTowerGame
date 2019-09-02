@@ -122,11 +122,11 @@ public abstract class Equipment : AffixedItem
         int startValue = 0;
         switch (itemType)
         {
-            case global::ItemType.ARMOR:
+            case ItemType.ARMOR:
                 startValue = Armor.LocalBonusStart;
                 break;
 
-            case global::ItemType.WEAPON:
+            case ItemType.WEAPON:
                 startValue = Weapon.LocalBonusStart;
                 break;
 

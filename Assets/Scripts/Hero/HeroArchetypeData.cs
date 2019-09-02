@@ -1,11 +1,10 @@
-﻿using System.Collections.Generic;
-using UnityEngine;
+﻿using System;
+using System.Collections.Generic;
 
 public class HeroArchetypeData : IAbilitySource
 {
     public const int LocalBonusStart = 0x900;
-    public ArchetypeBase Base { get { return ResourceManager.Instance.GetArchetypeBase(BaseId); } }
-    private string BaseId { get; set; }
+    public ArchetypeBase Base { get; private set; }
     public int allocatedSkillPoints;
     public HeroData hero;
 
@@ -15,13 +14,16 @@ public class HeroArchetypeData : IAbilitySource
     public float IntelligenceGrowth { get; private set; }
     public float AgilityGrowth { get; private set; }
     public float WillGrowth { get; private set; }
-    public List<AbilityBase> AvailableAbilityList { get; }
+    public ArchetypeLeveledAbilityList AvailableAbilityList { get; }
+
+    public AbilitySourceType AbilitySourceType => AbilitySourceType.ARCHETYPE;
+    public string SourceName => Base.idName;
 
     private Dictionary<int, NodeLevel> nodeLevels;
 
     public HeroArchetypeData(ArchetypeItem archetypeItem, HeroData hero)
     {
-        BaseId = archetypeItem.Base.idName;
+        Base = archetypeItem.Base;
 
         HealthGrowth = Base.healthGrowth;
         SoulPointGrowth = Base.soulPointGrowth;
@@ -30,7 +32,7 @@ public class HeroArchetypeData : IAbilitySource
         AgilityGrowth = Base.agilityGrowth;
         WillGrowth = Base.willGrowth;
         this.hero = hero;
-        AvailableAbilityList = new List<AbilityBase>();
+        AvailableAbilityList = new ArchetypeLeveledAbilityList();
         nodeLevels = new Dictionary<int, NodeLevel>();
         InitializeNodeLevels();
     }
@@ -48,14 +50,6 @@ public class HeroArchetypeData : IAbilitySource
                 AvailableAbilityList.Add(node.GetAbility());
             nodeLevels.Add(node.id, n);
         }
-    }
-
-    public int GetAbilityLevel()
-    {
-        if (hero.Level != 100)
-            return (int)((hero.Level - 1) / 2d);
-        else
-            return 50;
     }
 
     public int GetNodeLevel(int id)
@@ -109,7 +103,7 @@ public class HeroArchetypeData : IAbilitySource
         NodeLevel nodeLevel = nodeLevels[node.id];
         if (nodeLevel.level == node.initialLevel)
             return false;
-        
+
         if (node.type == NodeType.ABILITY)
             AvailableAbilityList.Remove(node.GetAbility());
 
@@ -159,5 +153,84 @@ public class HeroArchetypeData : IAbilitySource
     public bool ContainsAbility(string id)
     {
         return true;
+    }
+
+    public void OnEquip(AbilityBase ability, HeroData hero, int slot)
+    {
+        foreach (var archetypeAbility in AvailableAbilityList)
+        {
+            if (archetypeAbility.abilityBase == ability)
+            {
+                archetypeAbility.equippedHero = hero;
+                archetypeAbility.equippedSlot = slot;
+                return;
+            }
+        }
+    }
+
+    public void OnUnequip(AbilityBase ability, HeroData hero, int slot)
+    {
+        foreach (var archetypeAbility in AvailableAbilityList)
+        {
+            if (archetypeAbility.abilityBase == ability)
+            {
+                archetypeAbility.equippedHero = null;
+                return;
+            }
+        }
+    }
+
+    public Tuple<HeroData, int> GetEquippedHeroAndSlot(AbilityBase ability)
+    {
+        int slot = -1;
+        foreach (var archetypeAbility in AvailableAbilityList)
+        {
+            if (archetypeAbility.abilityBase == ability)
+            {
+                if (archetypeAbility.equippedHero == null)
+                    return null;
+                slot = archetypeAbility.equippedSlot;
+            }
+        }
+        return new Tuple<HeroData, int>(hero, slot);
+    }
+
+    public class ArchetypeLeveledAbilityList
+    {
+        public class ArchetypeLeveledAbility
+        {
+            public AbilityBase abilityBase;
+            public HeroData equippedHero;
+            public int equippedSlot;
+
+            public ArchetypeLeveledAbility(AbilityBase abilityBase)
+            {
+                this.abilityBase = abilityBase;
+                equippedHero = null;
+            }
+        }
+
+        private List<ArchetypeLeveledAbility> leveledAbilities;
+
+        public ArchetypeLeveledAbilityList()
+        {
+            leveledAbilities = new List<ArchetypeLeveledAbility>();
+        }
+
+        public void Add(AbilityBase a)
+        {
+            leveledAbilities.Add(new ArchetypeLeveledAbility(a));
+        }
+
+        public void Remove(AbilityBase a)
+        {
+            ArchetypeLeveledAbility target = leveledAbilities.Find(x => x.abilityBase == a);
+            leveledAbilities.Remove(target);
+        }
+
+        public IEnumerator<ArchetypeLeveledAbility> GetEnumerator()
+        {
+            return leveledAbilities.GetEnumerator();
+        }
     }
 }

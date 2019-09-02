@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using TMPro;
 
 public class HeroSlot : MonoBehaviour
 {
@@ -20,8 +18,8 @@ public class HeroSlot : MonoBehaviour
     public void SetSlot(HeroData hero)
     {
         this.hero = hero;
-        nameText.text = hero.Name + "\n";
-        nameText.text += "<size=80%>" +  hero.PrimaryArchetype.Base.idName + "</size>";
+        nameText.text = "Lv" + hero.Level + " " + hero.Name + "\n";
+        nameText.text += "<size=80%>" + hero.PrimaryArchetype.Base.idName + "</size>";
         if (hero.SecondaryArchetype != null)
         {
             nameText.text += "\n" + "<size=80%>" + hero.SecondaryArchetype.Base.idName + "</size>";

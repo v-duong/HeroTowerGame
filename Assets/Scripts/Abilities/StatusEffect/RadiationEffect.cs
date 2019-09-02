@@ -14,7 +14,7 @@ public class RadiationEffect : ActorStatusEffect
         timeSinceLastCheck = 0;
     }
 
-    protected override void OnApply()
+    public override void OnApply()
     {
     }
 
