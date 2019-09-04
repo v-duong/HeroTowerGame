@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class AbilityStorageItem : Item, IAbilitySource
+public class AbilityCoreItem : Item, IAbilitySource
 {
     public AbilityBase Base { get; private set; }
     public HeroData EquippedHero { get; private set; }
@@ -12,13 +12,23 @@ public class AbilityStorageItem : Item, IAbilitySource
     public AbilitySourceType AbilitySourceType => AbilitySourceType.ABILITY_CORE;
     public string SourceName => Name;
 
-    protected AbilityStorageItem(AbilityBase b, string name)
+    public Guid SourceId => Id;
+
+    protected AbilityCoreItem(AbilityBase b, string name)
     {
+        Id = Guid.NewGuid();
         Base = b;
         Name = name;
     }
 
-    public static AbilityStorageItem CreateAbilityItemFromArchetype(ArchetypeItem archetypeItem, AbilityBase abilityBase)
+    public AbilityCoreItem(Guid id, string baseName, string name)
+    {
+        Id = Guid.NewGuid();
+        Base = ResourceManager.Instance.GetAbilityBase(baseName);
+        Name = name;
+    }
+
+    public static AbilityCoreItem CreateAbilityItemFromArchetype(ArchetypeItem archetypeItem, AbilityBase abilityBase)
     {
         if (!archetypeItem.Base.GetArchetypeAbilities().Contains(abilityBase))
             return null;
@@ -28,7 +38,7 @@ public class AbilityStorageItem : Item, IAbilitySource
         {
             GameManager.Instance.PlayerStats.RemoveArchetypeFromInventory(archetypeItem);
             string name = archetypeItem.Name + "'s " + LocalizationManager.Instance.GetLocalizationText_Ability(abilityBase.idName)[0];
-            return new AbilityStorageItem(abilityBase, name);
+            return new AbilityCoreItem(abilityBase, name);
         }
     }
 

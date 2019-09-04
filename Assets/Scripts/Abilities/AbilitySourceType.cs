@@ -14,6 +14,7 @@ public enum AbilitySourceType
 public interface IAbilitySource
 {
     string SourceName { get; }
+    Guid SourceId { get; }
     AbilitySourceType AbilitySourceType { get; }
     void OnEquip(AbilityBase ability, HeroData hero, int slot);
     void OnUnequip(AbilityBase ability, HeroData hero, int slot);

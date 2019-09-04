@@ -15,11 +15,13 @@ public class PlayerStats
     public int ArchetypeFragments { get; private set; }
     public int ExpStock { get; private set; }
 
+    public void SetExpStock(int value) => ExpStock = value;
+
     public Dictionary<ConsumableType, int> consumables;
 
     private List<Equipment> equipmentInventory;
     private List<ArchetypeItem> archetypeInventory;
-    private List<AbilityStorageItem> abilityStorageInventory;
+    private List<AbilityCoreItem> abilityStorageInventory;
     private List<HeroData> heroList;
 
     public IList<Equipment> EquipmentInventory
@@ -38,7 +40,7 @@ public class PlayerStats
         }
     }
 
-    public IList<AbilityStorageItem> AbilityStorageInventory
+    public IList<AbilityCoreItem> AbilityInventory
     {
         get
         {
@@ -68,13 +70,18 @@ public class PlayerStats
         }
         equipmentInventory = new List<Equipment>();
         archetypeInventory = new List<ArchetypeItem>();
-        abilityStorageInventory = new List<AbilityStorageItem>();
+        abilityStorageInventory = new List<AbilityCoreItem>();
         heroList = new List<HeroData>();
         heroTeams = new List<HeroData[]>();
         for (int i = 0; i < 5; i++)
         {
             heroTeams.Add(new HeroData[5]);
         }
+    }
+
+    public Equipment GetEquipmentByGuid(Guid id)
+    {
+        return equipmentInventory.Find(x => x.Id == id);
     }
 
     public bool AddEquipmentToInventory(Equipment newEquipment)
@@ -89,7 +96,7 @@ public class PlayerStats
         return true;
     }
 
-    public bool AddAbilityToInventory(AbilityStorageItem newAbility)
+    public bool AddAbilityToInventory(AbilityCoreItem newAbility)
     {
         abilityStorageInventory.Add(newAbility);
         return true;
@@ -114,7 +121,7 @@ public class PlayerStats
         return true;
     }
 
-    public bool RemoveAbilityFromInventory(AbilityStorageItem newAbility)
+    public bool RemoveAbilityFromInventory(AbilityCoreItem newAbility)
     {
         abilityStorageInventory.Remove(newAbility);
         return true;
@@ -151,6 +158,21 @@ public class PlayerStats
             ArchetypeFragments = 0;
         if (ArchetypeFragments > maxArchetypeFragments)
             ArchetypeFragments = maxArchetypeFragments;
+    }
+
+    public void ClearEquipmentInventory()
+    {
+        equipmentInventory.Clear();
+    }
+
+    public void ClearAbilityInventory()
+    {
+        abilityStorageInventory.Clear();
+    }
+
+    public void ClearHeroList()
+    {
+        heroList.Clear();
     }
 }
 

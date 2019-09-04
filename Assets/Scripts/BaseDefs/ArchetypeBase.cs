@@ -36,9 +36,9 @@ public class ArchetypeBase
     [JsonProperty]
     public readonly List<ArchetypeSkillNode> nodeList;
 
-    public ArchetypeSkillNode GetNode(int index)
+    public ArchetypeSkillNode GetNode(int nodeId)
     {
-        return nodeList[index];
+        return nodeList.Find(x => x.id == nodeId);
     }
 
     public List<AbilityBase> GetArchetypeAbilities()

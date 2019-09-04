@@ -47,9 +47,14 @@ public class MenuButton : UIKeyButton
         UIManager.Instance.CloseCurrentWindow();
     }
 
-    public void UnloadMainMenu()
+    public void LoadData()
     {
-        //GameManager.Instance.MoveToBattle("stage1-1NORMAL");
+        SaveManager.Instance.Load();
+    }
+
+    public void SaveData()
+    {
+        SaveManager.Instance.Save();
     }
 
     public void LoadMainMenu()

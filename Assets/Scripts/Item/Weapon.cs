@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using UnityEngine;
 
 public class Weapon : Equipment
 {
@@ -145,27 +144,54 @@ public class Weapon : Equipment
             case GroupType.TWO_HANDED_AXE:
                 tags.Add(GroupType.AXE_TYPE);
                 break;
+
             case GroupType.ONE_HANDED_SWORD:
             case GroupType.TWO_HANDED_SWORD:
                 tags.Add(GroupType.SWORD_TYPE);
                 break;
+
             case GroupType.ONE_HANDED_MACE:
             case GroupType.TWO_HANDED_MACE:
                 tags.Add(GroupType.MACE_TYPE);
                 break;
+
             case GroupType.SPEAR:
             case GroupType.STAFF:
                 tags.Add(GroupType.POLE_TYPE);
                 break;
+
             case GroupType.TWO_HANDED_GUN:
             case GroupType.ONE_HANDED_GUN:
                 tags.Add(GroupType.GUN_TYPE);
                 break;
+
             case GroupType.BOW:
                 tags.Add(GroupType.BOW_TYPE);
                 break;
         }
 
         return tags;
+    }
+
+    public float GetPhysicalDPS()
+    {
+        float dps = (PhysicalDamage.min + PhysicalDamage.max) / 2f * AttackSpeed;
+        return dps;
+    }
+
+    public float GetElementalDPS()
+    {
+        int min = weaponDamage[ElementType.FIRE].min + weaponDamage[ElementType.COLD].min + weaponDamage[ElementType.LIGHTNING].min + weaponDamage[ElementType.EARTH].min;
+        int max = weaponDamage[ElementType.FIRE].max + weaponDamage[ElementType.COLD].max + weaponDamage[ElementType.LIGHTNING].max + weaponDamage[ElementType.EARTH].max;
+        float dps = (min + max) / 2f * AttackSpeed;
+        return dps;
+    }
+
+    public float GetPrimordialDPS()
+    {
+        int min = weaponDamage[ElementType.DIVINE].min + weaponDamage[ElementType.VOID].min;
+        int max = weaponDamage[ElementType.DIVINE].max + weaponDamage[ElementType.VOID].max;
+        float dps = (min + max) / 2f * AttackSpeed;
+        return dps;
     }
 }

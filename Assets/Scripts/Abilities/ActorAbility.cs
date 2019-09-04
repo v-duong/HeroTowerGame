@@ -5,7 +5,6 @@ using System.Linq;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
-[Serializable]
 public class ActorAbility
 {
     public readonly AbilityBase abilityBase;

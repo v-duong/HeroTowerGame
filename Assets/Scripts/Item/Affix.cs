@@ -15,9 +15,26 @@ public class Affix
         foreach (AffixBonusProperty mod in a.affixBonuses)
         {
             if (mod.readAsFloat)
-                affixValues.Add(mod.bonusType, Random.Range(mod.minValue, mod.maxValue ));
+                affixValues.Add(mod.bonusType, Random.Range(mod.minValue, mod.maxValue));
             else
                 affixValues.Add(mod.bonusType, (int)Random.Range(mod.minValue, mod.maxValue));
+        }
+    }
+
+    public Affix(string affixIdName, AffixType affixType, List<float> values, bool locked = false)
+    {
+        AffixBase a = ResourceManager.Instance.GetAffixBase(affixIdName, affixType);
+        Base = a;
+        affixValues = new Dictionary<BonusType, float>();
+        AffixType = a.affixType;
+        int i = 0;
+        foreach (AffixBonusProperty mod in a.affixBonuses)
+        {
+            if (mod.readAsFloat)
+                affixValues.Add(mod.bonusType, values[i]);
+            else
+                affixValues.Add(mod.bonusType, (int)values[i]);
+            i++;
         }
     }
 
@@ -65,5 +82,4 @@ public class Affix
         }
         return s;
     }
-
 }

@@ -360,6 +360,7 @@ public abstract class Actor : MonoBehaviour
 
             string buffName = postDamageData.abilityName + onHitEffect.bonusType.ToString() + onHitEffect.modifyType.ToString();
             List<StatBonusBuffEffect> buffs = GetBuffStatusEffect(buffName);
+
             if (buffs.Count >= onHitEffect.stacks)
             {
                 float lowestDuration = 100f;

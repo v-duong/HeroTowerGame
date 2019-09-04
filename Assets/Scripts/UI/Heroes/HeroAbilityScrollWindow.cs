@@ -44,7 +44,7 @@ public class HeroAbilityScrollWindow : MonoBehaviour
                 AddAbilitySlot(ability.abilityBase, hero.SecondaryArchetype, str);
             }
         }
-        foreach(AbilityStorageItem abilityItem in GameManager.Instance.PlayerStats.AbilityStorageInventory)
+        foreach(AbilityCoreItem abilityItem in GameManager.Instance.PlayerStats.AbilityInventory)
         {
             string str = LocalizationManager.Instance.GetLocalizationText_AbilityBaseDamage(hero.GetAbilityLevel(abilityItem.Base), abilityItem.Base);
             AddAbilitySlot(abilityItem.Base, abilityItem, str);

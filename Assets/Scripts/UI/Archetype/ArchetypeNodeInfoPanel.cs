@@ -131,7 +131,7 @@ public class ArchetypeNodeInfoPanel : MonoBehaviour
 
     public void LevelUpNode()
     {
-        if (archetypeData.IsNodeMaxLevel(node) || hero.ArchetypePoints == 0)
+        if (archetypeData.IsNodeMaxLevel(node) || hero.ArchetypePoints <= 0)
             return;
         archetypeData.LevelUpNode(node);
         hero.ModifyArchetypePoints(-1);

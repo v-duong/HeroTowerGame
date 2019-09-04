@@ -3,7 +3,6 @@ using Newtonsoft.Json.Converters;
 using System;
 using System.Collections.Generic;
 
-[Serializable]
 public class AbilityBase
 {
     [JsonProperty]
@@ -116,14 +115,14 @@ public class AbilityBase
     }
 }
 
-[Serializable]
+
 public class AbilityDamageBase
 {
     [JsonProperty]
     public readonly List<MinMaxRange> damage;
 }
 
-[Serializable]
+
 public class MinMaxRange
 {
     [JsonProperty]

@@ -27,6 +27,7 @@ public abstract class Equipment : AffixedItem
 
     protected Equipment(EquipmentBase e, int ilvl)
     {
+        Id = Guid.NewGuid();
         Base = e;
         Name = LocalizationManager.Instance.GetLocalizationText_Equipment(e.idName);
         costModifier = e.sellValue;
@@ -65,6 +66,14 @@ public abstract class Equipment : AffixedItem
             e = new Armor(equipmentBase, ilvl);
         }
         return e;
+    }
+
+    public static Equipment CreateEquipmentFromBase(string equipmentString, int ilvl)
+    {
+        EquipmentBase equipmentBase = ResourceManager.Instance.GetEquipmentBase(equipmentString);
+        if (equipmentBase == null)
+            return null;
+        return CreateEquipmentFromBase(equipmentBase, ilvl);
     }
 
     public static Equipment CreateRandomEquipment(int ilvl, GroupType? group = null)

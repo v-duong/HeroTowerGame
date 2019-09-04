@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 public class ArchetypeItem : Item
 {
@@ -6,6 +7,7 @@ public class ArchetypeItem : Item
 
     protected ArchetypeItem(ArchetypeBase b)
     {
+        Id = Guid.NewGuid();
         Base = b;
         Name = LocalizationManager.Instance.GetLocalizationText_Archetype(b.idName);
     }

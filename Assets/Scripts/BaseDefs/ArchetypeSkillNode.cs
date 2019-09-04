@@ -111,10 +111,3 @@ public enum NodeType
     MASTER,
     ABILITY
 }
-
-
-public class NodeLevel
-{
-    public int level;
-    public int bonusLevels;
-}

@@ -95,7 +95,7 @@ public class AbilityExtractPanel : MonoBehaviour
     {
         if (selectedArchetypeItem == null || selectedAbilityBase == null)
             return;
-        AbilityStorageItem abilityStorageItem = AbilityStorageItem.CreateAbilityItemFromArchetype(selectedArchetypeItem, selectedAbilityBase);
+        AbilityCoreItem abilityStorageItem = AbilityCoreItem.CreateAbilityItemFromArchetype(selectedArchetypeItem, selectedAbilityBase);
         Debug.Log(abilityStorageItem);
         if (abilityStorageItem == null)
             return;

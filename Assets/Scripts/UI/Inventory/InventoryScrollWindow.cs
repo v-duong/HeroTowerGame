@@ -74,7 +74,7 @@ public class InventoryScrollWindow : MonoBehaviour
         ClearSlots();
         if (addNullSlot)
             AddInventorySlot(null);
-        InitializeInventorySlots(GameManager.Instance.PlayerStats.AbilityStorageInventory, currentCallback);
+        InitializeInventorySlots(GameManager.Instance.PlayerStats.AbilityInventory, currentCallback);
     }
 
     public void ShowArchetypesFiltered(List<ArchetypeBase> filter, bool resetCallback = true, bool addNullSlot = false)

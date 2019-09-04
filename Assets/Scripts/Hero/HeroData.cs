@@ -42,6 +42,55 @@ public class HeroData : ActorData
         Initialize(name);
     }
 
+    public HeroData(SaveData.HeroSaveData heroSaveData) : base()
+    {
+        PlayerStats ps = GameManager.Instance.PlayerStats;
+        equipList = new Equipment[10];
+        archetypeList = new HeroArchetypeData[2];
+        archetypeStatBonuses = new Dictionary<BonusType, StatBonusCollection>();
+        attributeStatBonuses = new Dictionary<BonusType, StatBonus>();
+        abilitySlotList = new List<AbilitySlot>() { new AbilitySlot(0), new AbilitySlot(1) };
+
+        Id = heroSaveData.id;
+        Name = heroSaveData.name;
+        Level = heroSaveData.level;
+        ArchetypePoints = Level;
+        Experience = heroSaveData.experience;
+
+        BaseHealth = heroSaveData.baseHealth;
+        BaseSoulPoints = heroSaveData.baseSoulPoints;
+        BaseStrength = heroSaveData.baseStrength;
+        BaseIntelligence = heroSaveData.baseIntelligence;
+        BaseAgility = heroSaveData.baseAgility;
+        BaseWill = heroSaveData.baseWill;
+
+        BaseDodgeRating = 0;
+        BaseResolveRating = 0;
+        BaseAttackPhasing = 0;
+        BaseMagicPhasing = 0;
+        movementSpeed = 2.5f;
+
+        foreach (EquipSlotType equipSlot in Enum.GetValues(typeof(EquipSlotType)))
+        {
+            if (equipSlot == EquipSlotType.RING)
+                continue;
+
+            if (heroSaveData.equipList[(int)equipSlot] != Guid.Empty)
+            {
+                EquipToSlot(ps.GetEquipmentByGuid(heroSaveData.equipList[(int)equipSlot]), equipSlot);
+            }
+        }
+
+        archetypeList[0] = new HeroArchetypeData(heroSaveData.primaryArchetypeData, this);
+
+        if (heroSaveData.secondaryArchetypeData != null)
+        {
+            archetypeList[1] = new HeroArchetypeData(heroSaveData.secondaryArchetypeData, this);
+        }
+
+        UpdateActorData();
+    }
+
     public void InitHeroActor(GameObject actor)
     {
         CurrentHealth = MaximumHealth;
@@ -257,10 +306,8 @@ public class HeroData : ActorData
         return true;
     }
 
-    public bool ModifyArchetypePoints(int mod)
+    public bool ModifyArchetypePoints(int mod, bool force = false)
     {
-        if (ArchetypePoints + mod < 0)
-            return false;
         ArchetypePoints += mod;
         return true;
     }

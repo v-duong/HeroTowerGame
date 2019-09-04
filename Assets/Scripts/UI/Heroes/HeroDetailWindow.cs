@@ -57,7 +57,8 @@ public class HeroDetailWindow : MonoBehaviour
             infoText.text += "\n";
         }
         infoText.text += "Level: " + hero.Level + "\n";
-        infoText.text += "Experience: " + hero.Experience + "\n\n";
+        infoText.text += "Experience: " + hero.Experience + "\n";
+        infoText.text += "AP: " + hero.ArchetypePoints + "\n\n";
 
         infoText.text += "Health: " + hero.MaximumHealth + "\n";
         infoText.text += "Shield: " + hero.MaximumManaShield + "\n";
@@ -168,7 +169,7 @@ public class HeroDetailWindow : MonoBehaviour
     public void DebugLevelUp()
     {
         if (hero != null)
-            hero.AddExperience(5000);
+            hero.AddExperience(50000);
         UpdateWindow();
     }
 
