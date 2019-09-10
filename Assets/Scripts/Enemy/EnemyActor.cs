@@ -161,9 +161,10 @@ public class EnemyActor : Actor
             Affix affix = new Affix(ResourceManager.Instance.GetRandomAffixBase(AffixType.MONSTERMOD, Data.Level, null, bonusTags));
             mobAffixes.Add(affix);
             bonusTags.Add(affix.Base.AffixBonusTypeString);
-            foreach (AffixBonusProperty prop in affix.Base.affixBonuses)
+            for (int j = 0; j < affix.Base.affixBonuses.Count; j++)
             {
-                Data.AddStatBonus(prop.bonusType, prop.restriction, prop.modifyType, affix.GetAffixValue(prop.bonusType));
+                AffixBonusProperty prop = affix.Base.affixBonuses[j];
+                Data.AddStatBonus(prop.bonusType, prop.restriction, prop.modifyType, affix.GetAffixValue(j));
             }
         }
     }

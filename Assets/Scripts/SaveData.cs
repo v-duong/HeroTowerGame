@@ -98,13 +98,13 @@ public class SaveData
             equipData.prefixes.Clear();
             foreach (Affix affix in equipItem.prefixes)
             {
-                equipData.prefixes.Add(new AffixSaveData(affix.Base.idName, affix.GetAffixValues().Values.ToList()));
+                equipData.prefixes.Add(new AffixSaveData(affix.Base.idName, affix.GetAffixValues()));
             }
 
             equipData.suffixes.Clear();
             foreach (Affix affix in equipItem.suffixes)
             {
-                equipData.suffixes.Add(new AffixSaveData(affix.Base.idName, affix.GetAffixValues().Values.ToList()));
+                equipData.suffixes.Add(new AffixSaveData(affix.Base.idName, affix.GetAffixValues()));
             }
         }
     }
@@ -129,6 +129,8 @@ public class SaveData
                 equipment.prefixes.Add(new Affix(affixData.baseId, AffixType.PREFIX, affixData.affixValues));
             foreach (AffixSaveData affixData in equipData.suffixes)
                 equipment.suffixes.Add(new Affix(affixData.baseId, AffixType.SUFFIX, affixData.affixValues));
+
+            equipment.UpdateItemStats();
         }
     }
 
@@ -205,6 +207,28 @@ public class SaveData
                 }
                 heroSaveData.secondaryArchetypeData = archetypeSaveData;
             }
+
+            if (hero.GetAbilityFromSlot(0) != null)
+            {
+                if (heroSaveData.firstAbilitySlot == null)
+                    heroSaveData.firstAbilitySlot = new HeroSaveData.HeroAbilitySlotSaveData();
+                hero.SaveAbilitySlotData(0, heroSaveData.firstAbilitySlot);
+            }
+            else
+            {
+                heroSaveData.firstAbilitySlot = null;
+            }
+
+            if (hero.GetAbilityFromSlot(1) != null)
+            {
+                if (heroSaveData.secondAbilitySlot == null)
+                    heroSaveData.secondAbilitySlot = new HeroSaveData.HeroAbilitySlotSaveData();
+                hero.SaveAbilitySlotData(1, heroSaveData.secondAbilitySlot);
+            }
+            else
+            {
+                heroSaveData.secondAbilitySlot = null;
+            }
         }
     }
 
@@ -239,6 +263,17 @@ public class SaveData
 
         public HeroArchetypeSaveData primaryArchetypeData;
         public HeroArchetypeSaveData secondaryArchetypeData;
+
+        public HeroAbilitySlotSaveData firstAbilitySlot;
+        public HeroAbilitySlotSaveData secondAbilitySlot;
+
+        [Serializable]
+        public class HeroAbilitySlotSaveData
+        {
+            public Guid sourceId;
+            public string abilityId;
+            public AbilitySourceType sourceType;
+        }
     }
 
     [Serializable]
@@ -280,10 +315,10 @@ public class SaveData
         public string baseId;
         public List<float> affixValues = new List<float>();
 
-        public AffixSaveData(string id, List<float> values)
+        public AffixSaveData(string id, IList<float> values)
         {
             baseId = id;
-            affixValues = values;
+            affixValues = values.ToList();
         }
     }
 

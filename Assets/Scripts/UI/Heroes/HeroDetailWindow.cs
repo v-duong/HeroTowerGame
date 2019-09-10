@@ -117,9 +117,21 @@ public class HeroDetailWindow : MonoBehaviour
                 dps = (ability.GetApproxDPS(false) + ability.GetApproxDPS(true)) / 2f;
             else
                 dps = ability.GetApproxDPS(false);
+
             s += string.Format("Approx. DPS: {0:F1}\n", dps);
-            s += string.Format("{0:F2}/s, {1:F1}%, x{2:F2}\n", 1f / ability.Cooldown, ability.MainCriticalChance, ability.CriticalDamage);
+
+            if (ability.abilityBase.abilityType == AbilityType.ATTACK)
+                s += string.Format("Attack Rate: {0:F2}/s\n", 1f / ability.Cooldown);
+            else
+                s += string.Format("Cast Rate: {0:F2}/s\n", 1f / ability.Cooldown);
+
+            s += string.Format("{0:F1}%, x{1:F2}\n", ability.MainCriticalChance, ability.MainCriticalDamage);
             s += LocalizationManager.Instance.GetLocalizationText_AbilityCalculatedDamage(ability.mainDamageBase);
+            if (ability.DualWielding && ability.AlternatesAttacks)
+            {
+                s += string.Format("{0:F1}%, x{1:F2}\n", ability.OffhandCriticalChance, ability.OffhandCriticalDamage);
+                s += LocalizationManager.Instance.GetLocalizationText_AbilityCalculatedDamage(ability.offhandDamageBase);
+            }
         }
         else
         {

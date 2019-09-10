@@ -281,4 +281,12 @@ public abstract class AffixedItem : Item
     public abstract HashSet<GroupType> GetGroupTypes();
 
     public abstract void UpdateName();
+
+    public virtual List<Affix> GetAllAffixes()
+    {
+        List<Affix> affixes = new List<Affix>();
+        affixes.AddRange(prefixes);
+        affixes.AddRange(suffixes);
+        return affixes;
+    }
 }

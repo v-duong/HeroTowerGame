@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Linq;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class HeroScrollWindow : MonoBehaviour
@@ -8,9 +8,8 @@ public class HeroScrollWindow : MonoBehaviour
     [SerializeField]
     private HeroSlot SlotPrefab;
 
-    private List<HeroSlot> SlotsInUse = new List<HeroSlot>();
-    private Queue<HeroSlot> AvailableSlots = new Queue<HeroSlot>();
-    private bool initialized = false;
+    private readonly List<HeroSlot> SlotsInUse = new List<HeroSlot>();
+    private readonly Queue<HeroSlot> AvailableSlots = new Queue<HeroSlot>();
     public Func<HeroData, bool> filterPredicate = null;
 
     private void OnEnable()

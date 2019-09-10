@@ -88,6 +88,18 @@ public class HeroData : ActorData
             archetypeList[1] = new HeroArchetypeData(heroSaveData.secondaryArchetypeData, this);
         }
 
+        if (heroSaveData.firstAbilitySlot != null)
+        {
+            var firstSlot = heroSaveData.firstAbilitySlot;
+            FindAndEquipAbility(firstSlot.abilityId, firstSlot.sourceId, firstSlot.sourceType, 0);
+        }
+
+        if (heroSaveData.secondAbilitySlot != null)
+        {
+            var slotData = heroSaveData.secondAbilitySlot;
+            FindAndEquipAbility(slotData.abilityId, slotData.sourceId, slotData.sourceType, 1);
+        }
+
         UpdateActorData();
     }
 
@@ -291,9 +303,8 @@ public class HeroData : ActorData
                 return false;
         }
         equip.equippedToHero = this;
-        ApplyEquipmentBonuses(equip.prefixes);
-        ApplyEquipmentBonuses(equip.suffixes);
-        ApplyEquipmentBonuses(equip.innate);
+
+        ApplyEquipmentBonuses(equip.GetAllAffixes());
 
         if (GetEquipmentInSlot(EquipSlotType.WEAPON) is Weapon && GetEquipmentInSlot(EquipSlotType.OFF_HAND) is Weapon && !isDualWielding)
         {
@@ -337,10 +348,20 @@ public class HeroData : ActorData
     {
         foreach (Affix affix in affixes)
         {
-            foreach (AffixBonusProperty b in affix.Base.affixBonuses)
+            for (int i = 0; i < affix.Base.affixBonuses.Count; i++)
             {
-                if (b.bonusType < (BonusType)0x700) //ignore local mods
-                    AddStatBonus(b.bonusType, b.restriction, b.modifyType, affix.GetAffixValue(b.bonusType));
+                AffixBonusProperty b = affix.Base.affixBonuses[i];
+                //ignore local mods
+                if (b.bonusType >= (BonusType)0x700)
+                    continue;
+                else if (b.bonusType >= (BonusType)Helpers.OnHitBonusStart)
+                {
+                }
+                else if (b.bonusType >= (BonusType)Helpers.OnKillBonusStart)
+                {
+                }
+                else
+                    AddStatBonus(b.bonusType, b.restriction, b.modifyType, affix.GetAffixValue(i));
             }
         }
     }
@@ -349,10 +370,11 @@ public class HeroData : ActorData
     {
         foreach (Affix affix in affixes)
         {
-            foreach (AffixBonusProperty b in affix.Base.affixBonuses)
+            for (int i = 0; i < affix.Base.affixBonuses.Count; i++)
             {
+                AffixBonusProperty b = affix.Base.affixBonuses[i];
                 if (b.bonusType < (BonusType)0x700) //ignore local mods
-                    RemoveStatBonus(b.bonusType, b.restriction, b.modifyType, affix.GetAffixValue(b.bonusType));
+                    RemoveStatBonus(b.bonusType, b.restriction, b.modifyType, affix.GetAffixValue(i));
             }
         }
     }
@@ -413,8 +435,8 @@ public class HeroData : ActorData
          * +1% Armor per 5 Str
          * +1% Attack Damage per 10 Str
          */
-        int armorMod = (int)Math.Round(Strength / 5d, MidpointRounding.AwayFromZero);
-        int attackDamageMod = (int)Math.Round(Strength / 10d, MidpointRounding.AwayFromZero);
+        int armorMod = (int)Math.Round(Strength / 5f, MidpointRounding.AwayFromZero);
+        int attackDamageMod = (int)Math.Round(Strength / 10f, MidpointRounding.AwayFromZero);
 
         if (!attributeStatBonuses.ContainsKey(BonusType.GLOBAL_ARMOR))
             attributeStatBonuses.Add(BonusType.GLOBAL_ARMOR, new StatBonus());
@@ -431,8 +453,8 @@ public class HeroData : ActorData
          * +1% Shield per 5 Int
          * +1% Spell Damage per 10 Int
          */
-        int shieldMod = (int)Math.Round(Intelligence / 5d, MidpointRounding.AwayFromZero);
-        int spellDamageMod = (int)Math.Round(Intelligence / 10d, MidpointRounding.AwayFromZero);
+        int shieldMod = (int)Math.Round(Intelligence / 5f, MidpointRounding.AwayFromZero);
+        int spellDamageMod = (int)Math.Round(Intelligence / 10f, MidpointRounding.AwayFromZero);
 
         if (!attributeStatBonuses.ContainsKey(BonusType.GLOBAL_MAX_SHIELD))
             attributeStatBonuses.Add(BonusType.GLOBAL_MAX_SHIELD, new StatBonus());
@@ -449,9 +471,9 @@ public class HeroData : ActorData
          * +1% Dodge per 5 Agi
          * +1% Attack/Cast Speed per 20 Agi
          */
-        int dodgeRatingMod = (int)Math.Round(Agility / 5d, MidpointRounding.AwayFromZero);
-        int attackSpeedMod = (int)Math.Round(Agility / 20d, MidpointRounding.AwayFromZero);
-        int castSpeedMod = (int)Math.Round(Agility / 20d, MidpointRounding.AwayFromZero);
+        int dodgeRatingMod = (int)Math.Round(Agility / 5f, MidpointRounding.AwayFromZero);
+        int attackSpeedMod = (int)Math.Round(Agility / 20f, MidpointRounding.AwayFromZero);
+        int castSpeedMod = (int)Math.Round(Agility / 20f, MidpointRounding.AwayFromZero);
 
         if (!attributeStatBonuses.ContainsKey(BonusType.GLOBAL_DODGE_RATING))
             attributeStatBonuses.Add(BonusType.GLOBAL_DODGE_RATING, new StatBonus());
@@ -472,8 +494,8 @@ public class HeroData : ActorData
          * +1% Resolve per 5 Will
          * +1% Debuff Damage per 10 Will
          */
-        int resolveRatingMod = (int)Math.Round(Will / 5d, MidpointRounding.AwayFromZero);
-        int debuffDamageMod = (int)Math.Round(Will / 10d, MidpointRounding.AwayFromZero);
+        int resolveRatingMod = (int)Math.Round(Will / 5f, MidpointRounding.AwayFromZero);
+        int debuffDamageMod = (int)Math.Round(Will / 10f, MidpointRounding.AwayFromZero);
 
         BonusType bonus1 = BonusType.GLOBAL_RESOLVE_RATING;
         BonusType bonus2 = BonusType.STATUS_EFFECT_DAMAGE;
@@ -598,6 +620,8 @@ public class HeroData : ActorData
             {
                 continue;
             }
+            if (!includeWeapons && equipment is Weapon)
+                continue;
             types.UnionWith(equipment.GetGroupTypes());
         }
 
@@ -611,11 +635,38 @@ public class HeroData : ActorData
         return types;
     }
 
+    public void SaveAbilitySlotData(int slot, SaveData.HeroSaveData.HeroAbilitySlotSaveData data)
+    {
+        if (GetAbilityFromSlot(slot) == null)
+            return;
+        AbilitySlot abilitySlot = abilitySlotList[slot];
+        data.abilityId = abilitySlot.Ability.abilityBase.idName;
+        data.sourceId = abilitySlot.source.SourceId;
+        data.sourceType = abilitySlot.source.AbilitySourceType;
+    }
+
+    private void FindAndEquipAbility(string abilityId, Guid sourceId, AbilitySourceType sourceType, int slot)
+    {
+        AbilityBase ability = ResourceManager.Instance.GetAbilityBase(abilityId);
+        if (sourceType == AbilitySourceType.ARCHETYPE)
+        {
+            foreach (HeroArchetypeData archetypeData in archetypeList)
+            {
+                if (archetypeData == null || archetypeData.Id != sourceId || !archetypeData.ContainsAbility(abilityId))
+                    continue;
+                else
+                {
+                    EquipAbility(ability, slot, archetypeData);
+                    return;
+                }
+            }
+        }
+    }
+
     private class AbilitySlot
     {
         public ActorAbility Ability { get; private set; }
         public IAbilitySource source;
-        private AbilitySourceType sourceType;
         public readonly int slot;
 
         public AbilitySlot(int slot)
@@ -626,17 +677,19 @@ public class HeroData : ActorData
         public void SetAbilityToSlot(AbilityBase abilityBase, IAbilitySource source)
         {
             int layer;
-            if (abilityBase.targetType == AbilityTargetType.ENEMY)
+            switch (abilityBase.targetType)
             {
-                layer = LayerMask.NameToLayer("EnemyDetect");
-            }
-            else if (abilityBase.targetType == AbilityTargetType.ALLY)
-            {
-                layer = LayerMask.NameToLayer("AllyDetect");
-            }
-            else
-            {
-                layer = LayerMask.NameToLayer("BothDetect");
+                case AbilityTargetType.ENEMY:
+                    layer = LayerMask.NameToLayer("EnemyDetect");
+                    break;
+
+                case AbilityTargetType.ALLY:
+                    layer = LayerMask.NameToLayer("AllyDetect");
+                    break;
+
+                default:
+                    layer = LayerMask.NameToLayer("BothDetect");
+                    break;
             }
 
             Ability = new ActorAbility(abilityBase, layer);
@@ -645,8 +698,6 @@ public class HeroData : ActorData
                 Ability.SetAsSecondaryAbility();
             }
             this.source = source;
-            if (source.GetType() == typeof(HeroArchetypeData))
-                sourceType = AbilitySourceType.ARCHETYPE;
         }
 
         public void ClearAbility()

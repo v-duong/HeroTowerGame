@@ -1,23 +1,24 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class Affix
 {
     public AffixBase Base;
-    private Dictionary<BonusType, float> affixValues;
+    private List<float> affixValues;
     public AffixType AffixType { get; private set; }
 
     public Affix(AffixBase a, bool locked = false)
     {
         Base = a;
-        affixValues = new Dictionary<BonusType, float>();
+        affixValues = new List<float>();
         AffixType = a.affixType;
         foreach (AffixBonusProperty mod in a.affixBonuses)
         {
             if (mod.readAsFloat)
-                affixValues.Add(mod.bonusType, Random.Range(mod.minValue, mod.maxValue));
+                affixValues.Add(UnityEngine.Random.Range(mod.minValue, mod.maxValue));
             else
-                affixValues.Add(mod.bonusType, (int)Random.Range(mod.minValue, mod.maxValue));
+                affixValues.Add((int)UnityEngine.Random.Range(mod.minValue, mod.maxValue));
         }
     }
 
@@ -25,15 +26,15 @@ public class Affix
     {
         AffixBase a = ResourceManager.Instance.GetAffixBase(affixIdName, affixType);
         Base = a;
-        affixValues = new Dictionary<BonusType, float>();
+        affixValues = new List<float>();
         AffixType = a.affixType;
         int i = 0;
         foreach (AffixBonusProperty mod in a.affixBonuses)
         {
             if (mod.readAsFloat)
-                affixValues.Add(mod.bonusType, values[i]);
+                affixValues.Add(values[i]);
             else
-                affixValues.Add(mod.bonusType, (int)values[i]);
+                affixValues.Add((int)values[i]);
             i++;
         }
     }
@@ -41,44 +42,60 @@ public class Affix
     public void RerollValue()
     {
         List<AffixBonusProperty> temp = Base.affixBonuses;
-        foreach (AffixBonusProperty mod in temp)
+        for (int i = 0; i < temp.Count; i++)
         {
-            affixValues[mod.bonusType] = Random.Range(mod.minValue, mod.maxValue + 1);
+            AffixBonusProperty mod = temp[i];
+            affixValues[i] = UnityEngine.Random.Range(mod.minValue, mod.maxValue + 1);
         }
     }
 
-    public Dictionary<BonusType, float> GetAffixValues()
+    public IList<float> GetAffixValues()
     {
-        return new Dictionary<BonusType, float>(affixValues);
+        return affixValues.AsReadOnly();
     }
 
-    public float GetAffixValue(BonusType type)
+    public float GetAffixValue(int index)
     {
-        return affixValues[type];
+        return affixValues[index];
     }
 
     public string BuildAffixString(bool useTab = true)
     {
+        List<int> bonusesToSkip = new List<int>();
         string s = "○ ";
-        foreach (AffixBonusProperty b in Base.affixBonuses)
+        for (int i = 0; i < Base.affixBonuses.Count; i++)
         {
-            if (b.bonusType.ToString().Contains("DAMAGE_MAX"))
+            if (bonusesToSkip.Contains(i))
             {
                 continue;
             }
-            if (b.bonusType.ToString().Contains("DAMAGE_MIN"))
+            AffixBonusProperty bonusProp = Base.affixBonuses[i];
+            if (bonusProp.bonusType.ToString().Contains("DAMAGE_MIN") && bonusProp.modifyType == ModifyType.FLAT_ADDITION)
             {
-                if (useTab)
-                    s += "\t";
-                s += LocalizationManager.Instance.GetLocalizationText("bonusType." + b.bonusType) + " ";
-                s += "+" + GetAffixValue(b.bonusType) + "-" + GetAffixValue(b.bonusType + 1) + "\n";
+                BonusType maxType = (BonusType)Enum.Parse(typeof(BonusType), bonusProp.bonusType.ToString().Replace("_MIN", "_MAX"));
+                int matchedIndex = Base.affixBonuses.FindIndex(x => x.bonusType == maxType);
+
+                if (matchedIndex > 0 && Base.affixBonuses[matchedIndex].modifyType == ModifyType.FLAT_ADDITION)
+                {
+                    bonusesToSkip.Add(matchedIndex);
+
+                    if (useTab)
+                        s += "\t";
+
+                    if (bonusProp.restriction != GroupType.NO_GROUP)
+                    {
+                        s = LocalizationManager.Instance.GetLocalizationText_GroupTypeRestriction(bonusProp.restriction.ToString()) + ", ";
+                    }
+
+                    s += LocalizationManager.Instance.GetLocalizationText("bonusType." + bonusProp.bonusType.ToString().Replace("_MIN","")) + " ";
+                    s += "+" + GetAffixValue(i) + "-" + GetAffixValue(matchedIndex) + "\n";
+                    continue;
+                }
             }
-            else
-            {
-                if (useTab)
-                    s += "\t";
-                s += LocalizationManager.Instance.GetLocalizationText_BonusType(b.bonusType, b.modifyType, GetAffixValue(b.bonusType));
-            }
+
+            if (useTab)
+                s += "\t";
+            s += LocalizationManager.Instance.GetLocalizationText_BonusType(bonusProp.bonusType, bonusProp.modifyType, GetAffixValue(i), bonusProp.restriction);
         }
         return s;
     }

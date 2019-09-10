@@ -50,7 +50,7 @@ public class ArchetypeSkillNode
             if (value == 0 && (bonus.modifyType != ModifyType.MULTIPLY || bonus.modifyType != ModifyType.FIXED_TO))
                 continue;
 
-            s += LocalizationManager.Instance.GetLocalizationText_BonusType(bonus.bonusType, bonus.modifyType, value);
+            s += LocalizationManager.Instance.GetLocalizationText_BonusType(bonus.bonusType, bonus.modifyType, value, bonus.restriction);
         }
         return s;
     }

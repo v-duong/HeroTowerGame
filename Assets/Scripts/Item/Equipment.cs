@@ -126,6 +126,15 @@ public abstract class Equipment : AffixedItem
         return true;
     }
 
+    public override List<Affix> GetAllAffixes()
+    {
+        List<Affix> affixes = new List<Affix>();
+        affixes.AddRange(prefixes);
+        affixes.AddRange(suffixes);
+        affixes.AddRange(innate);
+        return affixes;
+    }
+
     protected static void GetLocalModValues(Dictionary<BonusType, StatBonus> dic, List<Affix> affixes, ItemType itemType)
     {
         int startValue = 0;
@@ -145,13 +154,14 @@ public abstract class Equipment : AffixedItem
 
         foreach (Affix affix in affixes)
         {
-            foreach (AffixBonusProperty prop in affix.Base.affixBonuses)
+            for (int i = 0; i < affix.Base.affixBonuses.Count; i++)
             {
+                AffixBonusProperty prop = affix.Base.affixBonuses[i];
                 if ((int)prop.bonusType >= startValue && (int)prop.bonusType < startValue + 0x100)
                 {
                     if (!dic.ContainsKey(prop.bonusType))
                         dic.Add(prop.bonusType, new StatBonus());
-                    dic[prop.bonusType].AddBonus(prop.modifyType, affix.GetAffixValue(prop.bonusType));
+                    dic[prop.bonusType].AddBonus(prop.modifyType, affix.GetAffixValue(i));
                 }
             }
         }

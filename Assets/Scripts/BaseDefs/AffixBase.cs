@@ -87,7 +87,8 @@ public enum AffixType
     SUFFIX,
     ENCHANTMENT,
     INNATE,
-    MONSTERMOD
+    MONSTERMOD,
+    UNIQUE
 }
 
 public enum ModifyType

@@ -42,7 +42,6 @@ public class LocalizationManager : MonoBehaviour
 
         path = "json/localization/itemgen." + locale;
         itemGenLocalization = JsonConvert.DeserializeObject<ItemGenLocalization>(Resources.Load<TextAsset>(path).text);
-
     }
 
     public string GetLocalizationText(string stringId)
@@ -90,20 +89,26 @@ public class LocalizationManager : MonoBehaviour
         {
             case ElementType.FIRE:
                 return "<color=#e03131>" + s + "</color>";
+
             case ElementType.COLD:
                 return "<color=#33b7e8>" + s + "</color>";
+
             case ElementType.LIGHTNING:
                 return "<color=#9da800>" + s + "</color>";
+
             case ElementType.EARTH:
                 return "<color=#7c5916>" + s + "</color>";
+
             case ElementType.DIVINE:
                 return "<color=#f29e02>" + s + "</color>";
+
             case ElementType.VOID:
                 return "<color=#56407c>" + s + "</color>";
+
             default:
                 return s;
+        }
     }
-}
 
     public string GetLocalizationText_AbilityBaseDamage(int level, AbilityBase ability)
     {
@@ -180,36 +185,96 @@ public class LocalizationManager : MonoBehaviour
         }
     }
 
-    public string GetLocalizationText_BonusType(BonusType type, ModifyType modifyType, float value)
+    public string GetLocalizationText_GroupType(string stringId)
     {
-        string output = "";
-        if (commonLocalizationData.TryGetValue("bonusType." + type.ToString(), out output))
+        if (commonLocalizationData.TryGetValue("groupType." + stringId, out string value))
+        {
+            if (value == "")
+                return stringId;
+            return value;
+        }
+        else
+        {
+            return stringId;
+        }
+    }
+
+    public string GetLocalizationText_GroupTypeRestriction(string stringId)
+    {
+        if (commonLocalizationData.TryGetValue("groupType." + stringId + ".restriction", out string value))
+        {
+            if (value == "")
+                return stringId;
+
+            if (value.Contains("{plural}"))
+                value = value.Replace("{plural}", GetLocalizationText_GroupTypePlural(stringId));
+            else if (value.Contains("{single}"))
+                value = value.Replace("{single}", GetLocalizationText_GroupType(stringId));
+
+            return value;
+        }
+        else
+        {
+            return stringId;
+        }
+    }
+
+    public string GetLocalizationText_GroupTypePlural(string stringId)
+    {
+        if (commonLocalizationData.TryGetValue("groupType." + stringId + ".plural", out string value))
+        {
+            if (value == "")
+                return stringId;
+            return value;
+        }
+        else
+        {
+            return stringId;
+        }
+    }
+
+    private static string ParseBonusTypeFallback(string b)
+    {
+        b = b.Replace("_", " ");
+        return b.ToLower();
+    }
+
+    public string GetLocalizationText_BonusType(BonusType type, ModifyType modifyType, float value, GroupType restriction)
+    {
+        if (commonLocalizationData.TryGetValue("bonusType." + type.ToString(), out string output))
         {
             if (output == "")
             {
-                output = type.ToString();
+                output = ParseBonusTypeFallback(type.ToString());
             }
         }
         else
         {
-            output = type.ToString();
+            output = ParseBonusTypeFallback(type.ToString());
         }
 
-        if (modifyType == ModifyType.FLAT_ADDITION)
+        if (restriction != GroupType.NO_GROUP)
         {
-            output += " +" + value + "\n";
+            output = GetLocalizationText_GroupTypeRestriction(restriction.ToString()) + ", " + output;
         }
-        else if (modifyType == ModifyType.ADDITIVE)
+
+        switch (modifyType)
         {
-            output += " +" + value + "%" + "\n";
-        }
-        else if (modifyType == ModifyType.MULTIPLY)
-        {
-            output += " x" + (1 + value / 100d).ToString("F2") + "\n";
-        }
-        else if (modifyType == ModifyType.FIXED_TO)
-        {
-            output += " is" + value + "\n";
+            case ModifyType.FLAT_ADDITION:
+                output += " +" + value + "\n";
+                break;
+
+            case ModifyType.ADDITIVE:
+                output += " +" + value + "%" + "\n";
+                break;
+
+            case ModifyType.MULTIPLY:
+                output += " x" + (1 + value / 100d).ToString("F2") + "\n";
+                break;
+
+            case ModifyType.FIXED_TO:
+                output += " is" + value + "\n";
+                break;
         }
 
         return output;
@@ -224,7 +289,6 @@ public class LocalizationManager : MonoBehaviour
         List<string> prefixes = new List<string>(itemGenLocalization.CommonPrefixes);
         List<string> suffixes = new List<string>(itemGenLocalization.CommonSuffixes);
 
-        List<string> temp;
         /*
         if (itemGenLocalization.prefix.TryGetValue(type, out temp))
         {
@@ -233,7 +297,7 @@ public class LocalizationManager : MonoBehaviour
         */
         foreach (GroupType type in tags)
         {
-            if (itemGenLocalization.suffix.TryGetValue(type, out temp))
+            if (itemGenLocalization.suffix.TryGetValue(type, out List<string> temp))
             {
                 suffixes.AddRange(temp);
             }

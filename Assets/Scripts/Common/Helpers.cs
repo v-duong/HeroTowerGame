@@ -5,6 +5,11 @@ using UnityEngine.Tilemaps;
 
 public static class Helpers
 {
+    
+    public const int OnHitBonusStart = 0x600;
+    public const int OnKillBonusStart = 0x500;
+
+    public static readonly Color UNIQUE_COLOR = new Color(1.0f, 0.5f, 0.2f);
     public static readonly Color EPIC_COLOR = new Color(0.86f, 0.35f, 0.86f);
     public static readonly Color UNCOMMON_COLOR = new Color(0.4f, 0.7f, 0.9f);
     public static readonly Color RARE_COLOR = new Color(1.0f, 0.9f, 0.25f);
@@ -28,17 +33,20 @@ public static class Helpers
             min.Add((BonusType)Enum.Parse(typeof(BonusType), abilityType.ToString() + "_" + element.ToString() + "_DAMAGE_MIN"));
             max.Add((BonusType)Enum.Parse(typeof(BonusType), abilityType.ToString() + "_" + element.ToString() + "_DAMAGE_MAX"));
             multi.Add((BonusType)Enum.Parse(typeof(BonusType), abilityType.ToString() + "_" + element.ToString() + "_DAMAGE"));
-            switch(element)
+            switch (element)
             {
                 case ElementType.FIRE:
                 case ElementType.COLD:
                 case ElementType.LIGHTNING:
                 case ElementType.EARTH:
                     multi.Add((BonusType)Enum.Parse(typeof(BonusType), abilityType.ToString() + "_ELEMENTAL_DAMAGE"));
+                    multi.Add(BonusType.GLOBAL_ELEMENTAL_DAMAGE);
                     break;
+
                 case ElementType.DIVINE:
                 case ElementType.VOID:
                     multi.Add((BonusType)Enum.Parse(typeof(BonusType), abilityType.ToString() + "_PRIMORDIAL_DAMAGE"));
+                    multi.Add(BonusType.GLOBAL_PRIMORDIAL_DAMAGE);
                     break;
             }
         }
@@ -230,6 +238,8 @@ public static class Helpers
     {
         switch (rarity)
         {
+            case RarityType.UNIQUE:
+                return UNIQUE_COLOR;
             case RarityType.EPIC:
                 return EPIC_COLOR;
 
@@ -249,7 +259,6 @@ public static class Helpers
 
     public static Vector3 ReturnTilePosition(Tilemap tilemap, Vector3 position, int z = 0)
     {
-        
         Vector3Int cellPos = tilemap.WorldToCell(position);
         Vector3 returnVal = tilemap.GetCellCenterWorld(cellPos);
         returnVal.z = z;

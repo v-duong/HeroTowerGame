@@ -111,7 +111,7 @@ public class ArchetypeNodeInfoPanel : MonoBehaviour
                 if (bonusValue == 0 && (bonusProperty.modifyType != ModifyType.MULTIPLY || bonusProperty.modifyType != ModifyType.FIXED_TO))
                     continue;
 
-                infoText.text += LocalizationManager.Instance.GetLocalizationText_BonusType(bonusProperty.bonusType, bonusProperty.modifyType, bonusValue);
+                infoText.text += LocalizationManager.Instance.GetLocalizationText_BonusType(bonusProperty.bonusType, bonusProperty.modifyType, bonusValue, bonusProperty.restriction);
             }
             if (node.maxLevel != 1)
             {
@@ -123,7 +123,7 @@ public class ArchetypeNodeInfoPanel : MonoBehaviour
                     if (bonusValue == 0 && (bonusProperty.modifyType != ModifyType.MULTIPLY || bonusProperty.modifyType != ModifyType.FIXED_TO))
                         continue;
 
-                    infoText.text += LocalizationManager.Instance.GetLocalizationText_BonusType(bonusProperty.bonusType, bonusProperty.modifyType, bonusValue);
+                    infoText.text += LocalizationManager.Instance.GetLocalizationText_BonusType(bonusProperty.bonusType, bonusProperty.modifyType, bonusValue, bonusProperty.restriction);
                 }
             }
         }

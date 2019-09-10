@@ -232,7 +232,7 @@ public class HeroArchetypeData : IAbilitySource
         return new Tuple<HeroData, int>(hero, slot);
     }
 
-    public class ArchetypeLeveledAbilityList
+    public class ArchetypeLeveledAbilityList 
     {
         public class ArchetypeLeveledAbility
         {

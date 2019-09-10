@@ -28,10 +28,7 @@ public class Armor : Equipment
     {
         base.UpdateItemStats();
         Dictionary<BonusType, StatBonus> bonusTotals = new Dictionary<BonusType, StatBonus>();
-        List<Affix> affixes = new List<Affix>();
-        affixes.AddRange(prefixes);
-        affixes.AddRange(suffixes);
-        GetLocalModValues(bonusTotals, affixes, ItemType.ARMOR);
+        GetLocalModValues(bonusTotals, GetAllAffixes(), ItemType.ARMOR);
 
         armor = CalculateStat(Base.armor, BonusType.LOCAL_ARMOR, bonusTotals);
         shield = CalculateStat(Base.shield, BonusType.LOCAL_MAX_SHIELD, bonusTotals);

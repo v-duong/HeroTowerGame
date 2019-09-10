@@ -39,10 +39,23 @@ public class CreateCommonLocalization
             foreach (string x in groupTypes)
             {
                 string localizationKey = "groupType." + x;
+                string pluralLocalizationKey = "groupType." + x + ".plural";
+                string restrictionLocalizationKey = "groupType." + x + ".restriction";
+
                 if (!localization.ContainsKey(localizationKey))
                     localization.Add(localizationKey, "");
                 else
                     keys.Remove(localizationKey);
+
+                if (!localization.ContainsKey(pluralLocalizationKey))
+                    localization.Add(pluralLocalizationKey, "");
+                else
+                    keys.Remove(pluralLocalizationKey);
+
+                if (!localization.ContainsKey(restrictionLocalizationKey))
+                    localization.Add(restrictionLocalizationKey, "");
+                else
+                    keys.Remove(restrictionLocalizationKey);
             }
 
             List<string> elementTypes = new List<string>(Enum.GetNames(typeof(ElementType)));
@@ -63,6 +76,17 @@ public class CreateCommonLocalization
             foreach (string x in effectTypes)
             {
                 string localizationKey = "effectType." + x;
+                if (!localization.ContainsKey(localizationKey))
+                    localization.Add(localizationKey, "");
+                else
+                    keys.Remove(localizationKey);
+            }
+
+            List<string> consumableTypes = new List<string>(Enum.GetNames(typeof(ConsumableType)));
+
+            foreach (string x in consumableTypes)
+            {
+                string localizationKey = "consumableType." + x;
                 if (!localization.ContainsKey(localizationKey))
                     localization.Add(localizationKey, "");
                 else

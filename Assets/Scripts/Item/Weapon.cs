@@ -38,10 +38,7 @@ public class Weapon : Equipment
     {
         base.UpdateItemStats();
         Dictionary<BonusType, StatBonus> localBonusTotals = new Dictionary<BonusType, StatBonus>();
-        List<Affix> affixes = new List<Affix>();
-        affixes.AddRange(prefixes);
-        affixes.AddRange(suffixes);
-        GetLocalModValues(localBonusTotals, affixes, ItemType.WEAPON);
+        GetLocalModValues(localBonusTotals, GetAllAffixes(), ItemType.WEAPON);
 
         PhysicalDamage.min = CalculateStat(Base.minDamage, BonusType.LOCAL_PHYSICAL_DAMAGE_MIN, localBonusTotals);
         PhysicalDamage.max = CalculateStat(Base.maxDamage, BonusType.LOCAL_PHYSICAL_DAMAGE_MAX, localBonusTotals);

@@ -53,6 +53,16 @@ public class EquipmentBase
 
 }
 
+public class UniqueBase : EquipmentBase
+{
+    [JsonProperty]
+    public readonly List<AffixBase> fixedUniqueAffixes;
+    [JsonProperty]
+    public readonly List<AffixBase> randomUniqueAffixes;
+    [JsonProperty]
+    public readonly int randomAffixesToSpawn;
+}
+
 public enum EquipSlotType
 {
     WEAPON,
