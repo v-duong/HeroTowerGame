@@ -77,9 +77,9 @@ public class EnemyActor : Actor
     public void CalculateRotatedOffset()
     {
         var nodes = ParentSpawner.GetNodesToGoal(indexOfGoal);
-        float angle = 0;
         Vector3 nextPos, heading;
         Vector3 cellCenter = Helpers.ReturnTilePosition(StageManager.Instance.PathTilemap, transform.position, -3);
+        float angle;
         if (nextMovementNode + 1 < nodes.Count)
         {
             nextPos = nodes[nextMovementNode + 1];

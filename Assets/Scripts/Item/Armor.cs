@@ -30,10 +30,10 @@ public class Armor : Equipment
         Dictionary<BonusType, StatBonus> bonusTotals = new Dictionary<BonusType, StatBonus>();
         GetLocalModValues(bonusTotals, GetAllAffixes(), ItemType.ARMOR);
 
-        armor = CalculateStat(Base.armor, BonusType.LOCAL_ARMOR, bonusTotals);
-        shield = CalculateStat(Base.shield, BonusType.LOCAL_MAX_SHIELD, bonusTotals);
-        dodgeRating = CalculateStat(Base.dodgeRating, BonusType.LOCAL_DODGE_RATING, bonusTotals);
-        resolveRating = CalculateStat(Base.resolveRating, BonusType.LOCAL_RESOLVE_RATING, bonusTotals);
+        armor = CalculateStat(Base.armor, bonusTotals, BonusType.LOCAL_ARMOR);
+        shield = CalculateStat(Base.shield, bonusTotals, BonusType.LOCAL_MAX_SHIELD);
+        dodgeRating = CalculateStat(Base.dodgeRating, bonusTotals, BonusType.LOCAL_DODGE_RATING);
+        resolveRating = CalculateStat(Base.resolveRating, bonusTotals, BonusType.LOCAL_RESOLVE_RATING);
 
         return true;
     }

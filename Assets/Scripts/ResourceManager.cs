@@ -24,6 +24,7 @@ public class ResourceManager : MonoBehaviour
 
     private Dictionary<string, AbilityBase> abilityList;
     private Dictionary<string, EquipmentBase> equipmentList;
+    private Dictionary<string, UniqueBase> uniqueList;
     private Dictionary<string, AffixBase> prefixList;
     private Dictionary<string, AffixBase> suffixList;
     private Dictionary<string, AffixBase> innateList;
@@ -73,6 +74,16 @@ public class ResourceManager : MonoBehaviour
             LoadEquipment();
         if (equipmentList.ContainsKey(id))
             return equipmentList[id];
+        else
+            return null;
+    }
+
+    public UniqueBase GetUniqueBase(string id)
+    {
+        if (uniqueList == null)
+            LoadUniques();
+        if (uniqueList.ContainsKey(id))
+            return uniqueList[id];
         else
             return null;
     }
@@ -148,6 +159,31 @@ public class ResourceManager : MonoBehaviour
         if (possibleEquipList.Count == 0)
             return null;
         return possibleEquipList.ReturnWeightedRandom();
+    }
+
+    public UniqueBase GetRandomUniqueBase(int ilvl, GroupType? group = null, EquipSlotType? slot = null)
+    {
+        if (uniqueList == null)
+            LoadUniques();
+
+        WeightList<UniqueBase> possibleUniqueList = new WeightList<UniqueBase>();
+
+        foreach (UniqueBase unique in uniqueList.Values)
+        {
+            if (group != null && unique.group != group)
+                continue;
+
+            if (slot != null && unique.equipSlot != slot)
+                continue;
+
+            if (unique.dropLevel <= ilvl)
+            {
+                possibleUniqueList.Add(unique, unique.spawnWeight);
+            }
+        }
+        if (possibleUniqueList.Count == 0)
+            return null;
+        return possibleUniqueList.ReturnWeightedRandom();
     }
 
     public AffixBase GetAffixBase(string id, AffixType type)
@@ -361,6 +397,17 @@ public class ResourceManager : MonoBehaviour
         }
     }
 
+    private void LoadUniques()
+    {
+        uniqueList = new Dictionary<string, UniqueBase>();
+
+        List<UniqueBase> temp = DeserializeFromPath_Resources<List<UniqueBase>>("json/items/unique");
+        foreach (UniqueBase unique in temp)
+        {
+            uniqueList.Add(unique.idName, unique);
+        }
+    }
+
     private void LoadEnemies()
     {
         enemyList = new Dictionary<string, EnemyBase>();
@@ -472,6 +519,7 @@ public class ResourceManager : MonoBehaviour
         innateList = LoadAffixes(AffixType.INNATE);
         enchantmentList = LoadAffixes(AffixType.ENCHANTMENT);
         monsterModList = LoadAffixes(AffixType.MONSTERMOD);
+        LoadUniques();
         LoadArchetypes();
         LoadEnemies();
         LoadStages();

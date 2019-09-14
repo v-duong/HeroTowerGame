@@ -53,6 +53,11 @@ public abstract class ActorData
     public int DivineNegation { get => ElementData.GetNegation(ElementType.DIVINE); private set => ElementData.SetNegation(ElementType.DIVINE, value); }
     public int VoidNegation { get => ElementData.GetNegation(ElementType.VOID); private set => ElementData.SetNegation(ElementType.VOID, value); }
 
+    public List<TriggeredEffect> WhenHittingEffects { get; protected set; }
+    public List<TriggeredEffect> WhenHitEffects { get; protected set; }
+    public List<TriggeredEffect> OnHitEffects { get; protected set; }
+    public List<TriggeredEffect> OnKillEffects { get; protected set; }
+
     protected Dictionary<BonusType, StatBonusCollection> statBonuses;
     protected Dictionary<BonusType, StatBonus> temporaryBonuses;
 
@@ -69,6 +74,10 @@ public abstract class ActorData
         statBonuses = new Dictionary<BonusType, StatBonusCollection>();
         temporaryBonuses = new Dictionary<BonusType, StatBonus>();
         GroupTypes = new HashSet<GroupType>();
+        WhenHittingEffects = new List<TriggeredEffect>();
+        WhenHitEffects = new List<TriggeredEffect>();
+        OnHitEffects = new List<TriggeredEffect>();
+        OnKillEffects = new List<TriggeredEffect>();
     }
 
     public float GetCurrentHealth()
@@ -93,23 +102,25 @@ public abstract class ActorData
         statBonuses[type].AddBonus(restriction, modifier, value);
     }
 
-    public void RemoveStatBonus(BonusType type, GroupType restriction, ModifyType modifier, float value)
+    public bool RemoveStatBonus(BonusType type, GroupType restriction, ModifyType modifier, float value)
     {
-        statBonuses[type].RemoveBonus(restriction, modifier, value);
+        return statBonuses[type].RemoveBonus(restriction, modifier, value);
     }
 
-    public void AddTemporaryBonus(float value, BonusType type, ModifyType modifier)
+    public void AddTemporaryBonus(float value, BonusType type, ModifyType modifier, bool deferUpdate)
     {
         if (!temporaryBonuses.ContainsKey(type))
             temporaryBonuses.Add(type, new StatBonus());
         temporaryBonuses[type].AddBonus(modifier, value);
-        UpdateActorData();
+        if (!deferUpdate)
+            UpdateActorData();
     }
 
-    public void RemoveTemporaryBonus(float value, BonusType type, ModifyType modifier)
+    public void RemoveTemporaryBonus(float value, BonusType type, ModifyType modifier, bool deferUpdate)
     {
         temporaryBonuses[type].RemoveBonus(modifier, value);
-        UpdateActorData();
+        if (!deferUpdate)
+            UpdateActorData();
     }
 
     public void ClearTemporaryBonuses()
@@ -212,4 +223,22 @@ public abstract class ActorData
     public abstract void GetTotalStatBonus(BonusType type, IEnumerable<GroupType> tags, Dictionary<BonusType, StatBonus> abilityBonusProperties, StatBonus outBonus);
 
     public abstract int GetResistance(ElementType element);
+
+    public class TriggeredEffect
+    {
+        public TriggeredEffectBonusProperty BaseEffect { get; private set; }
+        public float Value { get; private set; }
+
+        public TriggeredEffect(TriggeredEffectBonusProperty baseEffect, float value)
+        {
+            this.BaseEffect = baseEffect;
+            this.Value = value;
+        }
+
+        public bool RollTriggerChance()
+        {
+            
+            return Helpers.RollChance(BaseEffect.triggerChance);
+        }
+    }
 }

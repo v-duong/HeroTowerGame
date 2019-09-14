@@ -21,10 +21,20 @@ public class HeroEquipmentSlot : MonoBehaviour
         }
         else if (slot == EquipSlotType.OFF_HAND)
         {
+            GroupType weaponType = GroupType.ONE_HANDED_WEAPON;
+
+            if (hero.GetEquipmentInSlot(EquipSlotType.WEAPON) is Weapon mainWeapon)
+            {
+                if (mainWeapon.GetGroupTypes().Contains(GroupType.MELEE_WEAPON))
+                    weaponType = GroupType.MELEE_WEAPON;
+                else if (mainWeapon.GetGroupTypes().Contains(GroupType.RANGED_WEAPON))
+                    weaponType = GroupType.RANGED_WEAPON;
+            }
+
             ui.InvScrollContent.ShowEquipmentFiltered(
                 x => (x.IsEquipped == false) &&
                 ((x.Base.equipSlot == EquipSlotType.OFF_HAND) ||
-                (x.Base.equipSlot == EquipSlotType.WEAPON && x.GetGroupTypes().Contains(GroupType.ONE_HANDED_WEAPON))), true, true);
+                (x.GetGroupTypes().Contains(GroupType.ONE_HANDED_WEAPON) && x.GetGroupTypes().Contains(weaponType))), true, true);
         }
         else
         {

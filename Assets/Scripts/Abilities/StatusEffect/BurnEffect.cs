@@ -6,11 +6,14 @@ public class BurnEffect : ActorStatusEffect
 {
     protected float damagePerSecond;
 
+    public override GroupType StatusTag => GroupType.SELF_IS_BURNING;
+
     public BurnEffect(Actor target, Actor source, float inputDamage, float duration) : base(target, source)
     {
         effectType = EffectType.BURN;
         damagePerSecond = inputDamage * 0.5f;
         this.duration = duration;
+
     }
 
     public override void OnApply()

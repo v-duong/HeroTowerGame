@@ -6,6 +6,8 @@ public class RadiationEffect : ActorStatusEffect
     protected float damagePerSecond;
     protected float timeSinceLastCheck;
 
+    public override GroupType StatusTag => GroupType.SELF_IS_RADIATION;
+
     public RadiationEffect(Actor target, Actor source, float inputDamage, float duration) : base(target, source)
     {
         effectType = EffectType.RADIATION;

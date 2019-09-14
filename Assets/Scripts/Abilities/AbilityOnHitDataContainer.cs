@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 public class AbilityOnHitDataContainer
 {
@@ -11,23 +12,38 @@ public class AbilityOnHitDataContainer
 
     public class OnHitBuffEffect
     {
-        public BonusType bonusType;
-        public ModifyType modifyType;
-        public float chance = 0;
+        public AbilityScalingAddedEffect effectBase;
         public float power = 0;
-        public float duration = 0;
-        public bool useLastRoll;
-        public int stacks;
 
-        public OnHitBuffEffect(AbilityAppliedEffect appliedEffect, int level)
+        public OnHitBuffEffect(AbilityScalingAddedEffect appliedEffect, int level)
         {
-            bonusType = appliedEffect.bonusType;
-            modifyType = appliedEffect.modifyType;
-            chance = appliedEffect.chance;
+            effectBase = appliedEffect;
             power = appliedEffect.initialValue + appliedEffect.growthValue * level;
-            duration = appliedEffect.duration;
-            useLastRoll = appliedEffect.useLastRoll;
-            stacks = appliedEffect.stacks;
+        }
+
+        public void ApplyEffect(Actor target, Actor source, string buffName)
+        {
+            List<StatBonusBuffEffect> buffs = target.GetBuffStatusEffect(buffName);
+
+            if (buffs.Count >= effectBase.stacks)
+            {
+                float lowestDuration = 100f;
+                StatBonusBuffEffect buff = null;
+                foreach (StatBonusBuffEffect b in buffs)
+                {
+                    if (b.duration < lowestDuration)
+                        buff = b;
+                }
+                buff.RefreshDuration(effectBase.duration);
+                return;
+            }
+
+            List<Tuple<BonusType, ModifyType, float>> bonuses = new List<Tuple<BonusType, ModifyType, float>>
+            {
+                new Tuple<BonusType, ModifyType, float>(effectBase.bonusType, effectBase.modifyType, power)
+            };
+
+            target.AddStatusEffect(new StatBonusBuffEffect(target, source, bonuses, effectBase.duration, buffName, effectBase.type));
         }
     }
 
@@ -85,15 +101,6 @@ public class AbilityOnHitDataContainer
     public bool DidEffectProc(EffectType effectType)
     {
         float chance = GetEffectChance(effectType);
-        if (chance <= 0)
-        {
-            return false;
-        }
-
-        if (chance >= 100)
-        {
-            return true;
-        }
-        return UnityEngine.Random.Range(0f, 100f) < chance ? true : false;
+        return Helpers.RollChance(chance / 100f);
     }
 }

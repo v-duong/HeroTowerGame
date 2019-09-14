@@ -13,6 +13,9 @@ public class EquipmentDetailWindow : MonoBehaviour
     private TextMeshProUGUI affixText;
 
     [SerializeField]
+    private TextMeshProUGUI seperatorText;
+
+    [SerializeField]
     private TextMeshProUGUI infoText;
 
     [SerializeField]
@@ -67,9 +70,13 @@ public class EquipmentDetailWindow : MonoBehaviour
 
         if (equip.prefixes.Count > 0)
         {
+            if (equip.Rarity == RarityType.UNIQUE)
+                affixText.text += "Affixes\n";
+            else
             affixText.text += "Prefix\n";
             foreach (Affix a in equip.prefixes)
             {
+
                 affixText.text += a.BuildAffixString();
             }
         }

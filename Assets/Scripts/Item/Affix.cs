@@ -1,30 +1,42 @@
 ﻿using System;
 using System.Collections.Generic;
-using UnityEngine;
 
 public class Affix
 {
     public AffixBase Base;
-    private List<float> affixValues;
+    private readonly List<float> affixValues;
+    private readonly List<float> addedEffectValues;
     public AffixType AffixType { get; private set; }
 
-    public Affix(AffixBase a, bool locked = false)
+    public Affix(AffixBase affixBase, bool locked = false)
     {
-        Base = a;
+        Base = affixBase;
         affixValues = new List<float>();
-        AffixType = a.affixType;
-        foreach (AffixBonusProperty mod in a.affixBonuses)
+        AffixType = affixBase.affixType;
+        foreach (AffixBonusProperty mod in affixBase.affixBonuses)
         {
             if (mod.readAsFloat)
-                affixValues.Add(UnityEngine.Random.Range(mod.minValue, mod.maxValue));
+            {
+                int roll = UnityEngine.Random.Range((int)(mod.minValue * 10f), (int)(mod.maxValue * 10f + 1));
+                affixValues.Add((float)Math.Round(roll / 10d, 1));
+            }
             else
-                affixValues.Add((int)UnityEngine.Random.Range(mod.minValue, mod.maxValue));
+                affixValues.Add(UnityEngine.Random.Range((int)mod.minValue, (int)mod.maxValue + 1));
+        }
+
+        if (affixBase.triggeredEffects.Count > 0)
+        {
+            addedEffectValues = new List<float>();
+            foreach (TriggeredEffectBonusProperty addedEffect in affixBase.triggeredEffects)
+            {
+                int roll = UnityEngine.Random.Range((int)(addedEffect.effectMinValue * 10f), (int)(addedEffect.effectMaxValue * 10f + 1));
+                addedEffectValues.Add((float)Math.Round(roll / 10d, 1));
+            }
         }
     }
 
-    public Affix(string affixIdName, AffixType affixType, List<float> values, bool locked = false)
+    public Affix(AffixBase a, List<float> values, bool locked = false)
     {
-        AffixBase a = ResourceManager.Instance.GetAffixBase(affixIdName, affixType);
         Base = a;
         affixValues = new List<float>();
         AffixType = a.affixType;
@@ -41,11 +53,24 @@ public class Affix
 
     public void RerollValue()
     {
-        List<AffixBonusProperty> temp = Base.affixBonuses;
-        for (int i = 0; i < temp.Count; i++)
+        List<AffixBonusProperty> bonuses = Base.affixBonuses;
+        for (int i = 0; i < bonuses.Count; i++)
         {
-            AffixBonusProperty mod = temp[i];
-            affixValues[i] = UnityEngine.Random.Range(mod.minValue, mod.maxValue + 1);
+            AffixBonusProperty mod = bonuses[i];
+            if (mod.readAsFloat)
+            {
+                int roll = UnityEngine.Random.Range((int)(mod.minValue * 10f), (int)(mod.maxValue * 10f + 1));
+                affixValues[i] = (float)Math.Round(roll / 10d, 1);
+            }
+            else
+                affixValues[i] = UnityEngine.Random.Range((int)mod.minValue, (int)mod.maxValue + 1);
+        }
+        List<TriggeredEffectBonusProperty> effects = Base.triggeredEffects;
+        for (int i = 0; i < effects.Count; i++)
+        {
+            TriggeredEffectBonusProperty addedEffect = effects[i];
+            int roll = UnityEngine.Random.Range((int)(addedEffect.effectMinValue * 10f), (int)(addedEffect.effectMaxValue * 10f + 1));
+            addedEffectValues[i] = (float)Math.Round(roll / 10d, 1);
         }
     }
 
@@ -59,10 +84,20 @@ public class Affix
         return affixValues[index];
     }
 
+    public IList<float> GetEffectValues()
+    {
+        return addedEffectValues.AsReadOnly();
+    }
+
+    public float GetEffectValue(int index)
+    {
+        return addedEffectValues[index];
+    }
+
     public string BuildAffixString(bool useTab = true)
     {
         List<int> bonusesToSkip = new List<int>();
-        string s = "○ ";
+        string s = "○";
         for (int i = 0; i < Base.affixBonuses.Count; i++)
         {
             if (bonusesToSkip.Contains(i))
@@ -79,24 +114,31 @@ public class Affix
                 {
                     bonusesToSkip.Add(matchedIndex);
 
-                    if (useTab)
-                        s += "\t";
+                    s += "<indent=5%>";
 
                     if (bonusProp.restriction != GroupType.NO_GROUP)
                     {
-                        s = LocalizationManager.Instance.GetLocalizationText_GroupTypeRestriction(bonusProp.restriction.ToString()) + ", ";
+                        s += LocalizationManager.Instance.GetLocalizationText_GroupTypeRestriction(bonusProp.restriction.ToString()) + ", ";
                     }
 
-                    s += LocalizationManager.Instance.GetLocalizationText("bonusType." + bonusProp.bonusType.ToString().Replace("_MIN","")) + " ";
-                    s += "+" + GetAffixValue(i) + "-" + GetAffixValue(matchedIndex) + "\n";
+                    s += LocalizationManager.Instance.GetLocalizationText("bonusType." + bonusProp.bonusType.ToString().Replace("_MIN", "")) + " ";
+                    s += "+" + GetAffixValue(i) + "-" + GetAffixValue(matchedIndex) + "</indent>\n";
                     continue;
                 }
             }
 
-            if (useTab)
-                s += "\t";
-            s += LocalizationManager.Instance.GetLocalizationText_BonusType(bonusProp.bonusType, bonusProp.modifyType, GetAffixValue(i), bonusProp.restriction);
+            s += "<indent=5%>";
+            s += LocalizationManager.Instance.GetLocalizationText_BonusType(bonusProp.bonusType, bonusProp.modifyType, GetAffixValue(i), bonusProp.restriction).TrimEnd('\n') + "</indent>\n";
         }
+
+        for (int i = 0; i < Base.triggeredEffects.Count; i++)
+        {
+            TriggeredEffectBonusProperty triggeredEffect = Base.triggeredEffects[i];
+
+            s += "<indent=5%>";
+            s += LocalizationManager.Instance.GetLocalizationText_TriggeredEffect(triggeredEffect, GetEffectValue(i));
+        }
+
         return s;
     }
 }

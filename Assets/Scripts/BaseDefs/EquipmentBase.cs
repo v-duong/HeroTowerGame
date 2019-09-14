@@ -61,6 +61,8 @@ public class UniqueBase : EquipmentBase
     public readonly List<AffixBase> randomUniqueAffixes;
     [JsonProperty]
     public readonly int randomAffixesToSpawn;
+    [JsonProperty]
+    public readonly int uniqueVersion;
 }
 
 public enum EquipSlotType

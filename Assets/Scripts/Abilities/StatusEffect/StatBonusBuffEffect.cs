@@ -7,6 +7,11 @@ public class StatBonusBuffEffect : ActorStatusEffect
 {
     public float BuffPower { get; protected set; }
     public string BuffName { get; protected set; }
+
+    public GroupType buffType;
+
+    public override GroupType StatusTag => buffType;
+
     protected List<Tuple<BonusType, ModifyType, float>> bonus;
 
     public StatBonusBuffEffect(Actor target, Actor source, List<Tuple<BonusType,ModifyType,float>> bonuses, float duration, string buffName, EffectType effectType) : base(target, source)
@@ -18,7 +23,7 @@ public class StatBonusBuffEffect : ActorStatusEffect
         BuffPower = 0;
         foreach(Tuple<BonusType, ModifyType, float> tuple in bonus)
         {
-            target.Data.AddTemporaryBonus(tuple.Item3, tuple.Item1, tuple.Item2);
+            target.Data.AddTemporaryBonus(tuple.Item3, tuple.Item1, tuple.Item2, true);
             BuffPower += tuple.Item3;
         }
     }
@@ -31,7 +36,7 @@ public class StatBonusBuffEffect : ActorStatusEffect
     {
         foreach (Tuple<BonusType, ModifyType, float> tuple in bonus)
         {
-            target.Data.RemoveTemporaryBonus(tuple.Item3, tuple.Item1, tuple.Item2);
+            target.Data.RemoveTemporaryBonus(tuple.Item3, tuple.Item1, tuple.Item2, true);
         }
         target.RemoveStatusEffect(this);
     }

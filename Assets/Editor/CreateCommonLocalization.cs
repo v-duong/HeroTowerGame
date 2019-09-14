@@ -34,6 +34,17 @@ public class CreateCommonLocalization
                     keys.Remove(localizationKey);
             }
 
+            List<string> triggerTypes = new List<string>(Enum.GetNames(typeof(TriggerType)));
+
+            foreach (string x in triggerTypes)
+            {
+                string localizationKey = "triggerType." + x;
+                if (!localization.ContainsKey(localizationKey))
+                    localization.Add(localizationKey, "");
+                else
+                    keys.Remove(localizationKey);
+            }
+
             List<string> groupTypes = new List<string>(Enum.GetNames(typeof(GroupType)));
 
             foreach (string x in groupTypes)

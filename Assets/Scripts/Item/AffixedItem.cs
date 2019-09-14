@@ -52,7 +52,7 @@ public abstract class AffixedItem : Item
     {
         Affix affixToRemove;
 
-        if (currentPrefixesAreImmutable && currentSuffixesAreImmutable)
+        if (currentPrefixesAreImmutable && currentSuffixesAreImmutable || Rarity == RarityType.UNIQUE)
             return false;
         else if (currentPrefixesAreImmutable)
             affixToRemove = GetRandomAffix(AffixType.SUFFIX);
@@ -85,7 +85,7 @@ public abstract class AffixedItem : Item
 
     public bool ClearAffixes(bool setRarityToNormal = true)
     {
-        if (prefixes.Count == 0 && suffixes.Count == 0 && Rarity == RarityType.NORMAL)
+        if (prefixes.Count == 0 && suffixes.Count == 0 && Rarity == RarityType.NORMAL || Rarity == RarityType.UNIQUE)
             return false;
 
         if (!currentPrefixesAreImmutable)
@@ -112,10 +112,12 @@ public abstract class AffixedItem : Item
     public bool RerollAffixesAtRarity()
     {
         int affixCap = GetAffixCap();
-        int affixCount = 0;
 
-        if (Rarity == RarityType.NORMAL)
+        if (Rarity == RarityType.NORMAL || Rarity == RarityType.UNIQUE)
             return false;
+
+        int affixCount;
+
         if (Rarity == RarityType.UNCOMMON)
         {
             ClearAffixes(false);

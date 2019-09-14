@@ -95,6 +95,11 @@ public class SaveData
 
             equipData.name = equipItem.Name;
             equipData.rarity = equipItem.Rarity;
+            if (equipItem.Rarity == RarityType.UNIQUE)
+            {
+                UniqueBase uniqueBase = equipItem.Base as UniqueBase;
+                equipData.uniqueVersion = (byte)uniqueBase.uniqueVersion;
+            }
             equipData.prefixes.Clear();
             foreach (Affix affix in equipItem.prefixes)
             {
@@ -114,7 +119,11 @@ public class SaveData
         GameManager.Instance.PlayerStats.ClearEquipmentInventory();
         foreach (EquipSaveData equipData in equipList)
         {
-            Equipment equipment = Equipment.CreateEquipmentFromBase(equipData.baseId, equipData.ilvl);
+            Equipment equipment = null;
+            if (equipData.rarity == RarityType.UNIQUE)
+                equipment = Equipment.CreateUniqueFromBase(equipData.baseId, equipData.ilvl, equipData.uniqueVersion);
+            else
+                equipment = Equipment.CreateEquipmentFromBase(equipData.baseId, equipData.ilvl);
 
             if (equipment == null)
                 continue;
@@ -125,12 +134,35 @@ public class SaveData
             equipment.Name = equipData.name;
             equipment.SetRarity(equipData.rarity);
 
-            foreach (AffixSaveData affixData in equipData.prefixes)
-                equipment.prefixes.Add(new Affix(affixData.baseId, AffixType.PREFIX, affixData.affixValues));
-            foreach (AffixSaveData affixData in equipData.suffixes)
-                equipment.suffixes.Add(new Affix(affixData.baseId, AffixType.SUFFIX, affixData.affixValues));
+            if (equipData.rarity == RarityType.UNIQUE)
+            {
+                UniqueBase uniqueBase = equipment.Base as UniqueBase;
+                for (int i = 0; i < uniqueBase.fixedUniqueAffixes.Count; i++)
+                {
+                    AffixBase affixBase = uniqueBase.fixedUniqueAffixes[i];
+                    equipment.prefixes.Add(new Affix(affixBase, equipData.prefixes[i].affixValues));
+                }
+            }
+            else
+                LoadEquipmentAffixes(equipData, equipment);
 
             equipment.UpdateItemStats();
+        }
+    }
+
+    private static void LoadEquipmentAffixes(EquipSaveData equipData, Equipment equipment)
+    {
+        foreach (AffixSaveData affixData in equipData.prefixes)
+        {
+            Affix newAffix = new Affix(ResourceManager.Instance.GetAffixBase(affixData.baseId, AffixType.PREFIX), affixData.affixValues);
+            if (newAffix != null)
+                equipment.prefixes.Add(newAffix);
+        }
+        foreach (AffixSaveData affixData in equipData.suffixes)
+        {
+            Affix newAffix = new Affix(ResourceManager.Instance.GetAffixBase(affixData.baseId, AffixType.SUFFIX), affixData.affixValues);
+            if (newAffix != null)
+                equipment.suffixes.Add(newAffix);
         }
     }
 
@@ -304,6 +336,7 @@ public class SaveData
         public string name;
         public string baseId;
         public byte ilvl;
+        public byte uniqueVersion;
         public RarityType rarity;
         public List<AffixSaveData> prefixes = new List<AffixSaveData>();
         public List<AffixSaveData> suffixes = new List<AffixSaveData>();

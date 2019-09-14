@@ -116,7 +116,7 @@ public class HeroActor : Actor
     }
 }
 
-public enum TargetingType
+public enum TargetingPriorityType
 {
     CLOSEST,
     FURTHEST,

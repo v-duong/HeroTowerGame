@@ -1,10 +1,14 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 
 public class BleedEffect : ActorStatusEffect
 {
+
     protected float damagePerSecond;
     protected Vector2 lastPosition;
     protected float timeSinceLastCheck;
+
+    public override GroupType StatusTag => GroupType.SELF_IS_BLEEDING;
 
     public BleedEffect(Actor target, Actor source, float inputDamage, float duration) : base(target, source)
     {
@@ -46,4 +50,5 @@ public class BleedEffect : ActorStatusEffect
     {
         return damagePerSecond * (target.Data.GetResistance(ElementType.PHYSICAL) - Source.Data.PhysicalNegation) / 100f ;
     }
+
 }

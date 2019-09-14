@@ -16,6 +16,8 @@ public class HeroData : ActorData
 
     public int ArchetypePoints { get; private set; }
 
+    private const float DUAL_WIELD_ATTACK_SPEED_BONUS = 10f;
+
     //private Dictionary<BonusType, StatBonus> archetypeStatBonuses;
     private Dictionary<BonusType, StatBonus> attributeStatBonuses;
 
@@ -269,6 +271,9 @@ public class HeroData : ActorData
             {
                 if (equipList[(int)EquipSlotType.WEAPON] == null || equipList[(int)EquipSlotType.WEAPON].GetGroupTypes().Contains(GroupType.TWO_HANDED_WEAPON))
                     slot = EquipSlotType.WEAPON;
+                else if ((equipList[(int)EquipSlotType.WEAPON].GetGroupTypes().Contains(GroupType.MELEE_WEAPON) && !equip.GetGroupTypes().Contains(GroupType.MELEE_WEAPON))
+                         || (equipList[(int)EquipSlotType.WEAPON].GetGroupTypes().Contains(GroupType.RANGED_WEAPON) && !equip.GetGroupTypes().Contains(GroupType.RANGED_WEAPON)))
+                    return false;
             }
             else if (equip.GetGroupTypes().Contains(GroupType.TWO_HANDED_WEAPON))
             {
@@ -309,7 +314,7 @@ public class HeroData : ActorData
         if (GetEquipmentInSlot(EquipSlotType.WEAPON) is Weapon && GetEquipmentInSlot(EquipSlotType.OFF_HAND) is Weapon && !isDualWielding)
         {
             isDualWielding = true;
-            AddStatBonus(BonusType.GLOBAL_ATTACK_SPEED, GroupType.DUAL_WIELD, ModifyType.MULTIPLY, 10f);
+            AddStatBonus(BonusType.GLOBAL_ATTACK_SPEED, GroupType.DUAL_WIELD, ModifyType.MULTIPLY, DUAL_WIELD_ATTACK_SPEED_BONUS);
         }
 
         UpdateActorData();
@@ -337,7 +342,7 @@ public class HeroData : ActorData
         if (isDualWielding && !(GetEquipmentInSlot(EquipSlotType.WEAPON) is Weapon && GetEquipmentInSlot(EquipSlotType.OFF_HAND) is Weapon))
         {
             isDualWielding = false;
-            RemoveStatBonus(BonusType.GLOBAL_ATTACK_SPEED, GroupType.DUAL_WIELD, ModifyType.MULTIPLY, 10f);
+            RemoveStatBonus(BonusType.GLOBAL_ATTACK_SPEED, GroupType.DUAL_WIELD, ModifyType.MULTIPLY, DUAL_WIELD_ATTACK_SPEED_BONUS);
         }
 
         UpdateActorData();
@@ -354,14 +359,31 @@ public class HeroData : ActorData
                 //ignore local mods
                 if (b.bonusType >= (BonusType)0x700)
                     continue;
-                else if (b.bonusType >= (BonusType)Helpers.OnHitBonusStart)
-                {
-                }
-                else if (b.bonusType >= (BonusType)Helpers.OnKillBonusStart)
-                {
-                }
                 else
                     AddStatBonus(b.bonusType, b.restriction, b.modifyType, affix.GetAffixValue(i));
+            }
+            for (int i = 0; i < affix.Base.triggeredEffects.Count; i++)
+            {
+                TriggeredEffectBonusProperty triggeredEffect = affix.Base.triggeredEffects[i];
+                TriggeredEffect t = new TriggeredEffect(triggeredEffect, affix.GetEffectValue(i));
+                switch (triggeredEffect.triggerType)
+                {
+                    case TriggerType.ON_HIT:
+                        OnHitEffects.Add(t);
+                        break;
+
+                    case TriggerType.WHEN_HIT_BY:
+                        WhenHitEffects.Add(t);
+                        break;
+
+                    case TriggerType.WHEN_HITTING:
+                        WhenHittingEffects.Add(t);
+                        break;
+
+                    case TriggerType.ON_KILL:
+                        OnKillEffects.Add(t);
+                        break;
+                }
             }
         }
     }
@@ -632,6 +654,7 @@ public class HeroData : ActorData
         {
             types.UnionWith(CurrentActor.GetActorTags());
         }
+
         return types;
     }
 

@@ -77,13 +77,21 @@ public class ItemCraftingPanel : MonoBehaviour
         itemSlot.text.text = currentItem.Name;
         itemSlot.GetComponentInChildren<Image>().color = Helpers.ReturnRarityColor(currentItem.Rarity);
 
-        prefixes.text = "Prefixes\n";
+        if (currentItem.Rarity == RarityType.UNIQUE)
+        {
+            prefixes.text = "Affixes\n";
+        }
+        else
+        {
+            prefixes.text = "Prefixes\n";
+            suffixes.text = "Suffixes\n";
+        }
+
         foreach (Affix a in currentItem.prefixes)
         {
             prefixes.text += a.BuildAffixString(false);
             //prefixes.text += "<align=\"right\">" + "T" + a.Base.tier + "</align>";
         }
-        suffixes.text = "Suffixes\n";
 
         foreach (Affix a in currentItem.suffixes)
         {

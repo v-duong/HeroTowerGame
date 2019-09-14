@@ -37,10 +37,9 @@ public class EnemyData : ActorData
         movementSpeed = enemyBase.movementSpeed;
         minAttackDamage = (int)(enemyBase.attackDamageMinMultiplier * Helpers.GetEnemyDamageScaling(level));
         maxAttackDamage = (int)(enemyBase.attackDamageMaxMultiplier * Helpers.GetEnemyDamageScaling(level));
-        for (int i = 0; i < (int)ElementType.COUNT; i++)
+        foreach (ElementType element in Enum.GetValues(typeof(ElementType)))
         {
-            ElementType element = (ElementType)i;
-            ElementData[element] = enemyBase.resistances[i];
+            ElementData[element] = enemyBase.resistances[(int)element];
         }
     }
 
@@ -136,6 +135,7 @@ public class EnemyData : ActorData
         {
             types.UnionWith(CurrentActor.GetActorTags());
         }
+
         return types;
     }
 }

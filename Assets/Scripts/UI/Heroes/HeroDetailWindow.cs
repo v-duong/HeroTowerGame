@@ -35,7 +35,6 @@ public class HeroDetailWindow : MonoBehaviour
     public void UpdateWindow()
     {
         nameText.text = hero.Name;
-        float dps = 0;
 
         if (hero.IsLocked)
         {
@@ -110,9 +109,10 @@ public class HeroDetailWindow : MonoBehaviour
 
     private string GetAbilityDetailString(ActorAbility ability)
     {
-        string s = ""; float dps = 0;
+        string s = "";
         if (ability.IsUsable)
         {
+            float dps;
             if (ability.DualWielding && ability.AlternatesAttacks)
                 dps = (ability.GetApproxDPS(false) + ability.GetApproxDPS(true)) / 2f;
             else

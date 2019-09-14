@@ -149,8 +149,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: fd60ccafb8154074c9b73479427d7ca0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  SlotContext: 0
-  IsEquipSelectMode: 0
   currentWindow: {fileID: 0}
 --- !u!4 &368173412
 Transform:
@@ -480,6 +478,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   accumulatedConsumables: 0
+  stageBounds:
+    m_Center: {x: 0, y: 0, z: 0}
+    m_Extent: {x: 0, y: 0, z: 0}
 --- !u!1 &2073078188
 GameObject:
   m_ObjectHideFlags: 0

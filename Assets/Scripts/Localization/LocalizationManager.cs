@@ -61,8 +61,7 @@ public class LocalizationManager : MonoBehaviour
     public string[] GetLocalizationText_Ability(string stringId)
     {
         string[] output = new string[3];
-        string value = "";
-        if (abilityLocalizationData.TryGetValue("ability." + stringId + ".name", out value))
+        if (abilityLocalizationData.TryGetValue("ability." + stringId + ".name", out string value))
         {
             if (value == "")
                 output[0] = stringId;
@@ -132,13 +131,15 @@ public class LocalizationManager : MonoBehaviour
         return s;
     }
 
-    public string GetLocalizationText_AbilityCalculatedDamage(Dictionary<ElementType, MinMaxRange> damageDict)
+    public string GetLocalizationText_AbilityCalculatedDamage(Dictionary<ElementType, ActorAbility.AbilityDamageContainer> damageDict)
     {
         string s = "";
         string damageText = GetLocalizationText("UI_DEAL_DAMAGE_FIXED");
-        foreach (KeyValuePair<ElementType, MinMaxRange> damage in damageDict)
+        foreach (KeyValuePair<ElementType, ActorAbility.AbilityDamageContainer> damageData in damageDict)
         {
-            s += string.Format(damageText, damage.Value.min, damage.Value.max, GetLocalizationText_Element(damage.Key)) + "\n";
+            if (damageData.Value.calculatedRange.IsZero())
+                continue;
+            s += string.Format(damageText, damageData.Value.calculatedRange.min, damageData.Value.calculatedRange.max, GetLocalizationText_Element(damageData.Key)) + "\n";
         }
         return s;
     }
@@ -239,7 +240,61 @@ public class LocalizationManager : MonoBehaviour
         return b.ToLower();
     }
 
+    public string GetLocalizationText_TriggeredEffect(TriggeredEffectBonusProperty triggeredEffect, float value)
+    {
+        commonLocalizationData.TryGetValue("triggerType." + triggeredEffect.triggerType.ToString(), out string s);
+        string restrictionString = "";
+        if (triggeredEffect.restriction != GroupType.NO_GROUP)
+            restrictionString = GetLocalizationText_GroupTypeRestriction(triggeredEffect.restriction.ToString());
+        s = string.Format(s, restrictionString);
+        switch (triggeredEffect.triggerType)
+        {
+            case TriggerType.WHEN_HITTING:
+                s = GetLocalizationText_BonusType(triggeredEffect.statBonusType, triggeredEffect.statModifyType, value, GroupType.NO_GROUP).TrimEnd('\n') + " " + s;
+                break;
+        }
+
+        return s;
+    }
+
     public string GetLocalizationText_BonusType(BonusType type, ModifyType modifyType, float value, GroupType restriction)
+    {
+        string output = GetBonusTypeString(type);
+
+        if (restriction != GroupType.NO_GROUP)
+        {
+            output = GetLocalizationText_GroupTypeRestriction(restriction.ToString()) + ", " + output;
+        }
+
+        switch (modifyType)
+        {
+            case ModifyType.FLAT_ADDITION:
+                if (value > 0)
+                    output += " +" + value + "\n";
+                else
+                    output += " " + value + "\n";
+                break;
+
+            case ModifyType.ADDITIVE:
+                if (value > 0)
+                    output += " +" + value + "%" + "\n";
+                else
+                    output += " " + value + "%" + "\n";
+                break;
+
+            case ModifyType.MULTIPLY:
+                output += " x" + (1 + value / 100d).ToString("F2") + "\n";
+                break;
+
+            case ModifyType.FIXED_TO:
+                output += " is" + value + "\n";
+                break;
+        }
+
+        return output;
+    }
+
+    private static string GetBonusTypeString(BonusType type)
     {
         if (commonLocalizationData.TryGetValue("bonusType." + type.ToString(), out string output))
         {
@@ -251,30 +306,6 @@ public class LocalizationManager : MonoBehaviour
         else
         {
             output = ParseBonusTypeFallback(type.ToString());
-        }
-
-        if (restriction != GroupType.NO_GROUP)
-        {
-            output = GetLocalizationText_GroupTypeRestriction(restriction.ToString()) + ", " + output;
-        }
-
-        switch (modifyType)
-        {
-            case ModifyType.FLAT_ADDITION:
-                output += " +" + value + "\n";
-                break;
-
-            case ModifyType.ADDITIVE:
-                output += " +" + value + "%" + "\n";
-                break;
-
-            case ModifyType.MULTIPLY:
-                output += " x" + (1 + value / 100d).ToString("F2") + "\n";
-                break;
-
-            case ModifyType.FIXED_TO:
-                output += " is" + value + "\n";
-                break;
         }
 
         return output;

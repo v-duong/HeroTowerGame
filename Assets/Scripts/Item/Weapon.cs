@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 public class Weapon : Equipment
 {
@@ -19,9 +20,9 @@ public class Weapon : Equipment
     public Weapon(EquipmentBase e, int ilvl) : base(e, ilvl)
     {
         weaponDamage = new Dictionary<ElementType, MinMaxRange>();
-        for (int i = 0; i < (int)ElementType.COUNT; i++)
+        foreach (ElementType element in Enum.GetValues(typeof(ElementType)))
         {
-            weaponDamage[(ElementType)i] = new MinMaxRange();
+            weaponDamage[element] = new MinMaxRange();
         }
         weaponDamage[ElementType.PHYSICAL].SetMinMax(e.minDamage, e.maxDamage);
         CriticalChance = e.criticalChance;
@@ -40,31 +41,43 @@ public class Weapon : Equipment
         Dictionary<BonusType, StatBonus> localBonusTotals = new Dictionary<BonusType, StatBonus>();
         GetLocalModValues(localBonusTotals, GetAllAffixes(), ItemType.WEAPON);
 
-        PhysicalDamage.min = CalculateStat(Base.minDamage, BonusType.LOCAL_PHYSICAL_DAMAGE_MIN, localBonusTotals);
-        PhysicalDamage.max = CalculateStat(Base.maxDamage, BonusType.LOCAL_PHYSICAL_DAMAGE_MAX, localBonusTotals);
-        PhysicalDamage.min = CalculateStat(PhysicalDamage.min, BonusType.LOCAL_PHYSICAL_DAMAGE, localBonusTotals);
-        PhysicalDamage.max = CalculateStat(PhysicalDamage.max, BonusType.LOCAL_PHYSICAL_DAMAGE, localBonusTotals);
+        PhysicalDamage.min = CalculateStat(Base.minDamage, localBonusTotals, BonusType.LOCAL_PHYSICAL_DAMAGE_MIN);
+        PhysicalDamage.max = CalculateStat(Base.maxDamage, localBonusTotals, BonusType.LOCAL_PHYSICAL_DAMAGE_MAX);
+        PhysicalDamage.min = CalculateStat(PhysicalDamage.min, localBonusTotals, BonusType.LOCAL_PHYSICAL_DAMAGE);
+        PhysicalDamage.max = CalculateStat(PhysicalDamage.max, localBonusTotals, BonusType.LOCAL_PHYSICAL_DAMAGE);
 
-        weaponDamage[ElementType.FIRE].min = CalculateStat(0, BonusType.LOCAL_FIRE_DAMAGE_MIN, localBonusTotals);
-        weaponDamage[ElementType.FIRE].max = CalculateStat(0, BonusType.LOCAL_FIRE_DAMAGE_MAX, localBonusTotals);
+        weaponDamage[ElementType.FIRE].min = CalculateStat(0, localBonusTotals, BonusType.LOCAL_FIRE_DAMAGE_MIN);
+        weaponDamage[ElementType.FIRE].max = CalculateStat(0, localBonusTotals, BonusType.LOCAL_FIRE_DAMAGE_MAX);
+        weaponDamage[ElementType.FIRE].min = CalculateStat(weaponDamage[ElementType.FIRE].min, localBonusTotals, BonusType.LOCAL_FIRE_DAMAGE, BonusType.LOCAL_ELEMENTAL_DAMAGE);
+        weaponDamage[ElementType.FIRE].max = CalculateStat(weaponDamage[ElementType.FIRE].max, localBonusTotals, BonusType.LOCAL_FIRE_DAMAGE, BonusType.LOCAL_ELEMENTAL_DAMAGE);
 
-        weaponDamage[ElementType.COLD].min = CalculateStat(0, BonusType.LOCAL_COLD_DAMAGE_MIN, localBonusTotals);
-        weaponDamage[ElementType.COLD].max = CalculateStat(0, BonusType.LOCAL_COLD_DAMAGE_MAX, localBonusTotals);
+        weaponDamage[ElementType.COLD].min = CalculateStat(0, localBonusTotals, BonusType.LOCAL_COLD_DAMAGE_MIN);
+        weaponDamage[ElementType.COLD].max = CalculateStat(0, localBonusTotals, BonusType.LOCAL_COLD_DAMAGE_MAX);
+        weaponDamage[ElementType.COLD].min = CalculateStat(weaponDamage[ElementType.COLD].min, localBonusTotals, BonusType.LOCAL_COLD_DAMAGE, BonusType.LOCAL_ELEMENTAL_DAMAGE);
+        weaponDamage[ElementType.COLD].max = CalculateStat(weaponDamage[ElementType.COLD].max, localBonusTotals, BonusType.LOCAL_COLD_DAMAGE, BonusType.LOCAL_ELEMENTAL_DAMAGE);
 
-        weaponDamage[ElementType.LIGHTNING].min = CalculateStat(0, BonusType.LOCAL_LIGHTNING_DAMAGE_MIN, localBonusTotals);
-        weaponDamage[ElementType.LIGHTNING].max = CalculateStat(0, BonusType.LOCAL_LIGHTNING_DAMAGE_MAX, localBonusTotals);
+        weaponDamage[ElementType.LIGHTNING].min = CalculateStat(0, localBonusTotals, BonusType.LOCAL_LIGHTNING_DAMAGE_MIN);
+        weaponDamage[ElementType.LIGHTNING].max = CalculateStat(0, localBonusTotals, BonusType.LOCAL_LIGHTNING_DAMAGE_MAX);
+        weaponDamage[ElementType.LIGHTNING].min = CalculateStat(weaponDamage[ElementType.LIGHTNING].min, localBonusTotals, BonusType.LOCAL_LIGHTNING_DAMAGE, BonusType.LOCAL_ELEMENTAL_DAMAGE);
+        weaponDamage[ElementType.LIGHTNING].max = CalculateStat(weaponDamage[ElementType.LIGHTNING].max, localBonusTotals, BonusType.LOCAL_LIGHTNING_DAMAGE, BonusType.LOCAL_ELEMENTAL_DAMAGE);
 
-        weaponDamage[ElementType.EARTH].min = CalculateStat(0, BonusType.LOCAL_EARTH_DAMAGE_MIN, localBonusTotals);
-        weaponDamage[ElementType.EARTH].max = CalculateStat(0, BonusType.LOCAL_EARTH_DAMAGE_MAX, localBonusTotals);
+        weaponDamage[ElementType.EARTH].min = CalculateStat(0, localBonusTotals, BonusType.LOCAL_EARTH_DAMAGE_MIN);
+        weaponDamage[ElementType.EARTH].max = CalculateStat(0, localBonusTotals, BonusType.LOCAL_EARTH_DAMAGE_MAX);
+        weaponDamage[ElementType.EARTH].min = CalculateStat(weaponDamage[ElementType.EARTH].min, localBonusTotals, BonusType.LOCAL_EARTH_DAMAGE, BonusType.LOCAL_ELEMENTAL_DAMAGE);
+        weaponDamage[ElementType.EARTH].max = CalculateStat(weaponDamage[ElementType.EARTH].max, localBonusTotals, BonusType.LOCAL_EARTH_DAMAGE, BonusType.LOCAL_ELEMENTAL_DAMAGE);
 
-        weaponDamage[ElementType.DIVINE].min = CalculateStat(0, BonusType.LOCAL_DIVINE_DAMAGE_MIN, localBonusTotals);
-        weaponDamage[ElementType.DIVINE].max = CalculateStat(0, BonusType.LOCAL_DIVINE_DAMAGE_MAX, localBonusTotals);
+        weaponDamage[ElementType.DIVINE].min = CalculateStat(0, localBonusTotals, BonusType.LOCAL_DIVINE_DAMAGE_MIN);
+        weaponDamage[ElementType.DIVINE].max = CalculateStat(0, localBonusTotals, BonusType.LOCAL_DIVINE_DAMAGE_MAX);
+        weaponDamage[ElementType.DIVINE].min = CalculateStat(weaponDamage[ElementType.DIVINE].min, localBonusTotals, BonusType.LOCAL_DIVINE_DAMAGE, BonusType.LOCAL_PRIMORDIAL_DAMAGE);
+        weaponDamage[ElementType.DIVINE].max = CalculateStat(weaponDamage[ElementType.DIVINE].max, localBonusTotals, BonusType.LOCAL_DIVINE_DAMAGE, BonusType.LOCAL_PRIMORDIAL_DAMAGE);
 
-        weaponDamage[ElementType.VOID].min = CalculateStat(0, BonusType.LOCAL_VOID_DAMAGE_MIN, localBonusTotals);
-        weaponDamage[ElementType.VOID].max = CalculateStat(0, BonusType.LOCAL_VOID_DAMAGE_MAX, localBonusTotals);
+        weaponDamage[ElementType.VOID].min = CalculateStat(0, localBonusTotals, BonusType.LOCAL_VOID_DAMAGE_MIN);
+        weaponDamage[ElementType.VOID].max = CalculateStat(0, localBonusTotals, BonusType.LOCAL_VOID_DAMAGE_MAX);
+        weaponDamage[ElementType.VOID].min = CalculateStat(weaponDamage[ElementType.VOID].min, localBonusTotals, BonusType.LOCAL_VOID_DAMAGE, BonusType.LOCAL_PRIMORDIAL_DAMAGE);
+        weaponDamage[ElementType.VOID].max = CalculateStat(weaponDamage[ElementType.VOID].max, localBonusTotals, BonusType.LOCAL_VOID_DAMAGE, BonusType.LOCAL_PRIMORDIAL_DAMAGE);
 
-        CriticalChance = (float)CalculateStat(Base.criticalChance, BonusType.LOCAL_CRITICAL_CHANCE, localBonusTotals);
-        AttackSpeed = (float)CalculateStat(Base.attackSpeed, BonusType.LOCAL_ATTACK_SPEED, localBonusTotals);
+        CriticalChance = CalculateStat(Base.criticalChance, localBonusTotals, BonusType.LOCAL_CRITICAL_CHANCE);
+        AttackSpeed = CalculateStat(Base.attackSpeed, localBonusTotals, BonusType.LOCAL_ATTACK_SPEED);
 
         return true;
     }

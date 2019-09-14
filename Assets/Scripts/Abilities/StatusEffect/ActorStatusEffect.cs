@@ -1,4 +1,6 @@
-﻿public abstract class ActorStatusEffect
+﻿using System.Collections.Generic;
+
+public abstract class ActorStatusEffect
 {
     protected readonly Actor target;
     public Actor Source { get; protected set; }
@@ -13,6 +15,8 @@
     public abstract void Update(float deltaTime);
 
     public abstract float GetEffectValue();
+
+    public abstract GroupType StatusTag { get; }
 
     protected float DurationUpdate(float dT)
     {

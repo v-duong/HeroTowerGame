@@ -81,12 +81,45 @@ public abstract class Equipment : AffixedItem
         return CreateEquipmentFromBase(ResourceManager.Instance.GetRandomEquipmentBase(ilvl, group), ilvl);
     }
 
+    public static Equipment CreateRandomUnique(int ilvl, GroupType? group =null)
+    {
+        return CreateUniqueFromBase(ResourceManager.Instance.GetRandomUniqueBase(ilvl, group), ilvl);
+    }
+
+    public static Equipment CreateUniqueFromBase(UniqueBase uniqueBase, int ilvl)
+    {
+        Equipment e = CreateEquipmentFromBase(uniqueBase, ilvl);
+        e.Rarity = RarityType.UNIQUE;
+        foreach(AffixBase affixBase in uniqueBase.fixedUniqueAffixes)
+        {
+            e.prefixes.Add(new Affix(affixBase));
+        }
+        e.UpdateItemStats();
+        return e;
+    }
+    public static Equipment CreateUniqueFromBase(string uniqueId, int ilvl, int uniqueVersion)
+    {
+        UniqueBase uniqueBase = ResourceManager.Instance.GetUniqueBase(uniqueId);
+        if (uniqueBase == null)
+            return null;
+        if (uniqueVersion == uniqueBase.uniqueVersion)
+        {
+            Equipment e = CreateEquipmentFromBase(uniqueBase, ilvl);
+            e.Rarity = RarityType.UNIQUE;
+            return e;
+        } else
+        {
+            return CreateUniqueFromBase(uniqueBase, ilvl);
+        }
+    }
+
+
     public override bool UpgradeRarity()
     {
-        if (Rarity == RarityType.EPIC)
-            return false;
-        else
+        if (Rarity < RarityType.EPIC)
             Rarity++;
+        else
+            return false;
         UpdateName();
         AddRandomAffix();
         return true;
@@ -137,7 +170,7 @@ public abstract class Equipment : AffixedItem
 
     protected static void GetLocalModValues(Dictionary<BonusType, StatBonus> dic, List<Affix> affixes, ItemType itemType)
     {
-        int startValue = 0;
+        int startValue;
         switch (itemType)
         {
             case ItemType.ARMOR:
@@ -167,27 +200,21 @@ public abstract class Equipment : AffixedItem
         }
     }
 
-    protected static int CalculateStat(int stat, BonusType bonusType, Dictionary<BonusType, StatBonus> dic)
+    protected static int CalculateStat(int stat, Dictionary<BonusType, StatBonus> dic, params BonusType[] bonusTypes)
     {
-        if (dic.TryGetValue(bonusType, out StatBonus bonus))
-        {
-            return bonus.CalculateStat(stat);
-        }
-        else
-        {
-            return stat;
-        }
+        return (int)CalculateStat((float)stat, dic, bonusTypes);
     }
 
-    protected static float CalculateStat(float stat, BonusType bonusType, Dictionary<BonusType, StatBonus> dic)
+    protected static float CalculateStat(float stat, Dictionary<BonusType, StatBonus> dic, params BonusType[] bonusTypes)
     {
-        if (dic.TryGetValue(bonusType, out StatBonus bonus))
+        StatBonus totalBonus = new StatBonus();
+        foreach (BonusType bonusType in bonusTypes)
         {
-            return bonus.CalculateStat(stat);
+            if (dic.TryGetValue(bonusType, out StatBonus bonus))
+            {
+                totalBonus.AddBonuses(bonus);
+            }
         }
-        else
-        {
-            return stat;
-        }
+        return totalBonus.CalculateStat(stat);
     }
 }

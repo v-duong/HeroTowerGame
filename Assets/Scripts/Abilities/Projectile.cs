@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class Projectile : MonoBehaviour
@@ -7,10 +8,10 @@ public class Projectile : MonoBehaviour
     public int pierceCount = 0;
     public float currentSpeed;
     public float timeToLive = 2.5f;
-    public Dictionary<ElementType, float> projectileDamage;
+    public Func<Actor, Actor, Dictionary<ElementType, float>> damageCalculationCallback;
     public Vector3 currentHeading;
     public LinkedActorAbility linkedAbility;
-    public AbilityOnHitDataContainer statusData;
+    public AbilityOnHitDataContainer onHitData;
     public float inheritedDamagePercent;
     public bool isOffscreen = false;
 
@@ -74,7 +75,8 @@ public class Projectile : MonoBehaviour
         if (actor != null && !targetsHit.Contains(actor))
         {
             targetPosition = actor.transform.position;
-            actor.ApplyDamage(projectileDamage, statusData, true);
+            Dictionary<ElementType, float> projectileDamage = damageCalculationCallback.Invoke(actor, onHitData.sourceActor);
+            actor.ApplyDamage(projectileDamage, onHitData, true);
             if (linkedAbility != null)
             {
                 if (linkedAbility.LinkedAbilityData.type == AbilityLinkType.ON_EVERY_HIT ||
@@ -112,9 +114,9 @@ public class Projectile : MonoBehaviour
 
     public void ReturnToPool()
     {
-        projectileDamage = null;
+        damageCalculationCallback = null;
         linkedAbility = null;
-        statusData = null;
+        onHitData = null;
         GameManager.Instance.ProjectilePool.ReturnToPool(this);
     }
 }

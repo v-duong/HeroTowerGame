@@ -10,6 +10,8 @@ public class FractureEffect : ActorStatusEffect
     public const float BASE_FRACTURE_THRESHOLD = 0.1F;
     protected int resistanceReduction;
 
+    public override GroupType StatusTag => GroupType.SELF_IS_FRACTURED;
+
     public FractureEffect(Actor target, Actor source, float effectiveness, float duration) : base(target, source)
     {
         effectType = EffectType.FRACTURE;
@@ -21,14 +23,14 @@ public class FractureEffect : ActorStatusEffect
 
     public override void OnApply()
     {
-        target.Data.AddTemporaryBonus(resistanceReduction, BonusType.PHYSICAL_RESISTANCE, ModifyType.FLAT_ADDITION);
-        target.Data.AddTemporaryBonus(resistanceReduction, BonusType.ELEMENTAL_RESISTANCES, ModifyType.FLAT_ADDITION);
+        target.Data.AddTemporaryBonus(resistanceReduction, BonusType.PHYSICAL_RESISTANCE, ModifyType.FLAT_ADDITION, true);
+        target.Data.AddTemporaryBonus(resistanceReduction, BonusType.ELEMENTAL_RESISTANCES, ModifyType.FLAT_ADDITION, true);
     }
 
     public override void OnExpire()
     {
-        target.Data.RemoveTemporaryBonus(resistanceReduction, BonusType.PHYSICAL_RESISTANCE, ModifyType.FLAT_ADDITION);
-        target.Data.RemoveTemporaryBonus(resistanceReduction, BonusType.ELEMENTAL_RESISTANCES, ModifyType.FLAT_ADDITION);
+        target.Data.RemoveTemporaryBonus(resistanceReduction, BonusType.PHYSICAL_RESISTANCE, ModifyType.FLAT_ADDITION, true);
+        target.Data.RemoveTemporaryBonus(resistanceReduction, BonusType.ELEMENTAL_RESISTANCES, ModifyType.FLAT_ADDITION, true);
         target.RemoveStatusEffect(this);
     }
 

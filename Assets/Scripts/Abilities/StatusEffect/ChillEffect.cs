@@ -8,6 +8,8 @@ public class ChillEffect : ActorStatusEffect
     public const float BASE_CHILL_THRESHOLD = 0.1F;
     protected int effectPower;
 
+    public override GroupType StatusTag => GroupType.SELF_IS_CHILLED;
+
     public ChillEffect(Actor target, Actor source, float effectiveness, float duration) : base(target, source)
     {
         effectType = EffectType.CHILL;
@@ -20,16 +22,16 @@ public class ChillEffect : ActorStatusEffect
 
     public override void OnApply()
     {
-        target.Data.AddTemporaryBonus(effectPower, BonusType.MOVEMENT_SPEED, ModifyType.MULTIPLY);
-        target.Data.AddTemporaryBonus(effectPower, BonusType.SHIELD_REGEN, ModifyType.MULTIPLY);
-        target.Data.AddTemporaryBonus(effectPower, BonusType.HEALTH_REGEN, ModifyType.MULTIPLY);
+        target.Data.AddTemporaryBonus(effectPower, BonusType.MOVEMENT_SPEED, ModifyType.MULTIPLY, true);
+        target.Data.AddTemporaryBonus(effectPower, BonusType.SHIELD_REGEN, ModifyType.MULTIPLY, true);
+        target.Data.AddTemporaryBonus(effectPower, BonusType.HEALTH_REGEN, ModifyType.MULTIPLY, true);
     }
 
     public override void OnExpire()
     {
-        target.Data.RemoveTemporaryBonus(effectPower, BonusType.MOVEMENT_SPEED, ModifyType.MULTIPLY);
-        target.Data.RemoveTemporaryBonus(effectPower, BonusType.SHIELD_REGEN, ModifyType.MULTIPLY);
-        target.Data.RemoveTemporaryBonus(effectPower, BonusType.HEALTH_REGEN, ModifyType.MULTIPLY);
+        target.Data.RemoveTemporaryBonus(effectPower, BonusType.MOVEMENT_SPEED, ModifyType.MULTIPLY, true);
+        target.Data.RemoveTemporaryBonus(effectPower, BonusType.SHIELD_REGEN, ModifyType.MULTIPLY, true);
+        target.Data.RemoveTemporaryBonus(effectPower, BonusType.HEALTH_REGEN, ModifyType.MULTIPLY, true);
         target.RemoveStatusEffect(this);
     }
 

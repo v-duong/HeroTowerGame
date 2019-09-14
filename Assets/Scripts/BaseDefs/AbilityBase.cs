@@ -74,7 +74,7 @@ public class AbilityBase
     [JsonProperty]
     public readonly List<AbilityScalingBonusProperty> bonusProperties;
     [JsonProperty]
-    public readonly List<AbilityAppliedEffect> appliedEffects;
+    public readonly List<AbilityScalingAddedEffect> appliedEffects;
 
     [JsonProperty]
     public readonly string effectSprite;
@@ -224,8 +224,11 @@ public enum AbilityTargetType
     NONE
 }
 
-public struct AbilityAppliedEffect
+public struct AbilityScalingAddedEffect
 {
+    [JsonConverter(typeof(StringEnumConverter))]
+    [JsonProperty]
+    public readonly EffectType type;
     [JsonConverter(typeof(StringEnumConverter))]
     [JsonProperty]
     public readonly BonusType bonusType;

@@ -9,8 +9,7 @@ public enum ElementType
     LIGHTNING,
     EARTH,
     DIVINE,
-    VOID,
-    COUNT
+    VOID
 }
 
 public class ElementalData
@@ -24,11 +23,11 @@ public class ElementalData
         resists = new Dictionary<ElementType, int>();
         resistCaps = new Dictionary<ElementType, int>();
         negations = new Dictionary<ElementType, int>();
-        for (int i = 0; i < (int)ElementType.COUNT; i++)
+        foreach (ElementType element in Enum.GetValues(typeof(ElementType)))
         {
-            resists[(ElementType)i] = 0;
-            resistCaps[(ElementType)i] = 80;
-            negations[(ElementType)i] = 0;
+            resists[element] = 0;
+            resistCaps[element] = 80;
+            negations[element] = 0;
         }
     }
 

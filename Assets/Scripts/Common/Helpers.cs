@@ -5,10 +5,6 @@ using UnityEngine.Tilemaps;
 
 public static class Helpers
 {
-    
-    public const int OnHitBonusStart = 0x600;
-    public const int OnKillBonusStart = 0x500;
-
     public static readonly Color UNIQUE_COLOR = new Color(1.0f, 0.5f, 0.2f);
     public static readonly Color EPIC_COLOR = new Color(0.86f, 0.35f, 0.86f);
     public static readonly Color UNCOMMON_COLOR = new Color(0.4f, 0.7f, 0.9f);
@@ -199,6 +195,20 @@ public static class Helpers
     public static Vector3 ReturnCenterOfCell(Vector3 v)
     {
         return new Vector3((float)Math.Round(v.x * 2f) / 2f, (float)Math.Round(v.y * 2f) / 2f, v.z);
+    }
+
+    public static bool RollChance(float chance)
+    {
+        if (chance <= 0f)
+        {
+            return false;
+        }
+
+        if (chance >= 1f)
+        {
+            return true;
+        }
+        return UnityEngine.Random.Range(0f, 1f) < chance ? true : false;
     }
 
     public static double GetEnemyHealthScaling(double level)

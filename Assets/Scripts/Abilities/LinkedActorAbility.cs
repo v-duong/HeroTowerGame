@@ -28,8 +28,8 @@ public class LinkedActorAbility : ActorAbility
         UpdateAbilityBonusProperties(tags);
         if (LinkedAbilityData.inheritsDamage)
         {
-            float damageModifier = LinkedAbilityData.inheritDamagePercent + LinkedAbilityData.inheritDamagePercentScaling * abilityLevel;
-            UpdateDamage(data, parentDamageLevels,tags, damageModifier);
+            finalDamageModifier = LinkedAbilityData.inheritDamagePercent + LinkedAbilityData.inheritDamagePercentScaling * abilityLevel;
+            UpdateDamage(data, parentDamageLevels,tags);
         }
         else
             UpdateDamage(data, abilityBase.damageLevels,tags);
@@ -44,8 +44,8 @@ public class LinkedActorAbility : ActorAbility
         UpdateAbilityBonusProperties(tags);
         if (LinkedAbilityData.inheritsDamage)
         {
-            float damageModifier = LinkedAbilityData.inheritDamagePercent + LinkedAbilityData.inheritDamagePercentScaling * abilityLevel;
-            UpdateDamage(data, parentDamageLevels, tags, damageModifier);
+            finalDamageModifier = LinkedAbilityData.inheritDamagePercent + LinkedAbilityData.inheritDamagePercentScaling * abilityLevel;
+            UpdateDamage(data, parentDamageLevels, tags);
         }
         else
             UpdateDamage(data, abilityBase.damageLevels, tags);

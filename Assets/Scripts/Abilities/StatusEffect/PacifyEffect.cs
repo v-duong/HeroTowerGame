@@ -7,6 +7,8 @@ public class PacifyEffect : ActorStatusEffect
     public const float BASE_PACIFY_THRESHOLD = 0.1F;
     protected int effectPower;
 
+    public override GroupType StatusTag => GroupType.SELF_IS_PACIFIED;
+
     public PacifyEffect(Actor target, Actor source, float effectiveness, float duration) : base(target, source)
     {
         effectType = EffectType.PACIFY;
@@ -18,12 +20,12 @@ public class PacifyEffect : ActorStatusEffect
 
     public override void OnApply()
     {
-        target.Data.AddTemporaryBonus(effectPower, BonusType.GLOBAL_DAMAGE, ModifyType.MULTIPLY);
+        target.Data.AddTemporaryBonus(effectPower, BonusType.GLOBAL_DAMAGE, ModifyType.MULTIPLY, true);
     }
 
     public override void OnExpire()
     {
-        target.Data.RemoveTemporaryBonus(effectPower, BonusType.GLOBAL_DAMAGE, ModifyType.MULTIPLY);
+        target.Data.RemoveTemporaryBonus(effectPower, BonusType.GLOBAL_DAMAGE, ModifyType.MULTIPLY, true);
         target.RemoveStatusEffect(this);
     }
 

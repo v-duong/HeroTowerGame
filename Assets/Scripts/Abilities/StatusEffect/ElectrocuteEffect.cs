@@ -2,8 +2,11 @@
 
 public class ElectrocuteEffect : ActorStatusEffect
 {
+
     protected float damage;
     protected float timeElapsed;
+
+    public override GroupType StatusTag => GroupType.SELF_IS_ELECTROCUTED;
 
     public ElectrocuteEffect(Actor target, Actor source, float inputDamage, float duration) : base(target, source)
     {
