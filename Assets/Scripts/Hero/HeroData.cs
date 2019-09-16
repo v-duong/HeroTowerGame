@@ -226,6 +226,8 @@ public class HeroData : ActorData
     {
         if (slot >= 3)
             return false;
+        if (abilitySlotList[slot].Ability == null)
+            return false;
         IAbilitySource source = abilitySlotList[slot].source;
         source.OnUnequip(abilitySlotList[slot].Ability.abilityBase, this, slot);
         abilitySlotList[slot].ClearAbility();
@@ -398,6 +400,33 @@ public class HeroData : ActorData
                 if (b.bonusType < (BonusType)0x700) //ignore local mods
                     RemoveStatBonus(b.bonusType, b.restriction, b.modifyType, affix.GetAffixValue(i));
             }
+            for (int i = 0; i < affix.Base.triggeredEffects.Count; i++)
+            {
+                TriggeredEffectBonusProperty triggeredEffect = affix.Base.triggeredEffects[i];
+                TriggeredEffect t;
+                switch (triggeredEffect.triggerType)
+                {
+                    case TriggerType.ON_HIT:
+                        t = OnHitEffects.Find(x => x.BaseEffect == triggeredEffect);
+                        OnHitEffects.Remove(t);
+                        break;
+
+                    case TriggerType.WHEN_HIT_BY:
+                        t = WhenHitEffects.Find(x => x.BaseEffect == triggeredEffect);
+                        WhenHitEffects.Remove(t);
+                        break;
+
+                    case TriggerType.WHEN_HITTING:
+                        t = WhenHittingEffects.Find(x => x.BaseEffect == triggeredEffect);
+                        WhenHittingEffects.Remove(t);
+                        break;
+
+                    case TriggerType.ON_KILL:
+                        t = OnKillEffects.Find(x => x.BaseEffect == triggeredEffect);
+                        OnKillEffects.Remove(t);
+                        break;
+                }
+            }
         }
     }
 
@@ -562,7 +591,7 @@ public class HeroData : ActorData
         int statusThreshold = (int)(ResolveRating / 5f / 100f);
         int statusResistance = (int)(ResolveRating / 15f / 100f);
 
-        AfflictedStatusDamageResistance = GetMultiStatBonus(GroupTypes, BonusType.AFFLICTED_STATUS_DAMAGE_RESISTANCE).CalculateStat(1f + statusResistance);
+        AfflictedStatusDamageResistance = 1 - GetMultiStatBonus(GroupTypes, BonusType.AFFLICTED_STATUS_DAMAGE_RESISTANCE).CalculateStat(statusResistance);
         AfflictedStatusThreshold = GetMultiStatBonus(GroupTypes, BonusType.AFFLICTED_STATUS_THRESHOLD).CalculateStat(1f + statusThreshold);
     }
 

@@ -41,13 +41,17 @@ public class ArchetypeBase
         return nodeList.Find(x => x.id == nodeId);
     }
 
-    public List<AbilityBase> GetArchetypeAbilities()
+    public List<AbilityBase> GetArchetypeAbilities(bool onlyGetInitialAbilities)
     {
         List<AbilityBase> ret = new List<AbilityBase>();
         foreach (ArchetypeSkillNode node in nodeList)
         {
             if (node.type == NodeType.ABILITY)
-                ret.Add(ResourceManager.Instance.GetAbilityBase( node.abilityId));
+            {
+                if (onlyGetInitialAbilities && node.initialLevel == 0)
+                    continue;
+                ret.Add(ResourceManager.Instance.GetAbilityBase(node.abilityId));
+            }
         }
         return ret;
     }

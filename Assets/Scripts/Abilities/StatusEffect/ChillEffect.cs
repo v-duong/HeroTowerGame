@@ -14,7 +14,6 @@ public class ChillEffect : ActorStatusEffect
     {
         effectType = EffectType.CHILL;
         effectPower = (int)effectiveness;
-        Debug.Log(effectPower);
         effectPower = Math.Max(effectPower, -CHILL_EFFECT_CAP);
         effectPower = Math.Min(effectPower, CHILL_EFFECT_CAP);
         this.duration = duration;

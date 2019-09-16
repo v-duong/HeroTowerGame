@@ -247,10 +247,11 @@ public class LocalizationManager : MonoBehaviour
         if (triggeredEffect.restriction != GroupType.NO_GROUP)
             restrictionString = GetLocalizationText_GroupTypeRestriction(triggeredEffect.restriction.ToString());
         s = string.Format(s, restrictionString);
+        string bonusString = GetLocalizationText_BonusType(triggeredEffect.statBonusType, triggeredEffect.statModifyType, value, GroupType.NO_GROUP).TrimEnd('\n');
         switch (triggeredEffect.triggerType)
         {
             case TriggerType.WHEN_HITTING:
-                s = GetLocalizationText_BonusType(triggeredEffect.statBonusType, triggeredEffect.statModifyType, value, GroupType.NO_GROUP).TrimEnd('\n') + " " + s;
+                s = bonusString + " " + s;
                 break;
         }
 

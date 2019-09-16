@@ -45,9 +45,6 @@ public class ArchetypeUITreeWindow : MonoBehaviour
 
     public void InitializeTree(HeroData hero)
     {
-        HashSet<ArchetypeSkillNode> primaryHash = new HashSet<ArchetypeSkillNode>();
-        HashSet<ArchetypeSkillNode> secondaryHash = new HashSet<ArchetypeSkillNode>();
-
         this.hero = hero;
         archetypeData[0] = hero.PrimaryArchetype;
         archetypeData[1] = hero.SecondaryArchetype;

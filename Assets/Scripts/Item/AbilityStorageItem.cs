@@ -30,9 +30,7 @@ public class AbilityCoreItem : Item, IAbilitySource
 
     public static AbilityCoreItem CreateAbilityItemFromArchetype(ArchetypeItem archetypeItem, AbilityBase abilityBase)
     {
-        if (!archetypeItem.Base.GetArchetypeAbilities().Contains(abilityBase))
-            return null;
-        else if (!GameManager.Instance.PlayerStats.ArchetypeInventory.Contains(archetypeItem))
+        if (!archetypeItem.Base.GetArchetypeAbilities(true).Contains(abilityBase))
             return null;
         else
         {

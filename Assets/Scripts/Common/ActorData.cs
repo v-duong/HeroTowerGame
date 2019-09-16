@@ -231,8 +231,8 @@ public abstract class ActorData
 
         public TriggeredEffect(TriggeredEffectBonusProperty baseEffect, float value)
         {
-            this.BaseEffect = baseEffect;
-            this.Value = value;
+            BaseEffect = baseEffect;
+            Value = value;
         }
 
         public bool RollTriggerChance()

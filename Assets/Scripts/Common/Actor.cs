@@ -77,7 +77,7 @@ public abstract class Actor : MonoBehaviour
     private void UpdateTargetTags()
     {
         actorTargetTags.Clear();
-        foreach(GroupType g in actorTags)
+        foreach (GroupType g in actorTags)
         {
             if (g.ToString().StartsWith("SELF_IS"))
             {
@@ -87,7 +87,6 @@ public abstract class Actor : MonoBehaviour
             }
         }
     }
-
 
     public void InitializeHealthBar()
     {
@@ -331,17 +330,18 @@ public abstract class Actor : MonoBehaviour
 
     public void ApplyAfterHitEffects(Dictionary<ElementType, float> damage, AbilityOnHitDataContainer postDamageData)
     {
-        if (damage.ContainsKey(ElementType.PHYSICAL) && postDamageData.DidEffectProc(EffectType.BLEED))
+        if (damage.ContainsKey(ElementType.PHYSICAL) && damage[ElementType.PHYSICAL] > 0 && postDamageData.DidEffectProc(EffectType.BLEED))
         {
+            Debug.Log(damage[ElementType.PHYSICAL] + "   " + damage[ElementType.PHYSICAL] * postDamageData.GetEffectEffectiveness(EffectType.BLEED) * Data.AfflictedStatusDamageResistance);
             AddStatusEffect(new BleedEffect(this, postDamageData.sourceActor, damage[ElementType.PHYSICAL] * postDamageData.GetEffectEffectiveness(EffectType.BLEED) * Data.AfflictedStatusDamageResistance, postDamageData.GetEffectDuration(EffectType.BLEED)));
         }
 
-        if (damage.ContainsKey(ElementType.FIRE) && postDamageData.DidEffectProc(EffectType.BURN))
+        if (damage.ContainsKey(ElementType.FIRE) && damage[ElementType.FIRE] > 0 && postDamageData.DidEffectProc(EffectType.BURN))
         {
             AddStatusEffect(new BurnEffect(this, postDamageData.sourceActor, damage[ElementType.FIRE] * postDamageData.GetEffectEffectiveness(EffectType.BURN) * Data.AfflictedStatusDamageResistance, postDamageData.GetEffectDuration(EffectType.BURN)));
         }
 
-        if (damage.ContainsKey(ElementType.COLD) && postDamageData.DidEffectProc(EffectType.CHILL))
+        if (damage.ContainsKey(ElementType.COLD) && damage[ElementType.COLD] > 0 && postDamageData.DidEffectProc(EffectType.CHILL))
         {
             float percentageDealt = damage[ElementType.COLD] / Data.MaximumHealth;
             float chillEffectPower = ChillEffect.BASE_CHILL_EFFECT * Math.Min(percentageDealt / (ChillEffect.BASE_CHILL_THRESHOLD * Data.AfflictedStatusThreshold), 1f) * postDamageData.GetEffectEffectiveness(EffectType.CHILL);
@@ -349,12 +349,12 @@ public abstract class Actor : MonoBehaviour
             AddStatusEffect(new ChillEffect(this, postDamageData.sourceActor, chillEffectPower, postDamageData.GetEffectDuration(EffectType.CHILL)));
         }
 
-        if (damage.ContainsKey(ElementType.LIGHTNING) && postDamageData.DidEffectProc(EffectType.ELECTROCUTE))
+        if (damage.ContainsKey(ElementType.LIGHTNING) && damage[ElementType.LIGHTNING] > 0 && postDamageData.DidEffectProc(EffectType.ELECTROCUTE))
         {
             AddStatusEffect(new ElectrocuteEffect(this, postDamageData.sourceActor, damage[ElementType.LIGHTNING] * postDamageData.GetEffectEffectiveness(EffectType.ELECTROCUTE) * Data.AfflictedStatusDamageResistance, postDamageData.GetEffectDuration(EffectType.ELECTROCUTE)));
         }
 
-        if (damage.ContainsKey(ElementType.EARTH) && postDamageData.DidEffectProc(EffectType.FRACTURE))
+        if (damage.ContainsKey(ElementType.EARTH) && damage[ElementType.EARTH] > 0 && postDamageData.DidEffectProc(EffectType.FRACTURE))
         {
             float percentageDealt = damage[ElementType.EARTH] / Data.MaximumHealth;
             float fractureEffectPower = FractureEffect.BASE_FRACTURE_EFFECT * Math.Min(percentageDealt / (FractureEffect.BASE_FRACTURE_THRESHOLD * Data.AfflictedStatusThreshold), 1f) * postDamageData.GetEffectEffectiveness(EffectType.FRACTURE);
@@ -362,7 +362,7 @@ public abstract class Actor : MonoBehaviour
             AddStatusEffect(new FractureEffect(this, postDamageData.sourceActor, fractureEffectPower, postDamageData.GetEffectDuration(EffectType.FRACTURE)));
         }
 
-        if (damage.ContainsKey(ElementType.DIVINE) && postDamageData.DidEffectProc(EffectType.PACIFY))
+        if (damage.ContainsKey(ElementType.DIVINE) && damage[ElementType.DIVINE] > 0 && postDamageData.DidEffectProc(EffectType.PACIFY))
         {
             float percentageDealt = damage[ElementType.DIVINE] / Data.MaximumHealth;
             float pacifyEffectPower = PacifyEffect.BASE_PACIFY_EFFECT * Math.Min(percentageDealt / (PacifyEffect.BASE_PACIFY_THRESHOLD * Data.AfflictedStatusThreshold), 1f) * postDamageData.GetEffectEffectiveness(EffectType.PACIFY);
@@ -370,7 +370,7 @@ public abstract class Actor : MonoBehaviour
             AddStatusEffect(new PacifyEffect(this, postDamageData.sourceActor, pacifyEffectPower, postDamageData.GetEffectDuration(EffectType.PACIFY)));
         }
 
-        if (damage.ContainsKey(ElementType.VOID) && postDamageData.DidEffectProc(EffectType.RADIATION))
+        if (damage.ContainsKey(ElementType.VOID) && damage[ElementType.VOID] > 0 && postDamageData.DidEffectProc(EffectType.RADIATION))
         {
             AddStatusEffect(new RadiationEffect(this, postDamageData.sourceActor, damage[ElementType.VOID] * postDamageData.GetEffectEffectiveness(EffectType.RADIATION) * Data.AfflictedStatusDamageResistance, postDamageData.GetEffectDuration(EffectType.RADIATION)));
         }

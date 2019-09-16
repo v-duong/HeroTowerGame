@@ -49,7 +49,7 @@ public class ItemCraftingPanel : MonoBehaviour
 
     public void ItemSlotOnClick_Callback(Item item)
     {
-        if (item.GetItemType() == ItemType.ARCHETYPE)
+        if (item?.GetItemType() == ItemType.ARCHETYPE)
         {
             return;
         }
@@ -67,6 +67,7 @@ public class ItemCraftingPanel : MonoBehaviour
         rightInfo.text = "";
         if (currentItem == null)
         {
+            itemSlot.GetComponentInChildren<Image>().color = Helpers.ReturnRarityColor(RarityType.NORMAL);
             confirmButton.interactable = false;
             return;
         }

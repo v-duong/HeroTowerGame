@@ -174,6 +174,11 @@ public class PlayerStats
     {
         heroList.Clear();
     }
+
+    public void ClearArchetypeItemInventory()
+    {
+        archetypeInventory.Clear();
+    }
 }
 
 public enum ConsumableType

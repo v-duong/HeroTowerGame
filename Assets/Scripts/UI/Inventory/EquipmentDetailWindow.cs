@@ -125,7 +125,7 @@ public class EquipmentDetailWindow : MonoBehaviour
             {
                 hasElemental = true;
                 dps = (range.min + range.max) / 2f * weaponItem.AttackSpeed;
-                elementalDps.Add(LocalizationManager.BuildElementalDamageString(dps.ToString("F2"), (ElementType)i));
+                elementalDps.Add(LocalizationManager.BuildElementalDamageString(dps.ToString("F1"), (ElementType)i));
                 elementalDamage.Add(LocalizationManager.BuildElementalDamageString(range.min + "-" + range.max, (ElementType)i));
             }
         }
@@ -135,7 +135,7 @@ public class EquipmentDetailWindow : MonoBehaviour
         {
             hasPrimordial = true;
             dps = (range.min + range.max) / 2f * weaponItem.AttackSpeed;
-            primDps.Add(LocalizationManager.BuildElementalDamageString(dps.ToString("F2"), ElementType.DIVINE));
+            primDps.Add(LocalizationManager.BuildElementalDamageString(dps.ToString("F1"), ElementType.DIVINE));
             primDamage.Add(LocalizationManager.BuildElementalDamageString(range.min + "-" + range.max, ElementType.DIVINE));
         }
 
@@ -144,7 +144,7 @@ public class EquipmentDetailWindow : MonoBehaviour
         {
             hasPrimordial = true;
             dps = (range.min + range.max) / 2f * weaponItem.AttackSpeed;
-            primDps.Add(LocalizationManager.BuildElementalDamageString(dps.ToString("F2"), ElementType.VOID));
+            primDps.Add(LocalizationManager.BuildElementalDamageString(dps.ToString("F1"), ElementType.VOID));
             primDamage.Add(LocalizationManager.BuildElementalDamageString(range.min + "-" + range.max, ElementType.VOID));
         }
 
@@ -152,7 +152,7 @@ public class EquipmentDetailWindow : MonoBehaviour
         if (weaponItem.PhysicalDamage.min != 0 && weaponItem.PhysicalDamage.max != 0)
         {
             dps = (weaponItem.PhysicalDamage.min + weaponItem.PhysicalDamage.max) / 2f * weaponItem.AttackSpeed;
-            infoText.text += "Phys. DPS: " + dps.ToString("F2") + "\n";
+            infoText.text += "Phys. DPS: " + dps.ToString("F1") + "\n";
             physDamage = "Phys. Damage: " + weaponItem.PhysicalDamage.min + "-" + weaponItem.PhysicalDamage.max + "\n";
         }
         if (hasElemental)

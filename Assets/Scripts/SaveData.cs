@@ -11,10 +11,11 @@ public class SaveData
     [NonSerialized]
     private Dictionary<Guid, HeroSaveData> heroDict = new Dictionary<Guid, HeroSaveData>();
 
-    public List<ConsumablesContainer> consumableList = new List<ConsumablesContainer>();
-    public List<EquipSaveData> equipList = new List<EquipSaveData>();
-    public List<AbilityCoreSaveData> abilityCoreList = new List<AbilityCoreSaveData>();
-    public List<HeroSaveData> heroList = new List<HeroSaveData>();
+    private readonly List<ConsumablesContainer> consumableList = new List<ConsumablesContainer>();
+    private readonly List<EquipSaveData> equipList = new List<EquipSaveData>();
+    private readonly List<AbilityCoreSaveData> abilityCoreList = new List<AbilityCoreSaveData>();
+    private readonly List<HeroSaveData> heroList = new List<HeroSaveData>();
+    private readonly List<ArchetypeItemSaveData> archetypeItemList = new List<ArchetypeItemSaveData>();
     public int expStock;
 
     public void SaveAll()
@@ -22,6 +23,7 @@ public class SaveData
         SavePlayerData();
         SaveEquipmentData();
         SaveAbilityCoreData();
+        SaveArchetypeItemData();
         SaveHeroData();
     }
 
@@ -30,6 +32,7 @@ public class SaveData
         LoadPlayerData();
         LoadEquipmentData();
         LoadAbilityCoreData();
+        LoadArchetypeItemData();
         LoadHeroData();
     }
 
@@ -71,6 +74,24 @@ public class SaveData
         foreach (AbilityCoreSaveData coreData in abilityCoreList)
         {
             GameManager.Instance.PlayerStats.AddAbilityToInventory(new AbilityCoreItem(coreData.id, coreData.baseId, coreData.name));
+        }
+    }
+
+    public void SaveArchetypeItemData()
+    {
+        archetypeItemList.Clear();
+        foreach (ArchetypeItem archetypeItem in GameManager.Instance.PlayerStats.ArchetypeInventory)
+        {
+            archetypeItemList.Add(new ArchetypeItemSaveData(archetypeItem.Id, archetypeItem.Base.idName));
+        }
+    }
+
+    public void LoadArchetypeItemData()
+    {
+        GameManager.Instance.PlayerStats.ClearArchetypeItemInventory();
+        foreach (ArchetypeItemSaveData archetypeData in archetypeItemList)
+        {
+            GameManager.Instance.PlayerStats.AddArchetypeToInventory(new ArchetypeItem(archetypeData.id, archetypeData.baseId));
         }
     }
 
@@ -330,7 +351,7 @@ public class SaveData
     }
 
     [Serializable]
-    public class EquipSaveData
+    private class EquipSaveData
     {
         public Guid id;
         public string name;
@@ -343,7 +364,7 @@ public class SaveData
     }
 
     [Serializable]
-    public class AffixSaveData
+    private class AffixSaveData
     {
         public string baseId;
         public List<float> affixValues = new List<float>();
@@ -356,7 +377,7 @@ public class SaveData
     }
 
     [Serializable]
-    public class AbilityCoreSaveData
+    private class AbilityCoreSaveData
     {
         public Guid id;
         public string baseId;
@@ -371,7 +392,20 @@ public class SaveData
     }
 
     [Serializable]
-    public class ConsumablesContainer
+    private class ArchetypeItemSaveData
+    {
+        public Guid id;
+        public string baseId;
+
+        public ArchetypeItemSaveData(Guid id, string baseId)
+        {
+            this.id = id;
+            this.baseId = baseId ?? throw new ArgumentNullException(nameof(baseId));
+        }
+    }
+
+    [Serializable]
+    private class ConsumablesContainer
     {
         public ConsumableType consumable;
         public int value;

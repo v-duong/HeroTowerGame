@@ -17,7 +17,7 @@ public class HeroEquipmentSlot : MonoBehaviour
         ui.OpenInventoryWindow(false, false);
         if (slot == EquipSlotType.RING_SLOT_1 || slot == EquipSlotType.RING_SLOT_2)
         {
-            ui.InvScrollContent.ShowEquipmentFiltered(x => x.Base.equipSlot == EquipSlotType.RING, true, true);
+            ui.InvScrollContent.ShowEquipmentFiltered(x => x.IsEquipped == false && x.Base.equipSlot == EquipSlotType.RING, true, true);
         }
         else if (slot == EquipSlotType.OFF_HAND)
         {
@@ -38,7 +38,7 @@ public class HeroEquipmentSlot : MonoBehaviour
         }
         else
         {
-            ui.InvScrollContent.ShowEquipmentFiltered(x => x.Base.equipSlot == slot, true, true);
+            ui.InvScrollContent.ShowEquipmentFiltered(x => x.IsEquipped == false && x.Base.equipSlot == slot, true, true);
         }
 
         ui.InvScrollContent.SetCallback(ItemEquipCallback);

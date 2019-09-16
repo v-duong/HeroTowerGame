@@ -71,7 +71,7 @@ public class ActorAbility
 
         AreaLength = abilityBase.areaLength;
         AreaRadius = abilityBase.areaRadius;
-        Cooldown = 1 / abilityBase.attacksPerSec;
+        Cooldown = 1f / abilityBase.attacksPerSec;
         HitscanDelay = abilityBase.hitscanDelay;
         ProjectileSize = abilityBase.projectileSize;
         ProjectileSpeed = abilityBase.projectileSpeed;
@@ -388,7 +388,7 @@ public class ActorAbility
             StatBonus rangeBonus = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.SPELL_RANGE);
 
             MainCriticalChance = critBonus.CalculateStat(abilityBase.baseCritical);
-            Cooldown = 1 / speedBonus.CalculateStat(abilityBase.attacksPerSec);
+            Cooldown = 1f / speedBonus.CalculateStat(abilityBase.attacksPerSec);
             TargetRange = rangeBonus.CalculateStat(abilityBase.targetRange);
         }
         else if (abilityBase.abilityType == AbilityType.ATTACK)
@@ -1120,7 +1120,7 @@ public class ActorAbility
         }
 
         total /= 2f;
-        float dps = ((total * (1 - criticalChance)) + (total * criticalChance * criticalDamage)) * (1f / Cooldown);
+        float dps = ((total * (1 - criticalChance)) + (total * criticalChance * criticalDamage)) * (1f / Cooldown) * abilityBase.hitCount * abilityBase.hitDamageModifier;
         return dps;
     }
 

@@ -74,7 +74,7 @@ public struct AffixBonusProperty
     public readonly GroupType restriction;
 }
 
-public struct TriggeredEffectBonusProperty
+public class TriggeredEffectBonusProperty
 {
     [JsonConverter(typeof(StringEnumConverter))]
     [JsonProperty]
