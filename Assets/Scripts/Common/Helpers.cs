@@ -18,6 +18,9 @@ public static class Helpers
     private static List<BonusType> maxDamageTypes;
     private static List<BonusType> damageTypes;
 
+    private static readonly Dictionary<ElementType, HashSet<BonusType>> conversionTypes = new Dictionary<ElementType, HashSet<BonusType>>();
+
+    [Obsolete]
     public static void GetDamageTypes(ElementType element, AbilityType abilityType, AbilityShotType shotType, ICollection<GroupType> tags, HashSet<BonusType> min, HashSet<BonusType> max, HashSet<BonusType> multi)
     {
         min.Add((BonusType)Enum.Parse(typeof(BonusType), "GLOBAL_" + element.ToString() + "_DAMAGE_MIN"));
@@ -78,6 +81,106 @@ public static class Helpers
         else if (tags.Contains(GroupType.RANGED_ATTACK))
         {
             multi.Add(BonusType.RANGED_ATTACK_DAMAGE);
+        }
+    }
+
+
+    public static void GetGlobalAndFlatDamageTypes(ElementType element, AbilityType abilityType, AbilityShotType shotType, ICollection<GroupType> tags, HashSet<BonusType> min, HashSet<BonusType> max, HashSet<BonusType> multi)
+    {
+        min.Add((BonusType)Enum.Parse(typeof(BonusType), "GLOBAL_" + element.ToString() + "_DAMAGE_MIN"));
+        max.Add((BonusType)Enum.Parse(typeof(BonusType), "GLOBAL_" + element.ToString() + "_DAMAGE_MAX"));
+
+        if (abilityType == AbilityType.ATTACK || abilityType == AbilityType.SPELL)
+        {
+            min.Add((BonusType)Enum.Parse(typeof(BonusType), abilityType.ToString() + "_" + element.ToString() + "_DAMAGE_MIN"));
+            max.Add((BonusType)Enum.Parse(typeof(BonusType), abilityType.ToString() + "_" + element.ToString() + "_DAMAGE_MAX"));
+        }
+
+        multi.Add(BonusType.GLOBAL_DAMAGE);
+
+        if (abilityType == AbilityType.ATTACK)
+        {
+            multi.Add(BonusType.ATTACK_DAMAGE);
+        }
+        else if (abilityType == AbilityType.SPELL)
+        {
+            multi.Add(BonusType.SPELL_DAMAGE);
+        }
+
+        if (shotType == AbilityShotType.PROJECTILE)
+        {
+            multi.Add(BonusType.PROJECTILE_DAMAGE);
+        }
+        else if (shotType == AbilityShotType.HITSCAN_SINGLE)
+        {
+            multi.Add(BonusType.PROJECTILE_DAMAGE);
+        }
+        else
+        {
+            multi.Add(BonusType.AREA_DAMAGE);
+        }
+
+        if (tags.Contains(GroupType.MELEE_ATTACK))
+        {
+            multi.Add(BonusType.MELEE_ATTACK_DAMAGE);
+        }
+        else if (tags.Contains(GroupType.RANGED_ATTACK))
+        {
+            multi.Add(BonusType.RANGED_ATTACK_DAMAGE);
+        }
+    }
+
+    public static HashSet<BonusType> GetMultiplierTypes(AbilityType abilityType, params ElementType[] elements)
+    {
+        HashSet<BonusType> bonusTypes = new HashSet<BonusType>();
+
+        foreach (ElementType e in elements)
+        {
+            bonusTypes.Add((BonusType)Enum.Parse(typeof(BonusType), "GLOBAL_" + e.ToString() + "_DAMAGE"));
+            if (abilityType == AbilityType.ATTACK || abilityType == AbilityType.SPELL)
+            {
+                bonusTypes.Add((BonusType)Enum.Parse(typeof(BonusType), abilityType.ToString() + "_" + e.ToString() + "_DAMAGE"));
+                switch (e)
+                {
+                    case ElementType.FIRE:
+                    case ElementType.COLD:
+                    case ElementType.LIGHTNING:
+                    case ElementType.EARTH:
+                        bonusTypes.Add((BonusType)Enum.Parse(typeof(BonusType), abilityType.ToString() + "_ELEMENTAL_DAMAGE"));
+                        bonusTypes.Add(BonusType.GLOBAL_ELEMENTAL_DAMAGE);
+                        break;
+
+                    case ElementType.DIVINE:
+                    case ElementType.VOID:
+                        bonusTypes.Add((BonusType)Enum.Parse(typeof(BonusType), abilityType.ToString() + "_PRIMORDIAL_DAMAGE"));
+                        bonusTypes.Add(BonusType.GLOBAL_PRIMORDIAL_DAMAGE);
+                        break;
+                }
+            }
+        }
+
+        return bonusTypes;
+    }
+
+    public static HashSet<BonusType> GetConversionTypes(ElementType element)
+    {
+        if (conversionTypes.ContainsKey(element))
+            return conversionTypes[element];
+        else
+        {
+            HashSet<BonusType> bonuses = new HashSet<BonusType>();
+
+            foreach (ElementType e in Enum.GetValues(typeof(ElementType)))
+            {
+                if (e == element)
+                    continue;
+                if (Enum.TryParse(element.ToString() + "_CONVERT_" + e.ToString(), out BonusType b))
+                    bonuses.Add(b);
+            }
+
+            conversionTypes[element] = bonuses;
+
+            return bonuses;
         }
     }
 
@@ -250,6 +353,7 @@ public static class Helpers
         {
             case RarityType.UNIQUE:
                 return UNIQUE_COLOR;
+
             case RarityType.EPIC:
                 return EPIC_COLOR;
 

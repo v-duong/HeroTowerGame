@@ -2,7 +2,7 @@
 
 public class ElectrocuteEffect : ActorStatusEffect
 {
-
+    private const float BASE_RADIUS = 1.5f;
     protected float damage;
     protected float timeElapsed;
 
@@ -23,13 +23,19 @@ public class ElectrocuteEffect : ActorStatusEffect
     {
         Collider2D[] hits;
 
+        //HashSet<GroupType> tags = new HashSet<GroupType>(Source.Data.GroupTypes);
+        //tags.UnionWith(Source.GetActorTags());
+        //float range = Source.Data.GetMultiStatBonus(tags, BonusType.AREA_RADIUS).CalculateStat(BASE_RADIUS);
+
+        float range = BASE_RADIUS;
+
         if (target.GetActorType() == ActorType.ENEMY)
         {
-            hits = Physics2D.OverlapCircleAll(target.transform.position, 1.5f, LayerMask.GetMask("Enemy"));
+            hits = Physics2D.OverlapCircleAll(target.transform.position, range, LayerMask.GetMask("Enemy"));
         }
         else
         {
-            hits = Physics2D.OverlapCircleAll(target.transform.position, 1.5f, LayerMask.GetMask("Hero"));
+            hits = Physics2D.OverlapCircleAll(target.transform.position, range, LayerMask.GetMask("Hero"));
         }
 
         int index = Random.Range(0, hits.Length);

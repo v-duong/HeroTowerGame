@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
 
 public class StatBonus
 {
@@ -34,8 +33,20 @@ public class StatBonus
         isStatOutdated = true;
     }
 
+    public bool IsZero()
+    {
+        if (HasFixedModifier == true)
+            return false;
+        if (AdditiveModifier != 0 || MultiplyModifiers.Count != 0 || FlatModifier != 0)
+            return false;
+        return true;
+    }
+
     public void AddBonuses(StatBonus otherBonus, bool overwriteFixed = true)
     {
+        if (otherBonus == null)
+            return;
+
         FlatModifier += otherBonus.FlatModifier;
         AdditiveModifier += otherBonus.AdditiveModifier;
         MultiplyModifiers.AddRange(otherBonus.MultiplyModifiers);
@@ -173,6 +184,14 @@ public class StatBonusCollection
         statBonuses = new Dictionary<GroupType, StatBonus>();
     }
 
+    public bool IsEmpty()
+    {
+        if (statBonuses.Count == 0)
+            return true;
+        else
+            return false;
+    }
+
     public IEnumerable<GroupType> GetGroupTypeIntersect(IEnumerable<GroupType> types)
     {
         return statBonuses.Keys.Intersect(types);
@@ -190,6 +209,8 @@ public class StatBonusCollection
         if (statBonuses.ContainsKey(type))
         {
             statBonuses[type].RemoveBonus(modifyType, value);
+            if (statBonuses[type].IsZero())
+                statBonuses.Remove(type);
             return true;
         }
         else

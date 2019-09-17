@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 public class HeroArchetypeData : IAbilitySource
 {
@@ -45,6 +46,8 @@ public class HeroArchetypeData : IAbilitySource
 
         foreach (var nodeSaveData in archetypeSaveData.nodeLevelData)
         {
+            if (nodeSaveData.level == 0)
+                continue;
             LoadNodeLevelsFromSave(Base.GetNode(nodeSaveData.nodeId), nodeLevels[nodeSaveData.nodeId], nodeSaveData.level);
         }
     }
@@ -129,6 +132,13 @@ public class HeroArchetypeData : IAbilitySource
                 hero.AddArchetypeStatBonus(bonus.bonusType, bonus.restriction, bonus.modifyType, bonusValue);
             }
         }
+
+        foreach (TriggeredEffectBonusProperty triggeredEffectBonus in node.triggeredEffects)
+        {
+            ActorData.TriggeredEffect t = new ActorData.TriggeredEffect(triggeredEffectBonus, triggeredEffectBonus.effectMinValue);
+            hero.AddTriggeredEffect(triggeredEffectBonus, t);
+        }
+
         nodeLevels[node.id] = setLevel;
 
     }
@@ -154,7 +164,17 @@ public class HeroArchetypeData : IAbilitySource
 
             hero.AddArchetypeStatBonus(bonus.bonusType, bonus.restriction, bonus.modifyType, bonusValue);
         }
-        hero.UpdateActorData();
+
+        if (nodeLevels[node.id] == 1)
+        {
+            foreach (TriggeredEffectBonusProperty triggeredEffectBonus in node.triggeredEffects)
+            {
+                ActorData.TriggeredEffect t = new ActorData.TriggeredEffect(triggeredEffectBonus, triggeredEffectBonus.effectMinValue);
+                hero.AddTriggeredEffect(triggeredEffectBonus, t);
+            }
+        }
+
+            hero.UpdateActorData();
         return true;
     }
 
@@ -172,6 +192,7 @@ public class HeroArchetypeData : IAbilitySource
             if (nodeLevels[node.id] == 1)
             {
                 bonusValue = bonus.growthValue;
+                
             }
             else if (nodeLevels[node.id] == node.maxLevel)
                 bonusValue = bonus.finalLevelValue;
@@ -181,6 +202,13 @@ public class HeroArchetypeData : IAbilitySource
             hero.AddArchetypeStatBonus(bonus.bonusType, bonus.restriction, bonus.modifyType, bonusValue);
         }
 
+        if (nodeLevels[node.id] == 1)
+        {
+            foreach (TriggeredEffectBonusProperty triggeredEffectBonus in node.triggeredEffects)
+            {
+                hero.RemoveTriggeredEffect(triggeredEffectBonus);
+            }
+        }
         nodeLevels[node.id]--;
 
         hero.UpdateActorData();
@@ -192,7 +220,7 @@ public class HeroArchetypeData : IAbilitySource
         return true;
     }
 
-    public void OnEquip(AbilityBase ability, HeroData hero, int slot)
+    public void OnAbilityEquip(AbilityBase ability, HeroData hero, int slot)
     {
         foreach (var archetypeAbility in AvailableAbilityList)
         {
@@ -205,7 +233,7 @@ public class HeroArchetypeData : IAbilitySource
         }
     }
 
-    public void OnUnequip(AbilityBase ability, HeroData hero, int slot)
+    public void OnAbilityUnequip(AbilityBase ability, HeroData hero, int slot)
     {
         foreach (var archetypeAbility in AvailableAbilityList)
         {

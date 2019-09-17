@@ -419,11 +419,14 @@ public class ActorAbility
         if (abilityBase.abilityType == AbilityType.AURA || abilityBase.abilityType == AbilityType.SELF_BUFF)
             return;
 
-        AbilityType abilityType = abilityBase.abilityType;
         IList<GroupType> damageTags = abilityBase.GetGroupTypes();
         Weapon mainWeapon = null, offWeapon = null;
         float flatDamageMod = abilityBase.flatDamageMultiplier;
         DualWielding = false;
+        int[] mainConvertedDamageMin = new int[7];
+        int[] mainConvertedDamageMax = new int[7];
+        int[] offConvertedDamageMin = new int[7];
+        int[] offConvertedDamageMax = new int[7];
 
         if (data.GetEquipmentInSlot(EquipSlotType.WEAPON) is Weapon)
         {
@@ -433,6 +436,17 @@ public class ActorAbility
         {
             offWeapon = data.GetEquipmentInSlot(EquipSlotType.OFF_HAND) as Weapon;
             DualWielding = true;
+        }
+
+        HashSet<GroupType> nonWeaponTags = data.GetGroupTypes(false);
+        if (AbilityOwner != null)
+            nonWeaponTags.UnionWith(AbilityOwner.GetActorTags());
+        HashSet<GroupType> mainHandTags = new HashSet<GroupType>(nonWeaponTags);
+        if (mainWeapon != null)
+        {
+            mainHandTags.UnionWith(mainWeapon.GetGroupTypes());
+            if (DualWielding && !AlternatesAttacks || DualWielding && abilityBase.abilityType == AbilityType.SPELL)
+                mainHandTags.UnionWith(offWeapon.GetGroupTypes());
         }
 
         foreach (ElementType element in Enum.GetValues(typeof(ElementType)))
@@ -480,8 +494,8 @@ public class ActorAbility
                 {
                     if (element == ElementType.PHYSICAL)
                     {
-                        baseMinDamage += 2;
-                        baseMaxDamage += 6;
+                        baseMinDamage += 4;
+                        baseMaxDamage += 9;
                     }
                     mainMinDamage = baseMinDamage * weaponMulti;
                     mainMaxDamage = baseMaxDamage * weaponMulti;
@@ -496,28 +510,32 @@ public class ActorAbility
             mainDamageBase[element].baseMin = mainMinDamage;
             mainDamageBase[element].baseMax = mainMaxDamage;
 
+            //Helpers.GetDamageTypes(element, abilityType, abilityBase.abilityShotType, damageTags, min, max, multi);
+
             HashSet<BonusType> min = new HashSet<BonusType>();
             HashSet<BonusType> max = new HashSet<BonusType>();
             HashSet<BonusType> multi = new HashSet<BonusType>();
 
-            Helpers.GetDamageTypes(element, abilityType, abilityBase.abilityShotType, damageTags, min, max, multi);
-
-            HashSet<GroupType> nonWeaponTags = data.GetGroupTypes(false);
-            HashSet<GroupType> mainHandTags = new HashSet<GroupType>(nonWeaponTags);
-            if (mainWeapon != null)
-            {
-                mainHandTags.UnionWith(mainWeapon.GetGroupTypes());
-                if (DualWielding && !AlternatesAttacks || DualWielding && abilityBase.abilityType == AbilityType.SPELL)
-                    mainHandTags.UnionWith(offWeapon.GetGroupTypes());
-            }
+            Helpers.GetGlobalAndFlatDamageTypes(element, abilityBase.abilityType, abilityBase.abilityShotType, damageTags, min, max, multi);
 
             mainDamageBase[element].ClearBonuses();
-
             data.GetMultiStatBonus(mainDamageBase[element].minBonus, abilityBonuses, mainHandTags, min.ToArray());
             data.GetMultiStatBonus(mainDamageBase[element].maxBonus, abilityBonuses, mainHandTags, max.ToArray());
+            multi.UnionWith(Helpers.GetMultiplierTypes(abilityBase.abilityType, element));
             data.GetMultiStatBonus(mainDamageBase[element].multiplierBonus, abilityBonuses, mainHandTags, multi.ToArray());
 
-            mainDamageBase[element].CalculateRange(flatDamageMod, finalDamageModifier);
+            HashSet<BonusType> availableConversions = data.BonusesIntersection(abilityBonuses.Keys, Helpers.GetConversionTypes(element));
+            if (availableConversions.Count > 0)
+            {
+                GetElementConversionValues(data, mainHandTags, availableConversions, mainDamageBase[element]);
+                MinMaxRange baseRange = CalculateDamageConversion(data, flatDamageMod, mainConvertedDamageMin, mainConvertedDamageMax, mainHandTags, mainDamageBase[element], element, multi);
+                mainDamageBase[element].calculatedRange.min = baseRange.min;
+                mainDamageBase[element].calculatedRange.max = baseRange.max;
+            }
+            else
+            {
+                mainDamageBase[element].CalculateRange(flatDamageMod, finalDamageModifier);
+            }
 
             if (DualWielding && AlternatesAttacks)
             {
@@ -528,9 +546,138 @@ public class ActorAbility
 
                 data.GetMultiStatBonus(offhandDamageBase[element].minBonus, abilityBonuses, offHandTags, min.ToArray());
                 data.GetMultiStatBonus(offhandDamageBase[element].maxBonus, abilityBonuses, offHandTags, max.ToArray());
+                multi.UnionWith(Helpers.GetMultiplierTypes(abilityBase.abilityType, element));
                 data.GetMultiStatBonus(offhandDamageBase[element].multiplierBonus, abilityBonuses, offHandTags, multi.ToArray());
 
-                offhandDamageBase[element].CalculateRange(flatDamageMod, finalDamageModifier);
+                availableConversions = data.BonusesIntersection(abilityBonuses.Keys, Helpers.GetConversionTypes(element));
+                if (availableConversions.Count > 0)
+                {
+                    GetElementConversionValues(data, offHandTags, availableConversions, offhandDamageBase[element]);
+                    MinMaxRange baseRange = CalculateDamageConversion(data, flatDamageMod, offConvertedDamageMin, offConvertedDamageMax, offHandTags, offhandDamageBase[element], element, multi);
+                    offhandDamageBase[element].calculatedRange.min = baseRange.min;
+                    offhandDamageBase[element].calculatedRange.max = baseRange.max;
+                }
+                else
+                {
+                    offhandDamageBase[element].CalculateRange(flatDamageMod, finalDamageModifier);
+                }
+            }
+        }
+
+        foreach (ElementType element in Enum.GetValues(typeof(ElementType)))
+        {
+            mainDamageBase[element].calculatedRange.min += mainConvertedDamageMin[(int)element];
+            mainDamageBase[element].calculatedRange.max += mainConvertedDamageMax[(int)element];
+            if (DualWielding && AlternatesAttacks)
+            {
+                offhandDamageBase[element].calculatedRange.min += offConvertedDamageMin[(int)element];
+                offhandDamageBase[element].calculatedRange.max += offConvertedDamageMax[(int)element];
+            }
+        }
+    }
+
+    
+    /// <summary>
+    /// Calculates Elemental Conversions. Each element is run once so conversion chains cannot happen.
+    /// After conversion, the converted damage is calculated with all multiplier bonuses and
+    /// is added to an array. Afterwards it should be added to the main damage dictionary/array.
+    /// </summary>
+    /// <param name="data"></param>
+    /// <param name="flatDamageMod"></param>
+    /// <param name="convertedDamageMin"></param>
+    /// <param name="convertedDamageMax"></param>
+    /// <param name="tags"></param>
+    /// <param name="damageContainer"></param>
+    /// <param name="element"></param>
+    /// <param name="multi"></param>
+    /// <param name="minBonus"></param>
+    /// <param name="maxBonus"></param>
+    /// <param name="multiplierBonus"></param>
+    /// <returns></returns>
+    private MinMaxRange CalculateDamageConversion(ActorData data, float flatDamageMod, int[] convertedDamageMin,
+                                           int[] convertedDamageMax, IEnumerable<GroupType> tags,
+                                           AbilityDamageContainer damageContainer, ElementType element,
+                                           HashSet<BonusType> multi, StatBonus minBonus = null, StatBonus maxBonus = null, StatBonus multiplierBonus = null)
+    {
+        float baseMin, baseMax;
+
+        if (minBonus != null)
+            baseMin = damageContainer.baseMin + minBonus.CalculateStat(0) * flatDamageMod;
+        else
+            baseMin = damageContainer.baseMin + damageContainer.minBonus.CalculateStat(0) * flatDamageMod;
+
+        if (maxBonus != null)
+            baseMax = damageContainer.baseMax + maxBonus.CalculateStat(0) * flatDamageMod;
+        else
+            baseMax = damageContainer.baseMax + damageContainer.maxBonus.CalculateStat(0) * flatDamageMod;
+
+        float finalBaseMin = baseMin;
+        float finalBaseMax = baseMax;
+
+        for (int i = 0; i < 7; i++)
+        {
+            if (damageContainer.conversions[i] == 0)
+                continue;
+
+            float convertedMin = baseMin * damageContainer.conversions[i];
+            float convertedMax = baseMax * damageContainer.conversions[i];
+
+            finalBaseMin -= convertedMin;
+            finalBaseMax -= convertedMax;
+
+            HashSet<BonusType> bonusesForConverted = new HashSet<BonusType>(multi);
+            bonusesForConverted.UnionWith(Helpers.GetMultiplierTypes(abilityBase.abilityType, element, (ElementType)i));
+            StatBonus totalMultiplierBonus = data.GetMultiStatBonus(abilityBonuses, tags, bonusesForConverted.ToArray());
+            totalMultiplierBonus.AddBonuses(multiplierBonus);
+
+            convertedMin = totalMultiplierBonus.CalculateStat(convertedMin);
+            convertedMax = totalMultiplierBonus.CalculateStat(convertedMax);
+
+            convertedDamageMin[i] += (int)(convertedMin * finalDamageModifier);
+            convertedDamageMax[i] += (int)(convertedMax * finalDamageModifier);
+        }
+        MinMaxRange returnValue = new MinMaxRange();
+        if (finalBaseMin < 1)
+            finalBaseMin = 0;
+        if (finalBaseMax < 1)
+            finalBaseMax = 0;
+        if (finalBaseMax == 0 && finalBaseMin == 0)
+        {
+            returnValue.min = 0;
+            returnValue.max = 0;
+        }
+        else
+        {
+            StatBonus finalMultiplier = data.GetMultiStatBonus(abilityBonuses, tags, multi.ToArray());
+            finalMultiplier.AddBonuses(multiplierBonus);
+            returnValue.min = (int)(finalMultiplier.CalculateStat(finalBaseMin) * finalDamageModifier);
+            returnValue.max = (int)(finalMultiplier.CalculateStat(finalBaseMax) * finalDamageModifier);
+        }
+
+        return returnValue;
+    }
+
+    private void GetElementConversionValues(ActorData data, IEnumerable<GroupType> mainHandTags, HashSet<BonusType> availableConversions, AbilityDamageContainer damageContainer)
+    {
+        int conversionSum = 0;
+        HashSet<ElementType> elementList = new HashSet<ElementType>();
+        foreach (BonusType conversion in availableConversions)
+        {
+            ElementType convertTo = (ElementType)Enum.Parse(typeof(ElementType), conversion.ToString().Split('_')[2]);
+            elementList.Add(convertTo);
+            int conversionValue = data.GetMultiStatBonus(abilityBonuses, mainHandTags, conversion).CalculateStat(0);
+            damageContainer.conversions[(int)convertTo] = conversionValue;
+            conversionSum += conversionValue;
+        }
+        foreach (ElementType convert in elementList)
+        {
+            if (conversionSum > 100)
+            {
+                damageContainer.conversions[(int)convert] /= conversionSum;
+            }
+            else
+            {
+                damageContainer.conversions[(int)convert] /= 100f;
             }
         }
     }
@@ -541,6 +688,7 @@ public class ActorAbility
             return;
 
         StatBonus minBonus, maxBonus, multiBonus;
+        float flatDamageMod = abilityBase.flatDamageMultiplier;
         AbilityType abilityType = abilityBase.abilityType;
 
         foreach (ElementType element in Enum.GetValues(typeof(ElementType)))
@@ -554,6 +702,7 @@ public class ActorAbility
             }
             else if (abilityBase.abilityType == AbilityType.ATTACK)
             {
+                flatDamageMod = abilityBase.weaponMultiplier + abilityBase.weaponMultiplierScaling * 50;
                 minDamage = data.minAttackDamage;
                 maxDamage = data.maxAttackDamage;
             }
@@ -562,20 +711,13 @@ public class ActorAbility
             HashSet<BonusType> max = new HashSet<BonusType>();
             HashSet<BonusType> multi = new HashSet<BonusType>();
 
-            Helpers.GetDamageTypes(element, abilityType, abilityBase.abilityShotType, abilityBase.GetGroupTypes(), min, max, multi);
+            Helpers.GetGlobalAndFlatDamageTypes(element, abilityType, abilityBase.abilityShotType, abilityBase.GetGroupTypes(), min, max, multi);
 
             minBonus = data.GetMultiStatBonus(abilityBonuses, tags, min.ToArray());
             maxBonus = data.GetMultiStatBonus(abilityBonuses, tags, max.ToArray());
             multiBonus = data.GetMultiStatBonus(abilityBonuses, tags, multi.ToArray());
 
-            minDamage += minBonus.CalculateStat(0) * abilityBase.flatDamageMultiplier;
-            maxDamage += maxBonus.CalculateStat(0) * abilityBase.flatDamageMultiplier;
-
-            minDamage = multiBonus.CalculateStat(minDamage);
-            maxDamage = multiBonus.CalculateStat(maxDamage);
-
-            mainDamageBase[element].calculatedRange.min = (int)(minDamage * damageModifier);
-            mainDamageBase[element].calculatedRange.max = (int)(maxDamage * damageModifier);
+            mainDamageBase[element].CalculateRange(abilityBase.flatDamageMultiplier, finalDamageModifier);
         }
     }
 
@@ -675,9 +817,14 @@ public class ActorAbility
         bool isCrit = false;
         Dictionary<ElementType, float> returnDict = new Dictionary<ElementType, float>();
         IList<GroupType> damageTags = abilityBase.GetGroupTypes();
+        HashSet<GroupType> weaponTags = new HashSet<GroupType>();
         HashSet<GroupType> targetTypes = target.GetActorTagsAsTarget();
         Dictionary<ElementType, AbilityDamageContainer> dicToUse;
         Dictionary<BonusType, StatBonus> whenHitBonusDict = new Dictionary<BonusType, StatBonus>();
+        int[] minDamage = new int[7];
+        int[] maxDamage = new int[7];
+        int[] convertedMinDamage = new int[7];
+        int[] convertedMaxDamage = new int[7];
 
         if (attackWithMainHand)
         {
@@ -690,6 +837,24 @@ public class ActorAbility
             dicToUse = offhandDamageBase;
             critChance = OffhandCriticalChance;
             criticalDamage = OffhandCriticalDamage;
+        }
+
+        if (source.GetActorType() == ActorType.ALLY)
+        {
+            HeroData hero = (HeroData)source.Data;
+            HashSet<GroupType> nonWeaponTags = hero.GetGroupTypes(false);
+            nonWeaponTags.UnionWith(AbilityOwner.GetActorTags());
+            weaponTags = new HashSet<GroupType>(nonWeaponTags);
+            if (attackWithMainHand && hero.GetEquipmentInSlot(EquipSlotType.WEAPON) is Weapon weapon)
+            {
+                weaponTags.UnionWith(weapon.GetGroupTypes());
+                if (DualWielding && !AlternatesAttacks || DualWielding && abilityBase.abilityType == AbilityType.SPELL)
+                    weaponTags.UnionWith(hero.GetEquipmentInSlot(EquipSlotType.OFF_HAND).GetGroupTypes());
+            }
+            else if (!attackWithMainHand && hero.GetEquipmentInSlot(EquipSlotType.OFF_HAND) is Weapon offWeapon)
+            {
+                weaponTags.UnionWith(offWeapon.GetGroupTypes());
+            }
         }
 
         if (UnityEngine.Random.Range(0f, 100f) < critChance)
@@ -721,8 +886,8 @@ public class ActorAbility
         {
             if (dicToUse.ContainsKey(elementType))
             {
-                int min = dicToUse[elementType].calculatedRange.min;
-                int max = dicToUse[elementType].calculatedRange.max;
+                minDamage[(int)elementType] = dicToUse[elementType].calculatedRange.min;
+                maxDamage[(int)elementType] = dicToUse[elementType].calculatedRange.max;
                 if (source.Data.WhenHittingEffects.Count > 0)
                 {
                     StatBonus minBonus = new StatBonus();
@@ -732,7 +897,8 @@ public class ActorAbility
                     HashSet<BonusType> maxTypes = new HashSet<BonusType>();
                     HashSet<BonusType> multiTypes = new HashSet<BonusType>();
 
-                    Helpers.GetDamageTypes(elementType, abilityBase.abilityType, abilityBase.abilityShotType, damageTags, minTypes, maxTypes, multiTypes);
+                    Helpers.GetGlobalAndFlatDamageTypes(elementType, abilityBase.abilityType, abilityBase.abilityShotType, damageTags, minTypes, maxTypes, multiTypes);
+                    multiTypes.UnionWith(Helpers.GetMultiplierTypes(abilityBase.abilityType, elementType));
                     foreach (KeyValuePair<BonusType, StatBonus> keyValue in whenHitBonusDict)
                     {
                         if (minTypes.Contains(keyValue.Key))
@@ -756,17 +922,37 @@ public class ActorAbility
 
                     minBonus.AddBonuses(dicToUse[elementType].minBonus);
                     maxBonus.AddBonuses(dicToUse[elementType].maxBonus);
-                    multiBonus.AddBonuses(dicToUse[elementType].multiplierBonus);
 
-                    min = (int)(multiBonus.CalculateStat(dicToUse[elementType].baseMin + minBonus.CalculateStat(0f) * flatDamageMod) * finalDamageModifier);
-                    max = (int)(multiBonus.CalculateStat(dicToUse[elementType].baseMax + maxBonus.CalculateStat(0f) * flatDamageMod) * finalDamageModifier);
+                    HashSet<BonusType> availableConversions = source.Data.BonusesIntersection(abilityBonuses.Keys, Helpers.GetConversionTypes(elementType));
+                    if (availableConversions.Count > 0)
+                    {
+                        foreach (BonusType b in availableConversions)
+                        {
+                            Debug.Log(b);
+                        }
+                        GetElementConversionValues(source.Data, weaponTags, availableConversions, offhandDamageBase[elementType]);
+                        MinMaxRange baseRange = CalculateDamageConversion(source.Data, flatDamageMod, convertedMinDamage, convertedMaxDamage, weaponTags, dicToUse[elementType], elementType, multiTypes, minBonus, maxBonus, multiBonus);
+                        minDamage[(int)elementType] = baseRange.min;
+                        maxDamage[(int)elementType] = baseRange.max;
+                    }
+                    else
+                    {
+                        multiBonus.AddBonuses(dicToUse[elementType].multiplierBonus);
+                        minDamage[(int)elementType] = (int)(multiBonus.CalculateStat(dicToUse[elementType].baseMin + minBonus.CalculateStat(0f) * flatDamageMod) * finalDamageModifier);
+                        maxDamage[(int)elementType] = (int)(multiBonus.CalculateStat(dicToUse[elementType].baseMax + maxBonus.CalculateStat(0f) * flatDamageMod) * finalDamageModifier);
+                    }
                 }
-
-                float damage = UnityEngine.Random.Range(min, max + 1);
-                if (isCrit)
-                    damage *= criticalDamage;
-                returnDict.Add(elementType, damage * abilityBase.hitDamageModifier);
             }
+        }
+
+        foreach (ElementType elementType in values)
+        {
+            float damage = UnityEngine.Random.Range(minDamage[(int)elementType] + convertedMinDamage[(int)elementType], maxDamage[(int)elementType] + convertedMaxDamage[(int)elementType] + 1);
+
+            if (isCrit)
+                damage *= criticalDamage;
+
+            returnDict.Add(elementType, damage * abilityBase.hitDamageModifier);
         }
 
         if (DualWielding && AlternatesAttacks)
@@ -1161,6 +1347,7 @@ public class ActorAbility
         public StatBonus minBonus;
         public StatBonus maxBonus;
         public StatBonus multiplierBonus;
+        public float[] conversions;
 
         public AbilityDamageContainer()
         {
@@ -1168,6 +1355,7 @@ public class ActorAbility
             minBonus = new StatBonus();
             maxBonus = new StatBonus();
             multiplierBonus = new StatBonus();
+            conversions = new float[7];
         }
 
         public void ClearBonuses()
@@ -1175,17 +1363,20 @@ public class ActorAbility
             minBonus.ResetBonus();
             maxBonus.ResetBonus();
             multiplierBonus.ResetBonus();
+            Array.Clear(conversions, 0, 7);
         }
 
         public void CalculateRange(float flatDamageMod, float finalDamageModifier)
         {
             float mainMinDamage, mainMaxDamage;
-
             float addedFlatMin = minBonus.CalculateStat(0) * flatDamageMod;
             float addedFlatMax = maxBonus.CalculateStat(0) * flatDamageMod;
 
-            mainMinDamage = multiplierBonus.CalculateStat(baseMin + addedFlatMin);
-            mainMaxDamage = multiplierBonus.CalculateStat(baseMax + addedFlatMax);
+            mainMinDamage = baseMin + addedFlatMin;
+            mainMaxDamage = baseMax + addedFlatMax;
+
+            mainMinDamage = multiplierBonus.CalculateStat(mainMinDamage);
+            mainMaxDamage = multiplierBonus.CalculateStat(mainMaxDamage);
 
             calculatedRange.min = (int)(mainMinDamage * finalDamageModifier);
             calculatedRange.max = (int)(mainMaxDamage * finalDamageModifier);

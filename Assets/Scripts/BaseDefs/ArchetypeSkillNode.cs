@@ -19,7 +19,7 @@ public class ArchetypeSkillNode
     [JsonProperty]
     public readonly List<NodeScalingBonusProperty> bonuses;
     [JsonProperty]
-    public readonly List<TriggeredEffectBonusProperty> addedEffectBonuses;
+    public readonly List<TriggeredEffectBonusProperty> triggeredEffects;
     [JsonProperty]
     public readonly string abilityId;
     [JsonProperty]

@@ -16,7 +16,7 @@ public interface IAbilitySource
     string SourceName { get; }
     Guid SourceId { get; }
     AbilitySourceType AbilitySourceType { get; }
-    void OnEquip(AbilityBase ability, HeroData hero, int slot);
-    void OnUnequip(AbilityBase ability, HeroData hero, int slot);
+    void OnAbilityEquip(AbilityBase ability, HeroData hero, int slot);
+    void OnAbilityUnequip(AbilityBase ability, HeroData hero, int slot);
     Tuple<HeroData, int> GetEquippedHeroAndSlot(AbilityBase ability);
 }

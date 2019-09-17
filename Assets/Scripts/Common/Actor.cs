@@ -65,12 +65,19 @@ public abstract class Actor : MonoBehaviour
 
     public HashSet<GroupType> GetActorTags()
     {
-        UpdateTargetTags();
         return actorTags;
+    }
+
+    public HashSet<GroupType> GetActorTagsAndDataTags()
+    {
+        HashSet<GroupType> returnSet = new HashSet<GroupType>( GetActorTags() );
+        returnSet.UnionWith(Data.GroupTypes);
+        return returnSet;
     }
 
     public HashSet<GroupType> GetActorTagsAsTarget()
     {
+        UpdateTargetTags();
         return actorTargetTags;
     }
 
@@ -332,7 +339,6 @@ public abstract class Actor : MonoBehaviour
     {
         if (damage.ContainsKey(ElementType.PHYSICAL) && damage[ElementType.PHYSICAL] > 0 && postDamageData.DidEffectProc(EffectType.BLEED))
         {
-            Debug.Log(damage[ElementType.PHYSICAL] + "   " + damage[ElementType.PHYSICAL] * postDamageData.GetEffectEffectiveness(EffectType.BLEED) * Data.AfflictedStatusDamageResistance);
             AddStatusEffect(new BleedEffect(this, postDamageData.sourceActor, damage[ElementType.PHYSICAL] * postDamageData.GetEffectEffectiveness(EffectType.BLEED) * Data.AfflictedStatusDamageResistance, postDamageData.GetEffectDuration(EffectType.BLEED)));
         }
 

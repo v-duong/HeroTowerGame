@@ -45,13 +45,13 @@ public class AbilityCoreItem : Item, IAbilitySource
         return ItemType.ABILITY;
     }
 
-    public void OnEquip(AbilityBase ability, HeroData hero, int slot)
+    public void OnAbilityEquip(AbilityBase ability, HeroData hero, int slot)
     {
         EquippedHero = hero;
         EquippedSlot = slot;
     }
 
-    public void OnUnequip(AbilityBase ability, HeroData hero, int slot)
+    public void OnAbilityUnequip(AbilityBase ability, HeroData hero, int slot)
     {
         EquippedHero = null;
     }

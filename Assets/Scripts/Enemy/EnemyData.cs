@@ -59,10 +59,10 @@ public class EnemyData : ActorData
         movementSpeed = GetMultiStatBonus(GroupTypes, BonusType.MOVEMENT_SPEED).CalculateStat(BaseData.movementSpeed);
 
         Armor = GetMultiStatBonus(GroupTypes, BonusType.GLOBAL_ARMOR).CalculateStat(BaseArmor);
-        DodgeRating = GetMultiStatBonus(GroupTypes,BonusType.GLOBAL_DODGE_RATING).CalculateStat(BaseDodgeRating);
-        ResolveRating = GetMultiStatBonus(GroupTypes,BonusType.GLOBAL_RESOLVE_RATING).CalculateStat(BaseResolveRating);
-        AttackPhasing = GetMultiStatBonus(GroupTypes,BonusType.ATTACK_PHASING).CalculateStat(BaseAttackPhasing);
-        MagicPhasing = GetMultiStatBonus(GroupTypes,BonusType.MAGIC_PHASING).CalculateStat(BaseMagicPhasing);
+        DodgeRating = GetMultiStatBonus(GroupTypes, BonusType.GLOBAL_DODGE_RATING).CalculateStat(BaseDodgeRating);
+        ResolveRating = GetMultiStatBonus(GroupTypes, BonusType.GLOBAL_RESOLVE_RATING).CalculateStat(BaseResolveRating);
+        AttackPhasing = GetMultiStatBonus(GroupTypes, BonusType.ATTACK_PHASING).CalculateStat(BaseAttackPhasing);
+        MagicPhasing = GetMultiStatBonus(GroupTypes, BonusType.MAGIC_PHASING).CalculateStat(BaseMagicPhasing);
 
         AfflictedStatusDamageResistance = 1 - GetMultiStatBonus(GroupTypes, BonusType.AFFLICTED_STATUS_DAMAGE_RESISTANCE).CalculateStat(0f);
         AfflictedStatusThreshold = GetMultiStatBonus(GroupTypes, BonusType.AFFLICTED_STATUS_THRESHOLD).CalculateStat(1f);
@@ -137,5 +137,17 @@ public class EnemyData : ActorData
         }
 
         return types;
+    }
+
+    public override HashSet<BonusType> BonusesIntersection(IEnumerable<BonusType> abilityBonuses, IEnumerable<BonusType> bonuses)
+    {
+        HashSet<BonusType> actorBonuses = new HashSet<BonusType>();
+        actorBonuses.UnionWith(statBonuses.Keys);
+        actorBonuses.UnionWith(temporaryBonuses.Keys);
+        actorBonuses.UnionWith(mobBonuses.Keys);
+        if (abilityBonuses != null)
+            actorBonuses.UnionWith(abilityBonuses);
+        actorBonuses.IntersectWith(bonuses);
+        return actorBonuses;
     }
 }

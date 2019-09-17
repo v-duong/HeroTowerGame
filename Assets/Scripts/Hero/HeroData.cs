@@ -217,7 +217,7 @@ public class HeroData : ActorData
             }
             abilitySlotList[slot].SetAbilityToSlot(ability, source);
         }
-        source.OnEquip(ability, this, slot);
+        source.OnAbilityEquip(ability, this, slot);
         UpdateAbilities();
         return true;
     }
@@ -229,7 +229,7 @@ public class HeroData : ActorData
         if (abilitySlotList[slot].Ability == null)
             return false;
         IAbilitySource source = abilitySlotList[slot].source;
-        source.OnUnequip(abilitySlotList[slot].Ability.abilityBase, this, slot);
+        source.OnAbilityUnequip(abilitySlotList[slot].Ability.abilityBase, this, slot);
         abilitySlotList[slot].ClearAbility();
         return true;
     }
@@ -337,9 +337,7 @@ public class HeroData : ActorData
         Equipment equip = equipList[(int)slot];
         equipList[(int)slot] = null;
         equip.equippedToHero = null;
-        RemoveEquipmentBonuses(equip.prefixes);
-        RemoveEquipmentBonuses(equip.suffixes);
-        RemoveEquipmentBonuses(equip.innate);
+        RemoveEquipmentBonuses(equip.GetAllAffixes());
 
         if (isDualWielding && !(GetEquipmentInSlot(EquipSlotType.WEAPON) is Weapon && GetEquipmentInSlot(EquipSlotType.OFF_HAND) is Weapon))
         {
@@ -368,25 +366,69 @@ public class HeroData : ActorData
             {
                 TriggeredEffectBonusProperty triggeredEffect = affix.Base.triggeredEffects[i];
                 TriggeredEffect t = new TriggeredEffect(triggeredEffect, affix.GetEffectValue(i));
-                switch (triggeredEffect.triggerType)
-                {
-                    case TriggerType.ON_HIT:
-                        OnHitEffects.Add(t);
-                        break;
-
-                    case TriggerType.WHEN_HIT_BY:
-                        WhenHitEffects.Add(t);
-                        break;
-
-                    case TriggerType.WHEN_HITTING:
-                        WhenHittingEffects.Add(t);
-                        break;
-
-                    case TriggerType.ON_KILL:
-                        OnKillEffects.Add(t);
-                        break;
-                }
+                AddTriggeredEffect(triggeredEffect, t);
             }
+        }
+    }
+
+    public void AddTriggeredEffect(TriggeredEffectBonusProperty triggeredEffect, TriggeredEffect effectInstance)
+    {
+        switch (triggeredEffect.triggerType)
+        {
+            case TriggerType.ON_HIT:
+                OnHitEffects.Add(effectInstance);
+                break;
+
+            case TriggerType.WHEN_HIT_BY:
+                WhenHitEffects.Add(effectInstance);
+                break;
+
+            case TriggerType.WHEN_HITTING:
+                WhenHittingEffects.Add(effectInstance);
+                break;
+
+            case TriggerType.ON_KILL:
+                OnKillEffects.Add(effectInstance);
+                break;
+            case TriggerType.HEALTH_THRESHOLD:
+                break;
+            case TriggerType.SHIELD_THRESHOLD:
+                break;
+            case TriggerType.SOULPOINT_THRESHOLD:
+                break;
+        }
+    }
+
+    public void RemoveTriggeredEffect(TriggeredEffectBonusProperty triggeredEffect)
+    {
+        TriggeredEffect t;
+        switch (triggeredEffect.triggerType)
+        {
+            case TriggerType.ON_HIT:
+                t = OnHitEffects.Find(x => x.BaseEffect == triggeredEffect);
+                OnHitEffects.Remove(t);
+                break;
+
+            case TriggerType.WHEN_HIT_BY:
+                t = WhenHitEffects.Find(x => x.BaseEffect == triggeredEffect);
+                WhenHitEffects.Remove(t);
+                break;
+
+            case TriggerType.WHEN_HITTING:
+                t = WhenHittingEffects.Find(x => x.BaseEffect == triggeredEffect);
+                WhenHittingEffects.Remove(t);
+                break;
+
+            case TriggerType.ON_KILL:
+                t = OnKillEffects.Find(x => x.BaseEffect == triggeredEffect);
+                OnKillEffects.Remove(t);
+                break;
+            case TriggerType.HEALTH_THRESHOLD:
+                break;
+            case TriggerType.SHIELD_THRESHOLD:
+                break;
+            case TriggerType.SOULPOINT_THRESHOLD:
+                break;
         }
     }
 
@@ -397,38 +439,22 @@ public class HeroData : ActorData
             for (int i = 0; i < affix.Base.affixBonuses.Count; i++)
             {
                 AffixBonusProperty b = affix.Base.affixBonuses[i];
-                if (b.bonusType < (BonusType)0x700) //ignore local mods
+                //ignore local mods
+                if (b.bonusType < (BonusType)0x700)
+                { 
                     RemoveStatBonus(b.bonusType, b.restriction, b.modifyType, affix.GetAffixValue(i));
+                }
             }
             for (int i = 0; i < affix.Base.triggeredEffects.Count; i++)
             {
                 TriggeredEffectBonusProperty triggeredEffect = affix.Base.triggeredEffects[i];
                 TriggeredEffect t;
-                switch (triggeredEffect.triggerType)
-                {
-                    case TriggerType.ON_HIT:
-                        t = OnHitEffects.Find(x => x.BaseEffect == triggeredEffect);
-                        OnHitEffects.Remove(t);
-                        break;
-
-                    case TriggerType.WHEN_HIT_BY:
-                        t = WhenHitEffects.Find(x => x.BaseEffect == triggeredEffect);
-                        WhenHitEffects.Remove(t);
-                        break;
-
-                    case TriggerType.WHEN_HITTING:
-                        t = WhenHittingEffects.Find(x => x.BaseEffect == triggeredEffect);
-                        WhenHittingEffects.Remove(t);
-                        break;
-
-                    case TriggerType.ON_KILL:
-                        t = OnKillEffects.Find(x => x.BaseEffect == triggeredEffect);
-                        OnKillEffects.Remove(t);
-                        break;
-                }
+                RemoveTriggeredEffect(triggeredEffect);
             }
         }
     }
+
+
 
     public void AddArchetypeStatBonus(BonusType type, GroupType restriction, ModifyType modifier, float value)
     {
@@ -713,6 +739,18 @@ public class HeroData : ActorData
                 }
             }
         }
+    }
+
+    public override HashSet<BonusType> BonusesIntersection(IEnumerable<BonusType> abilityBonuses, IEnumerable<BonusType> bonuses)
+    {
+        HashSet<BonusType> actorBonuses = new HashSet<BonusType>();
+        actorBonuses.UnionWith(statBonuses.Keys);
+        actorBonuses.UnionWith(temporaryBonuses.Keys);
+        actorBonuses.UnionWith(archetypeStatBonuses.Keys);
+        if (abilityBonuses != null)
+            actorBonuses.UnionWith(abilityBonuses);
+        actorBonuses.IntersectWith(bonuses);
+        return actorBonuses;
     }
 
     private class AbilitySlot

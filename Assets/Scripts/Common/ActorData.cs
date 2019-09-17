@@ -104,7 +104,10 @@ public abstract class ActorData
 
     public bool RemoveStatBonus(BonusType type, GroupType restriction, ModifyType modifier, float value)
     {
-        return statBonuses[type].RemoveBonus(restriction, modifier, value);
+        bool isRemoved = statBonuses[type].RemoveBonus(restriction, modifier, value);
+        if (statBonuses[type].IsEmpty())
+            statBonuses.Remove(type);
+        return isRemoved;
     }
 
     public void AddTemporaryBonus(float value, BonusType type, ModifyType modifier, bool deferUpdate)
@@ -223,6 +226,8 @@ public abstract class ActorData
     public abstract void GetTotalStatBonus(BonusType type, IEnumerable<GroupType> tags, Dictionary<BonusType, StatBonus> abilityBonusProperties, StatBonus outBonus);
 
     public abstract int GetResistance(ElementType element);
+
+    public abstract HashSet<BonusType> BonusesIntersection(IEnumerable<BonusType> abilityBonuses,IEnumerable<BonusType> bonuses);
 
     public class TriggeredEffect
     {
