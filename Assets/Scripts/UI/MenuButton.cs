@@ -6,7 +6,7 @@ public class MenuButton : UIKeyButton
 
     public void OnClickInvToggle()
     {
-        UIManager.Instance.OpenInventoryWindow();
+        UIManager.Instance.OpenInventoryWindow(true, true);
     }
 
     public void OnClickTeam()

@@ -272,8 +272,18 @@ public abstract class AffixedItem : Item
     {
         if (Rarity == RarityType.UNIQUE)
             return;
-        prefixes = prefixes.OrderByDescending(x => x.Base.affixBonuses[0].bonusType).ToList();
-        suffixes = suffixes.OrderByDescending(x => x.Base.affixBonuses[0].bonusType).ToList();
+        prefixes = prefixes.OrderBy(x => x.Base.affixBonuses[0].bonusType).ToList();
+        suffixes = suffixes.OrderBy(x => x.Base.affixBonuses[0].bonusType).ToList();
+    }
+
+    public WeightList<AffixBase> GetAllPossiblePrefixes()
+    {
+        return ResourceManager.Instance.GetPossibleAffixes(AffixType.PREFIX, ItemLevel, GetGroupTypes(), GetBonusTagTypeList(AffixType.PREFIX), null);
+    }
+
+    public WeightList<AffixBase> GetAllPossibleSuffixes()
+    {
+        return ResourceManager.Instance.GetPossibleAffixes(AffixType.SUFFIX, ItemLevel, GetGroupTypes(), GetBonusTagTypeList(AffixType.SUFFIX), null);
     }
 
     public abstract bool UpgradeRarity();

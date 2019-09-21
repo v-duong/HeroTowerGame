@@ -576,7 +576,6 @@ public class ActorAbility
         }
     }
 
-    
     /// <summary>
     /// Calculates Elemental Conversions. Each element is run once so conversion chains cannot happen.
     /// After conversion, the converted damage is calculated with all multiplier bonuses and
@@ -826,6 +825,26 @@ public class ActorAbility
         int[] convertedMinDamage = new int[7];
         int[] convertedMaxDamage = new int[7];
 
+        if (source.Data.WhenHittingEffects.Count > 0)
+        {
+            foreach (ActorData.TriggeredEffect triggeredEffect in source.Data.WhenHittingEffects)
+            {
+                if (targetTypes.Contains(triggeredEffect.BaseEffect.restriction) && triggeredEffect.RollTriggerChance())
+                {
+                    if (whenHitBonusDict.ContainsKey(triggeredEffect.BaseEffect.statBonusType))
+                    {
+                        whenHitBonusDict[triggeredEffect.BaseEffect.statBonusType].AddBonus(triggeredEffect.BaseEffect.statModifyType, triggeredEffect.Value);
+                    }
+                    else
+                    {
+                        StatBonus bonus = new StatBonus();
+                        bonus.AddBonus(triggeredEffect.BaseEffect.statModifyType, triggeredEffect.Value);
+                        whenHitBonusDict.Add(triggeredEffect.BaseEffect.statBonusType, bonus);
+                    }
+                }
+            }
+        }
+
         if (attackWithMainHand)
         {
             dicToUse = mainDamageBase;
@@ -854,31 +873,6 @@ public class ActorAbility
             else if (!attackWithMainHand && hero.GetEquipmentInSlot(EquipSlotType.OFF_HAND) is Weapon offWeapon)
             {
                 weaponTags.UnionWith(offWeapon.GetGroupTypes());
-            }
-        }
-
-        if (UnityEngine.Random.Range(0f, 100f) < critChance)
-        {
-            isCrit = true;
-        }
-
-        if (source.Data.WhenHittingEffects.Count > 0)
-        {
-            foreach (ActorData.TriggeredEffect triggeredEffect in source.Data.WhenHittingEffects)
-            {
-                if (targetTypes.Contains(triggeredEffect.BaseEffect.restriction) && triggeredEffect.RollTriggerChance())
-                {
-                    if (whenHitBonusDict.ContainsKey(triggeredEffect.BaseEffect.statBonusType))
-                    {
-                        whenHitBonusDict[triggeredEffect.BaseEffect.statBonusType].AddBonus(triggeredEffect.BaseEffect.statModifyType, triggeredEffect.Value);
-                    }
-                    else
-                    {
-                        StatBonus bonus = new StatBonus();
-                        bonus.AddBonus(triggeredEffect.BaseEffect.statModifyType, triggeredEffect.Value);
-                        whenHitBonusDict.Add(triggeredEffect.BaseEffect.statBonusType, bonus);
-                    }
-                }
             }
         }
 
@@ -926,10 +920,6 @@ public class ActorAbility
                     HashSet<BonusType> availableConversions = source.Data.BonusesIntersection(abilityBonuses.Keys, Helpers.GetConversionTypes(elementType));
                     if (availableConversions.Count > 0)
                     {
-                        foreach (BonusType b in availableConversions)
-                        {
-                            Debug.Log(b);
-                        }
                         GetElementConversionValues(source.Data, weaponTags, availableConversions, offhandDamageBase[elementType]);
                         MinMaxRange baseRange = CalculateDamageConversion(source.Data, flatDamageMod, convertedMinDamage, convertedMaxDamage, weaponTags, dicToUse[elementType], elementType, multiTypes, minBonus, maxBonus, multiBonus);
                         minDamage[(int)elementType] = baseRange.min;
@@ -943,6 +933,11 @@ public class ActorAbility
                     }
                 }
             }
+        }
+
+        if (UnityEngine.Random.Range(0f, 100f) < critChance)
+        {
+            isCrit = true;
         }
 
         foreach (ElementType elementType in values)
@@ -1137,6 +1132,8 @@ public class ActorAbility
     protected void FireHitscan(Vector3 origin, Vector3 target)
     {
         Dictionary<ElementType, float> damageDict = CalculateDamageValues(CurrentTarget, AbilityOwner);
+        emitParams.position = target;
+        ParticleManager.Instance.EmitAbilityParticle(abilityBase.idName, emitParams, 1);
         ApplyDamageToActor(CurrentTarget, damageDict, abilityOnHitData, true);
     }
 
@@ -1155,7 +1152,7 @@ public class ActorAbility
 
         emitParams.position = origin;
         float angle = Vector2.SignedAngle(Vector2.up, forward) + (180f - abilityBase.projectileSpread) / 2;
-        ParticleManager.Instance.EmitAbilityParticleArc(abilityBase.idName, emitParams, AreaScaling, angle, AbilityOwner.transform);
+        ParticleManager.Instance.EmitAbilityParticle_Rotated(abilityBase.idName, emitParams, AreaScaling, angle, AbilityOwner.transform);
 
         foreach (Collider2D hit in hits)
         {

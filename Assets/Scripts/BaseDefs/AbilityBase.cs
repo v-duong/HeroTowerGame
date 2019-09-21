@@ -224,7 +224,7 @@ public enum AbilityTargetType
     NONE
 }
 
-public struct AbilityScalingAddedEffect
+public class AbilityScalingAddedEffect
 {
     [JsonConverter(typeof(StringEnumConverter))]
     [JsonProperty]

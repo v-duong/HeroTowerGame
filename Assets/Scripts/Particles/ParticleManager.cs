@@ -24,7 +24,7 @@ public class ParticleManager : MonoBehaviour
         return abilityPs.waitUntilNextEmit;
     }
 
-    public float EmitAbilityParticleArc(string abilityId, ParticleSystem.EmitParams emitParams, float scaling, float rotationAngle, Transform parent)
+    public float EmitAbilityParticle_Rotated(string abilityId, ParticleSystem.EmitParams emitParams, float scaling, float rotationAngle, Transform parent)
     {
         AbilityParticleSystem abilityPs = GetParticleSystem(abilityId);
         if (abilityPs == null)

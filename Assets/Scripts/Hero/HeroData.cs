@@ -199,6 +199,10 @@ public class HeroData : ActorData
     {
         if (slot >= 3)
             return false;
+
+        if (abilitySlotList[slot] != null)
+            UnequipAbility(slot);
+
         if (slot == 0)
         {
             if (abilitySlotList[1].Ability != null
@@ -448,7 +452,6 @@ public class HeroData : ActorData
             for (int i = 0; i < affix.Base.triggeredEffects.Count; i++)
             {
                 TriggeredEffectBonusProperty triggeredEffect = affix.Base.triggeredEffects[i];
-                TriggeredEffect t;
                 RemoveTriggeredEffect(triggeredEffect);
             }
         }

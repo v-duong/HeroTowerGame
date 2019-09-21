@@ -239,6 +239,7 @@ public class HeroArchetypeData : IAbilitySource
         {
             if (archetypeAbility.abilityBase == ability)
             {
+                Debug.Log("unequipped");
                 archetypeAbility.equippedHero = null;
                 return;
             }

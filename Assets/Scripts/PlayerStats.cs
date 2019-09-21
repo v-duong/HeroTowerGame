@@ -183,15 +183,8 @@ public class PlayerStats
 
 public enum ConsumableType
 {
-    NORMAL_TO_MAGIC,
-    MAGIC_REROLL,
-    NORMAL_TO_RARE,
-    MAGIC_TO_RARE,
-    RARE_REROLL,
+    LOW_TIER_UPGRADER,
     RARE_TO_EPIC,
-    ADD_AFFIX,
-    REMOVE_AFFIX,
-    RESET_NORMAL,
-    VALUE_REROLL,
-    ENCHANTMENT_EXTENSION,
+    AFFIX_REROLLER,
+    AFFIX_CRAFTER
 }

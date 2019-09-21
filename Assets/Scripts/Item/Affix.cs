@@ -35,7 +35,7 @@ public class Affix
         }
     }
 
-    public Affix(AffixBase a, List<float> values, bool locked = false)
+    public Affix(AffixBase a, List<float> values, List<float> effectValues, bool locked = false)
     {
         Base = a;
         affixValues = new List<float>();
@@ -48,6 +48,18 @@ public class Affix
             else
                 affixValues.Add((int)values[i]);
             i++;
+        }
+        i = 0;
+        if (a.triggeredEffects.Count > 0)
+        {
+            addedEffectValues = new List<float>();
+            foreach (TriggeredEffectBonusProperty triggeredEffectBonus in a.triggeredEffects)
+            {
+                if (triggeredEffectBonus.readAsFloat)
+                    addedEffectValues.Add(effectValues[i]);
+                else
+                    addedEffectValues.Add((int)effectValues[i]);
+            }
         }
     }
 
@@ -86,7 +98,10 @@ public class Affix
 
     public IList<float> GetEffectValues()
     {
-        return addedEffectValues.AsReadOnly();
+        if (addedEffectValues != null)
+            return addedEffectValues.AsReadOnly();
+        else
+            return null;
     }
 
     public float GetEffectValue(int index)
@@ -94,10 +109,10 @@ public class Affix
         return addedEffectValues[index];
     }
 
-    public string BuildAffixString(bool useTab = true)
+    public static string BuildAffixString(AffixBase Base, int indent, IList<float> affixValues = null, IList<float> effectValues = null)
     {
         List<int> bonusesToSkip = new List<int>();
-        string s = "○";
+        string s = "";
         for (int i = 0; i < Base.affixBonuses.Count; i++)
         {
             if (bonusesToSkip.Contains(i))
@@ -114,7 +129,7 @@ public class Affix
                 {
                     bonusesToSkip.Add(matchedIndex);
 
-                    s += "<indent=5%>";
+                    s += "<indent=" + indent + "%>";
 
                     if (bonusProp.restriction != GroupType.NO_GROUP)
                     {
@@ -122,21 +137,29 @@ public class Affix
                     }
 
                     s += LocalizationManager.Instance.GetLocalizationText("bonusType." + bonusProp.bonusType.ToString().Replace("_MIN", "")) + " ";
-                    s += "+" + GetAffixValue(i) + "-" + GetAffixValue(matchedIndex) + "</indent>\n";
+                    if (affixValues != null)
+                        s += "+" + affixValues[i] + "-" + affixValues[matchedIndex] + "</indent>\n";
+                    else
+                        s += "+(" + bonusProp.minValue + "-" + bonusProp.maxValue + ")-(" + Base.affixBonuses[matchedIndex].minValue + "-" + Base.affixBonuses[matchedIndex].maxValue + ")</indent>\n";
                     continue;
                 }
             }
 
-            s += "<indent=5%>";
-            s += LocalizationManager.Instance.GetLocalizationText_BonusType(bonusProp.bonusType, bonusProp.modifyType, GetAffixValue(i), bonusProp.restriction).TrimEnd('\n') + "</indent>\n";
+            s += "<indent=" + indent + "%>";
+            if (affixValues != null)
+                s += LocalizationManager.Instance.GetLocalizationText_BonusType(bonusProp.bonusType, bonusProp.modifyType, affixValues[i], bonusProp.restriction);
+            else
+                s += LocalizationManager.Instance.GetLocalizationText_BonusType(bonusProp.bonusType, bonusProp.modifyType, bonusProp.minValue, bonusProp.maxValue, bonusProp.restriction);
+
+            s = s.TrimEnd('\n') + "</indent>\n";
         }
 
         for (int i = 0; i < Base.triggeredEffects.Count; i++)
         {
             TriggeredEffectBonusProperty triggeredEffect = Base.triggeredEffects[i];
 
-            s += "<indent=5%>";
-            s += LocalizationManager.Instance.GetLocalizationText_TriggeredEffect(triggeredEffect, GetEffectValue(i));
+            s += "<indent=" + indent + "%>";
+            s += LocalizationManager.Instance.GetLocalizationText_TriggeredEffect(triggeredEffect, effectValues[i]);
         }
 
         return s;

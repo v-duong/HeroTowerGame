@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ProjectilePool : ObjectPool<Projectile>
+public class ProjectilePool : QueueObjectPool<Projectile>
 {
 
     public ProjectilePool(Projectile prefab) : base(prefab, 40)

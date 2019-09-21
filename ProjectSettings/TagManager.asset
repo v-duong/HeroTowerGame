@@ -17,6 +17,7 @@ TagManager:
   - StageSelectCanvas
   - DisplayMap
   - ObstacleMap
+  - PopUpWindowCanvas
   layers:
   - Default
   - TransparentFX

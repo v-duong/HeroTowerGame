@@ -70,7 +70,7 @@ public abstract class Actor : MonoBehaviour
 
     public HashSet<GroupType> GetActorTagsAndDataTags()
     {
-        HashSet<GroupType> returnSet = new HashSet<GroupType>( GetActorTags() );
+        HashSet<GroupType> returnSet = new HashSet<GroupType>(GetActorTags());
         returnSet.UnionWith(Data.GroupTypes);
         return returnSet;
     }
@@ -382,7 +382,7 @@ public abstract class Actor : MonoBehaviour
         }
 
         float chanceRoll = 1.0f;
-        foreach (AbilityOnHitDataContainer.OnHitBuffEffect onHitEffect in postDamageData.onHitEffects)
+        foreach (AbilityOnHitDataContainer.OnHitBuffEffect onHitEffect in postDamageData.onHitEffects.ToArray())
         {
             if (onHitEffect.effectBase.chance < 1.0f)
             {
@@ -393,7 +393,22 @@ public abstract class Actor : MonoBehaviour
             }
 
             string buffName = postDamageData.abilityName + onHitEffect.effectBase.bonusType.ToString() + onHitEffect.effectBase.modifyType.ToString();
-            onHitEffect.ApplyEffect(this, postDamageData.sourceActor, buffName);
+
+            switch (onHitEffect.effectBase.targetType)
+            {
+                case AbilityTargetType.SELF:
+                    onHitEffect.ApplyEffect(postDamageData.sourceActor, postDamageData.sourceActor, buffName);
+                    break;
+                case AbilityTargetType.ENEMY:
+                    onHitEffect.ApplyEffect(this, postDamageData.sourceActor, buffName);
+                    break;
+                case AbilityTargetType.ALLY:
+                    break;
+                case AbilityTargetType.ALL:
+                    break;
+                case AbilityTargetType.NONE:
+                    break;
+            }
         }
     }
 

@@ -33,8 +33,9 @@ public class HeroUIAbilitySlot : MonoBehaviour
         Tuple<HeroData, int> equippedInfo = source.GetEquippedHeroAndSlot(ability);
         if (equippedInfo == null)
             equippedText.text = "";
-        else
+        else if (equippedInfo.Item1 != null)
         {
+            Debug.Log(equippedInfo.Item1 + " "  + equippedInfo.Item2);
             if (HeroDetailWindow.hero != equippedInfo.Item1)
             {
                 equippedText.text += equippedInfo.Item1.Name + " ";

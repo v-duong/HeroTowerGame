@@ -426,7 +426,12 @@ public class WeightList<T>
         Sum = 0;
     }
 
-    private class WeightListItem<T2>
+    public IEnumerator<WeightListItem<T>> GetEnumerator()
+    {
+        return list.GetEnumerator();
+    }
+
+    public class WeightListItem<T2>
     {
         public T2 item;
         public int weight;

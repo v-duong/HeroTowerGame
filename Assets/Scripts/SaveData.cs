@@ -124,13 +124,13 @@ public class SaveData
             equipData.prefixes.Clear();
             foreach (Affix affix in equipItem.prefixes)
             {
-                equipData.prefixes.Add(new AffixSaveData(affix.Base.idName, affix.GetAffixValues()));
+                equipData.prefixes.Add(new AffixSaveData(affix.Base.idName, affix.GetAffixValues(), affix.GetEffectValues()));
             }
 
             equipData.suffixes.Clear();
             foreach (Affix affix in equipItem.suffixes)
             {
-                equipData.suffixes.Add(new AffixSaveData(affix.Base.idName, affix.GetAffixValues()));
+                equipData.suffixes.Add(new AffixSaveData(affix.Base.idName, affix.GetAffixValues(), affix.GetEffectValues()));
             }
         }
     }
@@ -161,7 +161,7 @@ public class SaveData
                 for (int i = 0; i < uniqueBase.fixedUniqueAffixes.Count; i++)
                 {
                     AffixBase affixBase = uniqueBase.fixedUniqueAffixes[i];
-                    equipment.prefixes.Add(new Affix(affixBase, equipData.prefixes[i].affixValues));
+                    equipment.prefixes.Add(new Affix(affixBase, equipData.prefixes[i].affixValues, equipData.prefixes[i].triggerValues));
                 }
             }
             else
@@ -175,13 +175,13 @@ public class SaveData
     {
         foreach (AffixSaveData affixData in equipData.prefixes)
         {
-            Affix newAffix = new Affix(ResourceManager.Instance.GetAffixBase(affixData.baseId, AffixType.PREFIX), affixData.affixValues);
+            Affix newAffix = new Affix(ResourceManager.Instance.GetAffixBase(affixData.baseId, AffixType.PREFIX), affixData.affixValues, affixData.triggerValues);
             if (newAffix != null)
                 equipment.prefixes.Add(newAffix);
         }
         foreach (AffixSaveData affixData in equipData.suffixes)
         {
-            Affix newAffix = new Affix(ResourceManager.Instance.GetAffixBase(affixData.baseId, AffixType.SUFFIX), affixData.affixValues);
+            Affix newAffix = new Affix(ResourceManager.Instance.GetAffixBase(affixData.baseId, AffixType.SUFFIX), affixData.affixValues, affixData.triggerValues);
             if (newAffix != null)
                 equipment.suffixes.Add(newAffix);
         }
@@ -368,11 +368,14 @@ public class SaveData
     {
         public string baseId;
         public List<float> affixValues = new List<float>();
+        public List<float> triggerValues = new List<float>();
 
-        public AffixSaveData(string id, IList<float> values)
+        public AffixSaveData(string id, IList<float> values, IList<float> triggervalues)
         {
             baseId = id;
             affixValues = values.ToList();
+            if (triggervalues !=null)
+                triggerValues = triggervalues.ToList();
         }
     }
 

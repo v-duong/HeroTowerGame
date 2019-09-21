@@ -52,16 +52,10 @@ public class GameManager : MonoBehaviour
         if (consumableWeightList == null)
         {
             consumableWeightList = new WeightList<ConsumableType>();
-            consumableWeightList.Add(ConsumableType.NORMAL_TO_MAGIC, 750);
-            consumableWeightList.Add(ConsumableType.MAGIC_REROLL, 1500);
-            consumableWeightList.Add(ConsumableType.NORMAL_TO_RARE, 400);
-            consumableWeightList.Add(ConsumableType.MAGIC_TO_RARE, 600);
-            consumableWeightList.Add(ConsumableType.RARE_REROLL, 900);
-            consumableWeightList.Add(ConsumableType.RARE_TO_EPIC, 20);
-            consumableWeightList.Add(ConsumableType.ADD_AFFIX, 500);
-            consumableWeightList.Add(ConsumableType.REMOVE_AFFIX, 250);
-            //consumableWeightList.Add(ConsumableType.RESET_NORMAL, 0);
-            //consumableWeightList.Add(ConsumableType.VALUE_REROLL, 0);
+            consumableWeightList.Add(ConsumableType.LOW_TIER_UPGRADER, 2000);
+            consumableWeightList.Add(ConsumableType.RARE_TO_EPIC, 30);
+            consumableWeightList.Add(ConsumableType.AFFIX_REROLLER, 3000);
+            consumableWeightList.Add(ConsumableType.AFFIX_CRAFTER, 900);
         }
         return consumableWeightList.ReturnWeightedRandom();
     }

@@ -295,6 +295,43 @@ public class LocalizationManager : MonoBehaviour
         return output;
     }
 
+    public string GetLocalizationText_BonusType(BonusType type, ModifyType modifyType, float minVal, float maxVal, GroupType restriction)
+    {
+        string output = GetBonusTypeString(type);
+
+        if (restriction != GroupType.NO_GROUP)
+        {
+            output = GetLocalizationText_GroupTypeRestriction(restriction.ToString()) + ", " + output;
+        }
+
+        string valueString;
+        if (minVal == maxVal)
+            valueString = minVal.ToString();
+        else
+            valueString = "(" + minVal + "-" + maxVal + ")";
+
+        switch (modifyType)
+        {
+            case ModifyType.FLAT_ADDITION:
+                output += " +" + valueString + "\n";
+                break;
+
+            case ModifyType.ADDITIVE:
+                output += " +" + valueString + "%" + "\n";
+                break;
+
+            case ModifyType.MULTIPLY:
+                output += " x(" + (1 + minVal / 100d).ToString("F2") + "-" + (1 + maxVal / 100d).ToString("F2") + ")\n";
+                break;
+
+            case ModifyType.FIXED_TO:
+                output += " is " + valueString + "\n";
+                break;
+        }
+
+        return output;
+    }
+
     private static string GetBonusTypeString(BonusType type)
     {
         if (commonLocalizationData.TryGetValue("bonusType." + type.ToString(), out string output))

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class EnemyPool : ObjectPool<EnemyActor>
+public class EnemyPool : QueueObjectPool<EnemyActor>
 {
 
     public EnemyPool(EnemyActor prefab) : base(prefab, 25)

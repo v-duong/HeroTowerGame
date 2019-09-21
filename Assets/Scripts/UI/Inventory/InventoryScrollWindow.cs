@@ -5,22 +5,12 @@ using UnityEngine;
 
 public class InventoryScrollWindow : MonoBehaviour
 {
-    private enum LastViewType
-    {
-        NONE,
-        ALL_EQUIPMENT,
-        ALL_ARCHETYPE,
-        ALL_ABILITY_CORE
-    }
-
     [SerializeField]
     private InventorySlot SlotPrefab;
 
     private InventorySlotPool _inventorySlotPool;
     private List<InventorySlot> SlotsInUse = new List<InventorySlot>();
     private Action<Item> currentCallback = null;
-
-    private LastViewType lastView = LastViewType.NONE;
 
     public InventorySlotPool InventorySlotPool
     {
@@ -38,6 +28,7 @@ public class InventoryScrollWindow : MonoBehaviour
         {
             AddInventorySlot(item, callback);
         }
+        DeactivateSlotsInPool();
     }
 
     private void InitializeInventorySlots(IList<Equipment> equipmentInventory, Action<Item> callback = null)
@@ -54,7 +45,6 @@ public class InventoryScrollWindow : MonoBehaviour
             currentCallback = null;
         ClearSlots();
         InitializeInventorySlots(GameManager.Instance.PlayerStats.EquipmentInventory, currentCallback);
-        lastView = LastViewType.ALL_EQUIPMENT;
     }
 
     public void ShowAllArchetypes(bool resetCallback = true, bool addNullSlot = false)
@@ -91,6 +81,7 @@ public class InventoryScrollWindow : MonoBehaviour
                 continue;
             AddInventorySlot(item, currentCallback);
         }
+        DeactivateSlotsInPool();
     }
 
     public void ShowEquipmentFiltered(Func<Equipment, bool> filter, bool resetCallback, bool addNullSlot)
@@ -105,6 +96,7 @@ public class InventoryScrollWindow : MonoBehaviour
         {
             AddInventorySlot(item, currentCallback);
         }
+        DeactivateSlotsInPool();
     }
 
     public void ShowEquipmentBySlotType(EquipSlotType type)
@@ -115,6 +107,7 @@ public class InventoryScrollWindow : MonoBehaviour
         {
             AddInventorySlot(equip, currentCallback);
         }
+        DeactivateSlotsInPool();
     }
 
     public void ShowEquipmentBySlotType(EquipSlotType[] types)
@@ -125,15 +118,21 @@ public class InventoryScrollWindow : MonoBehaviour
         {
             AddInventorySlot(equip, currentCallback);
         }
+        DeactivateSlotsInPool();
     }
 
     private void ClearSlots()
     {
         foreach (InventorySlot i in SlotsInUse)
         {
-            InventorySlotPool.ReturnToPool(i);
+            InventorySlotPool.ReturnToPoolWhileActive(i);
         }
         SlotsInUse.Clear();
+    }
+
+    private void DeactivateSlotsInPool()
+    {
+        InventorySlotPool.DeactivateObjectsInPool();
     }
 
     public void AddInventorySlot(Item item, Action<Item> callback = null)
@@ -166,7 +165,7 @@ public class InventoryScrollWindow : MonoBehaviour
     }
 }
 
-public class InventorySlotPool : ObjectPool<InventorySlot>
+public class InventorySlotPool : StackObjectPool<InventorySlot>
 {
     public InventorySlotPool(InventorySlot prefab, int i) : base(prefab, i)
     {
@@ -180,5 +179,15 @@ public class InventorySlotPool : ObjectPool<InventorySlot>
     public override void ReturnToPool(InventorySlot item)
     {
         Return(item);
+    }
+
+    public void ReturnToPoolWhileActive(InventorySlot item)
+    {
+        ReturnWithoutDeactivate(item);
+    }
+
+    public void DeactivateObjectsInPool()
+    {
+        DeactivatePooledObjects();
     }
 }

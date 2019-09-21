@@ -231,6 +231,23 @@ public class ResourceManager : MonoBehaviour
     /// <returns></returns>
     public AffixBase GetRandomAffixBase(AffixType type, int ilvl, HashSet<GroupType> targetTypeTags, List<string> affixBonusTypeStrings, Dictionary<GroupType, float> weightModifiers = null)
     {
+        WeightList<AffixBase> possibleAffixList = GetPossibleAffixes(type, ilvl, targetTypeTags, affixBonusTypeStrings, weightModifiers);
+        if (possibleAffixList.Count == 0)
+            return null;
+        return possibleAffixList.ReturnWeightedRandom();
+    }
+
+    public WeightList<AffixBase> GetPossibleAffixes(AffixType type, int ilvl, HashSet<GroupType> targetTypeTags, List<string> affixBonusTypeStrings, Dictionary<GroupType, float> weightModifiers)
+    {
+        if (targetTypeTags == null)
+        {
+            targetTypeTags = new HashSet<GroupType>() { GroupType.NO_GROUP };
+        }
+        if (weightModifiers == null)
+        {
+            weightModifiers = new Dictionary<GroupType, float>();
+        }
+
         Dictionary<string, AffixBase> affixList;
 
         switch (type)
@@ -258,15 +275,6 @@ public class ResourceManager : MonoBehaviour
             default:
                 affixList = null;
                 break;
-        }
-
-        if (targetTypeTags == null)
-        {
-            targetTypeTags = new HashSet<GroupType>() { GroupType.NO_GROUP };
-        }
-        if (weightModifiers == null)
-        {
-            weightModifiers = new Dictionary<GroupType, float>();
         }
 
         WeightList<AffixBase> possibleAffixList = new WeightList<AffixBase>();
@@ -298,9 +306,8 @@ public class ResourceManager : MonoBehaviour
                 }
             }
         }
-        if (possibleAffixList.Count == 0)
-            return null;
-        return possibleAffixList.ReturnWeightedRandom();
+
+        return possibleAffixList;
     }
 
     public AbilityParticleSystem GetAbilityParticleSystem(string abilityId)

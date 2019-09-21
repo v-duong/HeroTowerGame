@@ -77,7 +77,7 @@ public class EquipmentDetailWindow : MonoBehaviour
             foreach (Affix a in equip.prefixes)
             {
 
-                affixText.text += a.BuildAffixString();
+                affixText.text += "○" + Affix.BuildAffixString(a.Base, 5,a.GetAffixValues(), a.GetEffectValues());
             }
         }
 
@@ -88,7 +88,7 @@ public class EquipmentDetailWindow : MonoBehaviour
             affixText.text += "Suffix\n";
             foreach (Affix a in equip.suffixes)
             {
-                affixText.text += a.BuildAffixString();
+                affixText.text += "○" + Affix.BuildAffixString(a.Base, 5,a.GetAffixValues(), a.GetEffectValues());
             }
         }
     }

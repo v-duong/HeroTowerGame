@@ -84,19 +84,21 @@ public class ItemCraftingPanel : MonoBehaviour
         }
         else
         {
-            prefixes.text = "Prefixes\n";
-            suffixes.text = "Suffixes\n";
+            int affixCap = currentItem.GetAffixCap();
+            prefixes.text = "Prefixes (" + currentItem.prefixes.Count + " / " + affixCap + ")\n";
+
+            suffixes.text = "Suffixes (" + currentItem.suffixes.Count + " / " + affixCap + ")\n";
         }
 
         foreach (Affix a in currentItem.prefixes)
         {
-            prefixes.text += a.BuildAffixString(false);
+            prefixes.text += "○" + Affix.BuildAffixString(a.Base, 5, a.GetAffixValues(), a.GetEffectValues());
             //prefixes.text += "<align=\"right\">" + "T" + a.Base.tier + "</align>";
         }
 
         foreach (Affix a in currentItem.suffixes)
         {
-            suffixes.text += a.BuildAffixString(false);
+            suffixes.text += "○" + Affix.BuildAffixString(a.Base, 5, a.GetAffixValues(), a.GetEffectValues());
         }
 
         if (currentItem.GetItemType() == ItemType.WEAPON)
@@ -174,6 +176,50 @@ public class ItemCraftingPanel : MonoBehaviour
         rightInfo.text += "Critical Chance: " + weaponItem.CriticalChance.ToString("F2") + "%\n";
         rightInfo.text += "Attacks per Second: " + weaponItem.AttackSpeed.ToString("F2") + "\n";
         rightInfo.text += "Range: " + weaponItem.WeaponRange.ToString("F2") + "\n";
+    }
+
+    public void ShowAllPossibleAffixes()
+    {
+        if (currentItem == null)
+            return;
+        PopUpWindow popUpWindow = UIManager.Instance.PopUpWindow;
+        UIManager.Instance.OpenWindow(popUpWindow.gameObject, false);
+        popUpWindow.confirmButton.onClick.RemoveAllListeners();
+        popUpWindow.confirmButton.onClick.AddListener(delegate { UIManager.Instance.CloseCurrentWindow(); });
+        popUpWindow.textField.text = "";
+        popUpWindow.textField.fontSize = 16;
+        popUpWindow.textField.lineSpacing = 16;
+
+        WeightList<AffixBase> possibleAffixes;
+
+        if (currentItem.GetAffixCap() > currentItem.prefixes.Count)
+        {
+            possibleAffixes = currentItem.GetAllPossiblePrefixes();
+            if (possibleAffixes.Count > 0)
+            {
+                popUpWindow.textField.text += "Prefixes\n";
+                foreach (var affixBaseWeight in possibleAffixes)
+                {
+                    float affixPercent = (float)affixBaseWeight.weight / possibleAffixes.Sum * 100f;
+                    popUpWindow.textField.text += affixPercent.ToString("F1") + "%" + Affix.BuildAffixString(affixBaseWeight.item, 15);
+                }
+                popUpWindow.textField.text += "\n";
+            }
+        }
+
+        if (currentItem.GetAffixCap() > currentItem.suffixes.Count)
+        {
+            possibleAffixes = currentItem.GetAllPossibleSuffixes();
+            if (possibleAffixes.Count > 0)
+            {
+                popUpWindow.textField.text += "Suffixes\n";
+                foreach (var affixBaseWeight in possibleAffixes)
+                {
+                    float affixPercent = (float)affixBaseWeight.weight / possibleAffixes.Sum * 100f;
+                    popUpWindow.textField.text += affixPercent.ToString("F1") + "%" + Affix.BuildAffixString(affixBaseWeight.item, 15);
+                }
+            }
+        }
     }
 
     public void RerollAffixOnClick(Button button)

@@ -36,33 +36,12 @@ public class UIManager : MonoBehaviour
     private WorkshopParentWindow _workshopParentWindow;
     private ItemCraftingPanel _itemCraftingPanel;
     private StageSelectPanel _stageSelectPanel;
+    private PopUpWindow _popUpWindow;
 
     public GameObject currentWindow;
     public Stack<GameObject> previousWindows = new Stack<GameObject>();
 
     public static HeroData selectedHero;
-
-    public void OpenWindow(GameObject window, bool closePrevious = true)
-    {
-        if (currentWindow != null)
-        {
-            previousWindows.Push(currentWindow);
-            if (closePrevious)
-                currentWindow.SetActive(false);
-        }
-        currentWindow = window;
-        window.SetActive(true);
-    }
-
-    public void CloseCurrentWindow()
-    {
-        currentWindow.SetActive(false);
-        if (previousWindows.Count > 0)
-        {
-            currentWindow = previousWindows.Pop();
-            currentWindow.SetActive(true);
-        }
-    }
 
     public Canvas InvCanvas
     {
@@ -305,6 +284,38 @@ public class UIManager : MonoBehaviour
         }
     }
 
+    public PopUpWindow PopUpWindow
+    {
+        get
+        {
+            if (_popUpWindow == null)
+                _popUpWindow = GameObject.FindGameObjectWithTag("PopUpWindowCanvas").GetComponentInChildren<PopUpWindow>(true);
+            return _popUpWindow;
+        }
+    }
+
+    public void OpenWindow(GameObject window, bool closePrevious = true)
+    {
+        if (currentWindow != null)
+        {
+            previousWindows.Push(currentWindow);
+            if (closePrevious)
+                currentWindow.SetActive(false);
+        }
+        currentWindow = window;
+        window.SetActive(true);
+    }
+
+    public void CloseCurrentWindow()
+    {
+        currentWindow.SetActive(false);
+        if (previousWindows.Count > 0)
+        {
+            currentWindow = previousWindows.Pop();
+            currentWindow.SetActive(true);
+        }
+    }
+
     private void Start()
     {
         Instance = this;
@@ -330,7 +341,7 @@ public class UIManager : MonoBehaviour
         HeroDetailWindow.gameObject.SetActive(false);
     }
 
-    public void OpenInventoryWindow(bool closeWindows = true, bool showCategories = true, bool showDefault = true)
+    public void OpenInventoryWindow(bool closeWindows, bool showDefault, bool showCategories = true)
     {
         if (closeWindows)
             CloseAllWindows();
@@ -348,9 +359,11 @@ public class UIManager : MonoBehaviour
             rect.offsetMin = new Vector2(rect.offsetMin.x, 0);
         }
 
-        OpenWindow(InvWindowCanvas.gameObject, closeWindows);
         if (showDefault)
             InvScrollContent.ShowAllEquipment();
+
+        OpenWindow(InvWindowCanvas.gameObject, closeWindows);
+
     }
 
     public void OpenTeamWindow(bool closeWindows = true)
