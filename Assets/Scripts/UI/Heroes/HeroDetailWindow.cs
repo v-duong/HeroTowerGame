@@ -46,10 +46,10 @@ public class HeroDetailWindow : MonoBehaviour
         }
 
         infoText.text = "";
-        infoText.text += "Archetype: " + hero.PrimaryArchetype.Base.idName;
+        infoText.text += "Archetype: " + LocalizationManager.Instance.GetLocalizationText_ArchetypeName(hero.PrimaryArchetype.Base.idName);
         if (hero.SecondaryArchetype != null)
         {
-            infoText.text += "/" + hero.SecondaryArchetype.Base.idName + "\n";
+            infoText.text += "/" + LocalizationManager.Instance.GetLocalizationText_ArchetypeName(hero.SecondaryArchetype.Base.idName) + "\n";
         }
         else
         {
@@ -118,7 +118,7 @@ public class HeroDetailWindow : MonoBehaviour
             else
                 dps = ability.GetApproxDPS(false);
 
-            s += string.Format("Approx. DPS: {0:F1}\n", dps);
+            s += string.Format("Approx. DPS: {0:n1}\n", dps);
 
             if (ability.abilityBase.abilityType == AbilityType.ATTACK)
                 s += string.Format("Attack Rate: {0:F2}/s\n", 1f / ability.Cooldown);

@@ -255,11 +255,11 @@ public abstract class AffixedItem : Item
 
         if (affix.affixType == AffixType.PREFIX)
         {
-            prefixes.Add(new Affix(affix));
+            prefixes.Add(new Affix(affix, false));
         }
         else if (affix.affixType == AffixType.SUFFIX)
         {
-            suffixes.Add(new Affix(affix));
+            suffixes.Add(new Affix(affix, false));
         }
         else
             return false;
@@ -276,14 +276,14 @@ public abstract class AffixedItem : Item
         suffixes = suffixes.OrderBy(x => x.Base.affixBonuses[0].bonusType).ToList();
     }
 
-    public WeightList<AffixBase> GetAllPossiblePrefixes()
+    public WeightList<AffixBase> GetAllPossiblePrefixes(Dictionary<GroupType, float> weightModifiers)
     {
-        return ResourceManager.Instance.GetPossibleAffixes(AffixType.PREFIX, ItemLevel, GetGroupTypes(), GetBonusTagTypeList(AffixType.PREFIX), null);
+        return ResourceManager.Instance.GetPossibleAffixes(AffixType.PREFIX, ItemLevel, GetGroupTypes(), GetBonusTagTypeList(AffixType.PREFIX),weightModifiers);
     }
 
-    public WeightList<AffixBase> GetAllPossibleSuffixes()
+    public WeightList<AffixBase> GetAllPossibleSuffixes(Dictionary<GroupType, float> weightModifiers)
     {
-        return ResourceManager.Instance.GetPossibleAffixes(AffixType.SUFFIX, ItemLevel, GetGroupTypes(), GetBonusTagTypeList(AffixType.SUFFIX), null);
+        return ResourceManager.Instance.GetPossibleAffixes(AffixType.SUFFIX, ItemLevel, GetGroupTypes(), GetBonusTagTypeList(AffixType.SUFFIX),weightModifiers);
     }
 
     public abstract bool UpgradeRarity();

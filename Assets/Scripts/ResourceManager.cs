@@ -282,27 +282,37 @@ public class ResourceManager : MonoBehaviour
         foreach (AffixBase affixBase in affixList.Values)
         {
             float weightMultiplier = 1.0f;
+            int baseWeight = 0;
             // check if affix type has already been applied to target
             if (affixBonusTypeStrings != null && affixBonusTypeStrings.Count > 0)
                 if (affixBonusTypeStrings.Contains(affixBase.AffixBonusTypeString))
                     continue;
             if (affixBase.spawnLevel <= ilvl)
             {
-                foreach (GroupType groupTag in affixBase.groupTypes)
-                {
-                    if (weightModifiers.ContainsKey(groupTag))
-                        weightMultiplier *= weightModifiers[groupTag];
-                }
-
                 foreach (AffixWeight affixWeight in affixBase.spawnWeight)
                 {
                     if (targetTypeTags.Contains(affixWeight.type) || affixWeight.type == GroupType.NO_GROUP)
                     {
-                        if (affixWeight.weight == 0)
-                            break;
-                        possibleAffixList.Add(affixBase, (int)(affixWeight.weight * weightMultiplier));
+                        baseWeight = affixWeight.weight;
                         break;
                     }
+                }
+                if (baseWeight > 0)
+                {
+                    foreach (GroupType groupTag in affixBase.groupTypes)
+                    {
+                        if (weightModifiers.ContainsKey(groupTag))
+                        {
+                            weightMultiplier *= weightModifiers[groupTag];
+                        }
+                    }
+                    if (affixBase.spawnLevel < 91)
+                    {
+                        weightMultiplier = 0;
+                    }
+                    if (weightMultiplier == 0)
+                        continue;
+                    possibleAffixList.Add(affixBase, (int)(baseWeight * weightMultiplier));
                 }
             }
         }

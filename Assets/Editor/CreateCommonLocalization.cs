@@ -104,6 +104,18 @@ public class CreateCommonLocalization
                     keys.Remove(localizationKey);
             }
 
+
+            List<string> slotTypes = new List<string>(Enum.GetNames(typeof(EquipSlotType)));
+
+            foreach (string x in slotTypes)
+            {
+                string localizationKey = "slotType." + x;
+                if (!localization.ContainsKey(localizationKey))
+                    localization.Add(localizationKey, "");
+                else
+                    keys.Remove(localizationKey);
+            }
+
             string filepath2 = "Assets/Resources/json/localization/UIKeys.txt";
             string uiKeysText = System.IO.File.ReadAllText(filepath2);
 

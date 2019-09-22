@@ -58,6 +58,11 @@ public class LocalizationManager : MonoBehaviour
         }
     }
 
+    public string GetLocalizationText_SlotType(string stringId)
+    {
+        return GetLocalizationText("slotType." + stringId);
+    }
+
     public string[] GetLocalizationText_Ability(string stringId)
     {
         string[] output = new string[3];
@@ -158,9 +163,9 @@ public class LocalizationManager : MonoBehaviour
         }
     }
 
-    public string GetLocalizationText_Archetype(string stringId)
+    public string GetLocalizationText_ArchetypeName(string stringId)
     {
-        if (archetypeLocalizationData.TryGetValue("archetype." + stringId, out string value))
+        if (archetypeLocalizationData.TryGetValue("archetype." + stringId + ".name", out string value))
         {
             if (value == "")
                 return stringId;

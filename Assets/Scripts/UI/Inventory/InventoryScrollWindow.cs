@@ -12,6 +12,11 @@ public class InventoryScrollWindow : MonoBehaviour
     private List<InventorySlot> SlotsInUse = new List<InventorySlot>();
     private Action<Item> currentCallback = null;
 
+    private void OnEnable()
+    {
+        ((RectTransform)transform).anchoredPosition = Vector3.zero;
+    }
+
     public InventorySlotPool InventorySlotPool
     {
         get

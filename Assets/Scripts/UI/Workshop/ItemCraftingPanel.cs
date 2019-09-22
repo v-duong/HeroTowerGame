@@ -191,10 +191,11 @@ public class ItemCraftingPanel : MonoBehaviour
         popUpWindow.textField.lineSpacing = 16;
 
         WeightList<AffixBase> possibleAffixes;
+        Dictionary<GroupType, float> weightModifiers = null;
 
         if (currentItem.GetAffixCap() > currentItem.prefixes.Count)
         {
-            possibleAffixes = currentItem.GetAllPossiblePrefixes();
+            possibleAffixes = currentItem.GetAllPossiblePrefixes(weightModifiers);
             if (possibleAffixes.Count > 0)
             {
                 popUpWindow.textField.text += "Prefixes\n";
@@ -209,7 +210,7 @@ public class ItemCraftingPanel : MonoBehaviour
 
         if (currentItem.GetAffixCap() > currentItem.suffixes.Count)
         {
-            possibleAffixes = currentItem.GetAllPossibleSuffixes();
+            possibleAffixes = currentItem.GetAllPossibleSuffixes(weightModifiers);
             if (possibleAffixes.Count > 0)
             {
                 popUpWindow.textField.text += "Suffixes\n";

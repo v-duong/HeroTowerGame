@@ -6,13 +6,16 @@ public class Affix
     public AffixBase Base;
     private readonly List<float> affixValues;
     private readonly List<float> addedEffectValues;
+    public bool IsCrafted { get; private set; }
     public AffixType AffixType { get; private set; }
+   
 
-    public Affix(AffixBase affixBase, bool locked = false)
+    public Affix(AffixBase affixBase, bool isCrafted = false)
     {
         Base = affixBase;
         affixValues = new List<float>();
         AffixType = affixBase.affixType;
+        IsCrafted = isCrafted;
         foreach (AffixBonusProperty mod in affixBase.affixBonuses)
         {
             if (mod.readAsFloat)
@@ -35,11 +38,12 @@ public class Affix
         }
     }
 
-    public Affix(AffixBase a, List<float> values, List<float> effectValues, bool locked = false)
+    public Affix(AffixBase a, List<float> values, List<float> effectValues, bool isCrafted)
     {
         Base = a;
         affixValues = new List<float>();
         AffixType = a.affixType;
+        IsCrafted = isCrafted;
         int i = 0;
         foreach (AffixBonusProperty mod in a.affixBonuses)
         {

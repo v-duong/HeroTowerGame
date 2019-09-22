@@ -10,13 +10,18 @@ public class InventorySlot : MonoBehaviour
 {
     public Item item;
     public Image slotImage;
+    public Image nameImage;
     public TextMeshProUGUI nameText;
     public TextMeshProUGUI infoText;
+    public TextMeshProUGUI groupText;
+    public TextMeshProUGUI slotText;
     public Action<Item> onClickAction;
 
     public void UpdateSlot()
     {
         infoText.text = "";
+        groupText.text = "";
+        slotText.text = "";
         if (item == null)
         {
             nameText.text = "REMOVE";
@@ -29,7 +34,8 @@ public class InventorySlot : MonoBehaviour
         {
             case ItemType.ARMOR:
                 Armor armor = item as Armor;
-                nameText.text += armor.Base.group;
+                groupText.text = LocalizationManager.Instance.GetLocalizationText_GroupType( armor.Base.group.ToString() );
+                slotText.text = LocalizationManager.Instance.GetLocalizationText_SlotType(armor.Base.equipSlot.ToString());
                 infoText.text += "AR: " + armor.armor + "\n";
                 infoText.text += "MS: " + armor.shield + "\n";
                 infoText.text += "DR: " + armor.dodgeRating + "\n";
@@ -37,16 +43,17 @@ public class InventorySlot : MonoBehaviour
                 break;
             case ItemType.WEAPON:
                 Weapon weapon = item as Weapon;
-                nameText.text += weapon.Base.group;
-                infoText.text += "PhyDPS: " + weapon.GetPhysicalDPS().ToString("F1") + "\n";
-                infoText.text += "EleDPS: " + weapon.GetElementalDPS().ToString("F1") + "\n";
-                infoText.text += "PrmDPS: " + weapon.GetPrimordialDPS().ToString("F1") + "\n";
+                groupText.text = LocalizationManager.Instance.GetLocalizationText_GroupType( weapon.Base.group.ToString());
+                infoText.text += "PhyDPS: " + weapon.GetPhysicalDPS().ToString("n1") + "\n";
+                infoText.text += "EleDPS: " + weapon.GetElementalDPS().ToString("n1") + "\n";
+                infoText.text += "PrmDPS: " + weapon.GetPrimordialDPS().ToString("n1") + "\n";
                 break;
             default:
                 break;
         }
 
         slotImage.color = Helpers.ReturnRarityColor(item.Rarity);
+        nameImage.color = Helpers.ReturnRarityColor(item.Rarity);
     }
 
     public void OnItemSlotClick()

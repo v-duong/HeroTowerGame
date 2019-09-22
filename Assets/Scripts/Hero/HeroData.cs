@@ -191,7 +191,10 @@ public class HeroData : ActorData
         {
             LevelUp();
             if (Level >= 100)
+            {
+                Experience = Helpers.GetRequiredExperience(100);
                 break;
+            }
         }
     }
 

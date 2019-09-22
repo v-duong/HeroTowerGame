@@ -1272,6 +1272,8 @@ public class ActorAbility
             pooledProjectile.transform.up = (pooledProjectile.transform.position + pooledProjectile.currentHeading) - pooledProjectile.transform.position;
             pooledProjectile.abilityBase = abilityBase;
             pooledProjectile.pierceCount = ProjectilePierce;
+            GameObject particle = GameObject.Instantiate(ParticleManager.Instance.GetParticleSystem(abilityBase.idName).gameObject, pooledProjectile.transform, false);
+            pooledProjectile.particles = particle.GetComponent<ParticleSystem>();
             pooledProjectile.GetComponent<SpriteRenderer>().sprite = ResourceManager.Instance.GetSprite(abilityBase.idName);
         }
     }

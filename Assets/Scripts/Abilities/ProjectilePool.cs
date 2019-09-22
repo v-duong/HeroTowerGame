@@ -19,6 +19,12 @@ public class ProjectilePool : QueueObjectPool<Projectile>
 
     public override void ReturnToPool(Projectile p)
     {
+        if (p.particles !=null)
+        {
+            p.particles.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
+            GameObject.Destroy(p.particles);
+            p.particles = null;
+        }
         Return(p);
     }
 

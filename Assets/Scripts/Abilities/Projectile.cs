@@ -14,9 +14,10 @@ public class Projectile : MonoBehaviour
     public AbilityOnHitDataContainer onHitData;
     public float inheritedDamagePercent;
     public bool isOffscreen = false;
+    public ParticleSystem particles;
 
-    private ParticleSystem.EmitParams emitParams = new ParticleSystem.EmitParams();
-    private float particleWaitTime = 0;
+    //private ParticleSystem.EmitParams emitParams = new ParticleSystem.EmitParams();
+    //private float particleWaitTime = 0;
     private List<Actor> targetsHit = new List<Actor>();
 
     //public List<AbilityEffect> attachedEffects;
@@ -53,11 +54,13 @@ public class Projectile : MonoBehaviour
                 ReturnToPool();
             }
         }
-
+        /*
         emitParams.position = transform.position;
+
         particleWaitTime -= Time.fixedDeltaTime;
         if (particleWaitTime <= 0)
             particleWaitTime = ParticleManager.Instance.EmitAbilityParticle(abilityBase.idName, emitParams, transform.localScale.x);
+            */
         Move();
         //float angle = Vector3.Angle(transform.position, transform.position + currentHeading);
         //transform.rotation = Quaternion.AngleAxis(angle, Vector3.forward);
@@ -117,6 +120,13 @@ public class Projectile : MonoBehaviour
         damageCalculationCallback = null;
         linkedAbility = null;
         onHitData = null;
+        if (particles != null)
+        {
+            Debug.Log("STOP");
+            particles.Stop(true, ParticleSystemStopBehavior.StopEmitting);
+                particles.transform.SetParent(null, true);
+            particles = null;
+        }
         GameManager.Instance.ProjectilePool.ReturnToPool(this);
     }
 }

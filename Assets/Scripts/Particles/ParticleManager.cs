@@ -36,7 +36,7 @@ public class ParticleManager : MonoBehaviour
         return abilityPs.waitUntilNextEmit;
     }
 
-    private AbilityParticleSystem GetParticleSystem(string abilityId)
+    public AbilityParticleSystem GetParticleSystem(string abilityId)
     {
         if (!hasParticleEffect.ContainsKey(abilityId))
         {

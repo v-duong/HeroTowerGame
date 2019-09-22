@@ -19,10 +19,10 @@ public class HeroSlot : MonoBehaviour
     {
         this.hero = hero;
         nameText.text = "Lv" + hero.Level + " " + hero.Name + "\n";
-        nameText.text += "<size=80%>" + hero.PrimaryArchetype.Base.idName + "</size>";
+        nameText.text += "<size=80%>" + LocalizationManager.Instance.GetLocalizationText_ArchetypeName(hero.PrimaryArchetype.Base.idName) + "</size>";
         if (hero.SecondaryArchetype != null)
         {
-            nameText.text += "\n" + "<size=80%>" + hero.SecondaryArchetype.Base.idName + "</size>";
+            nameText.text += "\n" + "<size=80%>" + LocalizationManager.Instance.GetLocalizationText_ArchetypeName(hero.SecondaryArchetype.Base.idName) + "</size>";
         }
         archetypeText.text = "";
         if (hero.GetAbilityFromSlot(0) != null)
