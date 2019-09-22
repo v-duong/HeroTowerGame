@@ -172,7 +172,7 @@ public class InventoryScrollWindow : MonoBehaviour
 
 public class InventorySlotPool : StackObjectPool<InventorySlot>
 {
-    public InventorySlotPool(InventorySlot prefab, int i) : base(prefab, i)
+    public InventorySlotPool(InventorySlot prefab, int i) : base(prefab, 0)
     {
     }
 

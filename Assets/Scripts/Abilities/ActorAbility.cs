@@ -24,6 +24,7 @@ public class ActorAbility
     public float ProjectileSize { get; private set; }
     public float ProjectileSpeed { get; private set; }
     public int ProjectilePierce { get; private set; }
+    public int ProjectileChain { get; private set; }
     public float MainCriticalChance { get; private set; }
     public float OffhandCriticalChance { get; private set; }
     public float MainCriticalDamage { get; private set; }
@@ -265,8 +266,24 @@ public class ActorAbility
         }
 
         ProjectileSpeed = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.PROJECTILE_SPEED).CalculateStat(abilityBase.projectileSpeed);
-        ProjectilePierce = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.PROJECTILE_PIERCE).CalculateStat(0);
         ProjectileCount = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.PROJECTILE_COUNT).CalculateStat(abilityBase.projectileCount);
+        if (abilityBase.abilityShotType == AbilityShotType.HITSCAN_SINGLE)
+        {
+            if (abilityBase.GetGroupTypes().Contains(GroupType.CAN_PIERCE))
+                ProjectilePierce = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.PROJECTILE_PIERCE).CalculateStat(0);
+            else
+                ProjectilePierce = 0;
+
+            if (abilityBase.GetGroupTypes().Contains(GroupType.CAN_CHAIN))
+                ProjectileChain = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.PROJECTILE_CHAIN).CalculateStat(0);
+            else
+                ProjectileChain = 0;
+        }
+        else
+        {
+            ProjectilePierce = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.PROJECTILE_PIERCE).CalculateStat(0);
+            ProjectileChain = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.PROJECTILE_CHAIN).CalculateStat(0);
+        }
     }
 
     protected void UpdateShotParameters(EnemyData data, IEnumerable<GroupType> tags)
@@ -1126,15 +1143,81 @@ public class ActorAbility
 
     protected void FireHitscan()
     {
-        FireHitscan(abilityCollider.transform.position, CurrentTarget.transform.position);
+        AbilityOwner.StartCoroutine(FireHitscan(abilityCollider.transform.position, CurrentTarget.transform.position));
     }
 
-    protected void FireHitscan(Vector3 origin, Vector3 target)
+    protected IEnumerator FireHitscan(Vector3 origin, Vector3 target)
     {
         Dictionary<ElementType, float> damageDict = CalculateDamageValues(CurrentTarget, AbilityOwner);
         emitParams.position = target;
+
+        yield return new WaitForSeconds(HitscanDelay);
+
         ParticleManager.Instance.EmitAbilityParticle(abilityBase.idName, emitParams, 1);
         ApplyDamageToActor(CurrentTarget, damageDict, abilityOnHitData, true);
+        List<Actor> hitList = new List<Actor>
+        {
+            CurrentTarget
+        };
+        if (ProjectileChain > 0)
+        {
+            List<Actor> possibleTargets = new List<Actor>();
+            Collider2D[] hits = Physics2D.OverlapCircleAll(target, 2, targetMask);
+            foreach (Collider2D hit in hits)
+            {
+                Actor actor = hit.GetComponent<Actor>();
+                if (hitList.Contains(actor))
+                    continue;
+                possibleTargets.Add(actor);
+            }
+
+            if (possibleTargets.Count > 0)
+            {
+                int index = UnityEngine.Random.Range(0, possibleTargets.Count);
+                if (possibleTargets[index] != null)
+                {
+                    AbilityOwner.StartCoroutine(FireHitscan_Chained(origin, possibleTargets[index], ProjectileChain - 1, hitList));
+                }
+            }
+        }
+        yield break;
+    }
+
+    protected IEnumerator FireHitscan_Chained(Vector3 origin, Actor target, int remainingChainCount, List<Actor> hitList)
+    {
+        Dictionary<ElementType, float> damageDict = CalculateDamageValues(target, AbilityOwner);
+        emitParams.position = target.transform.position;
+
+        yield return new WaitForSeconds(HitscanDelay);
+
+        ParticleManager.Instance.EmitAbilityParticle(abilityBase.idName, emitParams, 1);
+        ApplyDamageToActor(target, damageDict, abilityOnHitData, true);
+        hitList.Add(target);
+
+        if (remainingChainCount > 0)
+        {
+            List<Actor> possibleTargets = new List<Actor>();
+            Collider2D[] hits = Physics2D.OverlapCircleAll(target.transform.position, 2, targetMask);
+
+            foreach (Collider2D hit in hits)
+            {
+                Actor actor = hit.GetComponent<Actor>();
+                if (hitList.Contains(actor))
+                    continue;
+                possibleTargets.Add(actor);
+            }
+
+            if (possibleTargets.Count > 0)
+            {
+                int index = UnityEngine.Random.Range(0, possibleTargets.Count);
+                if (possibleTargets[index] != null)
+                {
+                    AbilityOwner.StartCoroutine(FireHitscan_Chained(origin, possibleTargets[index], remainingChainCount - 1, hitList));
+                }
+            }
+        }
+
+        yield break;
     }
 
     protected void FireArcAoe()
