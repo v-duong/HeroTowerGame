@@ -18,6 +18,8 @@ public class HeroArchetypeData : IAbilitySource
     public float WillGrowth { get; private set; }
     public ArchetypeLeveledAbilityList AvailableAbilityList { get; }
 
+    public int AllocatedPoints { get; private set; }
+
     public AbilitySourceType AbilitySourceType => AbilitySourceType.ARCHETYPE;
     public string SourceName => Base.idName;
 
@@ -60,6 +62,7 @@ public class HeroArchetypeData : IAbilitySource
         IntelligenceGrowth = Base.intelligenceGrowth;
         AgilityGrowth = Base.agilityGrowth;
         WillGrowth = Base.willGrowth;
+        AllocatedPoints = 0;
         nodeLevels = new Dictionary<int, int>();
         InitializeNodeLevels();
     }
@@ -140,6 +143,7 @@ public class HeroArchetypeData : IAbilitySource
         }
 
         nodeLevels[node.id] = setLevel;
+        AllocatedPoints += setLevel;
 
     }
 
@@ -148,6 +152,7 @@ public class HeroArchetypeData : IAbilitySource
         if (nodeLevels[node.id] == node.maxLevel)
             return false;
         nodeLevels[node.id]++;
+        AllocatedPoints++;
         if (node.type == NodeType.ABILITY)
             AvailableAbilityList.Add(node.GetAbility());
         foreach (var bonus in node.bonuses)
@@ -210,6 +215,7 @@ public class HeroArchetypeData : IAbilitySource
             }
         }
         nodeLevels[node.id]--;
+        AllocatedPoints--;
 
         hero.UpdateActorData();
         return true;
@@ -239,7 +245,6 @@ public class HeroArchetypeData : IAbilitySource
         {
             if (archetypeAbility.abilityBase == ability)
             {
-                Debug.Log("unequipped");
                 archetypeAbility.equippedHero = null;
                 return;
             }

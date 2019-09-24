@@ -289,11 +289,11 @@ public class LocalizationManager : MonoBehaviour
                 break;
 
             case ModifyType.MULTIPLY:
-                output += " x" + (1 + value / 100d).ToString("F2") + "\n";
+                output += " x" + (1 + value / 100d).ToString(".00##") + "\n";
                 break;
 
             case ModifyType.FIXED_TO:
-                output += " is" + value + "\n";
+                output += " is " + value + "\n";
                 break;
         }
 
@@ -326,7 +326,7 @@ public class LocalizationManager : MonoBehaviour
                 break;
 
             case ModifyType.MULTIPLY:
-                output += " x(" + (1 + minVal / 100d).ToString("F2") + "-" + (1 + maxVal / 100d).ToString("F2") + ")\n";
+                output += " x(" + (1 + minVal / 100d).ToString(".00##") + "-" + (1 + maxVal / 100d).ToString(".00##") + ")\n";
                 break;
 
             case ModifyType.FIXED_TO:

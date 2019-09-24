@@ -182,7 +182,7 @@ public class ActorAbility
 
     public virtual void UpdateAbilityStats(HeroData data)
     {
-        IEnumerable<GroupType> tags = data.GroupTypes;
+        IEnumerable<GroupType> tags = data.GroupTypes.Union(abilityBase.GetGroupTypes());
         if (abilityBase.weaponRestrictions.Count > 0)
         {
             if (!tags.Intersect(abilityBase.weaponRestrictions).Any())
@@ -208,7 +208,7 @@ public class ActorAbility
     {
         IsUsable = true;
         auraBuffBonus.isOutdated = true;
-        IEnumerable<GroupType> tags = data.GroupTypes;
+        IEnumerable<GroupType> tags = data.GroupTypes.Union(abilityBase.GetGroupTypes());
         UpdateAbilityBonusProperties(tags);
         UpdateDamage(data, abilityBase.damageLevels, tags);
         UpdateTypeParameters(data, tags);
@@ -266,7 +266,12 @@ public class ActorAbility
         }
 
         ProjectileSpeed = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.PROJECTILE_SPEED).CalculateStat(abilityBase.projectileSpeed);
-        ProjectileCount = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.PROJECTILE_COUNT).CalculateStat(abilityBase.projectileCount);
+
+        if (abilityBase.GetGroupTypes().Contains(GroupType.CANNOT_MODIFY_PROJECTILE_COUNT))
+            ProjectileCount = abilityBase.projectileCount;
+        else
+            ProjectileCount = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.PROJECTILE_COUNT).CalculateStat(abilityBase.projectileCount);
+
         if (abilityBase.abilityShotType == AbilityShotType.HITSCAN_SINGLE)
         {
             if (abilityBase.GetGroupTypes().Contains(GroupType.CAN_PIERCE))
@@ -1010,10 +1015,12 @@ public class ActorAbility
                 switch (abilityBase.abilityShotType)
                 {
                     case AbilityShotType.PROJECTILE:
+                    case AbilityShotType.PROJECTILE_NOVA:
                         FireProjectile();
                         break;
 
                     case AbilityShotType.ARC_AOE:
+                    case AbilityShotType.NOVA_ARC_AOE:
                         FireArcAoe();
                         break;
 
@@ -1143,26 +1150,55 @@ public class ActorAbility
 
     protected void FireHitscan()
     {
-        AbilityOwner.StartCoroutine(FireHitscan(abilityCollider.transform.position, CurrentTarget.transform.position));
+        AbilityOwner.StartCoroutine(FireHitscan(abilityCollider.transform.position, CurrentTarget));
     }
 
-    protected IEnumerator FireHitscan(Vector3 origin, Vector3 target)
+    protected IEnumerator FireHitscan(Vector3 origin, Actor target)
     {
-        Dictionary<ElementType, float> damageDict = CalculateDamageValues(CurrentTarget, AbilityOwner);
-        emitParams.position = target;
+        Actor lastHitTarget;
+        Dictionary<ElementType, float> damageDict = CalculateDamageValues(target, AbilityOwner);
+        emitParams.position = target.transform.position;
 
         yield return new WaitForSeconds(HitscanDelay);
 
         ParticleManager.Instance.EmitAbilityParticle(abilityBase.idName, emitParams, 1);
-        ApplyDamageToActor(CurrentTarget, damageDict, abilityOnHitData, true);
+        ApplyDamageToActor(target, damageDict, abilityOnHitData, true);
         List<Actor> hitList = new List<Actor>
         {
-            CurrentTarget
+            target
         };
-        if (ProjectileChain > 0)
+
+        lastHitTarget = target;
+        int pierceCount = ProjectilePierce;
+
+        if (pierceCount > 0)
+        {
+            RaycastHit2D[] raycastHits = Physics2D.RaycastAll(origin, (target.transform.position - origin).normalized, Mathf.Infinity, targetMask);
+            foreach (RaycastHit2D hit in raycastHits)
+            {
+                Actor actor = hit.transform.GetComponent<Actor>();
+                if (hitList.Contains(actor))
+                    continue;
+
+                damageDict = CalculateDamageValues(actor, AbilityOwner);
+                ApplyDamageToActor(actor, damageDict, abilityOnHitData, true);
+
+                emitParams.position = actor.transform.position;
+                ParticleManager.Instance.EmitAbilityParticle(abilityBase.idName, emitParams, 1);
+
+                lastHitTarget = actor;
+                hitList.Add(actor);
+
+                pierceCount--;
+                if (pierceCount <= 0)
+                    break;
+            }
+        }
+
+        if (ProjectileChain > 0 && pierceCount <= 0)
         {
             List<Actor> possibleTargets = new List<Actor>();
-            Collider2D[] hits = Physics2D.OverlapCircleAll(target, 2, targetMask);
+            Collider2D[] hits = Physics2D.OverlapCircleAll(lastHitTarget.transform.position, 2, targetMask);
             foreach (Collider2D hit in hits)
             {
                 Actor actor = hit.GetComponent<Actor>();
@@ -1180,6 +1216,7 @@ public class ActorAbility
                 }
             }
         }
+
         yield break;
     }
 
@@ -1188,7 +1225,7 @@ public class ActorAbility
         Dictionary<ElementType, float> damageDict = CalculateDamageValues(target, AbilityOwner);
         emitParams.position = target.transform.position;
 
-        yield return new WaitForSeconds(HitscanDelay);
+        yield return new WaitForSeconds(HitscanDelay / 2);
 
         ParticleManager.Instance.EmitAbilityParticle(abilityBase.idName, emitParams, 1);
         ApplyDamageToActor(target, damageDict, abilityOnHitData, true);
@@ -1309,41 +1346,60 @@ public class ActorAbility
 
         bool isSpread = abilityBase.doesProjectileSpread;
         float spreadAngle = 17.5f;
-
-        if (isSpread)
+        List<Actor> sharedList = null;
+        if (abilityBase.abilityShotType == AbilityShotType.PROJECTILE_NOVA)
         {
-            if (spreadAngle * ProjectileCount / 2f > abilityBase.projectileSpread)
-            {
-                spreadAngle = abilityBase.projectileSpread / ProjectileCount / 2f;
-            }
+            spreadAngle = 360f / ProjectileCount;
+            sharedList = new List<Actor>();
         }
         else
         {
-            spreadAngle = abilityBase.projectileSpread;
+            if (isSpread)
+            {
+                if (spreadAngle * ProjectileCount / 2f > abilityBase.projectileSpread)
+                {
+                    spreadAngle = abilityBase.projectileSpread / ProjectileCount / 2f;
+                }
+                sharedList = new List<Actor>();
+            }
+            else
+            {
+                spreadAngle = abilityBase.projectileSpread;
+            }
         }
 
         AbilityOnHitDataContainer OnHitCopy = abilityOnHitData.DeepCopy();
 
         for (int i = 0; i < ProjectileCount; i++)
         {
-            Projectile pooledProjectile = GameManager.Instance.ProjectilePool.GetProjectile();
+            Projectile pooledProjectile = StageManager.Instance.BattleManager.ProjectilePool.GetProjectile();
             pooledProjectile.transform.position = origin;
             pooledProjectile.timeToLive = 5f;
             pooledProjectile.currentSpeed = abilityBase.projectileSpeed;
+            pooledProjectile.layerMask = targetMask;
 
-            if (isSpread)
+            if (abilityBase.abilityShotType == AbilityShotType.PROJECTILE_NOVA)
             {
-                int angleMultiplier = (int)Math.Round(i / 2f, MidpointRounding.AwayFromZero);
-                if (i % 2 == 0)
-                {
-                    angleMultiplier *= -1;
-                }
-
-                pooledProjectile.currentHeading = Quaternion.Euler(0, 0, spreadAngle * angleMultiplier) * heading;
+                pooledProjectile.currentHeading = Quaternion.Euler(0, 0, spreadAngle * i) * heading;
+                pooledProjectile.sharedHitList = sharedList;
             }
             else
             {
-                pooledProjectile.currentHeading = Quaternion.Euler(0, 0, spreadAngle * UnityEngine.Random.Range(-1f, 1f)) * heading;
+                if (isSpread)
+                {
+                    int angleMultiplier = (int)Math.Round(i / 2f, MidpointRounding.AwayFromZero);
+                    if (i % 2 == 0)
+                    {
+                        angleMultiplier *= -1;
+                    }
+
+                    pooledProjectile.currentHeading = Quaternion.Euler(0, 0, spreadAngle * angleMultiplier) * heading;
+                    pooledProjectile.sharedHitList = sharedList;
+                }
+                else
+                {
+                    pooledProjectile.currentHeading = Quaternion.Euler(0, 0, spreadAngle * UnityEngine.Random.Range(-1f, 1f)) * heading;
+                }
             }
 
             if (abilityBase.hasLinkedAbility)
@@ -1355,8 +1411,18 @@ public class ActorAbility
             pooledProjectile.transform.up = (pooledProjectile.transform.position + pooledProjectile.currentHeading) - pooledProjectile.transform.position;
             pooledProjectile.abilityBase = abilityBase;
             pooledProjectile.pierceCount = ProjectilePierce;
-            GameObject particle = GameObject.Instantiate(ParticleManager.Instance.GetParticleSystem(abilityBase.idName).gameObject, pooledProjectile.transform, false);
-            pooledProjectile.particles = particle.GetComponent<ParticleSystem>();
+            pooledProjectile.chainCount = ProjectileChain;
+            pooledProjectile.transform.localScale = new Vector2(ProjectileSize, ProjectileSize); 
+            AbilityParticleSystem particleSystem = ParticleManager.Instance.GetParticleSystem(abilityBase.idName);
+            if (particleSystem == null)
+            {
+                particleSystem = ParticleManager.Instance.GetParticleSystem(abilityBase.effectSprite);
+            }
+            if (particleSystem != null)
+            {
+                GameObject particle = GameObject.Instantiate(particleSystem.gameObject, pooledProjectile.transform, false);
+                pooledProjectile.particles = particle.GetComponent<ParticleSystem>();
+            }
             pooledProjectile.GetComponent<SpriteRenderer>().sprite = ResourceManager.Instance.GetSprite(abilityBase.idName);
         }
     }

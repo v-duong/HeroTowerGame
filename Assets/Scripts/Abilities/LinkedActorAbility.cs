@@ -55,21 +55,28 @@ public class LinkedActorAbility : ActorAbility
         UpdateOnHitDataBonuses(data, tags);
     }
 
-    public void Fire(Vector3 origin, Vector3 target)
+    public void Fire(Vector3 origin, Actor target)
     {
         switch (abilityBase.abilityShotType)
         {
+            case AbilityShotType.PROJECTILE_NOVA:
             case AbilityShotType.PROJECTILE:
-                FireProjectile(origin, target);
+                FireProjectile(origin, target.transform.position);
                 break;
 
             case AbilityShotType.ARC_AOE:
-                FireArcAoe(origin, target);
+            case AbilityShotType.NOVA_ARC_AOE:
+                FireArcAoe(origin, target.transform.position);
                 break;
 
             case AbilityShotType.RADIAL_AOE:
             case AbilityShotType.NOVA_AOE:
-                FireRadialAoe(origin, target);
+                FireRadialAoe(origin, target.transform.position);
+                break;
+            case AbilityShotType.HITSCAN_SINGLE:
+                FireHitscan(origin, target);
+                break;
+            case AbilityShotType.LINEAR_AOE:
                 break;
         }
     }

@@ -13,7 +13,7 @@ public class BleedEffect : ActorStatusEffect
     public BleedEffect(Actor target, Actor source, float inputDamage, float duration) : base(target, source)
     {
         effectType = EffectType.BLEED;
-        damagePerSecond = inputDamage * 0.2f;
+        damagePerSecond = inputDamage * 0.1f;
         this.duration = duration;
         timeSinceLastCheck = 0;
         lastPosition = target.transform.position;

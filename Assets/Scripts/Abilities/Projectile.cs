@@ -6,15 +6,19 @@ public class Projectile : MonoBehaviour
 {
     public AbilityBase abilityBase;
     public int pierceCount = 0;
+    public int chainCount = 0;
     public float currentSpeed;
     public float timeToLive = 2.5f;
     public Func<Actor, Actor, Dictionary<ElementType, float>> damageCalculationCallback;
+    public List<Actor> sharedHitList;
     public Vector3 currentHeading;
     public LinkedActorAbility linkedAbility;
     public AbilityOnHitDataContainer onHitData;
     public float inheritedDamagePercent;
     public bool isOffscreen = false;
     public ParticleSystem particles;
+    public int layerMask;
+    Collider2D[] hits = new Collider2D[12];
 
     //private ParticleSystem.EmitParams emitParams = new ParticleSystem.EmitParams();
     //private float particleWaitTime = 0;
@@ -69,14 +73,16 @@ public class Projectile : MonoBehaviour
 
     public void OnTriggerEnter2D(Collider2D collision)
     {
+        Debug.Log("TEST");
         if (!isActiveAndEnabled)
             return;
 
         Actor actor = collision.gameObject.GetComponent<Actor>();
         Vector3 targetPosition;
 
-        if (actor != null && !targetsHit.Contains(actor))
+        if (actor != null && !IsTargetAlreadyHit(actor))
         {
+
             targetPosition = actor.transform.position;
             Dictionary<ElementType, float> projectileDamage = damageCalculationCallback.Invoke(actor, onHitData.sourceActor);
             actor.ApplyDamage(projectileDamage, onHitData, true);
@@ -85,19 +91,50 @@ public class Projectile : MonoBehaviour
                 if (linkedAbility.LinkedAbilityData.type == AbilityLinkType.ON_EVERY_HIT ||
                     (linkedAbility.LinkedAbilityData.type == AbilityLinkType.ON_FIRST_HIT && targetsHit.Count == 0))
                 {
-                    linkedAbility.Fire(transform.position, targetPosition);
+                    Debug.Log("FIRELINK");
+                    linkedAbility.Fire(transform.position, actor);
                 }
             }
-            targetsHit.Add(actor);
+            AddToAlreadyHit(actor);
             pierceCount--;
 
-            if (pierceCount < 0)
+            if (pierceCount < 0 && chainCount > 0)
+            {
+                List<Actor> possibleTargets = new List<Actor>();
+                Physics2D.OverlapCircleNonAlloc(actor.transform.position, 3, hits, layerMask);
+                foreach (Collider2D hit in hits)
+                {
+                    if (hit == null)
+                        break;
+                    Actor newTarget = hit.GetComponent<Actor>();
+                    if (IsTargetAlreadyHit(actor))
+                        continue;
+                    possibleTargets.Add(actor);
+                }
+                if (possibleTargets.Count > 0)
+                {
+                    int index = UnityEngine.Random.Range(0, possibleTargets.Count);
+                    if (possibleTargets[index] != null)
+                    {
+                        currentHeading = (possibleTargets[index].transform.position - this.transform.position).normalized;
+                    }
+                }
+                else if (hits.Length > 0)
+                {
+                    int index = UnityEngine.Random.Range(0, hits.Length);
+                    if (hits[index] != null)
+                    {
+                        currentHeading = (hits[index].transform.position - this.transform.position).normalized;
+                    }
+                }
+                chainCount--;
+            }
+            else if (pierceCount < 0 && chainCount <= 0)
             {
                 if (linkedAbility != null && linkedAbility.LinkedAbilityData.type == AbilityLinkType.ON_FINAL_HIT)
                 {
-                    linkedAbility.Fire(transform.position, targetPosition);
+                    linkedAbility.Fire(transform.position, actor);
                 }
-                targetsHit.Clear();
                 ReturnToPool();
             }
         }
@@ -105,6 +142,23 @@ public class Projectile : MonoBehaviour
         {
             return;
         }
+    }
+
+    private void AddToAlreadyHit(Actor target)
+    {
+        if (sharedHitList != null)
+            sharedHitList.Add(target);
+        targetsHit.Add(target);
+    }
+
+    private bool IsTargetAlreadyHit (Actor target)
+    {
+        if (sharedHitList != null && sharedHitList.Contains(target))
+            return true;
+        if (targetsHit.Contains(target))
+            return true;
+
+        return false;
     }
 
     public void Move()
@@ -120,13 +174,8 @@ public class Projectile : MonoBehaviour
         damageCalculationCallback = null;
         linkedAbility = null;
         onHitData = null;
-        if (particles != null)
-        {
-            Debug.Log("STOP");
-            particles.Stop(true, ParticleSystemStopBehavior.StopEmitting);
-                particles.transform.SetParent(null, true);
-            particles = null;
-        }
-        GameManager.Instance.ProjectilePool.ReturnToPool(this);
+        targetsHit.Clear();
+        sharedHitList = null;
+        StageManager.Instance.BattleManager.ProjectilePool.ReturnToPool(this);
     }
 }

@@ -195,6 +195,7 @@ public enum AbilityLinkType
     ON_FINAL_HIT,
     ON_FIRST_HIT,
     TIME,
+    TIME_REPEAT,
     ON_FADE,
 }
 
@@ -212,7 +213,8 @@ public enum AbilityShotType
     RADIAL_AOE,
     NOVA_AOE,
     NOVA_ARC_AOE,
-    LINEAR_AOE
+    LINEAR_AOE,
+    PROJECTILE_NOVA
 }
 
 public enum AbilityTargetType

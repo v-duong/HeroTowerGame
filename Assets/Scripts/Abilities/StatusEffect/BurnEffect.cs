@@ -11,7 +11,7 @@ public class BurnEffect : ActorStatusEffect
     public BurnEffect(Actor target, Actor source, float inputDamage, float duration) : base(target, source)
     {
         effectType = EffectType.BURN;
-        damagePerSecond = inputDamage * 0.5f;
+        damagePerSecond = inputDamage * 0.15f;
         this.duration = duration;
 
     }

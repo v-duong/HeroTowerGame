@@ -12,6 +12,8 @@ public class BattleManager : MonoBehaviour
 
     public EnemyPool EnemyPool { get; private set; }
 
+    public ProjectilePool ProjectilePool { get; private set; }
+
     public IReadOnlyList<EnemyWave> Waves { get; private set; }
     public List<EnemyActor> currentEnemyList;
     public List<HeroData> activeHeroes = new List<HeroData>();
@@ -59,9 +61,14 @@ public class BattleManager : MonoBehaviour
         EnemyPool = new EnemyPool(ResourceManager.Instance.EnemyPrefab);
     }
 
+    public void InitializeProjectilePool()
+    {
+        ProjectilePool = new ProjectilePool(GameManager.Instance.projectilePrefab);
+    }
+
     private void EndBattle(bool victory)
     {
-        GameManager.Instance.ProjectilePool.ReturnAll();
+        StageManager.Instance.BattleManager.ProjectilePool.ReturnAll();
         EnemyPool.ReturnAll();
         StopAllCoroutines();
         battleEnded = true;

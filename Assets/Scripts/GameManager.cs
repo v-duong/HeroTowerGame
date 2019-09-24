@@ -10,9 +10,7 @@ public class GameManager : MonoBehaviour
     public PlayerStats PlayerStats { get; private set; }
 
     [SerializeField]
-    protected Projectile projectilePrefab;
-
-    public ProjectilePool ProjectilePool;
+    public Projectile projectilePrefab;
 
     public bool isInBattle;
     public List<HeroData> inBattleHeroes = new List<HeroData>();
@@ -29,7 +27,6 @@ public class GameManager : MonoBehaviour
     {
         QualitySettings.vSyncCount = 0;
         Application.targetFrameRate = 30;
-        ProjectilePool = new ProjectilePool(projectilePrefab);
         isInBattle = false;
         currentSceneName = "mainMenu";
 
@@ -67,7 +64,6 @@ public class GameManager : MonoBehaviour
 
     public void MoveToMainMenu()
     {
-        ProjectilePool.ReturnAll();
         isInBattle = false;
 
         SceneManager.UnloadSceneAsync(currentSceneName);
@@ -106,6 +102,7 @@ public class GameManager : MonoBehaviour
         Scene scene = SceneManager.GetSceneByName(sceneName);
         SceneManager.SetActiveScene(scene);
         StageManager.Instance.BattleManager.SetStageBase(stageInfoBase);
+        StageManager.Instance.BattleManager.InitializeProjectilePool();
         ParticleManager.Instance.ClearParticleSystems();
 
         yield return LoadBattleUI(scene);
@@ -143,7 +140,15 @@ public class GameManager : MonoBehaviour
                 continue;
 
             foreach (AbilityBase abilityBase in heroActor.GetAbilitiesInList())
+            {
                 abilitiesInUse.Add(abilityBase);
+                AbilityBase linkedBase = ResourceManager.Instance.GetAbilityBase(abilityBase.linkedAbility.abilityId);
+                while(linkedBase != null)
+                {
+                    abilitiesInUse.Add(linkedBase);
+                    linkedBase = ResourceManager.Instance.GetAbilityBase(linkedBase.linkedAbility.abilityId);
+                }
+            }
 
             summonScroll.AddHeroActor(heroActor);
             inBattleHeroes.Add(data);

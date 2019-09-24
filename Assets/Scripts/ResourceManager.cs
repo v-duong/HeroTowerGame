@@ -52,6 +52,8 @@ public class ResourceManager : MonoBehaviour
     {
         if (abilityList == null)
             LoadAbilities();
+        if (id == null)
+            return null;
         if (abilityList.ContainsKey(id))
             return abilityList[id];
         else
@@ -306,10 +308,7 @@ public class ResourceManager : MonoBehaviour
                             weightMultiplier *= weightModifiers[groupTag];
                         }
                     }
-                    if (affixBase.spawnLevel < 91)
-                    {
-                        weightMultiplier = 0;
-                    }
+
                     if (weightMultiplier == 0)
                         continue;
                     possibleAffixList.Add(affixBase, (int)(baseWeight * weightMultiplier));

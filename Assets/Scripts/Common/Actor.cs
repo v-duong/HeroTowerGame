@@ -220,7 +220,7 @@ public abstract class Actor : MonoBehaviour
 
         if (mod > 0)
         {
-            Data.CurrentShieldDelay = BASE_SHIELD_RESTORE_DELAY * Data.ShieldRestoreDelayModifier;
+            Data.CurrentShieldDelay = Math.Max(BASE_SHIELD_RESTORE_DELAY * Data.ShieldRestoreDelayModifier, 0.5f);
         }
 
         healthBar.UpdateHealthBar(Data.MaximumHealth, Data.CurrentHealth, Data.MaximumManaShield, Data.CurrentManaShield);

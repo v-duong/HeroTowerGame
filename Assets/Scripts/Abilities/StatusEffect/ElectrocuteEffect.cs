@@ -2,7 +2,7 @@
 
 public class ElectrocuteEffect : ActorStatusEffect
 {
-    private const float BASE_RADIUS = 1.5f;
+    private const float BASE_RADIUS = 2f;
     protected float damage;
     protected float timeElapsed;
 
@@ -11,7 +11,7 @@ public class ElectrocuteEffect : ActorStatusEffect
     public ElectrocuteEffect(Actor target, Actor source, float inputDamage, float duration) : base(target, source)
     {
         effectType = EffectType.ELECTROCUTE;
-        damage = inputDamage * 0.25f;
+        damage = inputDamage * 0.05f;
         this.duration = duration;
     }
 

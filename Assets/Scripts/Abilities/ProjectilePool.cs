@@ -11,7 +11,7 @@ public class ProjectilePool : QueueObjectPool<Projectile>
         Projectile p = Get();
         if (p.particles != null)
         {
-            GameObject.Destroy(p.particles);
+            Component.Destroy(p.particles.gameObject);
             p.particles = null;
         }
         p.isOffscreen = false;
@@ -23,7 +23,7 @@ public class ProjectilePool : QueueObjectPool<Projectile>
         if (p.particles != null)
         {
             p.particles.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
-            GameObject.Destroy(p.particles);
+            Component.Destroy(p.particles.gameObject);
             p.particles = null;
         }
         Return(p);

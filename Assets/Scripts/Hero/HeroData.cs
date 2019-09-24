@@ -72,6 +72,14 @@ public class HeroData : ActorData
         BaseMagicPhasing = 0;
         movementSpeed = 2.5f;
 
+        archetypeList[0] = new HeroArchetypeData(heroSaveData.primaryArchetypeData, this);
+
+        if (heroSaveData.secondaryArchetypeData != null)
+        {
+            archetypeList[1] = new HeroArchetypeData(heroSaveData.secondaryArchetypeData, this);
+        }
+
+
         foreach (EquipSlotType equipSlot in Enum.GetValues(typeof(EquipSlotType)))
         {
             if (equipSlot == EquipSlotType.RING)
@@ -81,13 +89,6 @@ public class HeroData : ActorData
             {
                 EquipToSlot(ps.GetEquipmentByGuid(heroSaveData.equipList[(int)equipSlot]), equipSlot);
             }
-        }
-
-        archetypeList[0] = new HeroArchetypeData(heroSaveData.primaryArchetypeData, this);
-
-        if (heroSaveData.secondaryArchetypeData != null)
-        {
-            archetypeList[1] = new HeroArchetypeData(heroSaveData.secondaryArchetypeData, this);
         }
 
         if (heroSaveData.firstAbilitySlot != null)
@@ -143,7 +144,6 @@ public class HeroData : ActorData
         archetypeStatBonuses = new Dictionary<BonusType, StatBonusCollection>();
         attributeStatBonuses = new Dictionary<BonusType, StatBonus>();
         abilitySlotList = new List<AbilitySlot>() { new AbilitySlot(0), new AbilitySlot(1) };
-        UpdateActorData();
     }
 
     public static HeroData CreateNewHero(string name, ArchetypeItem primaryArchetype, ArchetypeItem subArchetype = null)
@@ -397,10 +397,13 @@ public class HeroData : ActorData
             case TriggerType.ON_KILL:
                 OnKillEffects.Add(effectInstance);
                 break;
+
             case TriggerType.HEALTH_THRESHOLD:
                 break;
+
             case TriggerType.SHIELD_THRESHOLD:
                 break;
+
             case TriggerType.SOULPOINT_THRESHOLD:
                 break;
         }
@@ -430,10 +433,13 @@ public class HeroData : ActorData
                 t = OnKillEffects.Find(x => x.BaseEffect == triggeredEffect);
                 OnKillEffects.Remove(t);
                 break;
+
             case TriggerType.HEALTH_THRESHOLD:
                 break;
+
             case TriggerType.SHIELD_THRESHOLD:
                 break;
+
             case TriggerType.SOULPOINT_THRESHOLD:
                 break;
         }
@@ -448,7 +454,7 @@ public class HeroData : ActorData
                 AffixBonusProperty b = affix.Base.affixBonuses[i];
                 //ignore local mods
                 if (b.bonusType < (BonusType)0x700)
-                { 
+                {
                     RemoveStatBonus(b.bonusType, b.restriction, b.modifyType, affix.GetAffixValue(i));
                 }
             }
@@ -459,8 +465,6 @@ public class HeroData : ActorData
             }
         }
     }
-
-
 
     public void AddArchetypeStatBonus(BonusType type, GroupType restriction, ModifyType modifier, float value)
     {
@@ -499,16 +503,29 @@ public class HeroData : ActorData
 
     private void UpdateHeroAttributes()
     {
-        Strength = (int)GetMultiStatBonus(GroupTypes, BonusType.STRENGTH).CalculateStat(BaseStrength);
+        float finalBaseStrength = BaseStrength + PrimaryArchetype.AllocatedPoints * PrimaryArchetype.StrengthGrowth;
+        float finalBaseIntelligence = BaseIntelligence + PrimaryArchetype.AllocatedPoints * PrimaryArchetype.IntelligenceGrowth;
+        float finalBaseAgility = BaseAgility + PrimaryArchetype.AllocatedPoints * PrimaryArchetype.AgilityGrowth;
+        float finalBaseWill = BaseWill + PrimaryArchetype.AllocatedPoints * PrimaryArchetype.WillGrowth;
+
+        if (SecondaryArchetype != null)
+        {
+            finalBaseStrength += SecondaryArchetype.AllocatedPoints * SecondaryArchetype.StrengthGrowth;
+            finalBaseIntelligence += SecondaryArchetype.AllocatedPoints * SecondaryArchetype.IntelligenceGrowth;
+            finalBaseAgility += SecondaryArchetype.AllocatedPoints * SecondaryArchetype.AgilityGrowth;
+            finalBaseWill += SecondaryArchetype.AllocatedPoints * SecondaryArchetype.WillGrowth;
+        }
+
+        Strength = (int)GetMultiStatBonus(GroupTypes, BonusType.STRENGTH).CalculateStat(finalBaseStrength);
         ApplyStrengthBonuses();
 
-        Intelligence = (int)GetMultiStatBonus(GroupTypes, BonusType.INTELLIGENCE).CalculateStat(BaseIntelligence);
+        Intelligence = (int)GetMultiStatBonus(GroupTypes, BonusType.INTELLIGENCE).CalculateStat(finalBaseIntelligence);
         ApplyIntelligenceBonuses();
 
-        Agility = (int)GetMultiStatBonus(GroupTypes, BonusType.AGILITY).CalculateStat(BaseAgility);
+        Agility = (int)GetMultiStatBonus(GroupTypes, BonusType.AGILITY).CalculateStat(finalBaseAgility);
         ApplyAgilityBonuses();
 
-        Will = (int)GetMultiStatBonus(GroupTypes, BonusType.WILL).CalculateStat(BaseWill);
+        Will = (int)GetMultiStatBonus(GroupTypes, BonusType.WILL).CalculateStat(finalBaseWill);
         ApplyWillBonuses();
     }
 
