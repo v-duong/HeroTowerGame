@@ -62,6 +62,15 @@ public class ParticleManager : MonoBehaviour
             return null;
     }
 
+    public AbilityParticleSystem GetParticleSystem(string abilityId, string fallbackId)
+    {
+        AbilityParticleSystem returnVal = GetParticleSystem(abilityId);
+        if (returnVal != null)
+            return returnVal;
+        else
+            return GetParticleSystem(fallbackId);
+    }
+
     public void ClearParticleSystems()
     {
         particleSystems.Clear();

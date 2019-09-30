@@ -13,6 +13,7 @@ public class BattleManager : MonoBehaviour
     public EnemyPool EnemyPool { get; private set; }
 
     public ProjectilePool ProjectilePool { get; private set; }
+    public ProjectilePool BoxProjectilePool { get; private set; }
 
     public IReadOnlyList<EnemyWave> Waves { get; private set; }
     public List<EnemyActor> currentEnemyList;
@@ -64,6 +65,7 @@ public class BattleManager : MonoBehaviour
     public void InitializeProjectilePool()
     {
         ProjectilePool = new ProjectilePool(GameManager.Instance.projectilePrefab);
+        BoxProjectilePool = new ProjectilePool(GameManager.Instance.boxProjectilePrefab);
     }
 
     private void EndBattle(bool victory)

@@ -60,7 +60,7 @@ public class ActorAbility
         abilityBase = ability;
         abilityOnHitData = new AbilityOnHitDataContainer
         {
-            abilityName = abilityBase.idName,
+            sourceAbility = abilityBase,
             Type = abilityBase.abilityType
         };
         abilityBonuses = new Dictionary<BonusType, StatBonus>();
@@ -160,6 +160,8 @@ public class ActorAbility
 
     public void AddToTargetList(Actor actor)
     {
+        if (actor == AbilityOwner)
+            return;
         targetList.Add(actor);
         UpdateCurrentTarget(actor);
     }
@@ -192,12 +194,14 @@ public class ActorAbility
             }
         }
         IsUsable = true;
-        auraBuffBonus.isOutdated = true;
+
         UpdateAbilityBonusProperties(tags);
         UpdateDamage(data, abilityBase.damageLevels, tags);
         UpdateTypeParameters(data, tags);
         UpdateShotParameters(data, tags);
         UpdateOnHitDataBonuses(data, tags);
+        UpdateAbilityBuffData(data, tags);
+
         if (abilityCollider != null)
             abilityCollider.abilityCollider.radius = TargetRange;
         if (LinkedAbility != null)
@@ -207,17 +211,39 @@ public class ActorAbility
     public virtual void UpdateAbilityStats(EnemyData data)
     {
         IsUsable = true;
-        auraBuffBonus.isOutdated = true;
         IEnumerable<GroupType> tags = data.GroupTypes.Union(abilityBase.GetGroupTypes());
+
         UpdateAbilityBonusProperties(tags);
         UpdateDamage(data, abilityBase.damageLevels, tags);
         UpdateTypeParameters(data, tags);
         UpdateShotParameters(data, tags);
         UpdateOnHitDataBonuses(data, tags);
+        UpdateAbilityBuffData(data, tags);
+
         if (abilityCollider != null)
             abilityCollider.abilityCollider.radius = TargetRange;
         if (LinkedAbility != null)
             LinkedAbility.UpdateAbilityStats(data, tags);
+    }
+
+    private void UpdateAbilityBuffData(ActorData data, IEnumerable<GroupType> tags)
+    {
+        if (abilityBase.abilityType == AbilityType.AURA || abilityBase.abilityType == AbilityType.SELF_BUFF)
+        {
+            auraBuffBonus.cachedAuraBonuses = new List<Tuple<BonusType, ModifyType, float>>();
+            auraBuffBonus.auraStrength = 0;
+            foreach (AbilityScalingAddedEffect effect in abilityBase.appliedEffects)
+            {
+                float buffValue = effect.initialValue + effect.growthValue * abilityLevel;
+                auraBuffBonus.cachedAuraBonuses.Add(new Tuple<BonusType, ModifyType, float>(effect.bonusType, effect.modifyType, buffValue));
+                auraBuffBonus.auraStrength += buffValue;
+
+                if (!GameManager.Instance.isInBattle)
+                {
+                    data.AddTemporaryBonus(buffValue, effect.bonusType, effect.modifyType, true);
+                }
+            }
+        }
     }
 
     protected void UpdateAbilityBonusProperties(IEnumerable<GroupType> tags)
@@ -244,19 +270,14 @@ public class ActorAbility
         if (abilityBase.abilityType == AbilityType.ATTACK && abilityBase.useWeaponRangeForAOE)
         {
             if (data.GetEquipmentInSlot(EquipSlotType.WEAPON) is Weapon weapon)
-            {
                 AreaRadius = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.AREA_RADIUS, BonusType.MELEE_ATTACK_RANGE).CalculateStat(weapon.WeaponRange);
-            }
             else
-            {
                 AreaRadius = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.AREA_RADIUS, BonusType.MELEE_ATTACK_RANGE).CalculateStat(1f);
-            }
         }
         else
-        {
             AreaRadius = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.AREA_RADIUS).CalculateStat(abilityBase.areaRadius);
-        }
 
+        AreaLength = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.AREA_RADIUS).CalculateStat(abilityBase.areaLength);
         AreaScaling = AreaRadius / abilityBase.areaRadius;
 
         if (abilityBase.abilityType == AbilityType.AURA || abilityBase.abilityType == AbilityType.SELF_BUFF)
@@ -269,10 +290,12 @@ public class ActorAbility
 
         if (abilityBase.GetGroupTypes().Contains(GroupType.CANNOT_MODIFY_PROJECTILE_COUNT))
             ProjectileCount = abilityBase.projectileCount;
+        else if (abilityBase.abilityShotType == AbilityShotType.HITSCAN_MULTI)
+            ProjectileCount = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.HITSCAN_MULTI_TARGET_COUNT).CalculateStat(abilityBase.projectileCount);
         else
             ProjectileCount = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.PROJECTILE_COUNT).CalculateStat(abilityBase.projectileCount);
 
-        if (abilityBase.abilityShotType == AbilityShotType.HITSCAN_SINGLE)
+        if (abilityBase.abilityShotType == AbilityShotType.HITSCAN_SINGLE || abilityBase.abilityShotType == AbilityShotType.HITSCAN_MULTI)
         {
             if (abilityBase.GetGroupTypes().Contains(GroupType.CAN_PIERCE))
                 ProjectilePierce = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.PROJECTILE_PIERCE).CalculateStat(0);
@@ -293,7 +316,8 @@ public class ActorAbility
 
     protected void UpdateShotParameters(EnemyData data, IEnumerable<GroupType> tags)
     {
-        AreaRadius = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.AREA_RADIUS).CalculateStat(abilityBase.areaRadius);
+        AreaRadius = Math.Max(data.GetMultiStatBonus(abilityBonuses, tags, BonusType.AREA_RADIUS).CalculateStat(abilityBase.areaRadius), 0.1f);
+        AreaLength = Math.Max(data.GetMultiStatBonus(abilityBonuses, tags, BonusType.AREA_RADIUS).CalculateStat(abilityBase.areaLength), 1f);
         AreaScaling = AreaRadius / abilityBase.areaRadius;
         if (abilityBase.abilityType == AbilityType.AURA || abilityBase.abilityType == AbilityType.SELF_BUFF)
         {
@@ -301,9 +325,9 @@ public class ActorAbility
             return;
         }
 
-        ProjectileSpeed = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.PROJECTILE_SPEED).CalculateStat(abilityBase.projectileSpeed);
-        ProjectilePierce = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.PROJECTILE_PIERCE).CalculateStat(0);
-        ProjectileCount = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.PROJECTILE_COUNT).CalculateStat(abilityBase.projectileCount);
+        ProjectileSpeed = Math.Max(data.GetMultiStatBonus(abilityBonuses, tags, BonusType.PROJECTILE_SPEED).CalculateStat(abilityBase.projectileSpeed), 0.5f);
+        ProjectilePierce = Math.Max(data.GetMultiStatBonus(abilityBonuses, tags, BonusType.PROJECTILE_PIERCE).CalculateStat(0), 0);
+        ProjectileCount = Math.Max(data.GetMultiStatBonus(abilityBonuses, tags, BonusType.PROJECTILE_COUNT).CalculateStat(abilityBase.projectileCount), 1);
     }
 
     protected void UpdateTypeParameters(HeroData data, IEnumerable<GroupType> tags)
@@ -395,7 +419,7 @@ public class ActorAbility
             }
         }
 
-        if (float.IsInfinity(Cooldown))
+        if (float.IsInfinity(Cooldown) || float.IsNaN(Cooldown))
             Cooldown = 0.001f;
     }
 
@@ -461,9 +485,12 @@ public class ActorAbility
         }
 
         HashSet<GroupType> nonWeaponTags = data.GetGroupTypes(false);
+
         if (AbilityOwner != null)
             nonWeaponTags.UnionWith(AbilityOwner.GetActorTags());
+
         HashSet<GroupType> mainHandTags = new HashSet<GroupType>(nonWeaponTags);
+
         if (mainWeapon != null)
         {
             mainHandTags.UnionWith(mainWeapon.GetGroupTypes());
@@ -488,6 +515,7 @@ public class ActorAbility
             {
                 float weaponMulti = abilityBase.weaponMultiplier + abilityBase.weaponMultiplierScaling * abilityLevel;
                 flatDamageMod = weaponMulti;
+
                 if (mainWeapon != null)
                 {
                     MinMaxRange mainWeaponDamage = mainWeapon.GetWeaponDamage(element);
@@ -576,8 +604,8 @@ public class ActorAbility
                 {
                     GetElementConversionValues(data, offHandTags, availableConversions, offhandDamageBase[element]);
                     MinMaxRange baseRange = CalculateDamageConversion(data, flatDamageMod, offConvertedDamageMin, offConvertedDamageMax, offHandTags, offhandDamageBase[element], element, multi);
-                    offhandDamageBase[element].calculatedRange.min = baseRange.min;
-                    offhandDamageBase[element].calculatedRange.max = baseRange.max;
+                    offhandDamageBase[element].calculatedRange.min = Math.Max(baseRange.min, 0);
+                    offhandDamageBase[element].calculatedRange.max = Math.Max(baseRange.max, 0);
                 }
                 else
                 {
@@ -654,8 +682,8 @@ public class ActorAbility
             convertedMin = totalMultiplierBonus.CalculateStat(convertedMin);
             convertedMax = totalMultiplierBonus.CalculateStat(convertedMax);
 
-            convertedDamageMin[i] += (int)(convertedMin * finalDamageModifier);
-            convertedDamageMax[i] += (int)(convertedMax * finalDamageModifier);
+            convertedDamageMin[i] += (int)Math.Max(convertedMin * finalDamageModifier, 0);
+            convertedDamageMax[i] += (int)Math.Max(convertedMax * finalDamageModifier, 0);
         }
         MinMaxRange returnValue = new MinMaxRange();
         if (finalBaseMin < 1)
@@ -671,14 +699,14 @@ public class ActorAbility
         {
             StatBonus finalMultiplier = data.GetMultiStatBonus(abilityBonuses, tags, multi.ToArray());
             finalMultiplier.AddBonuses(multiplierBonus);
-            returnValue.min = (int)(finalMultiplier.CalculateStat(finalBaseMin) * finalDamageModifier);
-            returnValue.max = (int)(finalMultiplier.CalculateStat(finalBaseMax) * finalDamageModifier);
+            returnValue.min = (int)Math.Max(finalMultiplier.CalculateStat(finalBaseMin) * finalDamageModifier, 0);
+            returnValue.max = (int)Math.Max(finalMultiplier.CalculateStat(finalBaseMax) * finalDamageModifier, 0);
         }
 
         return returnValue;
     }
 
-    private void GetElementConversionValues(ActorData data, IEnumerable<GroupType> mainHandTags, HashSet<BonusType> availableConversions, AbilityDamageContainer damageContainer)
+    private void GetElementConversionValues(ActorData data, IEnumerable<GroupType> weaponTags, HashSet<BonusType> availableConversions, AbilityDamageContainer damageContainer)
     {
         int conversionSum = 0;
         HashSet<ElementType> elementList = new HashSet<ElementType>();
@@ -686,7 +714,7 @@ public class ActorAbility
         {
             ElementType convertTo = (ElementType)Enum.Parse(typeof(ElementType), conversion.ToString().Split('_')[2]);
             elementList.Add(convertTo);
-            int conversionValue = data.GetMultiStatBonus(abilityBonuses, mainHandTags, conversion).CalculateStat(0);
+            int conversionValue = data.GetMultiStatBonus(abilityBonuses, weaponTags, conversion).CalculateStat(0);
             damageContainer.conversions[(int)convertTo] = conversionValue;
             conversionSum += conversionValue;
         }
@@ -824,10 +852,10 @@ public class ActorAbility
         StatBonus voidNegate = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.VOID_RESISTANCE_NEGATION, BonusType.PRIMORDIAL_RESISTANCE_NEGATION);
         abilityOnHitData.voidNegation = voidNegate.CalculateStat(0);
 
-        abilityOnHitData.onHitEffects.Clear();
+        abilityOnHitData.onHitEffectsFromAbility.Clear();
         foreach (AbilityScalingAddedEffect appliedEffect in abilityBase.appliedEffects)
         {
-            abilityOnHitData.onHitEffects.Add(new AbilityOnHitDataContainer.OnHitBuffEffect(appliedEffect, abilityLevel));
+            abilityOnHitData.onHitEffectsFromAbility.Add(new AbilityOnHitDataContainer.OnHitBuffEffect(appliedEffect, abilityLevel));
         }
     }
 
@@ -835,7 +863,6 @@ public class ActorAbility
     {
         var values = Enum.GetValues(typeof(ElementType));
         float critChance, criticalDamage;
-        bool isCrit = false;
         Dictionary<ElementType, float> returnDict = new Dictionary<ElementType, float>();
         IList<GroupType> damageTags = abilityBase.GetGroupTypes();
         HashSet<GroupType> weaponTags = new HashSet<GroupType>();
@@ -847,22 +874,19 @@ public class ActorAbility
         int[] convertedMinDamage = new int[7];
         int[] convertedMaxDamage = new int[7];
 
-        if (source.Data.WhenHittingEffects.Count > 0)
+        foreach (ActorData.TriggeredEffect triggeredEffect in source.Data.WhenHittingEffects)
         {
-            foreach (ActorData.TriggeredEffect triggeredEffect in source.Data.WhenHittingEffects)
+            if (targetTypes.Contains(triggeredEffect.BaseEffect.restriction) && triggeredEffect.RollTriggerChance())
             {
-                if (targetTypes.Contains(triggeredEffect.BaseEffect.restriction) && triggeredEffect.RollTriggerChance())
+                if (whenHitBonusDict.ContainsKey(triggeredEffect.BaseEffect.statBonusType))
                 {
-                    if (whenHitBonusDict.ContainsKey(triggeredEffect.BaseEffect.statBonusType))
-                    {
-                        whenHitBonusDict[triggeredEffect.BaseEffect.statBonusType].AddBonus(triggeredEffect.BaseEffect.statModifyType, triggeredEffect.Value);
-                    }
-                    else
-                    {
-                        StatBonus bonus = new StatBonus();
-                        bonus.AddBonus(triggeredEffect.BaseEffect.statModifyType, triggeredEffect.Value);
-                        whenHitBonusDict.Add(triggeredEffect.BaseEffect.statBonusType, bonus);
-                    }
+                    whenHitBonusDict[triggeredEffect.BaseEffect.statBonusType].AddBonus(triggeredEffect.BaseEffect.statModifyType, triggeredEffect.Value);
+                }
+                else
+                {
+                    StatBonus bonus = new StatBonus();
+                    bonus.AddBonus(triggeredEffect.BaseEffect.statModifyType, triggeredEffect.Value);
+                    whenHitBonusDict.Add(triggeredEffect.BaseEffect.statBonusType, bonus);
                 }
             }
         }
@@ -950,17 +974,14 @@ public class ActorAbility
                     else
                     {
                         multiBonus.AddBonuses(dicToUse[elementType].multiplierBonus);
-                        minDamage[(int)elementType] = (int)(multiBonus.CalculateStat(dicToUse[elementType].baseMin + minBonus.CalculateStat(0f) * flatDamageMod) * finalDamageModifier);
-                        maxDamage[(int)elementType] = (int)(multiBonus.CalculateStat(dicToUse[elementType].baseMax + maxBonus.CalculateStat(0f) * flatDamageMod) * finalDamageModifier);
+                        minDamage[(int)elementType] = (int)Math.Max(multiBonus.CalculateStat(dicToUse[elementType].baseMin + minBonus.CalculateStat(0f) * flatDamageMod) * finalDamageModifier, 0);
+                        maxDamage[(int)elementType] = (int)Math.Max(multiBonus.CalculateStat(dicToUse[elementType].baseMax + maxBonus.CalculateStat(0f) * flatDamageMod) * finalDamageModifier, 0);
                     }
                 }
             }
         }
 
-        if (UnityEngine.Random.Range(0f, 100f) < critChance)
-        {
-            isCrit = true;
-        }
+        bool isCrit = UnityEngine.Random.Range(0f, 100f) < critChance;
 
         foreach (ElementType elementType in values)
         {
@@ -983,8 +1004,13 @@ public class ActorAbility
         if (IsUsable)
             if (firingRoutine == null)
             {
-                if (abilityBase.abilityType == AbilityType.AURA || abilityBase.abilityType == AbilityType.SELF_BUFF)
+                if (abilityBase.abilityType == AbilityType.AURA)
                     firingRoutine = FiringRoutine_Aura();
+                else if (abilityBase.abilityType == AbilityType.SELF_BUFF)
+                {
+                    FiringRoutine_Aura();
+                    return;
+                }
                 else
                     firingRoutine = FiringRoutine_Attack();
                 parent.StartCoroutine(firingRoutine);
@@ -1024,11 +1050,8 @@ public class ActorAbility
                         FireArcAoe();
                         break;
 
-                    case AbilityShotType.RADIAL_AOE:
-                        FireRadialAoe();
-                        break;
-
                     case AbilityShotType.NOVA_AOE:
+                    case AbilityShotType.RADIAL_AOE:
                         FireRadialAoe();
                         break;
 
@@ -1036,7 +1059,18 @@ public class ActorAbility
                         FireHitscan();
                         break;
 
+                    case AbilityShotType.HITSCAN_MULTI:
+                        FireHitscanMulti();
+                        break;
+
                     case AbilityShotType.LINEAR_AOE:
+                        FireLinearAoe();
+                        break;
+
+                    case AbilityShotType.FORWARD_MOVING_ARC:
+                    case AbilityShotType.FORWARD_MOVING_RADIAL:
+                    case AbilityShotType.FORWARD_MOVING_LINEAR:
+                        FireMovingAoe();
                         break;
                 }
                 fired = true;
@@ -1068,6 +1102,9 @@ public class ActorAbility
                 case AbilityType.SELF_BUFF:
                     ApplyAuraBuff(AbilityOwner);
                     break;
+
+                default:
+                    break;
             }
 
             yield return new WaitForSeconds(0.5f);
@@ -1081,18 +1118,6 @@ public class ActorAbility
         if (buffs.Count > 0)
             buff = buffs[0];
 
-        if (auraBuffBonus.isOutdated)
-        {
-            auraBuffBonus.cachedAuraBonuses = new List<Tuple<BonusType, ModifyType, float>>();
-            auraBuffBonus.auraStrength = 0;
-            foreach (AbilityScalingAddedEffect effect in abilityBase.appliedEffects)
-            {
-                float buffValue = effect.initialValue + effect.growthValue * abilityLevel;
-                auraBuffBonus.cachedAuraBonuses.Add(new Tuple<BonusType, ModifyType, float>(effect.bonusType, effect.modifyType, buffValue));
-                auraBuffBonus.auraStrength += buffValue;
-            }
-            auraBuffBonus.isOutdated = false;
-        }
         if (buff != null)
         {
             if (auraBuffBonus.auraStrength == buff.BuffPower)
@@ -1105,12 +1130,8 @@ public class ActorAbility
             else
                 buff.OnExpire();
         }
-        target.AddStatusEffect(new StatBonusBuffEffect(target, AbilityOwner, auraBuffBonus.cachedAuraBonuses, 0.75f, abilityBase.idName, BuffType));
-    }
 
-    protected void FireRadialAoe()
-    {
-        FireRadialAoe(abilityCollider.transform.position, CurrentTarget.transform.position);
+        target.AddStatusEffect(new StatBonusBuffEffect(target, AbilityOwner, auraBuffBonus.cachedAuraBonuses, 0.75f, abilityBase.idName, BuffType));
     }
 
     protected void FireRadialAoe(Vector3 origin, Vector3 target)
@@ -1148,12 +1169,7 @@ public class ActorAbility
         }
     }
 
-    protected void FireHitscan()
-    {
-        AbilityOwner.StartCoroutine(FireHitscan(abilityCollider.transform.position, CurrentTarget));
-    }
-
-    protected IEnumerator FireHitscan(Vector3 origin, Actor target)
+    protected IEnumerator FireHitscan(Vector3 origin, Actor target, List<Actor> sharedHitlist)
     {
         Actor lastHitTarget;
         Dictionary<ElementType, float> damageDict = CalculateDamageValues(target, AbilityOwner);
@@ -1163,10 +1179,19 @@ public class ActorAbility
 
         ParticleManager.Instance.EmitAbilityParticle(abilityBase.idName, emitParams, 1);
         ApplyDamageToActor(target, damageDict, abilityOnHitData, true);
-        List<Actor> hitList = new List<Actor>
+
+        List<Actor> hitList;
+        if (sharedHitlist == null)
         {
-            target
-        };
+            hitList = new List<Actor>
+            {
+                target
+            };
+        }
+        else
+        {
+            hitList = sharedHitlist;
+        }
 
         lastHitTarget = target;
         int pierceCount = ProjectilePierce;
@@ -1202,6 +1227,8 @@ public class ActorAbility
             foreach (Collider2D hit in hits)
             {
                 Actor actor = hit.GetComponent<Actor>();
+                if (actor == null)
+                    continue;
                 if (hitList.Contains(actor))
                     continue;
                 possibleTargets.Add(actor);
@@ -1257,9 +1284,34 @@ public class ActorAbility
         yield break;
     }
 
-    protected void FireArcAoe()
+    protected void FireHitscanMulti(Vector3 origin)
     {
-        FireArcAoe(abilityCollider.transform.position, CurrentTarget.transform.position);
+        if (targetList.Count <= ProjectileCount)
+        {
+            List<Actor> hitList = new List<Actor>();
+            foreach (Actor target in targetList)
+            {
+                hitList.Add(target);
+                AbilityOwner.StartCoroutine(FireHitscan(abilityCollider.transform.position, target, hitList));
+            }
+        }
+        else
+        {
+            List<Actor> targetListCopy = new List<Actor>(targetList);
+            List<Actor> selectedTargetList = new List<Actor>();
+
+            for (int i = 0; i < ProjectileCount; i++)
+            {
+                int index = UnityEngine.Random.Range(0, targetListCopy.Count);
+                selectedTargetList.Add(targetListCopy[index]);
+                targetListCopy.RemoveAt(index);
+            }
+
+            foreach (Actor target in selectedTargetList)
+            {
+                AbilityOwner.StartCoroutine(FireHitscan(abilityCollider.transform.position, target, selectedTargetList));
+            }
+        }
     }
 
     protected void FireArcAoe(Vector3 origin, Vector3 target)
@@ -1287,6 +1339,195 @@ public class ActorAbility
                 }
             }
         }
+    }
+
+    protected void FireProjectile(Vector3 origin, Vector3 target)
+    {
+        Vector3 heading = (target - origin).normalized;
+        heading.z = 0;
+
+        bool isSpread = abilityBase.doesProjectileSpread;
+        float spreadAngle = 17.5f;
+        List<Actor> sharedList = null;
+        if (abilityBase.abilityShotType == AbilityShotType.PROJECTILE_NOVA)
+        {
+            spreadAngle = 360f / ProjectileCount;
+            sharedList = new List<Actor>();
+        }
+        else
+        {
+            if (isSpread)
+            {
+                if (spreadAngle * ProjectileCount / 2f > abilityBase.projectileSpread)
+                {
+                    spreadAngle = abilityBase.projectileSpread / ProjectileCount / 2f;
+                }
+                sharedList = new List<Actor>();
+            }
+            else
+            {
+                spreadAngle = abilityBase.projectileSpread;
+            }
+        }
+
+        for (int i = 0; i < ProjectileCount; i++)
+        {
+            Projectile pooledProjectile = StageManager.Instance.BattleManager.ProjectilePool.GetProjectile();
+            pooledProjectile.transform.position = origin;
+            pooledProjectile.transform.up = (pooledProjectile.transform.position + pooledProjectile.currentHeading) - pooledProjectile.transform.position;
+
+            pooledProjectile.timeToLive = 4f * abilityBase.projectileLifespanMulti;
+            pooledProjectile.currentSpeed = abilityBase.projectileSpeed;
+
+            if (abilityBase.abilityShotType == AbilityShotType.PROJECTILE_NOVA)
+            {
+                pooledProjectile.currentHeading = Quaternion.Euler(0, 0, spreadAngle * i) * heading;
+                pooledProjectile.sharedHitList = sharedList;
+            }
+            else
+            {
+                if (isSpread)
+                {
+                    int angleMultiplier = (int)Math.Round(i / 2f, MidpointRounding.AwayFromZero);
+                    if (i % 2 == 0)
+                    {
+                        angleMultiplier *= -1;
+                    }
+
+                    pooledProjectile.currentHeading = Quaternion.Euler(0, 0, spreadAngle * angleMultiplier) * heading;
+                    pooledProjectile.sharedHitList = sharedList;
+                }
+                else
+                {
+                    pooledProjectile.currentHeading = Quaternion.Euler(0, 0, spreadAngle * UnityEngine.Random.Range(-1f, 1f)) * heading;
+                }
+            }
+
+            if (abilityBase.hasLinkedAbility)
+                pooledProjectile.linkedAbility = LinkedAbility;
+
+            pooledProjectile.damageCalculationCallback = CalculateDamageValues;
+            pooledProjectile.onHitData = abilityOnHitData;
+            pooledProjectile.gameObject.layer = targetLayer;
+            pooledProjectile.layerMask = targetMask;
+            pooledProjectile.abilityBase = abilityBase;
+            pooledProjectile.pierceCount = ProjectilePierce;
+            pooledProjectile.chainCount = ProjectileChain;
+            pooledProjectile.transform.localScale = new Vector2(ProjectileSize, ProjectileSize);
+
+            AbilityParticleSystem particleSystem = ParticleManager.Instance.GetParticleSystem(abilityBase.idName);
+            if (particleSystem == null)
+            {
+                particleSystem = ParticleManager.Instance.GetParticleSystem(abilityBase.effectSprite);
+            }
+
+            if (particleSystem != null)
+            {
+                GameObject particle = GameObject.Instantiate(particleSystem.gameObject, pooledProjectile.transform, false);
+                pooledProjectile.particles = particle.GetComponent<ParticleSystem>();
+            }
+
+            pooledProjectile.GetComponent<SpriteRenderer>().sprite = ResourceManager.Instance.GetSprite(abilityBase.idName);
+        }
+    }
+
+    protected void FireMovingAoe(Vector3 origin, Actor target)
+    {
+        Vector3 heading = (target.transform.position - origin).normalized;
+        heading.z = 0;
+
+        Projectile pooledProjectile;
+
+        if (abilityBase.abilityShotType == AbilityShotType.FORWARD_MOVING_LINEAR)
+        {
+            pooledProjectile = StageManager.Instance.BattleManager.BoxProjectilePool.GetProjectile();
+            BoxCollider2D collider = pooledProjectile.GetComponent<BoxCollider2D>();
+            collider.size = new Vector2(AreaRadius * 2f, 1f * AreaScaling);
+        }
+        else
+        {
+            pooledProjectile = StageManager.Instance.BattleManager.ProjectilePool.GetProjectile();
+        }
+
+        pooledProjectile.currentHeading = heading;
+        pooledProjectile.transform.position = origin;
+        pooledProjectile.transform.up = (pooledProjectile.transform.position + pooledProjectile.currentHeading) - pooledProjectile.transform.position;
+
+        pooledProjectile.timeToLive = abilityBase.projectileLifespanMulti;
+        pooledProjectile.currentSpeed = AreaLength / abilityBase.projectileLifespanMulti;
+
+        if (abilityBase.hasLinkedAbility)
+            pooledProjectile.linkedAbility = LinkedAbility;
+
+        pooledProjectile.damageCalculationCallback = CalculateDamageValues;
+        pooledProjectile.onHitData = abilityOnHitData;
+        pooledProjectile.gameObject.layer = targetLayer;
+        pooledProjectile.layerMask = targetMask;
+        pooledProjectile.abilityBase = abilityBase;
+        pooledProjectile.pierceCount = 999;
+
+        AbilityParticleSystem particleSystem = ParticleManager.Instance.GetParticleSystem(abilityBase.idName, abilityBase.effectSprite);
+
+        if (particleSystem != null)
+        {
+            GameObject particle = GameObject.Instantiate(particleSystem.gameObject, pooledProjectile.transform, false);
+            pooledProjectile.particles = particle.GetComponent<ParticleSystem>();
+        }
+
+        pooledProjectile.GetComponent<SpriteRenderer>().sprite = ResourceManager.Instance.GetSprite(abilityBase.idName);
+    }
+
+    protected void FireLinearAoe(Vector3 origin, Vector3 target)
+    {
+        Vector3 heading = (target - origin).normalized;
+        Vector3 horizontal = Vector3.Cross(heading, Vector3.forward).normalized * AreaRadius;
+
+        /*
+        Debug.DrawLine(origin, origin + horizontal, Color.red, 1);
+        Debug.DrawLine(origin, origin - horizontal, Color.red, 1);
+        Debug.DrawLine(origin - horizontal, origin - horizontal + (heading * AreaLength), Color.red, 1);
+        */
+
+        Collider2D[] hits = Physics2D.OverlapAreaAll(origin + horizontal, origin - horizontal + (heading * AreaLength), targetMask);
+
+        foreach (Collider2D hit in hits)
+        {
+            Actor actor = hit.GetComponent<Actor>();
+            if (actor == null)
+                continue;
+            Dictionary<ElementType, float> damageDict = CalculateDamageValues(actor, AbilityOwner);
+            ApplyDamageToActor(actor, damageDict, abilityOnHitData, true);
+        }
+    }
+
+    protected void FireHitscan()
+    {
+        AbilityOwner.StartCoroutine(FireHitscan(abilityCollider.transform.position, CurrentTarget, null));
+    }
+
+    protected void FireHitscanMulti()
+    {
+        FireHitscanMulti(abilityCollider.transform.position);
+    }
+
+    protected void FireLinearAoe()
+    {
+        FireLinearAoe(abilityCollider.transform.position, CurrentTarget.transform.position);
+    }
+
+    protected void FireRadialAoe()
+    {
+        FireRadialAoe(abilityCollider.transform.position, CurrentTarget.transform.position);
+    }
+
+    protected void FireArcAoe()
+    {
+        FireArcAoe(abilityCollider.transform.position, CurrentTarget.transform.position);
+    }
+
+    protected void FireMovingAoe()
+    {
+        FireMovingAoe(abilityCollider.transform.position, CurrentTarget);
     }
 
     protected void FireProjectile()
@@ -1336,94 +1577,6 @@ public class ActorAbility
         else
         {
             FireProjectile(abilityCollider.transform.position, CurrentTarget.transform.position);
-        }
-    }
-
-    protected void FireProjectile(Vector3 origin, Vector3 target)
-    {
-        Vector3 heading = (target - origin).normalized;
-        heading.z = 0;
-
-        bool isSpread = abilityBase.doesProjectileSpread;
-        float spreadAngle = 17.5f;
-        List<Actor> sharedList = null;
-        if (abilityBase.abilityShotType == AbilityShotType.PROJECTILE_NOVA)
-        {
-            spreadAngle = 360f / ProjectileCount;
-            sharedList = new List<Actor>();
-        }
-        else
-        {
-            if (isSpread)
-            {
-                if (spreadAngle * ProjectileCount / 2f > abilityBase.projectileSpread)
-                {
-                    spreadAngle = abilityBase.projectileSpread / ProjectileCount / 2f;
-                }
-                sharedList = new List<Actor>();
-            }
-            else
-            {
-                spreadAngle = abilityBase.projectileSpread;
-            }
-        }
-
-        AbilityOnHitDataContainer OnHitCopy = abilityOnHitData.DeepCopy();
-
-        for (int i = 0; i < ProjectileCount; i++)
-        {
-            Projectile pooledProjectile = StageManager.Instance.BattleManager.ProjectilePool.GetProjectile();
-            pooledProjectile.transform.position = origin;
-            pooledProjectile.timeToLive = 5f;
-            pooledProjectile.currentSpeed = abilityBase.projectileSpeed;
-            pooledProjectile.layerMask = targetMask;
-
-            if (abilityBase.abilityShotType == AbilityShotType.PROJECTILE_NOVA)
-            {
-                pooledProjectile.currentHeading = Quaternion.Euler(0, 0, spreadAngle * i) * heading;
-                pooledProjectile.sharedHitList = sharedList;
-            }
-            else
-            {
-                if (isSpread)
-                {
-                    int angleMultiplier = (int)Math.Round(i / 2f, MidpointRounding.AwayFromZero);
-                    if (i % 2 == 0)
-                    {
-                        angleMultiplier *= -1;
-                    }
-
-                    pooledProjectile.currentHeading = Quaternion.Euler(0, 0, spreadAngle * angleMultiplier) * heading;
-                    pooledProjectile.sharedHitList = sharedList;
-                }
-                else
-                {
-                    pooledProjectile.currentHeading = Quaternion.Euler(0, 0, spreadAngle * UnityEngine.Random.Range(-1f, 1f)) * heading;
-                }
-            }
-
-            if (abilityBase.hasLinkedAbility)
-                pooledProjectile.linkedAbility = LinkedAbility;
-
-            pooledProjectile.damageCalculationCallback = CalculateDamageValues;
-            pooledProjectile.onHitData = OnHitCopy;
-            pooledProjectile.gameObject.layer = targetLayer;
-            pooledProjectile.transform.up = (pooledProjectile.transform.position + pooledProjectile.currentHeading) - pooledProjectile.transform.position;
-            pooledProjectile.abilityBase = abilityBase;
-            pooledProjectile.pierceCount = ProjectilePierce;
-            pooledProjectile.chainCount = ProjectileChain;
-            pooledProjectile.transform.localScale = new Vector2(ProjectileSize, ProjectileSize); 
-            AbilityParticleSystem particleSystem = ParticleManager.Instance.GetParticleSystem(abilityBase.idName);
-            if (particleSystem == null)
-            {
-                particleSystem = ParticleManager.Instance.GetParticleSystem(abilityBase.effectSprite);
-            }
-            if (particleSystem != null)
-            {
-                GameObject particle = GameObject.Instantiate(particleSystem.gameObject, pooledProjectile.transform, false);
-                pooledProjectile.particles = particle.GetComponent<ParticleSystem>();
-            }
-            pooledProjectile.GetComponent<SpriteRenderer>().sprite = ResourceManager.Instance.GetSprite(abilityBase.idName);
         }
     }
 
@@ -1526,8 +1679,8 @@ public class ActorAbility
             mainMinDamage = multiplierBonus.CalculateStat(mainMinDamage);
             mainMaxDamage = multiplierBonus.CalculateStat(mainMaxDamage);
 
-            calculatedRange.min = (int)(mainMinDamage * finalDamageModifier);
-            calculatedRange.max = (int)(mainMaxDamage * finalDamageModifier);
+            calculatedRange.min = (int)Math.Max(mainMinDamage * finalDamageModifier, 0);
+            calculatedRange.max = (int)Math.Max(mainMaxDamage * finalDamageModifier, 0);
         }
     }
 }

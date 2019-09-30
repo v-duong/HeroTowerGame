@@ -21,10 +21,10 @@ public class AbilityCoreItem : Item, IAbilitySource
         Name = name;
     }
 
-    public AbilityCoreItem(Guid id, string baseName, string name)
+    public AbilityCoreItem(Guid id, AbilityBase abilityBase, string name)
     {
-        Id = Guid.NewGuid();
-        Base = ResourceManager.Instance.GetAbilityBase(baseName);
+        Id = id;
+        Base = abilityBase;
         Name = name;
     }
 

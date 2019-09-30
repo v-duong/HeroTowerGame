@@ -221,9 +221,14 @@ public class HeroArchetypeData : IAbilitySource
         return true;
     }
 
-    public bool ContainsAbility(string id)
+    public bool ContainsAbility(AbilityBase abilityBase)
     {
-        return true;
+        foreach(var leveledAbility in AvailableAbilityList)
+        {
+            if (leveledAbility.abilityBase == abilityBase)
+                return true;
+        }
+        return false;
     }
 
     public void OnAbilityEquip(AbilityBase ability, HeroData hero, int slot)

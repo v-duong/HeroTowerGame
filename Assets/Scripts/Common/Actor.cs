@@ -378,11 +378,12 @@ public abstract class Actor : MonoBehaviour
 
         if (damage.ContainsKey(ElementType.VOID) && damage[ElementType.VOID] > 0 && postDamageData.DidEffectProc(EffectType.RADIATION))
         {
+            Debug.Log(damage[ElementType.VOID] + " DAMAGE");
             AddStatusEffect(new RadiationEffect(this, postDamageData.sourceActor, damage[ElementType.VOID] * postDamageData.GetEffectEffectiveness(EffectType.RADIATION) * Data.AfflictedStatusDamageResistance, postDamageData.GetEffectDuration(EffectType.RADIATION)));
         }
 
         float chanceRoll = 1.0f;
-        foreach (AbilityOnHitDataContainer.OnHitBuffEffect onHitEffect in postDamageData.onHitEffects.ToArray())
+        foreach (AbilityOnHitDataContainer.OnHitBuffEffect onHitEffect in postDamageData.onHitEffectsFromAbility)
         {
             if (onHitEffect.effectBase.chance < 1.0f)
             {
@@ -392,15 +393,15 @@ public abstract class Actor : MonoBehaviour
                     continue;
             }
 
-            string buffName = postDamageData.abilityName + onHitEffect.effectBase.bonusType.ToString() + onHitEffect.effectBase.modifyType.ToString();
+            string buffName = postDamageData.sourceAbility.idName + onHitEffect.effectBase.bonusType.ToString() + onHitEffect.effectBase.modifyType.ToString();
 
             switch (onHitEffect.effectBase.targetType)
             {
                 case AbilityTargetType.SELF:
-                    onHitEffect.ApplyEffect(postDamageData.sourceActor, postDamageData.sourceActor, buffName);
+                    onHitEffect.ApplyBuffEffect(postDamageData.sourceActor, postDamageData.sourceActor, buffName);
                     break;
                 case AbilityTargetType.ENEMY:
-                    onHitEffect.ApplyEffect(this, postDamageData.sourceActor, buffName);
+                    onHitEffect.ApplyBuffEffect(this, postDamageData.sourceActor, buffName);
                     break;
                 case AbilityTargetType.ALLY:
                     break;

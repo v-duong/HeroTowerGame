@@ -34,6 +34,8 @@ public class AbilityBase
 
     [JsonProperty]
     public readonly float projectileSize;
+    [JsonProperty]
+    public readonly float projectileLifespanMulti;
 
     [JsonProperty]
     public readonly int projectileCount;
@@ -209,11 +211,15 @@ public enum AbilityShotType
 {
     PROJECTILE,
     HITSCAN_SINGLE,
+    HITSCAN_MULTI,
     ARC_AOE,
+    FORWARD_MOVING_ARC,
     RADIAL_AOE,
+    FORWARD_MOVING_RADIAL,
     NOVA_AOE,
     NOVA_ARC_AOE,
     LINEAR_AOE,
+    FORWARD_MOVING_LINEAR,
     PROJECTILE_NOVA
 }
 

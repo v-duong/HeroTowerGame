@@ -33,6 +33,7 @@ public class HeroData : ActorData
 
     public bool IsLocked;
     public bool isDualWielding;
+    private bool UpdatesAreDeferred = false;
 
     private HeroData() : base()
     {
@@ -46,6 +47,7 @@ public class HeroData : ActorData
 
     public HeroData(SaveData.HeroSaveData heroSaveData) : base()
     {
+        UpdatesAreDeferred = true;
         PlayerStats ps = GameManager.Instance.PlayerStats;
         equipList = new Equipment[10];
         archetypeList = new HeroArchetypeData[2];
@@ -79,7 +81,6 @@ public class HeroData : ActorData
             archetypeList[1] = new HeroArchetypeData(heroSaveData.secondaryArchetypeData, this);
         }
 
-
         foreach (EquipSlotType equipSlot in Enum.GetValues(typeof(EquipSlotType)))
         {
             if (equipSlot == EquipSlotType.RING)
@@ -102,6 +103,8 @@ public class HeroData : ActorData
             var slotData = heroSaveData.secondAbilitySlot;
             FindAndEquipAbility(slotData.abilityId, slotData.sourceId, slotData.sourceType, 1);
         }
+
+        UpdatesAreDeferred = false;
 
         UpdateActorData();
     }
@@ -225,7 +228,7 @@ public class HeroData : ActorData
             abilitySlotList[slot].SetAbilityToSlot(ability, source);
         }
         source.OnAbilityEquip(ability, this, slot);
-        UpdateAbilities();
+        UpdateActorData();
         return true;
     }
 
@@ -482,6 +485,9 @@ public class HeroData : ActorData
 
     public override void UpdateActorData()
     {
+        if (UpdatesAreDeferred)
+            return;
+
         GroupTypes = GetGroupTypes();
         UpdateHeroAttributes();
         UpdateAbilities();
@@ -689,14 +695,34 @@ public class HeroData : ActorData
 
     public void UpdateAbilities()
     {
+        if (!GameManager.Instance.isInBattle)
+            ClearTemporaryBonuses(false);
+
         foreach (AbilitySlot abilitySlot in abilitySlotList)
         {
+            if (abilitySlot.Ability == null)
+                continue;
+
             ActorAbility actorAbility = abilitySlot.Ability;
-            if (actorAbility != null)
+            if ((actorAbility.abilityBase.abilityType == AbilityType.SELF_BUFF || actorAbility.abilityBase.abilityType == AbilityType.AURA))
             {
                 actorAbility.UpdateAbilityLevel(GetAbilityLevel(actorAbility.abilityBase));
                 actorAbility.UpdateAbilityStats(this);
             }
+        }
+
+        foreach (AbilitySlot abilitySlot in abilitySlotList)
+        {
+            if (abilitySlot.Ability == null)
+                continue;
+
+            ActorAbility actorAbility = abilitySlot.Ability;
+
+            if (actorAbility.abilityBase.abilityType == AbilityType.SELF_BUFF || actorAbility.abilityBase.abilityType == AbilityType.AURA)
+                continue;
+
+            actorAbility.UpdateAbilityLevel(GetAbilityLevel(actorAbility.abilityBase));
+            actorAbility.UpdateAbilityStats(this);
         }
     }
 
@@ -753,11 +779,26 @@ public class HeroData : ActorData
         {
             foreach (HeroArchetypeData archetypeData in archetypeList)
             {
-                if (archetypeData == null || archetypeData.Id != sourceId || !archetypeData.ContainsAbility(abilityId))
+                if (archetypeData == null || archetypeData.Id != sourceId || !archetypeData.ContainsAbility(ability))
                     continue;
                 else
                 {
                     EquipAbility(ability, slot, archetypeData);
+                    return;
+                }
+            }
+        }
+        else if (sourceType == AbilitySourceType.ABILITY_CORE)
+        {
+            foreach (AbilityCoreItem abilityCore in GameManager.Instance.PlayerStats.AbilityInventory)
+            {
+                Debug.Log(abilityCore.SourceId + " " + sourceId);
+                if (abilityCore.SourceId != sourceId)
+                    continue;
+                else
+                {
+                    Debug.Log("TEST");
+                    EquipAbility(ability, slot, abilityCore);
                     return;
                 }
             }

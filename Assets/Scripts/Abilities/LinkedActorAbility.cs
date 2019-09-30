@@ -74,9 +74,12 @@ public class LinkedActorAbility : ActorAbility
                 FireRadialAoe(origin, target.transform.position);
                 break;
             case AbilityShotType.HITSCAN_SINGLE:
-                FireHitscan(origin, target);
+                FireHitscan(origin, target, null);
                 break;
             case AbilityShotType.LINEAR_AOE:
+                break;
+
+            default:
                 break;
         }
     }

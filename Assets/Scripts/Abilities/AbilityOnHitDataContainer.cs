@@ -3,54 +3,11 @@ using System.Collections.Generic;
 
 public class AbilityOnHitDataContainer
 {
-    public class OnHitStatusEffectData
-    {
-        public float chance = 0;
-        public float effectiveness = 0;
-        public float duration = 0;
-    }
 
-    public class OnHitBuffEffect
-    {
-        public AbilityScalingAddedEffect effectBase;
-        public float power = 0;
-
-        public OnHitBuffEffect(AbilityScalingAddedEffect appliedEffect, int level)
-        {
-            effectBase = appliedEffect;
-            power = appliedEffect.initialValue + appliedEffect.growthValue * level;
-        }
-
-        public void ApplyEffect(Actor target, Actor source, string buffName)
-        {
-            List<StatBonusBuffEffect> buffs = target.GetBuffStatusEffect(buffName);
-
-            if (buffs.Count >= effectBase.stacks)
-            {
-                float lowestDuration = 100f;
-                StatBonusBuffEffect buff = null;
-                foreach (StatBonusBuffEffect b in buffs)
-                {
-                    if (b.duration < lowestDuration)
-                        buff = b;
-                }
-                buff.RefreshDuration(effectBase.duration);
-                return;
-            }
-
-            List<Tuple<BonusType, ModifyType, float>> bonuses = new List<Tuple<BonusType, ModifyType, float>>
-            {
-                new Tuple<BonusType, ModifyType, float>(effectBase.bonusType, effectBase.modifyType, power)
-            };
-
-            target.AddStatusEffect(new StatBonusBuffEffect(target, source, bonuses, effectBase.duration, buffName, effectBase.type));
-        }
-    }
-
-    public string abilityName;
+    public AbilityBase sourceAbility;
     public AbilityType Type;
     public Actor sourceActor;
-    public List<OnHitBuffEffect> onHitEffects;
+    public List<OnHitBuffEffect> onHitEffectsFromAbility;
     public float accuracy;
     public int physicalNegation;
     public int fireNegation;
@@ -90,7 +47,7 @@ public class AbilityOnHitDataContainer
             { EffectType.PACIFY, new OnHitStatusEffectData() },
             { EffectType.RADIATION, new OnHitStatusEffectData() }
         };
-        onHitEffects = new List<OnHitBuffEffect>();
+        onHitEffectsFromAbility = new List<OnHitBuffEffect>();
     }
 
     public AbilityOnHitDataContainer DeepCopy()
@@ -102,5 +59,50 @@ public class AbilityOnHitDataContainer
     {
         float chance = GetEffectChance(effectType);
         return Helpers.RollChance(chance / 100f);
+    }
+
+
+    public class OnHitStatusEffectData
+    {
+        public float chance = 0;
+        public float effectiveness = 0;
+        public float duration = 0;
+    }
+
+    public class OnHitBuffEffect
+    {
+        public AbilityScalingAddedEffect effectBase;
+        public float power = 0;
+
+        public OnHitBuffEffect(AbilityScalingAddedEffect appliedEffect, int level)
+        {
+            effectBase = appliedEffect;
+            power = appliedEffect.initialValue + appliedEffect.growthValue * level;
+        }
+
+        public void ApplyBuffEffect(Actor target, Actor source, string buffName)
+        {
+            List<StatBonusBuffEffect> buffs = target.GetBuffStatusEffect(buffName);
+
+            if (buffs.Count >= effectBase.stacks)
+            {
+                float lowestDuration = 100f;
+                StatBonusBuffEffect buff = null;
+                foreach (StatBonusBuffEffect b in buffs)
+                {
+                    if (b.duration < lowestDuration)
+                        buff = b;
+                }
+                buff.RefreshDuration(effectBase.duration);
+                return;
+            }
+
+            List<Tuple<BonusType, ModifyType, float>> bonuses = new List<Tuple<BonusType, ModifyType, float>>
+            {
+                new Tuple<BonusType, ModifyType, float>(effectBase.bonusType, effectBase.modifyType, power)
+            };
+
+            target.AddStatusEffect(new StatBonusBuffEffect(target, source, bonuses, effectBase.duration, buffName, effectBase.type));
+        }
     }
 }

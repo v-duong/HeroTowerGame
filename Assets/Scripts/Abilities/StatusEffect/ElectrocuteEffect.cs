@@ -42,7 +42,9 @@ public class ElectrocuteEffect : ActorStatusEffect
         Actor secondaryTarget = hits[index].gameObject.GetComponent<Actor>();
 
         target.ApplySingleElementDamage(ElementType.LIGHTNING, damage * timeElapsed, Source.Data.LightningNegation, false);
-        secondaryTarget.ApplySingleElementDamage(ElementType.LIGHTNING, damage * timeElapsed, Source.Data.LightningNegation, false);
+
+        if (secondaryTarget != null)
+            secondaryTarget.ApplySingleElementDamage(ElementType.LIGHTNING, damage * timeElapsed, Source.Data.LightningNegation, false);
 
         /*
         foreach(Collider2D c in hits)

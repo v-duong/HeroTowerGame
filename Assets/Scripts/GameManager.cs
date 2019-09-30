@@ -12,6 +12,9 @@ public class GameManager : MonoBehaviour
     [SerializeField]
     public Projectile projectilePrefab;
 
+    [SerializeField]
+    public Projectile boxProjectilePrefab;
+
     public bool isInBattle;
     public List<HeroData> inBattleHeroes = new List<HeroData>();
     private string currentSceneName = "";
@@ -104,6 +107,7 @@ public class GameManager : MonoBehaviour
         StageManager.Instance.BattleManager.SetStageBase(stageInfoBase);
         StageManager.Instance.BattleManager.InitializeProjectilePool();
         ParticleManager.Instance.ClearParticleSystems();
+        isInBattle = true;
 
         yield return LoadBattleUI(scene);
     }
@@ -131,6 +135,8 @@ public class GameManager : MonoBehaviour
         {
             if (data == null)
                 continue;
+
+            data.ClearTemporaryBonuses(true);
 
             GameObject actor = Instantiate(ResourceManager.Instance.HeroPrefab.gameObject);
             data.InitHeroActor(actor);
@@ -163,7 +169,6 @@ public class GameManager : MonoBehaviour
         StageManager.Instance.stageBounds = bounds;
         InputManager.Instance.SetCameraBounds();
 
-        UIManager.Instance.LoadingScreen.endLoadingScreen = true;
-        isInBattle = true;
+        UIManager.Instance.LoadingScreen.endLoadingScreen = true; 
     }
 }

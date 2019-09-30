@@ -12,6 +12,7 @@ public class RadiationEffect : ActorStatusEffect
     {
         effectType = EffectType.RADIATION;
         damagePerSecond = inputDamage * 0.05f;
+        Debug.Log(damagePerSecond);
         this.duration = duration;
         timeSinceLastCheck = 0;
     }
@@ -46,10 +47,14 @@ public class RadiationEffect : ActorStatusEffect
             hits = Physics2D.OverlapCircleAll(target.transform.position, 1.5f, LayerMask.GetMask("Hero"));
         }
 
+
+        target.ApplySingleElementDamage(ElementType.VOID, damagePerSecond * timeElapsed, Source.Data.VoidNegation, false);
+
         foreach (Collider2D c in hits)
         {
             Actor actor = c.gameObject.GetComponent<Actor>();
-            actor.ApplySingleElementDamage(ElementType.VOID, damagePerSecond * timeElapsed, Source.Data.VoidNegation, false);
+            if (actor != null && actor != target)
+                actor.ApplySingleElementDamage(ElementType.VOID, damagePerSecond * timeElapsed, Source.Data.VoidNegation, false);
         }
     }
 

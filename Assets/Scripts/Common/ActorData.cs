@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using UnityEngine;
 
 public abstract class ActorData
 {
@@ -59,6 +60,7 @@ public abstract class ActorData
     public List<TriggeredEffect> OnKillEffects { get; protected set; }
 
     protected Dictionary<BonusType, StatBonusCollection> statBonuses;
+    protected Dictionary<BonusType, StatBonus> selfBuffBonuses;
     protected Dictionary<BonusType, StatBonus> temporaryBonuses;
 
     protected ElementalData ElementData { get; private set; }
@@ -126,10 +128,11 @@ public abstract class ActorData
             UpdateActorData();
     }
 
-    public void ClearTemporaryBonuses()
+    public void ClearTemporaryBonuses(bool updateActorData)
     {
         temporaryBonuses.Clear();
-        UpdateActorData();
+        if (updateActorData)
+            UpdateActorData();
     }
 
     protected void ApplyHealthBonuses()
@@ -227,7 +230,7 @@ public abstract class ActorData
 
     public abstract int GetResistance(ElementType element);
 
-    public abstract HashSet<BonusType> BonusesIntersection(IEnumerable<BonusType> abilityBonuses,IEnumerable<BonusType> bonuses);
+    public abstract HashSet<BonusType> BonusesIntersection(IEnumerable<BonusType> abilityBonuses, IEnumerable<BonusType> bonuses);
 
     public class TriggeredEffect
     {
@@ -242,7 +245,6 @@ public abstract class ActorData
 
         public bool RollTriggerChance()
         {
-            
             return Helpers.RollChance(BaseEffect.triggerChance);
         }
     }

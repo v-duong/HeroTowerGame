@@ -73,7 +73,10 @@ public class SaveData
         GameManager.Instance.PlayerStats.ClearAbilityInventory();
         foreach (AbilityCoreSaveData coreData in abilityCoreList)
         {
-            GameManager.Instance.PlayerStats.AddAbilityToInventory(new AbilityCoreItem(coreData.id, coreData.baseId, coreData.name));
+            AbilityBase abilityBase = ResourceManager.Instance.GetAbilityBase(coreData.baseId);
+            if (abilityBase == null)
+                continue;
+            GameManager.Instance.PlayerStats.AddAbilityToInventory(new AbilityCoreItem(coreData.id, abilityBase, coreData.name));
         }
     }
 

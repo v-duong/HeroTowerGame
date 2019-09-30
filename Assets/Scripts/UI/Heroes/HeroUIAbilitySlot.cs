@@ -57,6 +57,7 @@ public class HeroUIAbilitySlot : MonoBehaviour
         if (ability == null)
         {
             hero.UnequipAbility(slot);
+            hero.UpdateActorData();
         }
         else
         {

@@ -120,17 +120,20 @@ public class HeroDetailWindow : MonoBehaviour
 
             s += string.Format("Approx. DPS: {0:n1}\n", dps);
 
-            if (ability.abilityBase.abilityType == AbilityType.ATTACK)
-                s += string.Format("Attack Rate: {0:F2}/s\n", 1f / ability.Cooldown);
-            else
-                s += string.Format("Cast Rate: {0:F2}/s\n", 1f / ability.Cooldown);
-
-            s += string.Format("{0:F1}%, x{1:F2}\n", ability.MainCriticalChance, ability.MainCriticalDamage);
-            s += LocalizationManager.Instance.GetLocalizationText_AbilityCalculatedDamage(ability.mainDamageBase);
-            if (ability.DualWielding && ability.AlternatesAttacks)
+            if (ability.abilityBase.abilityType != AbilityType.AURA && ability.abilityBase.abilityType != AbilityType.SELF_BUFF)
             {
-                s += string.Format("{0:F1}%, x{1:F2}\n", ability.OffhandCriticalChance, ability.OffhandCriticalDamage);
-                s += LocalizationManager.Instance.GetLocalizationText_AbilityCalculatedDamage(ability.offhandDamageBase);
+                if (ability.abilityBase.abilityType == AbilityType.ATTACK)
+                    s += string.Format("Attack Rate: {0:F2}/s\n", 1f / ability.Cooldown);
+                else
+                    s += string.Format("Cast Rate: {0:F2}/s\n", 1f / ability.Cooldown);
+
+                s += string.Format("{0:F1}%, x{1:F2}\n", ability.MainCriticalChance, ability.MainCriticalDamage);
+                s += LocalizationManager.Instance.GetLocalizationText_AbilityCalculatedDamage(ability.mainDamageBase);
+                if (ability.DualWielding && ability.AlternatesAttacks)
+                {
+                    s += string.Format("{0:F1}%, x{1:F2}\n", ability.OffhandCriticalChance, ability.OffhandCriticalDamage);
+                    s += LocalizationManager.Instance.GetLocalizationText_AbilityCalculatedDamage(ability.offhandDamageBase);
+                }
             }
         }
         else
