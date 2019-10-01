@@ -138,7 +138,7 @@ public class HeroArchetypeData : IAbilitySource
 
         foreach (TriggeredEffectBonusProperty triggeredEffectBonus in node.triggeredEffects)
         {
-            ActorData.TriggeredEffect t = new ActorData.TriggeredEffect(triggeredEffectBonus, triggeredEffectBonus.effectMinValue);
+            TriggeredEffect t = new TriggeredEffect(triggeredEffectBonus, triggeredEffectBonus.effectMinValue);
             hero.AddTriggeredEffect(triggeredEffectBonus, t);
         }
 
@@ -174,7 +174,7 @@ public class HeroArchetypeData : IAbilitySource
         {
             foreach (TriggeredEffectBonusProperty triggeredEffectBonus in node.triggeredEffects)
             {
-                ActorData.TriggeredEffect t = new ActorData.TriggeredEffect(triggeredEffectBonus, triggeredEffectBonus.effectMinValue);
+                TriggeredEffect t = new TriggeredEffect(triggeredEffectBonus, triggeredEffectBonus.effectMinValue);
                 hero.AddTriggeredEffect(triggeredEffectBonus, t);
             }
         }

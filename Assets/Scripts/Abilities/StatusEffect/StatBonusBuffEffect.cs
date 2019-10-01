@@ -12,6 +12,8 @@ public class StatBonusBuffEffect : ActorStatusEffect
 
     public override GroupType StatusTag => buffType;
 
+    public override int MaxStacks => 1;
+
     protected List<Tuple<BonusType, ModifyType, float>> bonus;
 
     public StatBonusBuffEffect(Actor target, Actor source, List<Tuple<BonusType,ModifyType,float>> bonuses, float duration, string buffName, EffectType effectType) : base(target, source)
@@ -38,14 +40,13 @@ public class StatBonusBuffEffect : ActorStatusEffect
         {
             target.Data.RemoveTemporaryBonus(tuple.Item3, tuple.Item1, tuple.Item2, true);
         }
-        target.RemoveStatusEffect(this);
+
     }
 
     public override void Update(float deltaTime)
     {
-        float tick = DurationUpdate(deltaTime);
-        if (duration <= 0)
-            OnExpire();
+        DurationUpdate(deltaTime);
+
     }
 
     public override float GetEffectValue()

@@ -3,12 +3,14 @@ using UnityEngine;
 
 public class BleedEffect : ActorStatusEffect
 {
-
+    public const float BASE_DURATION = 2.0f;
     protected float damagePerSecond;
     protected Vector2 lastPosition;
     protected float timeSinceLastCheck;
 
     public override GroupType StatusTag => GroupType.SELF_IS_BLEEDING;
+
+    public override int MaxStacks => 1;
 
     public BleedEffect(Actor target, Actor source, float inputDamage, float duration) : base(target, source)
     {
@@ -25,7 +27,7 @@ public class BleedEffect : ActorStatusEffect
 
     public override void OnExpire()
     {
-        target.RemoveStatusEffect(this);
+
     }
 
     public override void Update(float deltaTime)
@@ -42,8 +44,6 @@ public class BleedEffect : ActorStatusEffect
             additionalDamage = distance * damagePerSecond * 0.2f;
         }
         target.ApplySingleElementDamage(ElementType.PHYSICAL, damagePerSecond * tick + additionalDamage, Source.Data.PhysicalNegation, false);
-        if (duration <= 0)
-            OnExpire();
     }
 
     public override float GetEffectValue()

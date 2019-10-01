@@ -2,11 +2,14 @@
 
 public class RadiationEffect : ActorStatusEffect
 {
+    public const float BASE_DURATION = 5.0f;
     private const float DAMAGE_TICK_TIME = 1f / 3f;
     protected float damagePerSecond;
     protected float timeSinceLastCheck;
 
     public override GroupType StatusTag => GroupType.SELF_IS_RADIATION;
+
+    public override int MaxStacks => 1;
 
     public RadiationEffect(Actor target, Actor source, float inputDamage, float duration) : base(target, source)
     {
@@ -23,15 +26,14 @@ public class RadiationEffect : ActorStatusEffect
 
     public override void OnExpire()
     {
-        target.RemoveStatusEffect(this);
+
     }
 
     public override void Update(float deltaTime)
     {
         float timeElapsed = DurationUpdate(deltaTime);
         DamageTick(timeElapsed);
-        if (duration <= 0)
-            OnExpire();
+
     }
 
     private void DamageTick(float timeElapsed)

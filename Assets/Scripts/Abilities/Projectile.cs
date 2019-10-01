@@ -83,7 +83,7 @@ public class Projectile : MonoBehaviour
         Actor actor = collision.gameObject.GetComponent<Actor>();
         Vector3 targetPosition;
 
-        if (actor != null && !IsTargetAlreadyHit(actor))
+        if (actor != null && !IsTargetAlreadyHit(actor) && !actor.Data.IsDead)
         {
             targetPosition = actor.transform.position;
             Dictionary<ElementType, float> projectileDamage = damageCalculationCallback.Invoke(actor, onHitData.sourceActor);

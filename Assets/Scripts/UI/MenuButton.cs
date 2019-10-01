@@ -39,7 +39,13 @@ public class MenuButton : UIKeyButton
 
     public void AddHero()
     {
-        HeroData hero = HeroData.CreateNewHero("TEST" + Random.Range(4, 100), ArchetypeItem.CreateRandomArchetypeItem(100), ArchetypeItem.CreateRandomArchetypeItem(100));
+        ArchetypeItem a1 = ArchetypeItem.CreateRandomArchetypeItem(100);
+        ArchetypeItem a2 = ArchetypeItem.CreateRandomArchetypeItem(100);
+        while (a1.Base == a2.Base)
+        {
+            a2 = ArchetypeItem.CreateRandomArchetypeItem(100);
+        }
+        HeroData hero = HeroData.CreateNewHero("TEST" + Random.Range(4, 500), a1, a2);
         GameManager.Instance.PlayerStats.AddHeroToList(hero);
     }
 

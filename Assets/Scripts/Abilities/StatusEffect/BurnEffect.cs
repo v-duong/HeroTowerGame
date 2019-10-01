@@ -1,37 +1,31 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-
-public class BurnEffect : ActorStatusEffect
+﻿public class BurnEffect : ActorStatusEffect
 {
+    public const float BASE_DURATION = 2.0f;
     protected float damagePerSecond;
 
     public override GroupType StatusTag => GroupType.SELF_IS_BURNING;
 
+    public override int MaxStacks => 1;
+
     public BurnEffect(Actor target, Actor source, float inputDamage, float duration) : base(target, source)
     {
         effectType = EffectType.BURN;
-        damagePerSecond = inputDamage * 0.15f;
+        damagePerSecond = inputDamage * 0.10f;
         this.duration = duration;
-
     }
 
     public override void OnApply()
     {
-        
     }
 
     public override void OnExpire()
     {
-        target.RemoveStatusEffect(this);
     }
 
     public override void Update(float deltaTime)
     {
         float tick = DurationUpdate(deltaTime);
         target.ApplySingleElementDamage(ElementType.FIRE, damagePerSecond * tick, Source.Data.FireNegation, false);
-        if (duration <= 0)
-            OnExpire();
     }
 
     public override float GetEffectValue()

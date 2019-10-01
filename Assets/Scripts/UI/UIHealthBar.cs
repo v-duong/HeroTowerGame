@@ -2,10 +2,12 @@
 
 public class UIHealthBar : MonoBehaviour
 {
+    private const float DELAY_TIME = 0.75f;
+
     /*
-    [SerializeField]
-    private RectTransform m_healthBarFillArea;
-    */
+[SerializeField]
+private RectTransform m_healthBarFillArea;
+*/
 
     [SerializeField]
     private RectTransform healthBarFill;
@@ -25,6 +27,8 @@ public class UIHealthBar : MonoBehaviour
     private bool recentlyDamagedHealth;
     private bool recentlyDamagedShield;
     private float barDelay = 0f;
+    private float healthDifference;
+    private float shieldDifference;
 
     public void Initialize(float maxHealth, float currentHealth, float maxShield, float currentShield, Transform actorTransform)
     {
@@ -36,7 +40,7 @@ public class UIHealthBar : MonoBehaviour
     public void UpdatePosition(Transform actorTransform)
     {
         Vector2 newPos = actorTransform.position;
-        newPos.y += 0.75f;
+        newPos.y += DELAY_TIME;
         newPos = RectTransformUtility.WorldToScreenPoint(Camera.main, newPos);
         transform.position = newPos;
     }
@@ -46,20 +50,22 @@ public class UIHealthBar : MonoBehaviour
         float scaleRatio = 1f / InputManager.Instance.zoomRatio;
         transform.localScale = new Vector3(scaleRatio, scaleRatio, scaleRatio);
 
-        if (barDelay <= 0f)
+        if (barDelay > 0f)
         {
             if (recentlyDamagedHealth)
             {
-                tempHealthBarFill.anchorMax = Vector2.Lerp(tempHealthBarFill.anchorMax, healthBarFill.anchorMax, 0.2f);
+                tempHealthBarFill.anchorMax = Vector2.MoveTowards(tempHealthBarFill.anchorMax, healthBarFill.anchorMax, healthDifference / DELAY_TIME * Time.deltaTime);
             }
             if (recentlyDamagedShield)
             {
-                tempShieldBarFill.anchorMax = Vector2.Lerp(tempShieldBarFill.anchorMax, shieldBarFill.anchorMax, 0.2f);
+                tempShieldBarFill.anchorMax = Vector2.MoveTowards(tempShieldBarFill.anchorMax, shieldBarFill.anchorMax, shieldDifference / DELAY_TIME * Time.deltaTime);
             }
+            barDelay -= Time.deltaTime;
         }
         else
         {
-            barDelay -= Time.deltaTime;
+            recentlyDamagedHealth = false;
+            recentlyDamagedShield = false;
         }
     }
 
@@ -71,15 +77,14 @@ public class UIHealthBar : MonoBehaviour
         if (oldHealthPercent > currentHealthPercent.x)
         {
             recentlyDamagedHealth = true;
+
             if (barDelay <= 0f)
             {
-                barDelay = 0.75f;
+                healthDifference = oldHealthPercent - currentHealthPercent.x;
+                barDelay = DELAY_TIME;
                 tempHealthBarFill.anchorMax = new Vector2(oldHealthPercent, 1);
-            }
-        }
-        else
-        {
-            tempHealthBarFill.anchorMax = currentHealthPercent;
+            } else
+                healthDifference += oldHealthPercent - currentHealthPercent.x;
         }
 
         healthBarFill.anchorMax = currentHealthPercent;
@@ -94,13 +99,11 @@ public class UIHealthBar : MonoBehaviour
                 recentlyDamagedShield = true;
                 if (barDelay <= 0f)
                 {
-                    barDelay = 0.75f;
+                    shieldDifference = oldShieldPercent - currentShieldPercent.x;
+                    barDelay = DELAY_TIME;
                     tempShieldBarFill.anchorMax = new Vector2(oldShieldPercent, 1);
-                }
-            }
-            else
-            {
-                tempShieldBarFill.anchorMax = currentShieldPercent;
+                } else
+                    shieldDifference += oldShieldPercent - currentShieldPercent.x;
             }
 
             shieldBarFill.anchorMax = currentShieldPercent;

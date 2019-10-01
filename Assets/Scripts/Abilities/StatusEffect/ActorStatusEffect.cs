@@ -17,6 +17,7 @@ public abstract class ActorStatusEffect
     public abstract float GetEffectValue();
 
     public abstract GroupType StatusTag { get; }
+    public abstract int MaxStacks { get; }
 
     protected float DurationUpdate(float dT)
     {
@@ -42,5 +43,10 @@ public abstract class ActorStatusEffect
     {
         this.target = target;
         Source = source;
+    }
+
+    public static void ApplyEffectToTarget(Actor target, Actor source, EffectType effectType, float effectPower, float duration)
+    {
+
     }
 }

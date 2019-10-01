@@ -38,13 +38,15 @@ public class GameManager : MonoBehaviour
 #endif
 
         PlayerStats = new PlayerStats();
-        for (int i = 0; i < 80; i++)
+        for (int i = 0; i < 50; i++)
         {
             Equipment equipment = Equipment.CreateRandomEquipment(100);
-            equipment.SetRarity((RarityType)Random.Range(1, 4));
+            equipment.SetRarity((RarityType)Random.Range(2, 4));
             equipment.RerollAffixesAtRarity();
             PlayerStats.AddEquipmentToInventory(equipment);
         }
+
+        
     }
 
     public ConsumableType GetRandomConsumable()

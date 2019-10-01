@@ -8,5 +8,6 @@
     PACIFY,         //reduced damage
     RADIATION,     //dot to target + nearby enemies
     BUFF,
-    DEBUFF
+    DEBUFF,
+    STUN
 }

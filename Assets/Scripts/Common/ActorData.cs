@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public abstract class ActorData
+public abstract partial class ActorData
 {
     public Guid Id { get; protected set; }
     public int Level { get; set; }
@@ -231,21 +231,4 @@ public abstract class ActorData
     public abstract int GetResistance(ElementType element);
 
     public abstract HashSet<BonusType> BonusesIntersection(IEnumerable<BonusType> abilityBonuses, IEnumerable<BonusType> bonuses);
-
-    public class TriggeredEffect
-    {
-        public TriggeredEffectBonusProperty BaseEffect { get; private set; }
-        public float Value { get; private set; }
-
-        public TriggeredEffect(TriggeredEffectBonusProperty baseEffect, float value)
-        {
-            BaseEffect = baseEffect;
-            Value = value;
-        }
-
-        public bool RollTriggerChance()
-        {
-            return Helpers.RollChance(BaseEffect.triggerChance);
-        }
-    }
 }

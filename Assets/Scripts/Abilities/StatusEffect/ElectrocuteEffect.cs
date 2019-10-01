@@ -2,11 +2,14 @@
 
 public class ElectrocuteEffect : ActorStatusEffect
 {
+    public const float BASE_DURATION = 2.0f;
     private const float BASE_RADIUS = 2f;
     protected float damage;
     protected float timeElapsed;
 
     public override GroupType StatusTag => GroupType.SELF_IS_ELECTROCUTED;
+
+    public override int MaxStacks => 1;
 
     public ElectrocuteEffect(Actor target, Actor source, float inputDamage, float duration) : base(target, source)
     {
@@ -54,15 +57,13 @@ public class ElectrocuteEffect : ActorStatusEffect
         }
         */
 
-        target.RemoveStatusEffect(this);
     }
 
     public override void Update(float deltaTime)
     {
         float tick = DurationUpdate(deltaTime);
         timeElapsed += tick;
-        if (duration <= 0)
-            OnExpire();
+
     }
 
     public override float GetEffectValue()

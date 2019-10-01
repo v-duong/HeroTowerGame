@@ -781,7 +781,7 @@ public class ActorAbility
         float bleedSpeed = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.BLEED_SPEED).CalculateStat(100f) / 100f;
         abilityOnHitData.SetEffectChance(EffectType.BLEED, bleedChance.CalculateStat(0f));
         abilityOnHitData.SetEffectEffectiveness(EffectType.BLEED, bleedEffectiveness.CalculateStat(100f) / 100f * bleedSpeed);
-        abilityOnHitData.SetEffectDuration(EffectType.BLEED, bleedDuration.CalculateStat(4f) / bleedSpeed);
+        abilityOnHitData.SetEffectDuration(EffectType.BLEED, bleedDuration.CalculateStat(BleedEffect.BASE_DURATION) / bleedSpeed);
 
         StatBonus burnChance = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.BURN_CHANCE, BonusType.STATUS_EFFECT_CHANCE, BonusType.ELEMENTAL_STATUS_EFFECT_CHANCE);
         StatBonus burnEffectiveness = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.BURN_EFFECTIVENESS, BonusType.STATUS_EFFECT_DAMAGE, BonusType.DAMAGE_OVER_TIME, BonusType.ELEMENTAL_STATUS_EFFECT_EFFECTIVENESS);
@@ -789,14 +789,14 @@ public class ActorAbility
         float burnSpeed = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.BURN_SPEED).CalculateStat(100f) / 100f;
         abilityOnHitData.SetEffectChance(EffectType.BURN, burnChance.CalculateStat(0f));
         abilityOnHitData.SetEffectEffectiveness(EffectType.BURN, burnEffectiveness.CalculateStat(100f) / 100f * burnSpeed);
-        abilityOnHitData.SetEffectDuration(EffectType.BURN, burnDuration.CalculateStat(2f) / burnSpeed);
+        abilityOnHitData.SetEffectDuration(EffectType.BURN, burnDuration.CalculateStat(BurnEffect.BASE_DURATION) / burnSpeed);
 
         StatBonus chillChance = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.CHILL_CHANCE, BonusType.STATUS_EFFECT_CHANCE, BonusType.ELEMENTAL_STATUS_EFFECT_CHANCE);
         StatBonus chillEffectiveness = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.CHILL_EFFECTIVENESS, BonusType.NONDAMAGE_STATUS_EFFECTIVENESS, BonusType.ELEMENTAL_STATUS_EFFECT_EFFECTIVENESS);
         StatBonus chillDuration = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.CHILL_DURATION, BonusType.STATUS_EFFECT_DURATION, BonusType.ELEMENTAL_STATUS_EFFECT_DURATION);
         abilityOnHitData.SetEffectChance(EffectType.CHILL, chillChance.CalculateStat(0f));
         abilityOnHitData.SetEffectEffectiveness(EffectType.CHILL, chillEffectiveness.CalculateStat(100f) / 100f);
-        abilityOnHitData.SetEffectDuration(EffectType.CHILL, chillDuration.CalculateStat(2f));
+        abilityOnHitData.SetEffectDuration(EffectType.CHILL, chillDuration.CalculateStat(ChillEffect.BASE_DURATION));
 
         StatBonus electrocuteChance = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.ELECTROCUTE_CHANCE, BonusType.STATUS_EFFECT_CHANCE, BonusType.ELEMENTAL_STATUS_EFFECT_CHANCE);
         StatBonus electrocuteEffectiveness = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.ELECTROCUTE_EFFECTIVENESS, BonusType.STATUS_EFFECT_DAMAGE, BonusType.ELEMENTAL_STATUS_EFFECT_EFFECTIVENESS);
@@ -804,21 +804,21 @@ public class ActorAbility
         float electrocuteSpeed = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.ELECTROCUTE_SPEED).CalculateStat(100f) / 100f;
         abilityOnHitData.SetEffectChance(EffectType.ELECTROCUTE, electrocuteChance.CalculateStat(0f));
         abilityOnHitData.SetEffectEffectiveness(EffectType.ELECTROCUTE, electrocuteEffectiveness.CalculateStat(100f) / 100f * electrocuteSpeed);
-        abilityOnHitData.SetEffectDuration(EffectType.ELECTROCUTE, electrocuteDuration.CalculateStat(2f) / electrocuteSpeed);
+        abilityOnHitData.SetEffectDuration(EffectType.ELECTROCUTE, electrocuteDuration.CalculateStat(ElectrocuteEffect.BASE_DURATION) / electrocuteSpeed);
 
         StatBonus fractureChance = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.FRACTURE_CHANCE, BonusType.STATUS_EFFECT_CHANCE, BonusType.ELEMENTAL_STATUS_EFFECT_CHANCE);
         StatBonus fractureEffectiveness = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.FRACTURE_EFFECTIVENESS, BonusType.NONDAMAGE_STATUS_EFFECTIVENESS, BonusType.ELEMENTAL_STATUS_EFFECT_EFFECTIVENESS);
         StatBonus fractureDuration = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.FRACTURE_DURATION, BonusType.STATUS_EFFECT_DURATION, BonusType.ELEMENTAL_STATUS_EFFECT_DURATION);
         abilityOnHitData.SetEffectChance(EffectType.FRACTURE, fractureChance.CalculateStat(0f));
         abilityOnHitData.SetEffectEffectiveness(EffectType.FRACTURE, fractureEffectiveness.CalculateStat(100f) / 100f);
-        abilityOnHitData.SetEffectDuration(EffectType.FRACTURE, fractureDuration.CalculateStat(3f));
+        abilityOnHitData.SetEffectDuration(EffectType.FRACTURE, fractureDuration.CalculateStat(FractureEffect.BASE_DURATION));
 
         StatBonus pacifyChance = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.PACIFY_CHANCE, BonusType.STATUS_EFFECT_CHANCE, BonusType.PRIMORDIAL_STATUS_EFFECT_CHANCE);
         StatBonus pacifyEffectiveness = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.PACIFY_EFFECTIVENESS, BonusType.NONDAMAGE_STATUS_EFFECTIVENESS, BonusType.PRIMORDIAL_STATUS_EFFECT_EFFECTIVENESS);
         StatBonus pacifyDuration = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.PACIFY_DURATION, BonusType.STATUS_EFFECT_DURATION, BonusType.PRIMORDIAL_STATUS_EFFECT_DURATION);
         abilityOnHitData.SetEffectChance(EffectType.PACIFY, pacifyChance.CalculateStat(0f));
         abilityOnHitData.SetEffectEffectiveness(EffectType.PACIFY, pacifyEffectiveness.CalculateStat(100f) / 100f);
-        abilityOnHitData.SetEffectDuration(EffectType.PACIFY, pacifyDuration.CalculateStat(3f));
+        abilityOnHitData.SetEffectDuration(EffectType.PACIFY, pacifyDuration.CalculateStat(PacifyEffect.BASE_DURATION));
 
         StatBonus radiationChance = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.RADIATION_CHANCE, BonusType.STATUS_EFFECT_CHANCE, BonusType.PRIMORDIAL_STATUS_EFFECT_CHANCE);
         StatBonus radiationEffectiveness = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.RADIATION_EFFECTIVENESS, BonusType.STATUS_EFFECT_DAMAGE, BonusType.DAMAGE_OVER_TIME, BonusType.PRIMORDIAL_STATUS_EFFECT_EFFECTIVENESS);
@@ -826,10 +826,13 @@ public class ActorAbility
         float radiationSpeed = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.RADIATION_SPEED).CalculateStat(100f) / 100f;
         abilityOnHitData.SetEffectChance(EffectType.RADIATION, radiationChance.CalculateStat(0f));
         abilityOnHitData.SetEffectEffectiveness(EffectType.RADIATION, radiationEffectiveness.CalculateStat(100f) / 100f * radiationSpeed);
-        abilityOnHitData.SetEffectDuration(EffectType.RADIATION, radiationDuration.CalculateStat(5f) / radiationSpeed);
+        abilityOnHitData.SetEffectDuration(EffectType.RADIATION, radiationDuration.CalculateStat(RadiationEffect.BASE_DURATION) / radiationSpeed);
 
         StatBonus vsBossDamage = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.DAMAGE_VS_BOSS);
-        abilityOnHitData.vsBossDamage = 1f + (vsBossDamage.CalculateStat(0f) / 100f);
+        abilityOnHitData.vsBossDamage = vsBossDamage.CalculateStat(1f);
+
+        StatBonus directHitDamage = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.DIRECT_HIT_DAMAGE);
+        abilityOnHitData.directHitDamage = directHitDamage.CalculateStat(1f);
 
         StatBonus physicalNegate = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.PHYSICAL_RESISTANCE_NEGATION);
         abilityOnHitData.physicalNegation = physicalNegate.CalculateStat(0);
@@ -853,9 +856,9 @@ public class ActorAbility
         abilityOnHitData.voidNegation = voidNegate.CalculateStat(0);
 
         abilityOnHitData.onHitEffectsFromAbility.Clear();
-        foreach (AbilityScalingAddedEffect appliedEffect in abilityBase.appliedEffects)
+        foreach (TriggeredEffectBonusProperty appliedEffect in abilityBase.triggeredEffects)
         {
-            abilityOnHitData.onHitEffectsFromAbility.Add(new AbilityOnHitDataContainer.OnHitBuffEffect(appliedEffect, abilityLevel));
+            abilityOnHitData.onHitEffectsFromAbility.Add(new TriggeredEffect(appliedEffect, abilityLevel));
         }
     }
 
@@ -874,7 +877,7 @@ public class ActorAbility
         int[] convertedMinDamage = new int[7];
         int[] convertedMaxDamage = new int[7];
 
-        foreach (ActorData.TriggeredEffect triggeredEffect in source.Data.WhenHittingEffects)
+        foreach (TriggeredEffect triggeredEffect in source.Data.WhenHittingEffects)
         {
             if (targetTypes.Contains(triggeredEffect.BaseEffect.restriction) && triggeredEffect.RollTriggerChance())
             {
@@ -1036,6 +1039,9 @@ public class ActorAbility
         attackWithMainHand = true;
         while (true)
         {
+            if (AbilityOwner.attackLocks > 0)
+                yield return null;
+
             if (CurrentTarget != null)
             {
                 switch (abilityBase.abilityShotType)
@@ -1608,11 +1614,15 @@ public class ActorAbility
 
         total /= 2f;
         float dps = ((total * (1 - criticalChance)) + (total * criticalChance * criticalDamage)) * (1f / Cooldown) * abilityBase.hitCount * abilityBase.hitDamageModifier;
-        return dps;
+        return dps * abilityOnHitData.directHitDamage;
     }
 
     public void ApplyDamageToActor(Actor target, Dictionary<ElementType, float> damage, AbilityOnHitDataContainer onHitDataContainer, bool isHit)
     {
+        if (target == null || target.Data.IsDead)
+        {
+            return;
+        }
         if (abilityBase.hitCount > 1)
         {
             AbilityOwner.StartCoroutine(ApplyMultiHitDamage(target, damage, onHitDataContainer, isHit));

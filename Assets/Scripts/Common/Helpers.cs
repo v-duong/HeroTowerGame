@@ -317,8 +317,8 @@ public static class Helpers
     public static double GetEnemyHealthScaling(double level)
     {
         // formula
-        // (Scaling*(EnemyScaling))^(level/1.5 - 22) * (level*levelFactor) + level*2
-        double enemyFactor = Math.Pow(SCALING_FACTOR * ENEMY_SCALING, level / 1.5 - 23) * level * LEVEL_SCALING_FACTOR + level * 2;
+        // (Scaling*(EnemyScaling))^(level*1.1 - 23) * (level*levelFactor*5) + level*2
+        double enemyFactor = Math.Pow(SCALING_FACTOR * ENEMY_SCALING, level * 1.1 - 23) * level * LEVEL_SCALING_FACTOR * 5 + level * 2;
 
         return enemyFactor * 15;
     }

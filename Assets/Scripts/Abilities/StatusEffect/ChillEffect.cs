@@ -3,12 +3,15 @@ using UnityEngine;
 
 public class ChillEffect : ActorStatusEffect
 {
+    public const float BASE_DURATION = 2.0f;
     public const int CHILL_EFFECT_CAP = 50;
     public const float BASE_CHILL_EFFECT = -10F;
     public const float BASE_CHILL_THRESHOLD = 0.1F;
     protected int effectPower;
 
     public override GroupType StatusTag => GroupType.SELF_IS_CHILLED;
+
+    public override int MaxStacks => 1;
 
     public ChillEffect(Actor target, Actor source, float effectiveness, float duration) : base(target, source)
     {
@@ -31,14 +34,11 @@ public class ChillEffect : ActorStatusEffect
         target.Data.RemoveTemporaryBonus(effectPower, BonusType.MOVEMENT_SPEED, ModifyType.MULTIPLY, true);
         target.Data.RemoveTemporaryBonus(effectPower, BonusType.SHIELD_REGEN, ModifyType.MULTIPLY, true);
         target.Data.RemoveTemporaryBonus(effectPower, BonusType.HEALTH_REGEN, ModifyType.MULTIPLY, true);
-        target.RemoveStatusEffect(this);
     }
 
     public override void Update(float deltaTime)
     {
-        float tick = DurationUpdate(deltaTime);
-        if (duration <= 0)
-            OnExpire();
+        DurationUpdate(deltaTime);
     }
 
     public override float GetEffectValue()
