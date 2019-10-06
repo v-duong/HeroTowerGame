@@ -64,6 +64,8 @@ private RectTransform m_healthBarFillArea;
         }
         else
         {
+            tempHealthBarFill.anchorMax = healthBarFill.anchorMax;
+            tempShieldBarFill.anchorMax = shieldBarFill.anchorMax;
             recentlyDamagedHealth = false;
             recentlyDamagedShield = false;
         }

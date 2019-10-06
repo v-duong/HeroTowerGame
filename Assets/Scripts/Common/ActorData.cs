@@ -4,6 +4,7 @@ using UnityEngine;
 
 public abstract partial class ActorData
 {
+    protected const float DUAL_WIELD_ATTACK_SPEED_BONUS = 10f;
     public Guid Id { get; protected set; }
     public int Level { get; set; }
     public int Experience { get; set; }
@@ -46,22 +47,18 @@ public abstract partial class ActorData
     public int AfflictedStatusAvoidance { get; protected set; }
     public float AfflictedStatusDuration { get; protected set; }
 
-    public int PhysicalNegation { get => ElementData.GetNegation(ElementType.PHYSICAL); private set => ElementData.SetNegation(ElementType.PHYSICAL, value); }
-    public int FireNegation { get => ElementData.GetNegation(ElementType.FIRE); private set => ElementData.SetNegation(ElementType.FIRE, value); }
-    public int ColdNegation { get => ElementData.GetNegation(ElementType.COLD); private set => ElementData.SetNegation(ElementType.COLD, value); }
-    public int LightningNegation { get => ElementData.GetNegation(ElementType.LIGHTNING); private set => ElementData.SetNegation(ElementType.LIGHTNING, value); }
-    public int EarthNegation { get => ElementData.GetNegation(ElementType.EARTH); private set => ElementData.SetNegation(ElementType.EARTH, value); }
-    public int DivineNegation { get => ElementData.GetNegation(ElementType.DIVINE); private set => ElementData.SetNegation(ElementType.DIVINE, value); }
-    public int VoidNegation { get => ElementData.GetNegation(ElementType.VOID); private set => ElementData.SetNegation(ElementType.VOID, value); }
+    public int GetNegation(ElementType e) => ElementData.GetNegation(e);
 
-    public List<TriggeredEffect> WhenHittingEffects { get; protected set; }
-    public List<TriggeredEffect> WhenHitEffects { get; protected set; }
-    public List<TriggeredEffect> OnHitEffects { get; protected set; }
-    public List<TriggeredEffect> OnKillEffects { get; protected set; }
+    public void SetNegation(ElementType e, int value) => ElementData.SetNegation(e, value);
+
+    public OnHitDataContainer OnHitData { get; private set; }
+
+    public Dictionary<TriggerType, List<TriggeredEffect>> TriggeredEffects { get; protected set; }
 
     protected Dictionary<BonusType, StatBonusCollection> statBonuses;
     protected Dictionary<BonusType, StatBonus> selfBuffBonuses;
     protected Dictionary<BonusType, StatBonus> temporaryBonuses;
+    protected Dictionary<BonusType, int> specialBonuses;
 
     protected ElementalData ElementData { get; private set; }
 
@@ -74,12 +71,16 @@ public abstract partial class ActorData
         Id = Guid.NewGuid();
         ElementData = new ElementalData();
         statBonuses = new Dictionary<BonusType, StatBonusCollection>();
+        AddStatBonus(BonusType.GLOBAL_ATTACK_SPEED, GroupType.DUAL_WIELD, ModifyType.MULTIPLY, DUAL_WIELD_ATTACK_SPEED_BONUS);
         temporaryBonuses = new Dictionary<BonusType, StatBonus>();
+        specialBonuses = new Dictionary<BonusType, int>();
         GroupTypes = new HashSet<GroupType>();
-        WhenHittingEffects = new List<TriggeredEffect>();
-        WhenHitEffects = new List<TriggeredEffect>();
-        OnHitEffects = new List<TriggeredEffect>();
-        OnKillEffects = new List<TriggeredEffect>();
+        TriggeredEffects = new Dictionary<TriggerType, List<TriggeredEffect>>();
+        foreach (TriggerType t in Enum.GetValues(typeof(TriggerType)))
+        {
+            TriggeredEffects.Add(t, new List<TriggeredEffect>());
+        }
+        OnHitData = new OnHitDataContainer();
     }
 
     public float GetCurrentHealth()
@@ -99,6 +100,12 @@ public abstract partial class ActorData
 
     public void AddStatBonus(BonusType type, GroupType restriction, ModifyType modifier, float value)
     {
+        if (type >= (BonusType)HeroArchetypeData.SpecialBonusStart)
+        {
+            AddSpecialBonus(type);
+            return;
+        }
+
         if (!statBonuses.ContainsKey(type))
             statBonuses.Add(type, new StatBonusCollection());
         statBonuses[type].AddBonus(restriction, modifier, value);
@@ -106,6 +113,11 @@ public abstract partial class ActorData
 
     public bool RemoveStatBonus(BonusType type, GroupType restriction, ModifyType modifier, float value)
     {
+        if (type >= (BonusType)HeroArchetypeData.SpecialBonusStart)
+        {
+            RemoveSpecialBonus(type);
+            return true;
+        }
         bool isRemoved = statBonuses[type].RemoveBonus(restriction, modifier, value);
         if (statBonuses[type].IsEmpty())
             statBonuses.Remove(type);
@@ -128,6 +140,32 @@ public abstract partial class ActorData
             UpdateActorData();
     }
 
+    public void AddSpecialBonus(BonusType type)
+    {
+        if (!specialBonuses.ContainsKey(type))
+            specialBonuses.Add(type, 0);
+        specialBonuses[type]++;
+        UpdateActorData();
+    }
+
+    public void RemoveSpecialBonus(BonusType type)
+    {
+        if (!specialBonuses.ContainsKey(type))
+            return;
+
+        specialBonuses[type]--;
+
+        if (specialBonuses[type] == 0)
+            specialBonuses.Remove(type);
+
+        UpdateActorData();
+    }
+
+    public bool HasSpecialBonus(BonusType type)
+    {
+        return specialBonuses.ContainsKey(type) && specialBonuses[type] > 0;
+    }
+
     public void ClearTemporaryBonuses(bool updateActorData)
     {
         temporaryBonuses.Clear();
@@ -137,18 +175,25 @@ public abstract partial class ActorData
 
     protected void ApplyHealthBonuses()
     {
+        
         float percentage = CurrentHealth / MaximumHealth;
-        MaximumHealth = (int)GetMultiStatBonus(GroupTypes, BonusType.MAX_HEALTH).CalculateStat(BaseHealth);
+        MaximumHealth = (int)Math.Max(GetMultiStatBonus(GroupTypes, BonusType.MAX_HEALTH).CalculateStat(BaseHealth), 1);
+        if (MaximumHealth > 1)
+        {
+            float convertedShieldPercent = Math.Min(GetMultiStatBonus(GroupTypes, BonusType.MAX_HEALTH_TO_SHIELD).CalculateStat(0), 95) / 100f;
+            BaseManaShield += (int)(MaximumHealth * convertedShieldPercent);
+            MaximumHealth -= BaseManaShield;
+        }
         CurrentHealth = MaximumHealth * percentage;
 
         float percentHealthRegen = GetMultiStatBonus(GroupTypes, BonusType.PERCENT_HEALTH_REGEN).CalculateStat(0f) / 100f;
-        HealthRegenRate = percentHealthRegen * MaximumHealth + GetMultiStatBonus(GroupTypes, BonusType.HEALTH_REGEN).CalculateStat(0f);
+        HealthRegenRate = GetMultiStatBonus(GroupTypes, BonusType.HEALTH_REGEN).CalculateStat(percentHealthRegen * MaximumHealth);
     }
 
     protected void ApplySoulPointBonuses()
     {
         float percentage = CurrentSoulPoints / MaximumSoulPoints;
-        MaximumSoulPoints = (int)GetMultiStatBonus(GroupTypes, BonusType.MAX_SOULPOINTS).CalculateStat(BaseSoulPoints);
+        MaximumSoulPoints = (int)Math.Max(GetMultiStatBonus(GroupTypes, BonusType.MAX_SOULPOINTS).CalculateStat(BaseSoulPoints), 0);
         CurrentSoulPoints = MaximumSoulPoints * percentage;
     }
 
@@ -207,21 +252,23 @@ public abstract partial class ActorData
     public virtual void UpdateActorData()
     {
         float percentShieldRegen = GetMultiStatBonus(GroupTypes, BonusType.PERCENT_SHIELD_REGEN).CalculateStat(0f) / 100f;
-        ShieldRegenRate = percentShieldRegen * MaximumManaShield + GetMultiStatBonus(GroupTypes, BonusType.SHIELD_REGEN).CalculateStat(0f);
-        ShieldRestoreRate = GetMultiStatBonus(GroupTypes, BonusType.SHIELD_RESTORE_SPEED).CalculateStat(0.1f) * MaximumManaShield;
-        ShieldRestoreDelayModifier = GetMultiStatBonus(GroupTypes, BonusType.SHIELD_RESTORE_DELAY).CalculateStat(1f);
-        DamageTakenModifier = GetMultiStatBonus(GroupTypes, BonusType.DAMAGE_TAKEN).CalculateStat(100f);
+        ShieldRegenRate = GetMultiStatBonus(GroupTypes, BonusType.SHIELD_REGEN).CalculateStat(percentShieldRegen * MaximumManaShield);
+        ShieldRestoreRate = Math.Max(GetMultiStatBonus(GroupTypes, BonusType.SHIELD_RESTORE_SPEED).CalculateStat(0.1f), 0f) * MaximumManaShield;
+        ShieldRestoreDelayModifier = Math.Max(GetMultiStatBonus(GroupTypes, BonusType.SHIELD_RESTORE_DELAY).CalculateStat(1f), 0.05f);
+        DamageTakenModifier = Math.Max(GetMultiStatBonus(GroupTypes, BonusType.DAMAGE_TAKEN).CalculateStat(1f), 0.01f);
 
-        PhysicalNegation = GetMultiStatBonus(GroupTypes, BonusType.PHYSICAL_RESISTANCE_NEGATION).CalculateStat(0);
-        FireNegation = GetMultiStatBonus(GroupTypes, BonusType.FIRE_RESISTANCE_NEGATION, BonusType.ELEMENTAL_RESISTANCE_NEGATION).CalculateStat(0);
-        ColdNegation = GetMultiStatBonus(GroupTypes, BonusType.COLD_RESISTANCE_NEGATION, BonusType.ELEMENTAL_RESISTANCE_NEGATION).CalculateStat(0);
-        LightningNegation = GetMultiStatBonus(GroupTypes, BonusType.LIGHTNING_RESISTANCE_NEGATION, BonusType.ELEMENTAL_RESISTANCE_NEGATION).CalculateStat(0);
-        EarthNegation = GetMultiStatBonus(GroupTypes, BonusType.EARTH_RESISTANCE_NEGATION, BonusType.ELEMENTAL_RESISTANCE_NEGATION).CalculateStat(0);
-        DivineNegation = GetMultiStatBonus(GroupTypes, BonusType.DIVINE_RESISTANCE_NEGATION, BonusType.PRIMORDIAL_RESISTANCE_NEGATION).CalculateStat(0);
-        VoidNegation = GetMultiStatBonus(GroupTypes, BonusType.VOID_RESISTANCE_NEGATION, BonusType.PRIMORDIAL_RESISTANCE_NEGATION).CalculateStat(0);
+        SetNegation(ElementType.PHYSICAL, GetMultiStatBonus(GroupTypes, BonusType.PHYSICAL_RESISTANCE_NEGATION).CalculateStat(0));
+        SetNegation(ElementType.FIRE, GetMultiStatBonus(GroupTypes, BonusType.FIRE_RESISTANCE_NEGATION, BonusType.ELEMENTAL_RESISTANCE_NEGATION).CalculateStat(0));
+        SetNegation(ElementType.COLD, GetMultiStatBonus(GroupTypes, BonusType.COLD_RESISTANCE_NEGATION, BonusType.ELEMENTAL_RESISTANCE_NEGATION).CalculateStat(0));
+        SetNegation(ElementType.LIGHTNING, GetMultiStatBonus(GroupTypes, BonusType.LIGHTNING_RESISTANCE_NEGATION, BonusType.ELEMENTAL_RESISTANCE_NEGATION).CalculateStat(0));
+        SetNegation(ElementType.EARTH, GetMultiStatBonus(GroupTypes, BonusType.EARTH_RESISTANCE_NEGATION, BonusType.ELEMENTAL_RESISTANCE_NEGATION).CalculateStat(0));
+        SetNegation(ElementType.DIVINE, GetMultiStatBonus(GroupTypes, BonusType.DIVINE_RESISTANCE_NEGATION, BonusType.PRIMORDIAL_RESISTANCE_NEGATION).CalculateStat(0));
+        SetNegation(ElementType.VOID, GetMultiStatBonus(GroupTypes, BonusType.VOID_RESISTANCE_NEGATION, BonusType.PRIMORDIAL_RESISTANCE_NEGATION).CalculateStat(0));
 
         AfflictedStatusAvoidance = GetMultiStatBonus(GroupTypes, BonusType.AFFLICTED_STATUS_AVOIDANCE).CalculateStat(0);
-        AfflictedStatusDuration = GetMultiStatBonus(GroupTypes, BonusType.AFFLICTED_STATUS_DURATION).CalculateStat(1f);
+        AfflictedStatusDuration = Math.Max(GetMultiStatBonus(GroupTypes, BonusType.AFFLICTED_STATUS_DURATION).CalculateStat(1f), 0.01f);
+
+        OnHitData.UpdateStatusEffectData(this, GetGroupTypes(), null);
     }
 
     protected abstract HashSet<GroupType> GetGroupTypes();

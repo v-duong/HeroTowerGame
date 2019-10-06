@@ -1,21 +1,18 @@
 ﻿using UnityEngine;
 
-public class RadiationEffect : ActorStatusEffect
+public class RadiationEffect : ActorEffect
 {
     public const float BASE_DURATION = 5.0f;
     private const float DAMAGE_TICK_TIME = 1f / 3f;
+    public const float BASE_DAMAGE_MULTIPLIER = 0.05f;
     protected float damagePerSecond;
     protected float timeSinceLastCheck;
 
     public override GroupType StatusTag => GroupType.SELF_IS_RADIATION;
-
-    public override int MaxStacks => 1;
-
     public RadiationEffect(Actor target, Actor source, float inputDamage, float duration) : base(target, source)
     {
         effectType = EffectType.RADIATION;
-        damagePerSecond = inputDamage * 0.05f;
-        Debug.Log(damagePerSecond);
+        damagePerSecond = inputDamage;
         this.duration = duration;
         timeSinceLastCheck = 0;
     }
@@ -50,18 +47,23 @@ public class RadiationEffect : ActorStatusEffect
         }
 
 
-        target.ApplySingleElementDamage(ElementType.VOID, damagePerSecond * timeElapsed, Source.Data.VoidNegation, false);
+        target.ApplySingleElementDamage(ElementType.VOID, damagePerSecond * timeElapsed, Source.Data.OnHitData, false, true);
 
         foreach (Collider2D c in hits)
         {
             Actor actor = c.gameObject.GetComponent<Actor>();
             if (actor != null && actor != target)
-                actor.ApplySingleElementDamage(ElementType.VOID, damagePerSecond * timeElapsed, Source.Data.VoidNegation, false);
+                actor.ApplySingleElementDamage(ElementType.VOID, damagePerSecond * timeElapsed, Source.Data.OnHitData, false, true);
         }
     }
 
     public override float GetEffectValue()
     {
-        return damagePerSecond * (target.Data.GetResistance(ElementType.VOID) - Source.Data.VoidNegation) / 100f;
+        return damagePerSecond * (target.Data.GetResistance(ElementType.VOID) - Source.Data.GetNegation(ElementType.VOID)) / 100f;
+    }
+
+    public override float GetSimpleEffectValue()
+    {
+        return damagePerSecond;
     }
 }

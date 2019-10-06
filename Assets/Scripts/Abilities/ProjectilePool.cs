@@ -22,9 +22,12 @@ public class ProjectilePool : QueueObjectPool<Projectile>
     {
         if (p.particles != null)
         {
-            p.particles.Stop(true, ParticleSystemStopBehavior.StopEmittingAndClear);
-            Component.Destroy(p.particles.gameObject);
+            ParticleSystem particle = p.particles;
             p.particles = null;
+            particle.transform.SetParent(null, true);
+            particle.Stop(true, ParticleSystemStopBehavior.StopEmitting);
+            //Component.Destroy(particle.gameObject);
+            
         }
         Return(p);
     }

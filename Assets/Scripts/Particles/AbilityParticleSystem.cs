@@ -28,6 +28,11 @@ public class AbilityParticleSystem : MonoBehaviour
         baseShapeRotation = ps.shape.rotation;
     }
 
+    public void OnParticleSystemStopped()
+    {
+        GameObject.Destroy(this.gameObject);
+    }
+
     public void Emit(ParticleSystem.EmitParams emitParams, int emitCount, float scaling)
     {
         if (scaleStartSize)

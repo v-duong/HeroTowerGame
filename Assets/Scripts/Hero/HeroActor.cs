@@ -88,7 +88,7 @@ public class HeroActor : Actor
     {
         foreach (var x in instancedAbilitiesList)
         {
-                x.StartFiring(this);
+            x.StartFiring(this);
         }
     }
 

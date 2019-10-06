@@ -1,10 +1,7 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-
 
 public class InventorySlot : MonoBehaviour
 {
@@ -34,20 +31,22 @@ public class InventorySlot : MonoBehaviour
         {
             case ItemType.ARMOR:
                 Armor armor = item as Armor;
-                groupText.text = LocalizationManager.Instance.GetLocalizationText_GroupType( armor.Base.group.ToString() );
+                groupText.text = LocalizationManager.Instance.GetLocalizationText_GroupType(armor.Base.group.ToString());
                 slotText.text = LocalizationManager.Instance.GetLocalizationText_SlotType(armor.Base.equipSlot.ToString());
                 infoText.text += "AR: " + armor.armor + "\n";
                 infoText.text += "MS: " + armor.shield + "\n";
                 infoText.text += "DR: " + armor.dodgeRating + "\n";
                 infoText.text += "RR: " + armor.resolveRating + "\n";
                 break;
+
             case ItemType.WEAPON:
                 Weapon weapon = item as Weapon;
-                groupText.text = LocalizationManager.Instance.GetLocalizationText_GroupType( weapon.Base.group.ToString());
+                groupText.text = LocalizationManager.Instance.GetLocalizationText_GroupType(weapon.Base.group.ToString());
                 infoText.text += "PhyDPS: " + weapon.GetPhysicalDPS().ToString("n1") + "\n";
                 infoText.text += "EleDPS: " + weapon.GetElementalDPS().ToString("n1") + "\n";
                 infoText.text += "PrmDPS: " + weapon.GetPrimordialDPS().ToString("n1") + "\n";
                 break;
+
             default:
                 break;
         }
@@ -67,7 +66,6 @@ public class InventorySlot : MonoBehaviour
         {
             if (item == null)
             {
-
                 return;
             }
             switch (item.GetItemType())
@@ -76,15 +74,12 @@ public class InventorySlot : MonoBehaviour
                 case ItemType.WEAPON:
                 case ItemType.ACCESSORY:
                     break;
+
                 default:
                     return;
             }
-            EquipmentDetailWindow itemWindow = UIManager.Instance.EquipDetailWindow;
-            itemWindow.SetTransform(0);
-            UIManager.Instance.OpenWindow(itemWindow.gameObject, false);
-            itemWindow.equip = (Equipment)item;
-            itemWindow.inventorySlot = this;
-            itemWindow.UpdateWindowEquipment();
+
+            UIManager.Instance.OpenEquipmentDetailWindow(false, (Equipment)item, null);
         }
     }
 }

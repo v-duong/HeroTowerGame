@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class FractureEffect : ActorStatusEffect
+public class FractureEffect : ActorEffect
 {
     public const float BASE_DURATION = 3.0f;
     public const int FRACTURE_EFFECT_CAP = 25;
@@ -12,8 +12,6 @@ public class FractureEffect : ActorStatusEffect
     protected int resistanceReduction;
 
     public override GroupType StatusTag => GroupType.SELF_IS_FRACTURED;
-
-    public override int MaxStacks => 1;
 
     public FractureEffect(Actor target, Actor source, float effectiveness, float duration) : base(target, source)
     {
@@ -43,6 +41,11 @@ public class FractureEffect : ActorStatusEffect
     }
 
     public override float GetEffectValue()
+    {
+        return resistanceReduction;
+    }
+
+    public override float GetSimpleEffectValue()
     {
         return resistanceReduction;
     }

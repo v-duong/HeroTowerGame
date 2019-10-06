@@ -1,6 +1,6 @@
 ﻿using System;
 
-public class PacifyEffect : ActorStatusEffect
+public class PacifyEffect : ActorEffect
 {
     public const float BASE_DURATION = 3.0f;
     public const int PACIFY_EFFECT_CAP = 35;
@@ -9,8 +9,6 @@ public class PacifyEffect : ActorStatusEffect
     protected int effectPower;
 
     public override GroupType StatusTag => GroupType.SELF_IS_PACIFIED;
-
-    public override int MaxStacks => 1;
 
     public PacifyEffect(Actor target, Actor source, float effectiveness, float duration) : base(target, source)
     {
@@ -24,21 +22,26 @@ public class PacifyEffect : ActorStatusEffect
     public override void OnApply()
     {
         target.Data.AddTemporaryBonus(effectPower, BonusType.GLOBAL_DAMAGE, ModifyType.MULTIPLY, true);
+        target.Data.AddTemporaryBonus(effectPower * 0.5f, BonusType.GLOBAL_ABILITY_SPEED, ModifyType.MULTIPLY, true);
     }
 
     public override void OnExpire()
     {
         target.Data.RemoveTemporaryBonus(effectPower, BonusType.GLOBAL_DAMAGE, ModifyType.MULTIPLY, true);
-
+        target.Data.AddTemporaryBonus(effectPower * 0.5f, BonusType.GLOBAL_ABILITY_SPEED, ModifyType.MULTIPLY, true);
     }
 
     public override void Update(float deltaTime)
     {
-         DurationUpdate(deltaTime);
-
+        DurationUpdate(deltaTime);
     }
 
     public override float GetEffectValue()
+    {
+        return effectPower;
+    }
+
+    public override float GetSimpleEffectValue()
     {
         return effectPower;
     }

@@ -41,13 +41,26 @@ public class HeroEquipmentSlot : MonoBehaviour
             ui.InvScrollContent.ShowEquipmentFiltered(x => x.IsEquipped == false && x.Base.equipSlot == slot, true, true);
         }
 
-        ui.InvScrollContent.SetCallback(ItemEquipCallback);
+        ui.InvScrollContent.SetCallback(ItemSlotCallback);
+    }
+
+    public void ItemSlotCallback(Item item)
+    {
+        if (item is null)
+        {
+            UIManager.Instance.CloseCurrentWindow();
+            UIManager.Instance.HeroDetailWindow.ItemEquip(item, slot);
+        } else if (item is Equipment)
+        {
+            UIManager.Instance.OpenEquipmentDetailWindow(false, (Equipment)item, ItemEquipCallback, HeroDetailWindow.hero);
+        }
     }
 
     public void ItemEquipCallback(Item item)
     {
-        if (item is Equipment || item is null)
+        if (item is Equipment)
         {
+            UIManager.Instance.CloseCurrentWindow();
             UIManager.Instance.CloseCurrentWindow();
             UIManager.Instance.HeroDetailWindow.ItemEquip(item, slot);
         }

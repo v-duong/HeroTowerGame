@@ -316,9 +316,10 @@ public class UIManager : MonoBehaviour
         }
     }
 
-    private void Start()
+    private void Awake()
     {
         Instance = this;
+        DontDestroyOnLoad(this.gameObject);
     }
 
     public void CloseAllWindows()
@@ -339,6 +340,17 @@ public class UIManager : MonoBehaviour
     {
         HeroWindowRect.gameObject.SetActive(false);
         HeroDetailWindow.gameObject.SetActive(false);
+    }
+
+    public void OpenEquipmentDetailWindow(bool closeWindows, Equipment equipment, Action<Item> callback, HeroData hero = null)
+    {
+        if (closeWindows)
+            CloseAllWindows();
+        EquipDetailWindow.SetTransform(0);
+        OpenWindow(EquipDetailWindow.gameObject, false);
+        EquipDetailWindow.callback = callback;
+        EquipDetailWindow.equip = equipment;
+        EquipDetailWindow.UpdateWindowEquipment(hero);
     }
 
     public void OpenInventoryWindow(bool closeWindows, bool showDefault, bool showCategories = true)

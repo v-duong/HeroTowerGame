@@ -31,6 +31,7 @@ public class EnemyData : ActorData
         BaseData = enemyBase;
         Name = enemyBase.idName;
         CurrentActor = actor;
+        OnHitData.SourceActor = actor;
         BaseHealth = (float)(Helpers.GetEnemyHealthScaling(level) * enemyBase.healthScaling);
         MaximumHealth = (int)BaseHealth;
         CurrentHealth = MaximumHealth;
@@ -45,12 +46,14 @@ public class EnemyData : ActorData
 
     public override void UpdateActorData()
     {
+        BaseManaShield = 0;
         GroupTypes = GetGroupTypes();
         ApplyHealthBonuses();
         ApplySoulPointBonuses();
 
-        MaximumManaShield = GetMultiStatBonus(GroupTypes, BonusType.GLOBAL_MAX_SHIELD).CalculateStat(BaseManaShield);
-
+        float extraManaShield = CurrentHealth * GetMultiStatBonus(GroupTypes, BonusType.HEALTH_AS_EXTRA_SHIELD).CalculateStat(0) / 100f;
+        MaximumManaShield = Math.Max(GetMultiStatBonus(GroupTypes, BonusType.GLOBAL_MAX_SHIELD).CalculateStat(BaseManaShield + (int)extraManaShield), 0);
+         
         if (MaximumManaShield != 0)
         {
             float shieldPercent = CurrentManaShield / MaximumManaShield;
@@ -58,14 +61,15 @@ public class EnemyData : ActorData
         }
         movementSpeed = GetMultiStatBonus(GroupTypes, BonusType.MOVEMENT_SPEED).CalculateStat(BaseData.movementSpeed);
 
-        Armor = GetMultiStatBonus(GroupTypes, BonusType.GLOBAL_ARMOR).CalculateStat(BaseArmor);
-        DodgeRating = GetMultiStatBonus(GroupTypes, BonusType.GLOBAL_DODGE_RATING).CalculateStat(BaseDodgeRating);
-        ResolveRating = GetMultiStatBonus(GroupTypes, BonusType.GLOBAL_RESOLVE_RATING).CalculateStat(BaseResolveRating);
-        AttackPhasing = GetMultiStatBonus(GroupTypes, BonusType.ATTACK_PHASING).CalculateStat(BaseAttackPhasing);
-        MagicPhasing = GetMultiStatBonus(GroupTypes, BonusType.MAGIC_PHASING).CalculateStat(BaseMagicPhasing);
+        Armor = Math.Max(GetMultiStatBonus(GroupTypes, BonusType.GLOBAL_ARMOR).CalculateStat(BaseArmor), 0);
+        DodgeRating = Math.Max(GetMultiStatBonus(GroupTypes, BonusType.GLOBAL_DODGE_RATING).CalculateStat(BaseDodgeRating), 0);
+        ResolveRating = Math.Max(GetMultiStatBonus(GroupTypes, BonusType.GLOBAL_RESOLVE_RATING).CalculateStat(BaseResolveRating), 0);
+        AttackPhasing = Math.Max(GetMultiStatBonus(GroupTypes, BonusType.ATTACK_PHASING).CalculateStat(BaseAttackPhasing), 0);
+        MagicPhasing = Math.Max(GetMultiStatBonus(GroupTypes, BonusType.MAGIC_PHASING).CalculateStat(BaseMagicPhasing), 0);
 
-        AfflictedStatusDamageResistance = GetMultiStatBonus(GroupTypes, BonusType.AFFLICTED_STATUS_DAMAGE_RESISTANCE).CalculateStat(1f);
-        AfflictedStatusThreshold = GetMultiStatBonus(GroupTypes, BonusType.AFFLICTED_STATUS_THRESHOLD).CalculateStat(1f);
+        AfflictedStatusDamageResistance = Math.Min(GetMultiStatBonus(GroupTypes, BonusType.AFFLICTED_STATUS_DAMAGE_RESISTANCE).CalculateStat(0f), 90) / 100f;
+        AfflictedStatusDamageResistance = 1f - AfflictedStatusDamageResistance;
+        AfflictedStatusThreshold = Math.Max(GetMultiStatBonus(GroupTypes, BonusType.AFFLICTED_STATUS_THRESHOLD).CalculateStat(1f), 0.01f);
 
         foreach (ActorAbility ability in abilities)
         {

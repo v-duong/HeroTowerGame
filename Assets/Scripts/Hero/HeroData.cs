@@ -16,14 +16,12 @@ public class HeroData : ActorData
 
     public int ArchetypePoints { get; private set; }
 
-    private const float DUAL_WIELD_ATTACK_SPEED_BONUS = 10f;
-
     //private Dictionary<BonusType, StatBonus> archetypeStatBonuses;
     private Dictionary<BonusType, StatBonus> attributeStatBonuses;
 
     private Dictionary<BonusType, StatBonusCollection> archetypeStatBonuses;
 
-    private Equipment[] equipList;
+    private List<HeroEquipData> equipList;
     private HeroArchetypeData[] archetypeList;
     private List<AbilitySlot> abilitySlotList;
 
@@ -49,7 +47,13 @@ public class HeroData : ActorData
     {
         UpdatesAreDeferred = true;
         PlayerStats ps = GameManager.Instance.PlayerStats;
-        equipList = new Equipment[10];
+
+        equipList = new List<HeroEquipData>();
+        for (int i = 0; i < 12; i++)
+        {
+            equipList.Add(new HeroEquipData());
+        }
+
         archetypeList = new HeroArchetypeData[2];
         archetypeStatBonuses = new Dictionary<BonusType, StatBonusCollection>();
         attributeStatBonuses = new Dictionary<BonusType, StatBonus>();
@@ -116,6 +120,7 @@ public class HeroData : ActorData
         CurrentSoulPoints = 50;
         HeroActor hero = actor.AddComponent<HeroActor>();
         CurrentActor = hero;
+        OnHitData.SourceActor = hero;
         hero.Initialize(this);
     }
 
@@ -141,7 +146,13 @@ public class HeroData : ActorData
         IsLocked = false;
         isDualWielding = false;
         assignedTeam = -1;
-        equipList = new Equipment[10];
+
+        equipList = new List<HeroEquipData>();
+        for (int i = 0; i < 12; i++)
+        {
+            equipList.Add(new HeroEquipData());
+        }
+
         archetypeList = new HeroArchetypeData[2];
         //archetypeStatBonuses = new Dictionary<BonusType, StatBonus>();
         archetypeStatBonuses = new Dictionary<BonusType, StatBonusCollection>();
@@ -264,7 +275,7 @@ public class HeroData : ActorData
 
     public Equipment GetEquipmentInSlot(EquipSlotType slot)
     {
-        return equipList[(int)slot];
+        return equipList[(int)slot].equip;
     }
 
     public bool EquipToSlot(Equipment equip, EquipSlotType slot)
@@ -281,15 +292,17 @@ public class HeroData : ActorData
         {
             if (slot == EquipSlotType.OFF_HAND)
             {
-                if (equipList[(int)EquipSlotType.WEAPON] == null || equipList[(int)EquipSlotType.WEAPON].GetGroupTypes().Contains(GroupType.TWO_HANDED_WEAPON))
+                Equipment mainWeapon = equipList[(int)EquipSlotType.WEAPON].equip;
+
+                if (mainWeapon == null || GetEquipmentGroupTypes(EquipSlotType.WEAPON).Contains(GroupType.TWO_HANDED_WEAPON))
                     slot = EquipSlotType.WEAPON;
-                else if ((equipList[(int)EquipSlotType.WEAPON].GetGroupTypes().Contains(GroupType.MELEE_WEAPON) && !equip.GetGroupTypes().Contains(GroupType.MELEE_WEAPON))
-                         || (equipList[(int)EquipSlotType.WEAPON].GetGroupTypes().Contains(GroupType.RANGED_WEAPON) && !equip.GetGroupTypes().Contains(GroupType.RANGED_WEAPON)))
+                else if ((mainWeapon.GetGroupTypes().Contains(GroupType.MELEE_WEAPON) && !equip.GetGroupTypes().Contains(GroupType.MELEE_WEAPON))
+                         || (mainWeapon.GetGroupTypes().Contains(GroupType.RANGED_WEAPON) && !equip.GetGroupTypes().Contains(GroupType.RANGED_WEAPON)))
                     return false;
             }
-            else if (equip.GetGroupTypes().Contains(GroupType.TWO_HANDED_WEAPON))
+            else if (GetEquipmentGroupTypes(equip).Contains(GroupType.TWO_HANDED_WEAPON))
             {
-                if (slot == EquipSlotType.WEAPON && equipList[(int)EquipSlotType.OFF_HAND] != null)
+                if (slot == EquipSlotType.WEAPON && equipList[(int)EquipSlotType.OFF_HAND].equip != null)
                     UnequipFromSlot(EquipSlotType.OFF_HAND);
                 else if (slot == EquipSlotType.OFF_HAND)
                     slot = EquipSlotType.WEAPON;
@@ -298,7 +311,9 @@ public class HeroData : ActorData
         else if (equip.Base.equipSlot != slot)
             return false;
 
-        if (equipList[(int)slot] != null)
+        UpdatesAreDeferred = true;
+        int slotNum = (int)slot;
+        if (equipList[slotNum].equip != null)
             UnequipFromSlot(slot);
 
         switch (slot)
@@ -313,7 +328,7 @@ public class HeroData : ActorData
             case EquipSlotType.OFF_HAND:
             case EquipSlotType.RING_SLOT_1:
             case EquipSlotType.RING_SLOT_2:
-                equipList[(int)slot] = equip;
+                equipList[slotNum].equip = equip;
                 break;
 
             default:
@@ -323,12 +338,7 @@ public class HeroData : ActorData
 
         ApplyEquipmentBonuses(equip.GetAllAffixes());
 
-        if (GetEquipmentInSlot(EquipSlotType.WEAPON) is Weapon && GetEquipmentInSlot(EquipSlotType.OFF_HAND) is Weapon && !isDualWielding)
-        {
-            isDualWielding = true;
-            AddStatBonus(BonusType.GLOBAL_ATTACK_SPEED, GroupType.DUAL_WIELD, ModifyType.MULTIPLY, DUAL_WIELD_ATTACK_SPEED_BONUS);
-        }
-
+        UpdatesAreDeferred = false;
         UpdateActorData();
 
         return true;
@@ -342,18 +352,15 @@ public class HeroData : ActorData
 
     public bool UnequipFromSlot(EquipSlotType slot)
     {
-        if (equipList[(int)slot] == null)
-            return false;
-        Equipment equip = equipList[(int)slot];
-        equipList[(int)slot] = null;
-        equip.equippedToHero = null;
-        RemoveEquipmentBonuses(equip.GetAllAffixes());
+        int slotNum = (int)slot;
 
-        if (isDualWielding && !(GetEquipmentInSlot(EquipSlotType.WEAPON) is Weapon && GetEquipmentInSlot(EquipSlotType.OFF_HAND) is Weapon))
-        {
-            isDualWielding = false;
-            RemoveStatBonus(BonusType.GLOBAL_ATTACK_SPEED, GroupType.DUAL_WIELD, ModifyType.MULTIPLY, DUAL_WIELD_ATTACK_SPEED_BONUS);
-        }
+        if (equipList[slotNum].equip == null)
+            return false;
+        Equipment equip = equipList[slotNum].equip;
+        equipList[slotNum].equip = null;
+        equip.equippedToHero = null;
+
+        RemoveEquipmentBonuses(equip.GetAllAffixes());
 
         UpdateActorData();
         return true;
@@ -375,7 +382,7 @@ public class HeroData : ActorData
             for (int i = 0; i < affix.Base.triggeredEffects.Count; i++)
             {
                 TriggeredEffectBonusProperty triggeredEffect = affix.Base.triggeredEffects[i];
-                TriggeredEffect t = new TriggeredEffect(triggeredEffect, affix.GetEffectValue(i));
+                TriggeredEffect t = new TriggeredEffect(triggeredEffect, affix.GetEffectValue(i), affix.Base.idName);
                 AddTriggeredEffect(triggeredEffect, t);
             }
         }
@@ -383,69 +390,15 @@ public class HeroData : ActorData
 
     public void AddTriggeredEffect(TriggeredEffectBonusProperty triggeredEffect, TriggeredEffect effectInstance)
     {
-        switch (triggeredEffect.triggerType)
-        {
-            case TriggerType.ON_HIT:
-                OnHitEffects.Add(effectInstance);
-                break;
-
-            case TriggerType.WHEN_HIT_BY:
-                WhenHitEffects.Add(effectInstance);
-                break;
-
-            case TriggerType.WHEN_HITTING:
-                WhenHittingEffects.Add(effectInstance);
-                break;
-
-            case TriggerType.ON_KILL:
-                OnKillEffects.Add(effectInstance);
-                break;
-
-            case TriggerType.HEALTH_THRESHOLD:
-                break;
-
-            case TriggerType.SHIELD_THRESHOLD:
-                break;
-
-            case TriggerType.SOULPOINT_THRESHOLD:
-                break;
-        }
+        TriggeredEffects[triggeredEffect.triggerType].Add(effectInstance);
     }
 
     public void RemoveTriggeredEffect(TriggeredEffectBonusProperty triggeredEffect)
     {
         TriggeredEffect t;
-        switch (triggeredEffect.triggerType)
-        {
-            case TriggerType.ON_HIT:
-                t = OnHitEffects.Find(x => x.BaseEffect == triggeredEffect);
-                OnHitEffects.Remove(t);
-                break;
 
-            case TriggerType.WHEN_HIT_BY:
-                t = WhenHitEffects.Find(x => x.BaseEffect == triggeredEffect);
-                WhenHitEffects.Remove(t);
-                break;
-
-            case TriggerType.WHEN_HITTING:
-                t = WhenHittingEffects.Find(x => x.BaseEffect == triggeredEffect);
-                WhenHittingEffects.Remove(t);
-                break;
-
-            case TriggerType.ON_KILL:
-                t = OnKillEffects.Find(x => x.BaseEffect == triggeredEffect);
-                OnKillEffects.Remove(t);
-                break;
-
-            case TriggerType.HEALTH_THRESHOLD:
-                break;
-
-            case TriggerType.SHIELD_THRESHOLD:
-                break;
-
-            case TriggerType.SOULPOINT_THRESHOLD:
-                break;
-        }
+        t = TriggeredEffects[triggeredEffect.triggerType].Find(x => x.BaseEffect == triggeredEffect);
+        TriggeredEffects[triggeredEffect.triggerType].Remove(t);
     }
 
     private void RemoveEquipmentBonuses(List<Affix> affixes)
@@ -471,6 +424,12 @@ public class HeroData : ActorData
 
     public void AddArchetypeStatBonus(BonusType type, GroupType restriction, ModifyType modifier, float value)
     {
+        if (type >= (BonusType)HeroArchetypeData.SpecialBonusStart)
+        {
+            AddSpecialBonus(type);
+            return;
+        }
+
         if (!archetypeStatBonuses.ContainsKey(type))
             archetypeStatBonuses[type] = new StatBonusCollection();
         archetypeStatBonuses[type].AddBonus(restriction, modifier, value);
@@ -478,6 +437,12 @@ public class HeroData : ActorData
 
     public void RemoveArchetypeStatBonus(BonusType type, GroupType restriction, ModifyType modifier, float value)
     {
+        if (type >= (BonusType)HeroArchetypeData.SpecialBonusStart)
+        {
+            RemoveSpecialBonus(type);
+            return;
+        }
+
         if (!archetypeStatBonuses.ContainsKey(type))
             return;
         archetypeStatBonuses[type].RemoveBonus(restriction, modifier, value);
@@ -488,23 +453,91 @@ public class HeroData : ActorData
         if (UpdatesAreDeferred)
             return;
 
+        CheckEquipmentValidity();
         GroupTypes = GetGroupTypes();
         UpdateHeroAttributes();
+
+        int count = 0;
+        while (CheckAllEquipmentRequirements() > 0)
+        {
+            UpdateHeroAttributes();
+            count++;
+            if (count > 25)
+                break;
+        }
+
         UpdateAbilities();
         UpdateDefenses();
 
-        movementSpeed = GetMultiStatBonus(GroupTypes, BonusType.MOVEMENT_SPEED).CalculateStat(2.5f);
+        movementSpeed = Math.Max(GetMultiStatBonus(GroupTypes, BonusType.MOVEMENT_SPEED).CalculateStat(2f), 0.1f);
 
         base.UpdateActorData();
     }
 
+    private void CheckEquipmentValidity()
+    {
+        UpdatesAreDeferred = true;
+        Equipment mainHand = GetEquipmentInSlot(EquipSlotType.WEAPON);
+        Equipment offHand = GetEquipmentInSlot(EquipSlotType.OFF_HAND);
+        if (mainHand == null && offHand is Weapon)
+        {
+            UnequipFromSlot(EquipSlotType.OFF_HAND);
+            EquipToSlot(offHand, EquipSlotType.WEAPON);
+        }
+        else if (mainHand is Weapon && offHand != null)
+        {
+            HashSet<GroupType> mainTypes = GetEquipmentGroupTypes(mainHand);
+            if (mainTypes.Contains(GroupType.TWO_HANDED_WEAPON))
+                UnequipFromSlot(EquipSlotType.OFF_HAND);
+            else if (offHand is Weapon)
+            {
+                if (mainTypes.Contains(GroupType.MELEE_WEAPON) && !GetEquipmentGroupTypes(offHand).Contains(GroupType.MELEE_WEAPON))
+                    UnequipFromSlot(EquipSlotType.OFF_HAND);
+                else if (mainTypes.Contains(GroupType.RANGED_WEAPON) && !GetEquipmentGroupTypes(offHand).Contains(GroupType.RANGED_WEAPON))
+                    UnequipFromSlot(EquipSlotType.OFF_HAND);
+            }
+        }
+        UpdatesAreDeferred = false;
+    }
+
+    private int CheckAllEquipmentRequirements()
+    {
+        int changedCount = 0;
+        foreach (var equipData in equipList)
+        {
+            if (equipData.equip == null)
+                continue;
+            if (!equipData.isDisabled && !CanEquipItem(equipData.equip))
+            {
+                equipData.isDisabled = true;
+                RemoveEquipmentBonuses(equipData.equip.GetAllAffixes());
+                changedCount++;
+            }
+            else if (equipData.isDisabled && CanEquipItem(equipData.equip))
+            {
+                equipData.isDisabled = false;
+                ApplyEquipmentBonuses(equipData.equip.GetAllAffixes());
+                changedCount++;
+            }
+        }
+        return changedCount;
+    }
+
+    public bool CanEquipItem(Equipment equip)
+    {
+        if (equip.strRequirement > Strength || equip.intRequirement > Intelligence || equip.agiRequirement > Agility || equip.willRequirement > Will)
+            return false;
+        return true;
+    }
+
     public void UpdateDefenses()
     {
+        BaseManaShield = 0;
         ApplyHealthBonuses();
         ApplySoulPointBonuses();
         CalculateDefenses();
-        AttackPhasing = GetMultiStatBonus(GroupTypes, BonusType.ATTACK_PHASING).CalculateStat(BaseAttackPhasing);
-        MagicPhasing = GetMultiStatBonus(GroupTypes, BonusType.MAGIC_PHASING).CalculateStat(BaseMagicPhasing);
+        AttackPhasing = Math.Max(GetMultiStatBonus(GroupTypes, BonusType.ATTACK_PHASING).CalculateStat(BaseAttackPhasing), 0);
+        MagicPhasing = Math.Max(GetMultiStatBonus(GroupTypes, BonusType.MAGIC_PHASING).CalculateStat(BaseMagicPhasing), 0);
     }
 
     private void UpdateHeroAttributes()
@@ -522,16 +555,16 @@ public class HeroData : ActorData
             finalBaseWill += SecondaryArchetype.AllocatedPoints * SecondaryArchetype.WillGrowth;
         }
 
-        Strength = (int)GetMultiStatBonus(GroupTypes, BonusType.STRENGTH).CalculateStat(finalBaseStrength);
+        Strength = (int)Math.Max(GetMultiStatBonus(GroupTypes, BonusType.STRENGTH).CalculateStat(finalBaseStrength), 1f);
         ApplyStrengthBonuses();
 
-        Intelligence = (int)GetMultiStatBonus(GroupTypes, BonusType.INTELLIGENCE).CalculateStat(finalBaseIntelligence);
+        Intelligence = (int)Math.Max(GetMultiStatBonus(GroupTypes, BonusType.INTELLIGENCE).CalculateStat(finalBaseIntelligence), 1f);
         ApplyIntelligenceBonuses();
 
-        Agility = (int)GetMultiStatBonus(GroupTypes, BonusType.AGILITY).CalculateStat(finalBaseAgility);
+        Agility = (int)Math.Max(GetMultiStatBonus(GroupTypes, BonusType.AGILITY).CalculateStat(finalBaseAgility), 1f);
         ApplyAgilityBonuses();
 
-        Will = (int)GetMultiStatBonus(GroupTypes, BonusType.WILL).CalculateStat(finalBaseWill);
+        Will = (int)Math.Max(GetMultiStatBonus(GroupTypes, BonusType.WILL).CalculateStat(finalBaseWill), 1f);
         ApplyWillBonuses();
     }
 
@@ -621,11 +654,11 @@ public class HeroData : ActorData
         int ShieldFromEquip = 0;
         int DodgeFromEquip = 0;
         int ResolveFromEquip = 0;
-        foreach (Equipment equippedItem in equipList)
+        foreach (HeroEquipData equippedItem in equipList)
         {
-            if (equippedItem != null && equippedItem.GetItemType() == ItemType.ARMOR)
+            if (equippedItem.equip != null && equippedItem.equip.GetItemType() == ItemType.ARMOR)
             {
-                Armor equip = equippedItem as Armor;
+                Armor equip = equippedItem.equip as Armor;
                 ArmorFromEquip += equip.armor;
                 ShieldFromEquip += equip.shield;
                 DodgeFromEquip += equip.dodgeRating;
@@ -633,21 +666,24 @@ public class HeroData : ActorData
             }
         }
 
-        Armor = GetMultiStatBonus(GroupTypes, BonusType.GLOBAL_ARMOR).CalculateStat(BaseArmor + ArmorFromEquip);
-        MaximumManaShield = GetMultiStatBonus(GroupTypes, BonusType.GLOBAL_MAX_SHIELD).CalculateStat(BaseManaShield + ShieldFromEquip);
+        Armor = Math.Max(GetMultiStatBonus(GroupTypes, BonusType.GLOBAL_ARMOR).CalculateStat(BaseArmor + ArmorFromEquip), 0);
+        MaximumManaShield = Math.Max(GetMultiStatBonus(GroupTypes, BonusType.GLOBAL_MAX_SHIELD).CalculateStat(BaseManaShield + ShieldFromEquip), 0);
+        float test =  Math.Max(GetMultiStatBonus(GroupTypes, BonusType.GLOBAL_MAX_SHIELD).CalculateStat(1), 0);
+        Debug.Log(MaximumManaShield + " " + BaseManaShield + " " + ShieldFromEquip + " " + test);
         if (MaximumManaShield != 0)
         {
             float shieldPercent = CurrentManaShield / MaximumManaShield;
             CurrentManaShield = MaximumManaShield * shieldPercent;
         }
-        DodgeRating = GetMultiStatBonus(GroupTypes, BonusType.GLOBAL_DODGE_RATING).CalculateStat(BaseDodgeRating + DodgeFromEquip);
-        ResolveRating = GetMultiStatBonus(GroupTypes, BonusType.GLOBAL_RESOLVE_RATING).CalculateStat(BaseResolveRating + ResolveFromEquip);
+        DodgeRating = Math.Max(GetMultiStatBonus(GroupTypes, BonusType.GLOBAL_DODGE_RATING).CalculateStat(BaseDodgeRating + DodgeFromEquip), 0);
+        ResolveRating = Math.Max(GetMultiStatBonus(GroupTypes, BonusType.GLOBAL_RESOLVE_RATING).CalculateStat(BaseResolveRating + ResolveFromEquip), 0);
 
         int statusThreshold = (int)(ResolveRating / 5f / 100f);
-        int statusResistance = (int)(ResolveRating / 15f / 100f);
+        int statusResistance = (int)(ResolveRating / 15f);
 
-        AfflictedStatusDamageResistance = 1 - GetMultiStatBonus(GroupTypes, BonusType.AFFLICTED_STATUS_DAMAGE_RESISTANCE).CalculateStat(statusResistance);
-        AfflictedStatusThreshold = GetMultiStatBonus(GroupTypes, BonusType.AFFLICTED_STATUS_THRESHOLD).CalculateStat(1f + statusThreshold);
+        AfflictedStatusDamageResistance = Math.Min(GetMultiStatBonus(GroupTypes, BonusType.AFFLICTED_STATUS_DAMAGE_RESISTANCE).CalculateStat(statusResistance), 90) / 100f;
+        AfflictedStatusDamageResistance = 1f - AfflictedStatusDamageResistance;
+        AfflictedStatusThreshold = Math.Max(GetMultiStatBonus(GroupTypes, BonusType.AFFLICTED_STATUS_THRESHOLD).CalculateStat(1f + statusThreshold), 0.01f);
     }
 
     public override void GetTotalStatBonus(BonusType type, IEnumerable<GroupType> tags, Dictionary<BonusType, StatBonus> abilityBonusProperties, StatBonus inputStatBonus)
@@ -740,18 +776,20 @@ public class HeroData : ActorData
     {
         HashSet<GroupType> types = new HashSet<GroupType>() { GroupType.NO_GROUP };
 
-        foreach (Equipment equipment in equipList)
+        foreach (HeroEquipData equipment in equipList)
         {
-            if (equipment == null)
-            {
+            if (equipment.equip == null)
                 continue;
-            }
-            if (!includeWeapons && equipment is Weapon)
+
+            if (equipment.equip is Weapon && !includeWeapons)
                 continue;
-            types.UnionWith(equipment.GetGroupTypes());
+
+            types.UnionWith(GetEquipmentGroupTypes(equipment.equip));
         }
 
-        if (GetEquipmentInSlot(EquipSlotType.WEAPON) is Weapon && GetEquipmentInSlot(EquipSlotType.OFF_HAND) is Weapon)
+        if (GetEquipmentInSlot(EquipSlotType.WEAPON) is Weapon
+            && !equipList[(int)EquipSlotType.WEAPON].isDisabled
+            && GetEquipmentInSlot(EquipSlotType.OFF_HAND) is Weapon && !equipList[(int)EquipSlotType.OFF_HAND].isDisabled)
             types.Add(GroupType.DUAL_WIELD);
 
         if (CurrentActor != null)
@@ -760,6 +798,21 @@ public class HeroData : ActorData
         }
 
         return types;
+    }
+
+    public HashSet<GroupType> GetEquipmentGroupTypes(EquipSlotType equipSlot)
+    {
+        return GetEquipmentGroupTypes(GetEquipmentInSlot(equipSlot));
+    }
+
+    public HashSet<GroupType> GetEquipmentGroupTypes(Equipment equip)
+    {
+        HashSet<GroupType> groupTypes = equip.GetGroupTypes();
+
+        if (specialBonuses.ContainsKey(BonusType.ONE_HANDED_WEAPONS_ARE_TWO_HANDED) && groupTypes.Contains(GroupType.ONE_HANDED_WEAPON))
+            groupTypes.Add(GroupType.TWO_HANDED_WEAPON);
+
+        return groupTypes;
     }
 
     public void SaveAbilitySlotData(int slot, SaveData.HeroSaveData.HeroAbilitySlotSaveData data)
@@ -858,6 +911,17 @@ public class HeroData : ActorData
         {
             Ability = null;
             source = null;
+        }
+    }
+
+    private class HeroEquipData
+    {
+        public Equipment equip;
+        public bool isDisabled;
+
+        public HeroEquipData()
+        {
+            isDisabled = false;
         }
     }
 }

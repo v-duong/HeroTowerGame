@@ -5,13 +5,14 @@ using UnityEngine;
 public class Projectile : MonoBehaviour
 {
     public AbilityBase abilityBase;
+    public float homingRate = 0f;
+    public Actor currentTarget = null;
     public int pierceCount = 0;
     public int chainCount = 0;
     public float currentSpeed;
     public float timeToLive = 2.5f;
-    public Func<Actor, Actor, Dictionary<ElementType, float>> damageCalculationCallback;
     public List<Actor> sharedHitList;
-    public Vector3 currentHeading;
+    public Vector3 currentHeading { get; private set; }
     public LinkedActorAbility linkedAbility;
     public AbilityOnHitDataContainer onHitData;
     public float inheritedDamagePercent;
@@ -81,13 +82,15 @@ public class Projectile : MonoBehaviour
             return;
 
         Actor actor = collision.gameObject.GetComponent<Actor>();
-        Vector3 targetPosition;
 
         if (actor != null && !IsTargetAlreadyHit(actor) && !actor.Data.IsDead)
         {
-            targetPosition = actor.transform.position;
-            Dictionary<ElementType, float> projectileDamage = damageCalculationCallback.Invoke(actor, onHitData.sourceActor);
-            actor.ApplyDamage(projectileDamage, onHitData, true);
+            bool didProjHit = onHitData.sourceAbility.ApplyDamageToActor(actor, true);
+            AddToAlreadyHit(actor);
+            currentTarget = null;
+
+            if (!didProjHit)
+                return;
 
             if (linkedAbility != null)
             {
@@ -98,7 +101,6 @@ public class Projectile : MonoBehaviour
                 }
             }
 
-            AddToAlreadyHit(actor);
             pierceCount--;
 
             if (pierceCount < 0 && chainCount > 0)
@@ -125,6 +127,7 @@ public class Projectile : MonoBehaviour
     {
         List<Actor> possibleTargets = new List<Actor>();
         Physics2D.OverlapCircleNonAlloc(actor.transform.position, 3, hits, layerMask);
+
         foreach (Collider2D hit in hits)
         {
             if (hit == null)
@@ -134,11 +137,13 @@ public class Projectile : MonoBehaviour
                 continue;
             possibleTargets.Add(actor);
         }
+
         if (possibleTargets.Count > 0)
         {
             int index = UnityEngine.Random.Range(0, possibleTargets.Count);
             if (possibleTargets[index] != null)
             {
+                currentTarget = possibleTargets[index];
                 currentHeading = (possibleTargets[index].transform.position - this.transform.position).normalized;
             }
         }
@@ -147,6 +152,7 @@ public class Projectile : MonoBehaviour
             int index = UnityEngine.Random.Range(0, hits.Length);
             if (hits[index] != null)
             {
+                currentTarget = null;
                 currentHeading = (hits[index].transform.position - this.transform.position).normalized;
             }
         }
@@ -171,19 +177,29 @@ public class Projectile : MonoBehaviour
 
     public void Move()
     {
-        float dt = Time.fixedDeltaTime;
+        float dt = Time.deltaTime;
         //this.transform.position += currentHeading.normalized * currentSpeed * dt;
-        transform.Translate(currentHeading.normalized * currentSpeed * dt, Space.World);
+        if (currentTarget != null)
+        {
+            Vector3 headingShift = Vector3.RotateTowards(currentHeading.normalized, (currentTarget.transform.position - transform.position).normalized, homingRate * Mathf.Deg2Rad * dt, 1);
+            currentHeading = headingShift.normalized;
+        }
+        transform.Translate(currentHeading * currentSpeed * dt, Space.World);
         return;
+    }
+
+    public void SetHeading(Vector3 heading)
+    {
+        currentHeading = heading.normalized;
     }
 
     public void ReturnToPool()
     {
-        damageCalculationCallback = null;
         linkedAbility = null;
         onHitData = null;
         targetsHit.Clear();
         sharedHitList = null;
+        currentTarget = null;
         StageManager.Instance.BattleManager.ProjectilePool.ReturnToPool(this);
     }
 }

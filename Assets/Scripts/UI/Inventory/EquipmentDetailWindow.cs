@@ -25,13 +25,12 @@ public class EquipmentDetailWindow : MonoBehaviour
     public GameObject EquipButtonParent;
 
     public Equipment equip;
-    public InventorySlot inventorySlot;
 
     public Image NameBackground;
 
     public Action<Item> callback;
 
-    public void UpdateWindowEquipment()
+    public void UpdateWindowEquipment(HeroData hero)
     {
         GetComponent<Outline>().effectColor = Helpers.ReturnRarityColor(equip.Rarity);
         NameBackground.color = Helpers.ReturnRarityColor(equip.Rarity);
@@ -91,6 +90,13 @@ public class EquipmentDetailWindow : MonoBehaviour
                 affixText.text += "○" + Affix.BuildAffixString(a.Base, 5,a.GetAffixValues(), a.GetEffectValues());
             }
         }
+
+        if (hero != null)
+        {
+            EquipButtonParent.GetComponentInChildren<Button>().interactable = hero.CanEquipItem(equip);
+        }
+        else
+            EquipButtonParent.GetComponentInChildren<Button>().interactable = true;
     }
 
     public void UpdateWindowEquipment_Armor(Armor armorItem)

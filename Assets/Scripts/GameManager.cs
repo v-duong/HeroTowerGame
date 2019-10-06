@@ -24,6 +24,7 @@ public class GameManager : MonoBehaviour
     private void Awake()
     {
         Instance = this;
+        DontDestroyOnLoad(this.gameObject);
     }
 
     private void Start()
@@ -45,8 +46,6 @@ public class GameManager : MonoBehaviour
             equipment.RerollAffixesAtRarity();
             PlayerStats.AddEquipmentToInventory(equipment);
         }
-
-        
     }
 
     public ConsumableType GetRandomConsumable()
@@ -150,11 +149,18 @@ public class GameManager : MonoBehaviour
             foreach (AbilityBase abilityBase in heroActor.GetAbilitiesInList())
             {
                 abilitiesInUse.Add(abilityBase);
-                AbilityBase linkedBase = ResourceManager.Instance.GetAbilityBase(abilityBase.linkedAbility.abilityId);
-                while(linkedBase != null)
+                if (abilityBase.hasLinkedAbility)
                 {
-                    abilitiesInUse.Add(linkedBase);
-                    linkedBase = ResourceManager.Instance.GetAbilityBase(linkedBase.linkedAbility.abilityId);
+                    AbilityBase linkedBase = ResourceManager.Instance.GetAbilityBase(abilityBase.linkedAbility.abilityId);
+                    while (linkedBase != null)
+                    {
+                        abilitiesInUse.Add(linkedBase);
+
+                        if (linkedBase.hasLinkedAbility)
+                            linkedBase = ResourceManager.Instance.GetAbilityBase(linkedBase.linkedAbility.abilityId);
+                        else
+                            linkedBase = null;
+                    }
                 }
             }
 
@@ -171,6 +177,6 @@ public class GameManager : MonoBehaviour
         StageManager.Instance.stageBounds = bounds;
         InputManager.Instance.SetCameraBounds();
 
-        UIManager.Instance.LoadingScreen.endLoadingScreen = true; 
+        UIManager.Instance.LoadingScreen.endLoadingScreen = true;
     }
 }

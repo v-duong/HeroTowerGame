@@ -1,20 +1,19 @@
 ﻿using UnityEngine;
 
-public class ElectrocuteEffect : ActorStatusEffect
+public class ElectrocuteEffect : ActorEffect
 {
     public const float BASE_DURATION = 2.0f;
     private const float BASE_RADIUS = 2f;
+    public const float BASE_DAMAGE_MULTIPLIER = 0.05f;
     protected float damage;
     protected float timeElapsed;
 
     public override GroupType StatusTag => GroupType.SELF_IS_ELECTROCUTED;
 
-    public override int MaxStacks => 1;
-
     public ElectrocuteEffect(Actor target, Actor source, float inputDamage, float duration) : base(target, source)
     {
         effectType = EffectType.ELECTROCUTE;
-        damage = inputDamage * 0.05f;
+        damage = inputDamage;
         this.duration = duration;
     }
 
@@ -44,10 +43,10 @@ public class ElectrocuteEffect : ActorStatusEffect
         int index = Random.Range(0, hits.Length);
         Actor secondaryTarget = hits[index].gameObject.GetComponent<Actor>();
 
-        target.ApplySingleElementDamage(ElementType.LIGHTNING, damage * timeElapsed, Source.Data.LightningNegation, false);
+        target.ApplySingleElementDamage(ElementType.LIGHTNING, damage * timeElapsed, Source.Data.OnHitData, false, true);
 
         if (secondaryTarget != null)
-            secondaryTarget.ApplySingleElementDamage(ElementType.LIGHTNING, damage * timeElapsed, Source.Data.LightningNegation, false);
+            secondaryTarget.ApplySingleElementDamage(ElementType.LIGHTNING, damage * timeElapsed, Source.Data.OnHitData, false, true);
 
         /*
         foreach(Collider2D c in hits)
@@ -68,6 +67,11 @@ public class ElectrocuteEffect : ActorStatusEffect
 
     public override float GetEffectValue()
     {
-        return damage * (target.Data.GetResistance(ElementType.LIGHTNING) - Source.Data.LightningNegation) / 100f;
+        return damage * (target.Data.GetResistance(ElementType.LIGHTNING) - Source.Data.GetNegation(ElementType.LIGHTNING)) / 100f;
+    }
+
+    public override float GetSimpleEffectValue()
+    {
+        return damage;
     }
 }

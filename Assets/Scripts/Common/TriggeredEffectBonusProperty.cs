@@ -41,6 +41,10 @@ public class TriggeredEffectBonusProperty
     [JsonProperty]
     public readonly float effectDuration;
 
+    [JsonConverter(typeof(StringEnumConverter))]
+    [JsonProperty]
+    public readonly ElementType effectElement;
+
     [JsonProperty]
     public readonly bool readAsFloat;
 }
@@ -52,6 +56,7 @@ public enum TriggerType
     WHEN_HIT_BY,
     WHEN_HITTING,
     ON_KILL,
+    ON_HIT_KILL,
     HEALTH_THRESHOLD,
     SHIELD_THRESHOLD,
     SOULPOINT_THRESHOLD,
@@ -59,5 +64,5 @@ public enum TriggerType
     ON_DODGE,
     ON_PARRY,
     ON_PHASING,
-    ON_DEATH
+    ON_DEATH,
 }

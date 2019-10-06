@@ -13,6 +13,7 @@ public class SaveManager : MonoBehaviour
     private void Awake()
     {
         Instance = this;
+        DontDestroyOnLoad(this.gameObject);
     }
 
     public void Save()

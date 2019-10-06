@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class StatBonusBuffEffect : ActorStatusEffect
+public class StatBonusBuffEffect : ActorEffect
 {
     public float BuffPower { get; protected set; }
     public string BuffName { get; protected set; }
@@ -50,6 +50,11 @@ public class StatBonusBuffEffect : ActorStatusEffect
     }
 
     public override float GetEffectValue()
+    {
+        return BuffPower;
+    }
+
+    public override float GetSimpleEffectValue()
     {
         return BuffPower;
     }

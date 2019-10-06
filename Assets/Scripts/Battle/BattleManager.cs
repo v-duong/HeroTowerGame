@@ -71,7 +71,13 @@ public class BattleManager : MonoBehaviour
     private void EndBattle(bool victory)
     {
         StageManager.Instance.BattleManager.ProjectilePool.ReturnAll();
-        EnemyPool.ReturnAll();
+        foreach(EnemyActor enemy in currentEnemyList)
+        {
+            enemy.DisableActor();
+            EnemyPool.ReturnToPool(enemy);
+        }
+        enemiesSpawned = 0;
+        currentEnemyList.Clear();
         StopAllCoroutines();
         battleEnded = true;
         if (victory)
@@ -163,6 +169,7 @@ public class BattleManager : MonoBehaviour
                 yield return new WaitForSeconds(waveToSpawn.delayBetweenSpawns);
 
                 EnemyActor enemy = EnemyPool.GetEnemy(spawner.transform);
+                
                 enemy.ParentSpawner = spawner;
                 Vector3 positionOffset = new Vector3(Random.Range(-0.5f, 0.5f), Random.Range(-0.5f, 0.5f), 0);
                 //Vector3 positionOffset = new Vector3(-0.5f, -0.5f, 0);
@@ -173,6 +180,8 @@ public class BattleManager : MonoBehaviour
                 enemy.Data.SetMobBonuses(bonuses);
                 if (enemyBase.isBoss || waveToSpawn.enemyList[i].isBossOverride)
                     enemy.isBoss = true;
+
+                enemy.Init();
 
                 currentEnemyList.Add(enemy);
                 enemiesSpawned++;

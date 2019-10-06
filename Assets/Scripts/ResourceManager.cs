@@ -512,6 +512,7 @@ public class ResourceManager : MonoBehaviour
     private void Awake()
     {
         Instance = this;
+        DontDestroyOnLoad(this.gameObject);
         Initialize();
     }
 

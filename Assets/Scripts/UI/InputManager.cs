@@ -59,6 +59,7 @@ public class InputManager : MonoBehaviour
     private void Awake()
     {
         Instance = this;
+        DontDestroyOnLoad(this.gameObject);
     }
 
     private void Start()

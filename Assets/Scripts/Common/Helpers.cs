@@ -84,38 +84,53 @@ public static class Helpers
         }
     }
 
-
     public static void GetGlobalAndFlatDamageTypes(ElementType element, AbilityType abilityType, AbilityShotType shotType, ICollection<GroupType> tags, HashSet<BonusType> min, HashSet<BonusType> max, HashSet<BonusType> multi)
+    {
+        if (abilityType == AbilityType.ATTACK || abilityType == AbilityType.SPELL)
+        {
+            //ATTACK_ELEMENTAL_DAMAGE, SPELL_ELEMENTAL_DAMAGE
+            min.Add((BonusType)Enum.Parse(typeof(BonusType), abilityType.ToString() + "_" + element.ToString() + "_DAMAGE_MIN"));
+            max.Add((BonusType)Enum.Parse(typeof(BonusType), abilityType.ToString() + "_" + element.ToString() + "_DAMAGE_MAX"));
+            //ATTACK_DAMAGE, SPELL_DAMAGE
+            multi.Add((BonusType)Enum.Parse(typeof(BonusType), abilityType.ToString() + "_DAMAGE"));
+        }
+
+        switch (shotType)
+        {
+            case AbilityShotType.PROJECTILE:
+            case AbilityShotType.HITSCAN_SINGLE:
+            case AbilityShotType.HITSCAN_MULTI:
+            case AbilityShotType.PROJECTILE_NOVA:
+                multi.Add(BonusType.PROJECTILE_DAMAGE);
+                break;
+
+            case AbilityShotType.ARC_AOE:
+            case AbilityShotType.FORWARD_MOVING_ARC:
+            case AbilityShotType.RADIAL_AOE:
+            case AbilityShotType.FORWARD_MOVING_RADIAL:
+            case AbilityShotType.NOVA_AOE:
+            case AbilityShotType.NOVA_ARC_AOE:
+            case AbilityShotType.LINEAR_AOE:
+            case AbilityShotType.FORWARD_MOVING_LINEAR:
+                multi.Add(BonusType.AREA_DAMAGE);
+                break;
+        }
+
+        GetGlobalAndFlatDamageTypes(element, tags, min, max, multi);
+    }
+
+    public static void GetGlobalAndFlatDamageTypes(ElementType element, ICollection<GroupType> tags, HashSet<BonusType> min, HashSet<BonusType> max, HashSet<BonusType> multi)
     {
         min.Add((BonusType)Enum.Parse(typeof(BonusType), "GLOBAL_" + element.ToString() + "_DAMAGE_MIN"));
         max.Add((BonusType)Enum.Parse(typeof(BonusType), "GLOBAL_" + element.ToString() + "_DAMAGE_MAX"));
 
-        if (abilityType == AbilityType.ATTACK || abilityType == AbilityType.SPELL)
-        {
-            min.Add((BonusType)Enum.Parse(typeof(BonusType), abilityType.ToString() + "_" + element.ToString() + "_DAMAGE_MIN"));
-            max.Add((BonusType)Enum.Parse(typeof(BonusType), abilityType.ToString() + "_" + element.ToString() + "_DAMAGE_MAX"));
-        }
-
         multi.Add(BonusType.GLOBAL_DAMAGE);
 
-        if (abilityType == AbilityType.ATTACK)
-        {
-            multi.Add(BonusType.ATTACK_DAMAGE);
-        }
-        else if (abilityType == AbilityType.SPELL)
-        {
-            multi.Add(BonusType.SPELL_DAMAGE);
-        }
-
-        if (shotType == AbilityShotType.PROJECTILE)
+        if (tags.Contains(GroupType.PROJECTILE))
         {
             multi.Add(BonusType.PROJECTILE_DAMAGE);
         }
-        else if (shotType == AbilityShotType.HITSCAN_SINGLE)
-        {
-            multi.Add(BonusType.PROJECTILE_DAMAGE);
-        }
-        else
+        if (tags.Contains(GroupType.AREA))
         {
             multi.Add(BonusType.AREA_DAMAGE);
         }

@@ -8,6 +8,15 @@ public class MinMaxRange
     [JsonProperty]
     public int max;
 
+    public MinMaxRange()
+    {
+    }
+    public MinMaxRange(int min, int max)
+    {
+        this.min = min;
+        this.max = max;
+    }
+
     public void SetMinMax(int min, int max)
     {
         this.min = min;

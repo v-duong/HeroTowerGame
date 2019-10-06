@@ -18,6 +18,7 @@ public class LocalizationManager : MonoBehaviour
     private void Awake()
     {
         Instance = this;
+        DontDestroyOnLoad(this.gameObject);
         LoadLocalization();
     }
 
@@ -270,6 +271,11 @@ public class LocalizationManager : MonoBehaviour
         if (restriction != GroupType.NO_GROUP)
         {
             output = GetLocalizationText_GroupTypeRestriction(restriction.ToString()) + ", " + output;
+        }
+
+        if (type >= (BonusType)HeroArchetypeData.SpecialBonusStart)
+        {
+            return output;
         }
 
         switch (modifyType)

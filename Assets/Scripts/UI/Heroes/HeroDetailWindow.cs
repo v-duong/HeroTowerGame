@@ -96,7 +96,7 @@ public class HeroDetailWindow : MonoBehaviour
                 slot.slotText.text = e.Name;
             }
             if (slot.EquipSlot == EquipSlotType.WEAPON)
-                if (e is Weapon && e.GetGroupTypes().Contains(GroupType.TWO_HANDED_WEAPON))
+                if (e is Weapon && hero.GetEquipmentGroupTypes(e).Contains(GroupType.TWO_HANDED_WEAPON))
                 {
                     offHandSlot.GetComponent<Button>().interactable = false;
                 }

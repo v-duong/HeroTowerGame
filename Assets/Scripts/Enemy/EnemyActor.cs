@@ -40,11 +40,14 @@ public class EnemyActor : Actor
     }
 
     // Use this for initialization
-    private new void Start()
+    public void Init()
     {
-        base.Start();
         nextMovementNode = 1;
+        Data.CurrentHealth = Data.MaximumHealth;
+        Data.CurrentManaShield = Data.MaximumManaShield;
         CalculateRotatedOffset();
+        EnableHealthBar();
+        InitializeHealthBar();
     }
 
     protected override void Move()
@@ -78,7 +81,6 @@ public class EnemyActor : Actor
     {
         var nodes = ParentSpawner.GetNodesToGoal(indexOfGoal);
         Vector3 nextPos, heading;
-        Vector3 cellCenter = Helpers.ReturnTilePosition(StageManager.Instance.PathTilemap, transform.position, -3);
         float angle;
         if (nextMovementNode + 1 < nodes.Count)
         {
@@ -91,14 +93,6 @@ public class EnemyActor : Actor
                 return;
             }
         }
-        /*
-        else if (nextMovementNode < nodes.Count)
-        {
-            nextPos = nodes[nextMovementNode];
-            heading = nextPos - cellCenter;
-            angle = Vector3.SignedAngle(previousHeading, heading.normalized, Vector3.forward);
-        }
-        */
         else
         {
             return;
@@ -116,6 +110,7 @@ public class EnemyActor : Actor
     {
         enemyRarity = rarity;
         Data.SetBase(enemyBase, rarity, level, this);
+
         if (rarity == RarityType.RARE)
         {
             AddRandomMobAffixes(3);
@@ -124,6 +119,8 @@ public class EnemyActor : Actor
         {
             AddRandomMobAffixes(1);
         }
+
+        instancedAbilitiesList.Clear();
         foreach (EnemyBase.EnemyAbilityBase ability in enemyBase.abilitiesList)
         {
             AbilityBase abilityBase = ResourceManager.Instance.GetAbilityBase(ability.abilityName);
@@ -184,13 +181,10 @@ public class EnemyActor : Actor
     {
         StageManager.Instance.BattleManager.enemiesSpawned -= 1;
         StageManager.Instance.BattleManager.currentEnemyList.Remove(this);
-
-        foreach (var x in instancedAbilitiesList)
-        {
-            x.StopFiring(this);
-        }
+        ClearStatusEffects(true);
 
         DisableActor();
+        StageManager.Instance.BattleManager.EnemyPool.ReturnToPool(this);
     }
 
     public override ActorType GetActorType()

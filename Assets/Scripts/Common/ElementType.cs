@@ -16,7 +16,7 @@ public class ElementalData
 {
     private readonly Dictionary<ElementType, int> resists;
     private readonly Dictionary<ElementType, int> resistCaps;
-    private readonly Dictionary<ElementType, int> negations;
+    public readonly Dictionary<ElementType, int> negations;
 
     public ElementalData()
     {

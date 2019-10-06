@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using UnityEngine;
 
 public class HeroArchetypeData : IAbilitySource
 {
-    public const int LocalBonusStart = 0x900;
+    public const int SpecialBonusStart = 0x900;
 
     public Guid Id { get; private set; }
     public ArchetypeBase Base { get; private set; }
@@ -138,13 +137,12 @@ public class HeroArchetypeData : IAbilitySource
 
         foreach (TriggeredEffectBonusProperty triggeredEffectBonus in node.triggeredEffects)
         {
-            TriggeredEffect t = new TriggeredEffect(triggeredEffectBonus, triggeredEffectBonus.effectMinValue);
+            TriggeredEffect t = new TriggeredEffect(triggeredEffectBonus, triggeredEffectBonus.effectMinValue, node.idName);
             hero.AddTriggeredEffect(triggeredEffectBonus, t);
         }
 
         nodeLevels[node.id] = setLevel;
         AllocatedPoints += setLevel;
-
     }
 
     public bool LevelUpNode(ArchetypeSkillNode node)
@@ -158,28 +156,51 @@ public class HeroArchetypeData : IAbilitySource
         foreach (var bonus in node.bonuses)
         {
             float bonusValue = 0f;
-            if (nodeLevels[node.id] == 1)
+            if (bonus.modifyType != ModifyType.MULTIPLY)
             {
-                bonusValue = bonus.growthValue;
-            }
-            else if (nodeLevels[node.id] == node.maxLevel)
-                bonusValue = bonus.finalLevelValue;
-            else
-                bonusValue = bonus.growthValue;
+                if (nodeLevels[node.id] == 1)
+                {
+                    bonusValue = bonus.growthValue;
+                }
+                else if (nodeLevels[node.id] == node.maxLevel)
+                    bonusValue = bonus.finalLevelValue;
+                else
+                    bonusValue = bonus.growthValue;
 
-            hero.AddArchetypeStatBonus(bonus.bonusType, bonus.restriction, bonus.modifyType, bonusValue);
+                hero.AddArchetypeStatBonus(bonus.bonusType, bonus.restriction, bonus.modifyType, bonusValue);
+            }
+            else
+            {
+                if (nodeLevels[node.id] == 1)
+                {
+                    bonusValue = bonus.growthValue;
+                }
+                else if (nodeLevels[node.id] == node.maxLevel)
+                {
+                    bonusValue = bonus.growthValue * (nodeLevels[node.id] - 1) + bonus.finalLevelValue;
+                    hero.RemoveArchetypeStatBonus(bonus.bonusType, bonus.restriction, bonus.modifyType, bonus.growthValue * (nodeLevels[node.id] - 1));
+                }
+                else
+                {
+                    bonusValue = bonus.growthValue * nodeLevels[node.id];
+                    hero.RemoveArchetypeStatBonus(bonus.bonusType, bonus.restriction, bonus.modifyType, bonus.growthValue * (nodeLevels[node.id] - 1));
+                }
+
+                hero.AddArchetypeStatBonus(bonus.bonusType, bonus.restriction, bonus.modifyType, bonusValue);
+            }
         }
 
         if (nodeLevels[node.id] == 1)
         {
             foreach (TriggeredEffectBonusProperty triggeredEffectBonus in node.triggeredEffects)
             {
-                TriggeredEffect t = new TriggeredEffect(triggeredEffectBonus, triggeredEffectBonus.effectMinValue);
+                TriggeredEffect t = new TriggeredEffect(triggeredEffectBonus, triggeredEffectBonus.effectMinValue, node.idName);
                 hero.AddTriggeredEffect(triggeredEffectBonus, t);
             }
         }
 
-            hero.UpdateActorData();
+        hero.UpdateActorData();
+
         return true;
     }
 
@@ -194,17 +215,37 @@ public class HeroArchetypeData : IAbilitySource
         foreach (var bonus in node.bonuses)
         {
             float bonusValue = 0f;
-            if (nodeLevels[node.id] == 1)
+            if (bonus.modifyType != ModifyType.MULTIPLY)
             {
-                bonusValue = bonus.growthValue;
-                
-            }
-            else if (nodeLevels[node.id] == node.maxLevel)
-                bonusValue = bonus.finalLevelValue;
-            else
-                bonusValue = bonus.growthValue;
+                if (nodeLevels[node.id] == 1)
+                {
+                    bonusValue = bonus.growthValue;
+                }
+                else if (nodeLevels[node.id] == node.maxLevel)
+                    bonusValue = bonus.finalLevelValue;
+                else
+                    bonusValue = bonus.growthValue;
 
-            hero.AddArchetypeStatBonus(bonus.bonusType, bonus.restriction, bonus.modifyType, bonusValue);
+                hero.RemoveArchetypeStatBonus(bonus.bonusType, bonus.restriction, bonus.modifyType, bonusValue);
+            } else
+            {
+                if (nodeLevels[node.id] == 1)
+                {
+                    bonusValue = bonus.growthValue;
+                }
+                else if (nodeLevels[node.id] == node.maxLevel)
+                {
+                    bonusValue = bonus.growthValue * (nodeLevels[node.id] - 1) + bonus.finalLevelValue;
+                    hero.AddArchetypeStatBonus(bonus.bonusType, bonus.restriction, bonus.modifyType, bonus.growthValue * (nodeLevels[node.id] - 1));
+                }
+                else
+                {
+                    bonusValue = bonus.growthValue * nodeLevels[node.id];
+                    hero.AddArchetypeStatBonus(bonus.bonusType, bonus.restriction, bonus.modifyType, bonus.growthValue * (nodeLevels[node.id] - 1));
+                }
+
+                hero.RemoveArchetypeStatBonus(bonus.bonusType, bonus.restriction, bonus.modifyType, bonusValue);
+            }
         }
 
         if (nodeLevels[node.id] == 1)
@@ -223,7 +264,7 @@ public class HeroArchetypeData : IAbilitySource
 
     public bool ContainsAbility(AbilityBase abilityBase)
     {
-        foreach(var leveledAbility in AvailableAbilityList)
+        foreach (var leveledAbility in AvailableAbilityList)
         {
             if (leveledAbility.abilityBase == abilityBase)
                 return true;
@@ -271,7 +312,7 @@ public class HeroArchetypeData : IAbilitySource
         return new Tuple<HeroData, int>(hero, slot);
     }
 
-    public class ArchetypeLeveledAbilityList 
+    public class ArchetypeLeveledAbilityList
     {
         public class ArchetypeLeveledAbility
         {

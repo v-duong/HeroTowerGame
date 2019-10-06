@@ -1,21 +1,20 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 
-public class BleedEffect : ActorStatusEffect
+public class BleedEffect : ActorEffect
 {
     public const float BASE_DURATION = 2.0f;
+    public const float BASE_DAMAGE_MULTIPLIER = 0.1f;
     protected float damagePerSecond;
     protected Vector2 lastPosition;
     protected float timeSinceLastCheck;
 
     public override GroupType StatusTag => GroupType.SELF_IS_BLEEDING;
 
-    public override int MaxStacks => 1;
-
     public BleedEffect(Actor target, Actor source, float inputDamage, float duration) : base(target, source)
     {
         effectType = EffectType.BLEED;
-        damagePerSecond = inputDamage * 0.1f;
+        damagePerSecond = inputDamage;
         this.duration = duration;
         timeSinceLastCheck = 0;
         lastPosition = target.transform.position;
@@ -43,12 +42,16 @@ public class BleedEffect : ActorStatusEffect
             lastPosition = position;
             additionalDamage = distance * damagePerSecond * 0.2f;
         }
-        target.ApplySingleElementDamage(ElementType.PHYSICAL, damagePerSecond * tick + additionalDamage, Source.Data.PhysicalNegation, false);
+        target.ApplySingleElementDamage(ElementType.PHYSICAL, damagePerSecond * tick + additionalDamage, Source.Data.OnHitData, false, true);
     }
 
     public override float GetEffectValue()
     {
-        return damagePerSecond * (target.Data.GetResistance(ElementType.PHYSICAL) - Source.Data.PhysicalNegation) / 100f ;
+        return damagePerSecond * (target.Data.GetResistance(ElementType.PHYSICAL) - Source.Data.GetNegation(ElementType.PHYSICAL)) / 100f ;
     }
 
+    public override float GetSimpleEffectValue()
+    {
+        return damagePerSecond;
+    }
 }

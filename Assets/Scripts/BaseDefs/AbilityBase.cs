@@ -153,6 +153,7 @@ public enum AbilityType
     SPELL,
     AURA,
     SELF_BUFF,
+    NON_ABILITY
 }
 
 public enum DamageType

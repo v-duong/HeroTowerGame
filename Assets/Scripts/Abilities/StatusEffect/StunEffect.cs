@@ -1,8 +1,6 @@
-﻿public class StunEffect : ActorStatusEffect
+﻿public class StunEffect : ActorEffect
 {
     public override GroupType StatusTag => GroupType.NO_GROUP;
-
-    public override int MaxStacks => 1;
 
     public StunEffect(Actor target, Actor source, float duration) : base(target, source)
     {
@@ -29,6 +27,11 @@
 
     public override float GetEffectValue()
     {
-        return 999f;
+        return 5f;
+    }
+
+    public override float GetSimpleEffectValue()
+    {
+        return 5f;
     }
 }

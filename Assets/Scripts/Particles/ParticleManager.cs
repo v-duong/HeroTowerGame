@@ -10,6 +10,7 @@ public class ParticleManager : MonoBehaviour
     private void Awake()
     {
         Instance = this;
+        DontDestroyOnLoad(this.gameObject);
     }
 
     public float EmitAbilityParticle(string abilityId, ParticleSystem.EmitParams emitParams, float scaling)

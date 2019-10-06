@@ -21,6 +21,11 @@ public class BattleCharInfoPanel : MonoBehaviour
             text.text += "Health: " + data.CurrentHealth.ToString("F2") + "/" + data.MaximumHealth;
         else
             text.text += "Health: " + data.CurrentHealth.ToString("F0") + "/" + data.MaximumHealth;
+
+        if (data.MaximumManaShield > 0)
+        {
+            text.text += "\nShield: " + data.CurrentManaShield.ToString("F0") + "/" + data.MaximumManaShield;
+        }
     }
 
     public void SetTarget(ActorData data)

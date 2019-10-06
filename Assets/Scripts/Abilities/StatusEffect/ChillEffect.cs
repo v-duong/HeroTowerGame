@@ -1,7 +1,7 @@
 ﻿using System;
 using UnityEngine;
 
-public class ChillEffect : ActorStatusEffect
+public class ChillEffect : ActorEffect
 {
     public const float BASE_DURATION = 2.0f;
     public const int CHILL_EFFECT_CAP = 50;
@@ -10,8 +10,6 @@ public class ChillEffect : ActorStatusEffect
     protected int effectPower;
 
     public override GroupType StatusTag => GroupType.SELF_IS_CHILLED;
-
-    public override int MaxStacks => 1;
 
     public ChillEffect(Actor target, Actor source, float effectiveness, float duration) : base(target, source)
     {
@@ -42,6 +40,11 @@ public class ChillEffect : ActorStatusEffect
     }
 
     public override float GetEffectValue()
+    {
+        return effectPower;
+    }
+
+    public override float GetSimpleEffectValue()
     {
         return effectPower;
     }
