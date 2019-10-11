@@ -1,8 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
-using System;
 
 public class EquipmentDetailWindow : MonoBehaviour
 {
@@ -67,16 +67,25 @@ public class EquipmentDetailWindow : MonoBehaviour
 
         affixText.text = "";
 
+        if (equip.innate.Count > 0)
+        {
+            affixText.text += "Innate\n";
+            foreach (Affix a in equip.innate)
+            {
+                affixText.text += "○" + Affix.BuildAffixString(a.Base, 5, a.GetAffixValues(), a.GetEffectValues());
+            }
+            affixText.text += "\n";
+        }
+
         if (equip.prefixes.Count > 0)
         {
             if (equip.Rarity == RarityType.UNIQUE)
                 affixText.text += "Affixes\n";
             else
-            affixText.text += "Prefix\n";
+                affixText.text += "Prefix\n";
             foreach (Affix a in equip.prefixes)
             {
-
-                affixText.text += "○" + Affix.BuildAffixString(a.Base, 5,a.GetAffixValues(), a.GetEffectValues());
+                affixText.text += "○" + Affix.BuildAffixString(a.Base, 5, a.GetAffixValues(), a.GetEffectValues());
             }
         }
 
@@ -87,7 +96,7 @@ public class EquipmentDetailWindow : MonoBehaviour
             affixText.text += "Suffix\n";
             foreach (Affix a in equip.suffixes)
             {
-                affixText.text += "○" + Affix.BuildAffixString(a.Base, 5,a.GetAffixValues(), a.GetEffectValues());
+                affixText.text += "○" + Affix.BuildAffixString(a.Base, 5, a.GetAffixValues(), a.GetEffectValues());
             }
         }
 
@@ -154,7 +163,6 @@ public class EquipmentDetailWindow : MonoBehaviour
             primDamage.Add(LocalizationManager.BuildElementalDamageString(range.min + "-" + range.max, ElementType.VOID));
         }
 
-
         if (weaponItem.PhysicalDamage.min != 0 && weaponItem.PhysicalDamage.max != 0)
         {
             dps = (weaponItem.PhysicalDamage.min + weaponItem.PhysicalDamage.max) / 2f * weaponItem.AttackSpeed;
@@ -198,6 +206,6 @@ public class EquipmentDetailWindow : MonoBehaviour
 
     public void OnEquipClick()
     {
-        callback?.Invoke(equip);   
+        callback?.Invoke(equip);
     }
 }

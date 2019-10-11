@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 
 [Serializable]
 public class SaveData
@@ -16,29 +17,31 @@ public class SaveData
     private readonly List<AbilityCoreSaveData> abilityCoreList = new List<AbilityCoreSaveData>();
     private readonly List<HeroSaveData> heroList = new List<HeroSaveData>();
     private readonly List<ArchetypeItemSaveData> archetypeItemList = new List<ArchetypeItemSaveData>();
+    private readonly Guid[][] heroTeamList = new Guid[PlayerStats.HERO_TEAM_MAX_NUM][];
     public int expStock;
 
     public void SaveAll()
     {
-        SavePlayerData();
         SaveEquipmentData();
         SaveAbilityCoreData();
         SaveArchetypeItemData();
         SaveHeroData();
+        SavePlayerData();
     }
 
     public void LoadAll()
     {
-        LoadPlayerData();
         LoadEquipmentData();
         LoadAbilityCoreData();
         LoadArchetypeItemData();
         LoadHeroData();
+        LoadPlayerData();
     }
 
     public void SavePlayerData()
     {
         PlayerStats ps = GameManager.Instance.PlayerStats;
+
         foreach (KeyValuePair<ConsumableType, int> pair in ps.consumables)
         {
             ConsumablesContainer c = consumableList.Find(x => x.consumable == pair.Key);
@@ -47,7 +50,21 @@ public class SaveData
             else
                 consumableList.Add(new ConsumablesContainer(pair.Key, pair.Value));
         }
+
         expStock = ps.ExpStock;
+
+        Array.Clear(heroTeamList, 0, PlayerStats.HERO_TEAM_MAX_NUM);
+        for (int i = 0; i < PlayerStats.HERO_TEAM_MAX_NUM; i++)
+        {
+            heroTeamList[i] = new Guid[PlayerStats.HERO_TEAM_MAX_NUM];
+            for (int j = 0; j < PlayerStats.HERO_TEAM_MAX_HEROES; j++)
+            {
+                if (ps.heroTeams[i][j] != null)
+                    heroTeamList[i][j] = ps.heroTeams[i][j].Id;
+                else
+                    heroTeamList[i][j] = Guid.Empty;
+            }
+        }
     }
 
     public void LoadPlayerData()
@@ -57,6 +74,30 @@ public class SaveData
         foreach (ConsumablesContainer c in consumableList)
             ps.consumables[c.consumable] = c.value;
         ps.SetExpStock(expStock);
+
+        if (heroTeamList != null)
+
+        for (int i = 0; i < PlayerStats.HERO_TEAM_MAX_NUM; i++)
+        {
+            if (heroTeamList[i] != null)
+            {
+                for (int j = 0; j < PlayerStats.HERO_TEAM_MAX_HEROES; j++)
+                {
+                    List<HeroData> heroes = ps.HeroList.ToList();
+                    if (heroTeamList[i][j] != Guid.Empty)
+                    {
+                        HeroData hero = heroes.Find(x => x.Id == heroTeamList[i][j]);
+                        if (hero != null)
+                        {
+                            ps.heroTeams[i][j] = hero;
+                            hero.assignedTeam = i;
+                            continue;
+                        }
+                    }
+                    ps.heroTeams[i][j] = null;
+                }
+            }
+        }
     }
 
     public void SaveAbilityCoreData()
@@ -379,7 +420,7 @@ public class SaveData
             baseId = id;
             affixValues = values.ToList();
             this.isCrafted = isCrafted;
-            if (triggervalues !=null)
+            if (triggervalues != null)
                 triggerValues = triggervalues.ToList();
         }
     }

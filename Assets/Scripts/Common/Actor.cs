@@ -6,6 +6,7 @@ using UnityEngine;
 public abstract class Actor : MonoBehaviour
 {
     public const float BASE_SHIELD_RESTORE_DELAY = 4.0f;
+    private const float SHIELD_RECHARGE_PROTECTION_TIME = -5.0f;
 
     public ActorData Data { get; protected set; }
     public float actorTimeScale = 1f;
@@ -62,8 +63,10 @@ public abstract class Actor : MonoBehaviour
     {
         UpdateStatusEffects();
         ApplyRegenEffects();
+
         if (Data.IsDead)
             Death();
+
         if (!gameObject.activeSelf)
             return;
         if (isMoving)
@@ -121,7 +124,8 @@ public abstract class Actor : MonoBehaviour
         {
             List<ActorEffect> existingStatus = statusEffects.FindAll(x => x.GetType() == statusEffect.GetType());
 
-            statusEffect.duration *= Data.AfflictedStatusDuration;
+            if (statusEffect.Source.GetActorType() != this.GetActorType())
+                statusEffect.duration *= Data.AfflictedStatusDuration;
 
             if (existingStatus.Count == 1 && statusEffect.MaxStacks == 1)
             {
@@ -147,10 +151,11 @@ public abstract class Actor : MonoBehaviour
                 return;
 
             statusEffects.Add(statusEffect);
+            //Debug.Log(Data.Name + " " + statusEffect + " " + statusEffect.GetSimpleEffectValue());
+            Data.UpdateActorData();
             statusEffect.OnApply();
             actorTags.Add(statusEffect.StatusTag);
         }
-        Data.UpdateActorData();
     }
 
     public void RemoveStatusEffect(ActorEffect statusEffect)
@@ -249,7 +254,7 @@ public abstract class Actor : MonoBehaviour
         healthBar.UpdateHealthBar(Data.MaximumHealth, Data.CurrentHealth, Data.MaximumManaShield, Data.CurrentManaShield);
     }
 
-    public float ModifyCurrentShield(float mod)
+    public float ModifyCurrentShield(float mod, bool interruptRecharge)
     {
         float remainingDamage;
 
@@ -275,9 +280,9 @@ public abstract class Actor : MonoBehaviour
             remainingDamage = 0;
         }
 
-        if (mod > 0)
+        if (mod > 0 && interruptRecharge && !Data.RechargeCannotBeStopped)
         {
-            Data.CurrentShieldDelay = Math.Max(BASE_SHIELD_RESTORE_DELAY * Data.ShieldRestoreDelayModifier, 0.5f);
+            Data.CurrentShieldDelay = Math.Max(BASE_SHIELD_RESTORE_DELAY * Data.ShieldRestoreDelayModifier, 1f);
         }
 
         healthBar.UpdateHealthBar(Data.MaximumHealth, Data.CurrentHealth, Data.MaximumManaShield, Data.CurrentManaShield);
@@ -289,22 +294,77 @@ public abstract class Actor : MonoBehaviour
     {
         if (Data.MaximumManaShield > 0)
         {
-            if (Data.CurrentShieldDelay > 0)
-                Data.CurrentShieldDelay -= Time.deltaTime;
+            float previousShieldDelay = Data.CurrentShieldDelay;
+            Data.CurrentShieldDelay -= Time.deltaTime;
+
+            if (Data.HasSpecialBonus(BonusType.SHIELD_RESTORE_CANNOT_BE_INTERRUPTED) && previousShieldDelay > 0f && Data.CurrentShieldDelay <= 0f)
+                Data.RechargeCannotBeStopped = true;
+            else if (Data.RechargeCannotBeStopped && Data.CurrentShieldDelay <= SHIELD_RECHARGE_PROTECTION_TIME)
+                Data.RechargeCannotBeStopped = false;
 
             float shieldModifier = -Data.ShieldRegenRate;
             if (Data.CurrentShieldDelay <= 0f && Data.CurrentManaShield < Data.MaximumManaShield)
                 shieldModifier += -Data.ShieldRestoreRate;
-            ModifyCurrentShield(shieldModifier * Time.deltaTime);
+            ModifyCurrentShield(shieldModifier * Time.deltaTime, false);
         }
         ModifyCurrentHealth(-Data.HealthRegenRate * Time.deltaTime);
+    }
+
+    public static bool DidTargetBlock(Actor target)
+    {
+        if (target.Data.BlockChance > 0)
+        {
+            if (target.Data.BlockChance == 1f || UnityEngine.Random.Range(0, 1f) < target.Data.BlockChance)
+                return true;
+        }
+        return false;
+    }
+
+    public static bool DidTargetDodge(Actor target, float accuracy)
+    {
+        if (target.Data.DodgeRating > 0)
+        {
+            float dodgePercent = 1f - (accuracy / (accuracy + target.Data.DodgeRating / 2f));
+            dodgePercent = Mathf.Min(dodgePercent, 85f);
+            if (UnityEngine.Random.Range(0, 100f) < dodgePercent)
+                return true;
+        }
+
+        return false;
+    }
+
+    public static bool DidTargetPhase(Actor target, AbilityType abilityType)
+    {
+        if (target.Data.AttackPhasing > 0 && abilityType == AbilityType.ATTACK)
+        {
+            if (target.Data.AttackPhasing == 100 || UnityEngine.Random.Range(0, 100) < (target.Data.AttackPhasing))
+                return true;
+        }
+        else if (target.Data.MagicPhasing > 0 && abilityType == AbilityType.SPELL)
+        {
+            if (target.Data.MagicPhasing == 100 || UnityEngine.Random.Range(0, 100) < (target.Data.MagicPhasing))
+                return true;
+        }
+
+        return false;
     }
 
     public void ApplyDamage(Dictionary<ElementType, float> damage, OnHitDataContainer onHitData, bool isHit, bool isFromSecondaryEffect, EffectType? sourceType = null)
     {
         float total = 0;
-        if (Data.IsDead)
+
+        if (Data.IsDead && isHit)
             return;
+
+        Dictionary<ElementType, float> damageTaken = new Dictionary<ElementType, float>(damage);
+
+        float overallDamageMod = Data.DamageTakenModifier;
+
+        if (isHit && !isFromSecondaryEffect)
+            overallDamageMod *= onHitData.directHitDamage;
+
+        if (isBoss)
+            overallDamageMod *= onHitData.vsBossDamage;
 
         if (damage.ContainsKey(ElementType.PHYSICAL))
         {
@@ -316,62 +376,92 @@ public abstract class Actor : MonoBehaviour
             float resistanceReductionRate = 1.0f - ((Data.GetResistance(ElementType.PHYSICAL) - onHitData.GetNegation(ElementType.PHYSICAL)) / 100f);
             float physicalReduction = armorReductionRate * resistanceReductionRate;
             //Debug.Log(Data.GetResistance(ElementType.PHYSICAL) + " " + onHitData.physicalNegation + " " + damage[ElementType.PHYSICAL]);
-            float physicalDamage = physicalReduction * damage[ElementType.PHYSICAL];
+            float physicalDamage = physicalReduction * damage[ElementType.PHYSICAL] * overallDamageMod;
             total += Math.Max(0, physicalDamage);
         }
 
         if (damage.ContainsKey(ElementType.FIRE))
         {
-            float fireDamage = (1f - (Data.GetResistance(ElementType.FIRE) - onHitData.GetNegation(ElementType.FIRE)) / 100f) * damage[ElementType.FIRE];
+            float fireDamage = (1f - (Data.GetResistance(ElementType.FIRE) - onHitData.GetNegation(ElementType.FIRE)) / 100f) * damage[ElementType.FIRE] * overallDamageMod;
             total += Math.Max(0, fireDamage);
         }
 
         if (damage.ContainsKey(ElementType.COLD))
         {
-            float coldDamage = (1f - (Data.GetResistance(ElementType.COLD) - onHitData.GetNegation(ElementType.COLD)) / 100f) * damage[ElementType.COLD];
+            float coldDamage = (1f - (Data.GetResistance(ElementType.COLD) - onHitData.GetNegation(ElementType.COLD)) / 100f) * damage[ElementType.COLD] * overallDamageMod;
             total += Math.Max(0, coldDamage);
-            damage[ElementType.COLD] = coldDamage;
+            //Debug.Log(damage[ElementType.COLD] + " " + coldDamage);
+            damageTaken[ElementType.COLD] = coldDamage;
         }
 
         if (damage.ContainsKey(ElementType.LIGHTNING))
         {
-            float lightningDamage = (1f - (Data.GetResistance(ElementType.LIGHTNING) - onHitData.GetNegation(ElementType.LIGHTNING)) / 100f) * damage[ElementType.LIGHTNING];
+            float lightningDamage = (1f - (Data.GetResistance(ElementType.LIGHTNING) - onHitData.GetNegation(ElementType.LIGHTNING)) / 100f) * damage[ElementType.LIGHTNING] * overallDamageMod;
             total += Math.Max(0, lightningDamage);
         }
 
         if (damage.ContainsKey(ElementType.EARTH))
         {
-            float earthDamage = (1f - (Data.GetResistance(ElementType.EARTH) - onHitData.GetNegation(ElementType.EARTH)) / 100f) * damage[ElementType.EARTH];
+            float earthDamage = (1f - (Data.GetResistance(ElementType.EARTH) - onHitData.GetNegation(ElementType.EARTH)) / 100f) * damage[ElementType.EARTH] * overallDamageMod;
             total += Math.Max(0, earthDamage);
-            damage[ElementType.EARTH] = earthDamage;
+            damageTaken[ElementType.EARTH] = earthDamage;
         }
 
         if (damage.ContainsKey(ElementType.DIVINE))
         {
-            float divineDamage = (1f - (Data.GetResistance(ElementType.DIVINE) - onHitData.GetNegation(ElementType.DIVINE)) / 100f) * damage[ElementType.DIVINE];
+            float divineDamage = (1f - (Data.GetResistance(ElementType.DIVINE) - onHitData.GetNegation(ElementType.DIVINE)) / 100f) * damage[ElementType.DIVINE] * overallDamageMod;
             total += Math.Max(0, divineDamage);
-            damage[ElementType.DIVINE] = divineDamage;
+            damageTaken[ElementType.DIVINE] = divineDamage;
         }
 
         if (damage.ContainsKey(ElementType.VOID))
         {
-            float voidDamage = (1f - (Data.GetResistance(ElementType.VOID) - onHitData.GetNegation(ElementType.VOID)) / 100f) * damage[ElementType.VOID];
+            float voidDamage = (1f - (Data.GetResistance(ElementType.VOID) - onHitData.GetNegation(ElementType.VOID)) / 100f) * damage[ElementType.VOID] * overallDamageMod;
             total += Math.Max(0, voidDamage);
         }
 
-        if (isHit && !isFromSecondaryEffect)
-            total *= onHitData.directHitDamage;
+        if (total == 0)
+            return;
 
-        if (isBoss)
-            total *= onHitData.vsBossDamage;
-
-        if (sourceType != EffectType.POISON)
-            total = ModifyCurrentShield(total);
+        if (sourceType == EffectType.POISON)
+        {
+            total = ModifyCurrentShield(total * Data.PoisonResistance, true) + (total * (1f - Data.PoisonResistance));
+        }
+        else
+        {
+            total = ModifyCurrentShield(total, true);
+        }
 
         if (Data.HealthIsHitsToKill && isHit && total >= 1f)
+        {
             ModifyCurrentHealth(1);
+        }
         else
+        {
+            MassShieldAura massShield = (MassShieldAura)GetStatusEffect(EffectType.MASS_SHIELD_AURA);
+            if (massShield != null && massShield.Source != this)
+            {
+                total = massShield.TransferDamage(total * massShield.DamageTransferRate) + total * (1f - massShield.DamageTransferRate);
+            }
+
+            BodyguardAura bodyguard = (BodyguardAura)GetStatusEffect(EffectType.BODYGUARD_AURA);
+            if (isHit && bodyguard != null && bodyguard.Source != this)
+            {
+                if (bodyguard.TransferDamage(total, out float damageMod))
+                {
+                    total *= 1f - bodyguard.DamageTransferRate;
+                    Debug.Log(damageMod + " guard");
+                    foreach (ElementType element in Enum.GetValues(typeof(ElementType)))
+                    {
+                        if (damage.ContainsKey(element))
+                            damage[element] *= damageMod;
+                    }
+                    bodyguard.Source.ApplyAfterHitEffects(damage, onHitData);
+                }
+            }
+
             ModifyCurrentHealth(total);
+        }
 
         if (Data.IsDead)
         {
@@ -381,7 +471,7 @@ public abstract class Actor : MonoBehaviour
         {
             if (Data.IsDead)
                 onHitData.ApplyTriggerEffects(TriggerType.ON_HIT_KILL, this);
-            ApplyAfterHitEffects(damage, onHitData);
+            ApplyAfterHitEffects(damageTaken, onHitData);
         }
     }
 
@@ -411,7 +501,7 @@ public abstract class Actor : MonoBehaviour
         if (damage.ContainsKey(ElementType.COLD) && damage[ElementType.COLD] > 0 && onHitData.DidEffectProc(EffectType.CHILL, Data.AfflictedStatusAvoidance))
         {
             float percentageDealt = damage[ElementType.COLD] / Data.MaximumHealth;
-            
+
             float chillEffectPower = ChillEffect.BASE_CHILL_EFFECT * Math.Min(percentageDealt / (ChillEffect.BASE_CHILL_THRESHOLD * Data.AfflictedStatusThreshold), 1f) * onHitData.GetEffectEffectiveness(EffectType.CHILL);
             //Debug.Log(damage[ElementType.COLD] + " " + percentageDealt + " " + chillEffectPower);
             onHitData.ApplyEffectToTarget(this, EffectType.CHILL, chillEffectPower);

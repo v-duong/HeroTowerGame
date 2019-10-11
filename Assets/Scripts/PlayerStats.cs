@@ -3,6 +3,8 @@ using System.Collections.Generic;
 
 public class PlayerStats
 {
+    public const int HERO_TEAM_MAX_NUM = 5;
+    public const int HERO_TEAM_MAX_HEROES = 5;
     public readonly static int maxEquipInventory = 250;
     public readonly static int maxArchetypeInventory = 100;
     public readonly static int maxAbilityInventory = 100;
@@ -73,15 +75,30 @@ public class PlayerStats
         abilityStorageInventory = new List<AbilityCoreItem>();
         heroList = new List<HeroData>();
         heroTeams = new List<HeroData[]>();
-        for (int i = 0; i < 5; i++)
+        for (int i = 0; i < HERO_TEAM_MAX_NUM; i++)
         {
-            heroTeams.Add(new HeroData[5]);
+            heroTeams.Add(new HeroData[HERO_TEAM_MAX_HEROES]);
         }
     }
 
     public Equipment GetEquipmentByGuid(Guid id)
     {
         return equipmentInventory.Find(x => x.Id == id);
+    }
+
+    public void SetHeroToTeamSlot(HeroData hero, int selectedTeam, int selectedSlot)
+    {
+        if (hero.assignedTeam != -1)
+        {
+            for (int i = 0; i < 5; i++)
+            {
+                if (heroTeams[hero.assignedTeam][i] == hero)
+                    heroTeams[hero.assignedTeam][i] = null;
+            }
+        }
+        heroTeams[selectedTeam][selectedSlot] = hero;
+        hero.assignedTeam = selectedTeam;
+        
     }
 
     public bool AddEquipmentToInventory(Equipment newEquipment)

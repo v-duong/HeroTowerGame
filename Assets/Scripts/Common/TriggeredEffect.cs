@@ -57,7 +57,7 @@ public class TriggeredEffect
                     ApplyBuffEffect(target, source, buffName);
                     return;
                 default:
-                    ActorEffect.ApplyEffectToTarget(target, source, BaseEffect.effectType, Value, BaseEffect.effectDuration, BaseEffect.effectElement);
+                    ActorEffect.ApplyEffectToTarget(target, source, BaseEffect.effectType, Value, BaseEffect.effectDuration, 1.0f, BaseEffect.effectElement);
                     return;
             }
     }

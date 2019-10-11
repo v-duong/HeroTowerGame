@@ -4,7 +4,6 @@ using UnityEngine;
 
 public class Projectile : MonoBehaviour
 {
-    public AbilityBase abilityBase;
     public float homingRate = 0f;
     public Actor currentTarget = null;
     public int pierceCount = 0;
@@ -12,18 +11,17 @@ public class Projectile : MonoBehaviour
     public float currentSpeed;
     public float timeToLive = 2.5f;
     public List<Actor> sharedHitList;
-    public Vector3 currentHeading { get; private set; }
+    public Vector3 CurrentHeading { get; private set; }
     public LinkedActorAbility linkedAbility;
     public AbilityOnHitDataContainer onHitData;
-    public float inheritedDamagePercent;
     public bool isOffscreen = false;
     public ParticleSystem particles;
     public int layerMask;
-    private Collider2D[] hits = new Collider2D[12];
+    private readonly Collider2D[] hits = new Collider2D[12];
 
     //private ParticleSystem.EmitParams emitParams = new ParticleSystem.EmitParams();
     //private float particleWaitTime = 0;
-    private List<Actor> targetsHit = new List<Actor>();
+    private readonly List<Actor> targetsHit = new List<Actor>();
 
     //public List<AbilityEffect> attachedEffects;
 
@@ -47,6 +45,14 @@ public class Projectile : MonoBehaviour
         timeToLive -= Time.fixedDeltaTime;
         if (timeToLive <= 0)
         {
+            if (linkedAbility != null && linkedAbility.LinkedAbilityData.type == AbilityLinkType.ON_FADE)
+            {
+                if (currentTarget != null)
+                    linkedAbility.Fire(transform.position, currentTarget);
+                else
+                    linkedAbility.Fire(transform.position, CurrentHeading + transform.position);
+            }
+
             ReturnToPool();
         }
 
@@ -73,7 +79,7 @@ public class Projectile : MonoBehaviour
         //float angle = Vector3.Angle(transform.position, transform.position + currentHeading);
         //transform.rotation = Quaternion.AngleAxis(angle, Vector3.forward);
 
-        transform.up = (transform.position + currentHeading * currentSpeed) - transform.position;
+        transform.up = (transform.position + CurrentHeading * currentSpeed) - transform.position;
     }
 
     public void OnTriggerEnter2D(Collider2D collision)
@@ -85,7 +91,13 @@ public class Projectile : MonoBehaviour
 
         if (actor != null && !IsTargetAlreadyHit(actor) && !actor.Data.IsDead)
         {
-            bool didProjHit = onHitData.sourceAbility.ApplyDamageToActor(actor, true);
+            float damageModifier = 1f;
+            if (onHitData.SourceActor.Data.HasSpecialBonus(BonusType.PROJECTILE_DAMAGE_SCALES_WITH_DISTANCE))
+            {
+                damageModifier += Math.Min(Vector2.Distance(onHitData.SourceActor.transform.position, transform.position) * 0.03f, 0.3f);
+                Debug.Log(damageModifier);
+            }
+            bool didProjHit = onHitData.sourceAbility.ApplyDamageToActor(actor, true, damageModifier);
             AddToAlreadyHit(actor);
             currentTarget = null;
 
@@ -110,7 +122,7 @@ public class Projectile : MonoBehaviour
             }
             else if (pierceCount < 0 && chainCount <= 0)
             {
-                if (linkedAbility != null && linkedAbility.LinkedAbilityData.type == AbilityLinkType.ON_FINAL_HIT)
+                if (linkedAbility != null && (linkedAbility.LinkedAbilityData.type == AbilityLinkType.ON_FINAL_HIT || linkedAbility.LinkedAbilityData.type == AbilityLinkType.ON_FADE))
                 {
                     linkedAbility.Fire(transform.position, actor);
                 }
@@ -144,7 +156,7 @@ public class Projectile : MonoBehaviour
             if (possibleTargets[index] != null)
             {
                 currentTarget = possibleTargets[index];
-                currentHeading = (possibleTargets[index].transform.position - this.transform.position).normalized;
+                CurrentHeading = (possibleTargets[index].transform.position - this.transform.position).normalized;
             }
         }
         else if (hits.Length > 0)
@@ -153,7 +165,7 @@ public class Projectile : MonoBehaviour
             if (hits[index] != null)
             {
                 currentTarget = null;
-                currentHeading = (hits[index].transform.position - this.transform.position).normalized;
+                CurrentHeading = (hits[index].transform.position - this.transform.position).normalized;
             }
         }
     }
@@ -181,16 +193,16 @@ public class Projectile : MonoBehaviour
         //this.transform.position += currentHeading.normalized * currentSpeed * dt;
         if (currentTarget != null)
         {
-            Vector3 headingShift = Vector3.RotateTowards(currentHeading.normalized, (currentTarget.transform.position - transform.position).normalized, homingRate * Mathf.Deg2Rad * dt, 1);
-            currentHeading = headingShift.normalized;
+            Vector3 headingShift = Vector3.RotateTowards(CurrentHeading.normalized, (currentTarget.transform.position - transform.position).normalized, homingRate * Mathf.Deg2Rad * dt, 1);
+            CurrentHeading = headingShift.normalized;
         }
-        transform.Translate(currentHeading * currentSpeed * dt, Space.World);
+        transform.Translate(CurrentHeading * currentSpeed * dt, Space.World);
         return;
     }
 
     public void SetHeading(Vector3 heading)
     {
-        currentHeading = heading.normalized;
+        CurrentHeading = heading.normalized;
     }
 
     public void ReturnToPool()

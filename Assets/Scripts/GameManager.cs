@@ -46,6 +46,10 @@ public class GameManager : MonoBehaviour
             equipment.RerollAffixesAtRarity();
             PlayerStats.AddEquipmentToInventory(equipment);
         }
+        foreach (ArchetypeBase archetypeBase in ResourceManager.Instance.ArchetypeBasesList)
+        {
+            PlayerStats.AddArchetypeToInventory(ArchetypeItem.CreateArchetypeItem(archetypeBase, 100));
+        }
     }
 
     public ConsumableType GetRandomConsumable()

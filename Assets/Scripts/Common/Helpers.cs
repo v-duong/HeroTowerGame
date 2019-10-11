@@ -65,7 +65,7 @@ public static class Helpers
         {
             multi.Add(BonusType.PROJECTILE_DAMAGE);
         }
-        else if (shotType == AbilityShotType.HITSCAN_SINGLE)
+        else if (shotType == AbilityShotType.HITSCAN_SINGLE && tags.Contains(GroupType.RANGED_ATTACK))
         {
             multi.Add(BonusType.PROJECTILE_DAMAGE);
         }
@@ -292,7 +292,6 @@ public static class Helpers
                 weaponType = "BOW";
                 break;
 
-            case GroupType.GRIMOIRE:
             case GroupType.WAND:
             case GroupType.STAFF:
             case GroupType.SPEAR:

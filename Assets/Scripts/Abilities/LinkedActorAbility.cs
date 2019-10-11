@@ -83,4 +83,30 @@ public class LinkedActorAbility : ActorAbility
                 break;
         }
     }
+
+    public void Fire(Vector3 origin, Vector3 target)
+    {
+        switch (abilityBase.abilityShotType)
+        {
+            case AbilityShotType.PROJECTILE_NOVA:
+            case AbilityShotType.PROJECTILE:
+                FireProjectile(origin, null, target);
+                break;
+
+            case AbilityShotType.ARC_AOE:
+            case AbilityShotType.NOVA_ARC_AOE:
+                FireArcAoe(origin, target);
+                break;
+
+            case AbilityShotType.RADIAL_AOE:
+            case AbilityShotType.NOVA_AOE:
+                FireRadialAoe(origin, target);
+                break;
+            case AbilityShotType.LINEAR_AOE:
+                break;
+
+            default:
+                break;
+        }
+    }
 }

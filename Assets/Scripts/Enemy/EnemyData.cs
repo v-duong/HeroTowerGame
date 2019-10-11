@@ -30,6 +30,7 @@ public class EnemyData : ActorData
     {
         BaseData = enemyBase;
         Name = enemyBase.idName;
+        Level = level;
         CurrentActor = actor;
         OnHitData.SourceActor = actor;
         BaseHealth = (float)(Helpers.GetEnemyHealthScaling(level) * enemyBase.healthScaling);
@@ -42,6 +43,8 @@ public class EnemyData : ActorData
         {
             ElementData[element] = enemyBase.resistances[(int)element];
         }
+
+        CurrentShieldDelay = 0f;
     }
 
     public override void UpdateActorData()
@@ -59,6 +62,12 @@ public class EnemyData : ActorData
             float shieldPercent = CurrentManaShield / MaximumManaShield;
             CurrentManaShield = MaximumManaShield * shieldPercent;
         }
+
+        foreach (ActorAbility ability in abilities)
+        {
+            ability.UpdateAbilityStats(this);
+        }
+
         movementSpeed = GetMultiStatBonus(GroupTypes, BonusType.MOVEMENT_SPEED).CalculateStat(BaseData.movementSpeed);
 
         Armor = Math.Max(GetMultiStatBonus(GroupTypes, BonusType.GLOBAL_ARMOR).CalculateStat(BaseArmor), 0);
@@ -71,10 +80,13 @@ public class EnemyData : ActorData
         AfflictedStatusDamageResistance = 1f - AfflictedStatusDamageResistance;
         AfflictedStatusThreshold = Math.Max(GetMultiStatBonus(GroupTypes, BonusType.AFFLICTED_STATUS_THRESHOLD).CalculateStat(1f), 0.01f);
 
-        foreach (ActorAbility ability in abilities)
-        {
-            ability.UpdateAbilityStats(this);
-        }
+        float BlockChanceCap = Math.Min(GetMultiStatBonus(GroupTypes, BonusType.MAX_SHIELD_BLOCK_CHANCE).CalculateStat(BLOCK_CHANCE_CAP), 100f);
+        float BlockProtectionCap = Math.Min(GetMultiStatBonus(GroupTypes, BonusType.MAX_SHIELD_BLOCK_PROTECTION).CalculateStat(BLOCK_PROTECTION_CAP), 100f);
+
+        BlockChance = Math.Min(GetMultiStatBonus(GroupTypes, BonusType.SHIELD_BLOCK_CHANCE).CalculateStat(0f), BlockChanceCap) / 100f;
+        BlockProtection = Math.Min(GetMultiStatBonus(GroupTypes, BonusType.SHIELD_BLOCK_PROTECTION).CalculateStat(0f), BlockProtectionCap) / 100f;
+
+
 
         base.UpdateActorData();
     }

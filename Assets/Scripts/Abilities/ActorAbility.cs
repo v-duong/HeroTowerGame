@@ -96,7 +96,8 @@ public class ActorAbility
 
         auraBuffBonus = new AuraBuffBonusContainer
         {
-            cachedAuraBonuses = new List<Tuple<BonusType, ModifyType, float>>()
+            cachedAuraBonuses = new List<Tuple<BonusType, ModifyType, float>>(),
+            cachedAuraSpecialEffects = new List<Tuple<EffectType, float>>()
         };
 
         if (abilityBase.targetType == AbilityTargetType.ENEMY)
@@ -190,14 +191,24 @@ public class ActorAbility
     public virtual void UpdateAbilityStats(HeroData data)
     {
         IEnumerable<GroupType> tags = data.GroupTypes.Union(abilityBase.GetGroupTypes());
-        if (abilityBase.weaponRestrictions.Count > 0)
+        if (abilityBase.requiredRestrictions.Count > 0)
         {
-            if (!tags.Intersect(abilityBase.weaponRestrictions).Any())
+            if (tags.Intersect(abilityBase.requiredRestrictions).Count() != abilityBase.requiredRestrictions.Count)
             {
                 IsUsable = false;
                 return;
             }
         }
+
+        if (abilityBase.singleRequireRestrictions.Count > 0)
+        {
+            if (!tags.Intersect(abilityBase.singleRequireRestrictions).Any())
+            {
+                IsUsable = false;
+                return;
+            }
+        }
+
         IsUsable = true;
 
         UpdateAbilityBonusProperties(tags);
@@ -233,19 +244,55 @@ public class ActorAbility
 
     private void UpdateAbilityBuffData(ActorData data, IEnumerable<GroupType> tags)
     {
+        auraBuffBonus.auraEffectMultiplier = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.AURA_EFFECT).CalculateStat(1f);
+
         if (abilityBase.abilityType == AbilityType.AURA || abilityBase.abilityType == AbilityType.SELF_BUFF)
         {
             auraBuffBonus.cachedAuraBonuses = new List<Tuple<BonusType, ModifyType, float>>();
+            auraBuffBonus.cachedAuraSpecialEffects = new List<Tuple<EffectType, float>>();
             auraBuffBonus.auraStrength = 0;
             foreach (AbilityScalingAddedEffect effect in abilityBase.appliedEffects)
             {
-                float buffValue = effect.initialValue + effect.growthValue * abilityLevel;
-                auraBuffBonus.cachedAuraBonuses.Add(new Tuple<BonusType, ModifyType, float>(effect.bonusType, effect.modifyType, buffValue));
-                auraBuffBonus.auraStrength += buffValue;
+                if (effect.effectType == EffectType.BUFF || effect.effectType == EffectType.DEBUFF)
+                {
+                    float buffValue = (effect.initialValue + effect.growthValue * abilityLevel) * auraBuffBonus.auraEffectMultiplier;
+                    auraBuffBonus.cachedAuraBonuses.Add(new Tuple<BonusType, ModifyType, float>(effect.bonusType, effect.modifyType, buffValue));
+                    auraBuffBonus.auraStrength += buffValue;
+
+                    if (!GameManager.Instance.isInBattle)
+                    {
+                        if ((abilityBase.abilityType == AbilityType.AURA && abilityBase.targetType == AbilityTargetType.ALLY) || abilityBase.abilityType == AbilityType.SELF_BUFF)
+                            data.AddTemporaryBonus(buffValue, effect.bonusType, effect.modifyType, true);
+                    }
+                }
+                else
+                {
+                    auraBuffBonus.cachedAuraSpecialEffects.Add(new Tuple<EffectType, float>(effect.effectType, effect.initialValue + effect.growthValue * abilityLevel));
+                }
+            }
+
+            foreach (var damagebase in abilityBase.damageLevels)
+            {
+                if (!Enum.TryParse("GLOBAL_" + damagebase.Key + "_DAMAGE_MIN", out BonusType damageTypeMin))
+                    continue;
+
+                if (!Enum.TryParse("GLOBAL_" + damagebase.Key + "_DAMAGE_MAX", out BonusType damageTypeMax))
+                    continue;
+
+                float minVal = damagebase.Value.damage[abilityLevel].min * auraBuffBonus.auraEffectMultiplier;
+                float maxVal = damagebase.Value.damage[abilityLevel].max * auraBuffBonus.auraEffectMultiplier;
+
+                auraBuffBonus.cachedAuraBonuses.Add(new Tuple<BonusType, ModifyType, float>(damageTypeMin, ModifyType.FLAT_ADDITION, minVal));
+                auraBuffBonus.cachedAuraBonuses.Add(new Tuple<BonusType, ModifyType, float>(damageTypeMax, ModifyType.FLAT_ADDITION, maxVal));
+                auraBuffBonus.auraStrength += minVal + maxVal;
 
                 if (!GameManager.Instance.isInBattle)
                 {
-                    data.AddTemporaryBonus(buffValue, effect.bonusType, effect.modifyType, true);
+                    if ((abilityBase.abilityType == AbilityType.AURA && abilityBase.targetType == AbilityTargetType.ALLY) || abilityBase.abilityType == AbilityType.SELF_BUFF)
+                    {
+                        data.AddTemporaryBonus(minVal, damageTypeMin, ModifyType.FLAT_ADDITION, true);
+                        data.AddTemporaryBonus(maxVal, damageTypeMax, ModifyType.FLAT_ADDITION, true);
+                    }
                 }
             }
         }
@@ -270,14 +317,21 @@ public class ActorAbility
         }
     }
 
-    protected void UpdateShotParameters(HeroData data, IEnumerable<GroupType> tags)
+    protected void UpdateShotParameters(ActorData data, IEnumerable<GroupType> tags)
     {
         if (abilityBase.abilityType == AbilityType.ATTACK && abilityBase.useWeaponRangeForAOE)
         {
-            if (data.GetEquipmentInSlot(EquipSlotType.WEAPON) is Weapon weapon)
-                AreaRadius = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.AREA_RADIUS, BonusType.MELEE_ATTACK_RANGE).CalculateStat(weapon.WeaponRange);
-            else
-                AreaRadius = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.AREA_RADIUS, BonusType.MELEE_ATTACK_RANGE).CalculateStat(1f);
+            if (data is HeroData hero)
+            {
+                if (hero.GetEquipmentInSlot(EquipSlotType.WEAPON) is Weapon weapon)
+                    AreaRadius = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.AREA_RADIUS, BonusType.MELEE_ATTACK_RANGE).CalculateStat(weapon.WeaponRange);
+                else
+                    AreaRadius = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.AREA_RADIUS, BonusType.MELEE_ATTACK_RANGE).CalculateStat(1f);
+            }
+            else if (data is EnemyData enemy)
+            {
+                AreaRadius = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.AREA_RADIUS, BonusType.MELEE_ATTACK_RANGE).CalculateStat(TargetRange);
+            }
         }
         else
             AreaRadius = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.AREA_RADIUS).CalculateStat(abilityBase.areaRadius);
@@ -294,11 +348,20 @@ public class ActorAbility
         ProjectileSpeed = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.PROJECTILE_SPEED).CalculateStat(abilityBase.projectileSpeed);
 
         if (abilityBase.GetGroupTypes().Contains(GroupType.CANNOT_MODIFY_PROJECTILE_COUNT))
+        {
             ProjectileCount = abilityBase.projectileCount;
+        }
         else if (abilityBase.abilityShotType == AbilityShotType.HITSCAN_MULTI)
-            ProjectileCount = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.HITSCAN_MULTI_TARGET_COUNT).CalculateStat(abilityBase.projectileCount);
+        {
+            if (abilityBase.GetGroupTypes().Contains(GroupType.PROJECTILE))
+                ProjectileCount = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.HITSCAN_MULTI_TARGET_COUNT, BonusType.PROJECTILE_COUNT).CalculateStat(abilityBase.projectileCount);
+            else
+                ProjectileCount = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.HITSCAN_MULTI_TARGET_COUNT).CalculateStat(abilityBase.projectileCount);
+        }
         else
+        {
             ProjectileCount = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.PROJECTILE_COUNT).CalculateStat(abilityBase.projectileCount);
+        }
 
         if (abilityBase.abilityShotType == AbilityShotType.HITSCAN_SINGLE || abilityBase.abilityShotType == AbilityShotType.HITSCAN_MULTI)
         {
@@ -321,26 +384,11 @@ public class ActorAbility
         if (abilityBase.abilityShotType == AbilityShotType.PROJECTILE)
         {
             ProjectileHoming = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.PROJECTILE_HOMING).CalculateStat(15f);
-        } else
+        }
+        else
         {
             ProjectileHoming = 0;
         }
-    }
-
-    protected void UpdateShotParameters(EnemyData data, IEnumerable<GroupType> tags)
-    {
-        AreaRadius = Math.Max(data.GetMultiStatBonus(abilityBonuses, tags, BonusType.AREA_RADIUS).CalculateStat(abilityBase.areaRadius), 0.1f);
-        AreaLength = Math.Max(data.GetMultiStatBonus(abilityBonuses, tags, BonusType.AREA_RADIUS).CalculateStat(abilityBase.areaLength), 1f);
-        AreaScaling = AreaRadius / abilityBase.areaRadius;
-        if (abilityBase.abilityType == AbilityType.AURA || abilityBase.abilityType == AbilityType.SELF_BUFF)
-        {
-            TargetRange = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.AURA_RANGE).CalculateStat(abilityBase.targetRange);
-            return;
-        }
-
-        ProjectileSpeed = Math.Max(data.GetMultiStatBonus(abilityBonuses, tags, BonusType.PROJECTILE_SPEED).CalculateStat(abilityBase.projectileSpeed), 0.5f);
-        ProjectilePierce = Math.Max(data.GetMultiStatBonus(abilityBonuses, tags, BonusType.PROJECTILE_PIERCE).CalculateStat(0), 0);
-        ProjectileCount = Math.Max(data.GetMultiStatBonus(abilityBonuses, tags, BonusType.PROJECTILE_COUNT).CalculateStat(abilityBase.projectileCount), 1);
     }
 
     protected void UpdateTypeParameters(HeroData data, IEnumerable<GroupType> tags)
@@ -498,9 +546,6 @@ public class ActorAbility
         }
 
         HashSet<GroupType> nonWeaponTags = data.GetGroupTypes(false);
-
-        if (AbilityOwner != null)
-            nonWeaponTags.UnionWith(AbilityOwner.GetActorTags());
 
         HashSet<GroupType> mainHandTags = new HashSet<GroupType>(nonWeaponTags);
 
@@ -804,37 +849,53 @@ public class ActorAbility
         if (abilityBase.abilityType == AbilityType.AURA || abilityBase.abilityType == AbilityType.SELF_BUFF)
             return;
 
-        StatBonus minBonus, maxBonus, multiBonus;
+        int[] mainConvertedDamageMin = new int[7];
+        int[] mainConvertedDamageMax = new int[7];
+
         float flatDamageMod = abilityBase.flatDamageMultiplier;
         AbilityType abilityType = abilityBase.abilityType;
 
         foreach (ElementType element in Enum.GetValues(typeof(ElementType)))
         {
-            float minDamage = 0, maxDamage = 0;
+            mainDamageBase[element].baseMin = 0;
+            mainDamageBase[element].baseMax = 0;
+
             if (damageLevels.ContainsKey(element))
             {
                 MinMaxRange abilityBaseDamage = damageLevels[element].damage[abilityLevel];
-                minDamage = abilityBaseDamage.min;
-                maxDamage = abilityBaseDamage.max;
+
+                if (abilityBase.abilityType == AbilityType.ATTACK && element == ElementType.PHYSICAL)
+                {
+                    flatDamageMod = abilityBase.weaponMultiplier + abilityBase.weaponMultiplierScaling * 50;
+                    mainDamageBase[element].baseMin = (abilityBaseDamage.min + data.minAttackDamage) * flatDamageMod;
+                    mainDamageBase[element].baseMax = (abilityBaseDamage.max + data.maxAttackDamage) * flatDamageMod;
+                }
+                else
+                {
+                    mainDamageBase[element].baseMin = abilityBaseDamage.min;
+                    mainDamageBase[element].baseMax = abilityBaseDamage.max;
+                }
             }
-            else if (abilityBase.abilityType == AbilityType.ATTACK)
-            {
-                flatDamageMod = abilityBase.weaponMultiplier + abilityBase.weaponMultiplierScaling * 50;
-                minDamage = data.minAttackDamage;
-                maxDamage = data.maxAttackDamage;
-            }
+
+            IList<GroupType> damageTags = abilityBase.GetGroupTypes();
+            HashSet<GroupType> mainHandTags = AbilityOwner.GetActorTagsAndDataTags();
 
             HashSet<BonusType> min = new HashSet<BonusType>();
             HashSet<BonusType> max = new HashSet<BonusType>();
             HashSet<BonusType> multi = new HashSet<BonusType>();
 
-            Helpers.GetGlobalAndFlatDamageTypes(element, abilityType, abilityBase.abilityShotType, abilityBase.GetGroupTypes(), min, max, multi);
+            Helpers.GetGlobalAndFlatDamageTypes(element, abilityBase.abilityType, abilityBase.abilityShotType, damageTags, min, max, multi);
+            multi.UnionWith(Helpers.GetMultiplierTypes(abilityBase.abilityType, element));
 
-            minBonus = data.GetMultiStatBonus(abilityBonuses, tags, min.ToArray());
-            maxBonus = data.GetMultiStatBonus(abilityBonuses, tags, max.ToArray());
-            multiBonus = data.GetMultiStatBonus(abilityBonuses, tags, multi.ToArray());
+            mainDamageBase[element].ClearBonuses();
 
-            mainDamageBase[element].CalculateRange(abilityBase.flatDamageMultiplier, finalDamageModifier);
+            data.GetMultiStatBonus(mainDamageBase[element].minBonus, abilityBonuses, mainHandTags, min.ToArray());
+            data.GetMultiStatBonus(mainDamageBase[element].maxBonus, abilityBonuses, mainHandTags, max.ToArray());
+            data.GetMultiStatBonus(mainDamageBase[element].multiplierBonus, abilityBonuses, mainHandTags, multi.ToArray());
+
+            mainDamageBase[element].CalculateRange(flatDamageMod, finalDamageModifier);
+
+            //Debug.Log(mainDamageBase[element].calculatedRange.min + " " + mainDamageBase[element].calculatedRange.max + " " + element);
         }
     }
 
@@ -876,7 +937,7 @@ public class ActorAbility
         }
     }
 
-    public Dictionary<ElementType, float> CalculateDamageValues(Actor target, Actor source)
+    public Dictionary<ElementType, float> CalculateDamageValues(Actor target, Actor source, float blockDamageModifier)
     {
         var values = Enum.GetValues(typeof(ElementType));
         float critChance, criticalDamage;
@@ -1003,11 +1064,13 @@ public class ActorAbility
         foreach (ElementType elementType in values)
         {
             float damage = UnityEngine.Random.Range(minDamage[(int)elementType] + convertedMinDamage[(int)elementType], maxDamage[(int)elementType] + convertedMaxDamage[(int)elementType] + 1);
+            if (damage == 0)
+                continue;
 
             if (isCrit)
                 damage *= criticalDamage;
 
-            returnDict.Add(elementType, damage * abilityBase.hitDamageModifier);
+            returnDict.Add(elementType, damage * abilityBase.hitDamageModifier * blockDamageModifier);
         }
 
         if (DualWielding && AlternatesAttacks)
@@ -1025,8 +1088,7 @@ public class ActorAbility
                     firingRoutine = FiringRoutine_Aura();
                 else if (abilityBase.abilityType == AbilityType.SELF_BUFF)
                 {
-                    FiringRoutine_Aura();
-                    return;
+                    firingRoutine = FiringRoutine_Aura();
                 }
                 else
                     firingRoutine = FiringRoutine_Attack();
@@ -1121,7 +1183,7 @@ public class ActorAbility
 
                 case AbilityType.SELF_BUFF:
                     ApplyAuraBuff(AbilityOwner);
-                    break;
+                    yield break;
 
                 default:
                     break;
@@ -1133,29 +1195,37 @@ public class ActorAbility
 
     protected void ApplyAuraBuff(Actor target)
     {
-        StatBonusBuffEffect buff = null;
-        List<StatBonusBuffEffect> buffs = target.GetBuffStatusEffect(abilityBase.idName);
-        if (buffs.Count > 0)
-            buff = buffs[0];
-
-        if (buff != null)
+        if (auraBuffBonus.cachedAuraBonuses.Count > 0)
         {
-            if (auraBuffBonus.auraStrength == buff.BuffPower)
+            StatBonusBuffEffect buff = null;
+            List<StatBonusBuffEffect> buffs = target.GetBuffStatusEffect(abilityBase.idName);
+            if (buffs.Count > 0)
+                buff = buffs[0];
+
+            if (buff != null)
             {
-                buff.RefreshDuration(0.75f);
-                return;
+                if (auraBuffBonus.auraStrength == buff.BuffPower)
+                {
+                    buff.RefreshDuration(0.75f);
+                    return;
+                }
+                else if (auraBuffBonus.auraStrength < buff.BuffPower)
+                {
+                    return;
+                }
+                else
+                {
+                    target.RemoveStatusEffect(buff);
+                }
             }
-            else if (auraBuffBonus.auraStrength < buff.BuffPower)
-            {
-                return;
-            }
-            else
-            {
-                target.RemoveStatusEffect(buff);
-            }
+
+            target.AddStatusEffect(new StatBonusBuffEffect(target, AbilityOwner, auraBuffBonus.cachedAuraBonuses, 0.75f, abilityBase.idName, BuffType));
         }
 
-        target.AddStatusEffect(new StatBonusBuffEffect(target, AbilityOwner, auraBuffBonus.cachedAuraBonuses, 0.75f, abilityBase.idName, BuffType));
+        foreach (Tuple<EffectType, float> specialEffect in auraBuffBonus.cachedAuraSpecialEffects)
+        {
+            ActorEffect.ApplyEffectToTarget(target, AbilityOwner, specialEffect.Item1, specialEffect.Item2, 0.75f, auraBuffBonus.auraEffectMultiplier);
+        }
     }
 
     protected void FireRadialAoe(Vector3 origin, Vector3 target)
@@ -1367,7 +1437,8 @@ public class ActorAbility
         if (positionOverride != null)
         {
             heading = ((Vector3)positionOverride - origin).normalized;
-        } else
+        }
+        else
         {
             heading = (target.transform.position - origin).normalized;
         }
@@ -1402,7 +1473,7 @@ public class ActorAbility
         {
             Projectile pooledProjectile = StageManager.Instance.BattleManager.ProjectilePool.GetProjectile();
             pooledProjectile.transform.position = origin;
-            pooledProjectile.transform.up = (pooledProjectile.transform.position + pooledProjectile.currentHeading) - pooledProjectile.transform.position;
+            pooledProjectile.transform.up = (pooledProjectile.transform.position + pooledProjectile.CurrentHeading) - pooledProjectile.transform.position;
 
             if (abilityBase.abilityShotType == AbilityShotType.PROJECTILE_NOVA)
             {
@@ -1438,7 +1509,6 @@ public class ActorAbility
             pooledProjectile.onHitData = abilityOnHitData;
             pooledProjectile.gameObject.layer = targetLayer;
             pooledProjectile.layerMask = targetMask;
-            pooledProjectile.abilityBase = abilityBase;
             pooledProjectile.pierceCount = ProjectilePierce;
             pooledProjectile.chainCount = ProjectileChain;
             pooledProjectile.transform.localScale = new Vector2(ProjectileSize, ProjectileSize);
@@ -1480,7 +1550,7 @@ public class ActorAbility
 
         pooledProjectile.SetHeading(heading);
         pooledProjectile.transform.position = origin;
-        pooledProjectile.transform.up = (pooledProjectile.transform.position + pooledProjectile.currentHeading) - pooledProjectile.transform.position;
+        pooledProjectile.transform.up = (pooledProjectile.transform.position + pooledProjectile.CurrentHeading) - pooledProjectile.transform.position;
 
         pooledProjectile.timeToLive = abilityBase.projectileLifespanMulti;
         pooledProjectile.currentSpeed = AreaLength / abilityBase.projectileLifespanMulti;
@@ -1491,7 +1561,6 @@ public class ActorAbility
         pooledProjectile.onHitData = abilityOnHitData;
         pooledProjectile.gameObject.layer = targetLayer;
         pooledProjectile.layerMask = targetMask;
-        pooledProjectile.abilityBase = abilityBase;
         pooledProjectile.pierceCount = 999;
 
         AbilityParticleSystem particleSystem = ParticleManager.Instance.GetParticleSystem(abilityBase.idName, abilityBase.effectSprite);
@@ -1641,8 +1710,9 @@ public class ActorAbility
         return dps * abilityOnHitData.directHitDamage;
     }
 
-    public bool ApplyDamageToActor(Actor target, bool isHit)
+    public bool ApplyDamageToActor(Actor target, bool isHit, float damageModifier = 1f)
     {
+        damageModifier = 1f;
         if (target == null || target.Data.IsDead)
         {
             return false;
@@ -1650,27 +1720,17 @@ public class ActorAbility
 
         if (isHit)
         {
-            if (target.Data.AttackPhasing > 0 && abilityBase.abilityType == AbilityType.ATTACK)
-            {
-                if (target.Data.AttackPhasing == 100 || UnityEngine.Random.Range(0, 100) < (target.Data.AttackPhasing))
-                    return false;
-            }
-            else if (target.Data.MagicPhasing > 0 && abilityBase.abilityType == AbilityType.SPELL)
-            {
-                if (target.Data.MagicPhasing == 100 || UnityEngine.Random.Range(0, 100) < (target.Data.MagicPhasing))
-                    return false;
-            }
+            if (Actor.DidTargetPhase(target, abilityBase.abilityType))
+                return false;
 
-            if (target.Data.DodgeRating > 0)
-            {
-                float dodgePercent = 1 - (abilityOnHitData.accuracy / (abilityOnHitData.accuracy + target.Data.DodgeRating / 2f));
-                dodgePercent = Mathf.Min(dodgePercent, 85f);
-                if (UnityEngine.Random.Range(0, 100f) < dodgePercent)
-                    return false;
-            }
+            if (Actor.DidTargetDodge(target, abilityOnHitData.accuracy))
+                return false;
+
+            if (Actor.DidTargetBlock(target))
+                damageModifier *= (1f - target.Data.BlockProtection);
         }
 
-        Dictionary<ElementType, float> damageDict = CalculateDamageValues(target, AbilityOwner);
+        Dictionary<ElementType, float> damageDict = CalculateDamageValues(target, AbilityOwner, damageModifier);
 
         if (abilityBase.hitCount > 1)
         {
@@ -1698,7 +1758,9 @@ public class ActorAbility
     private class AuraBuffBonusContainer
     {
         public List<Tuple<BonusType, ModifyType, float>> cachedAuraBonuses;
+        public List<Tuple<EffectType, float>> cachedAuraSpecialEffects;
         public float auraStrength = 0;
+        public float auraEffectMultiplier = 1f;
         public bool isOutdated = true;
     }
 

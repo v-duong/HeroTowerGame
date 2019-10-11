@@ -71,7 +71,10 @@ public class AbilityBase
     private readonly List<GroupType> groupTypes;
 
     [JsonProperty(ItemConverterType = typeof(StringEnumConverter))]
-    public readonly List<GroupType> weaponRestrictions;
+    public readonly List<GroupType> requiredRestrictions;
+
+    [JsonProperty(ItemConverterType = typeof(StringEnumConverter))]
+    public readonly List<GroupType> singleRequireRestrictions;
 
     [JsonProperty]
     public readonly List<AbilityScalingBonusProperty> bonusProperties;
@@ -209,7 +212,7 @@ public class AbilityScalingAddedEffect
 {
     [JsonConverter(typeof(StringEnumConverter))]
     [JsonProperty]
-    public readonly EffectType type;
+    public readonly EffectType effectType;
     [JsonConverter(typeof(StringEnumConverter))]
     [JsonProperty]
     public readonly BonusType bonusType;

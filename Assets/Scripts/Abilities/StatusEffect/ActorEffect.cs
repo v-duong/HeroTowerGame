@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public abstract class ActorEffect
 {
@@ -50,47 +49,51 @@ public abstract class ActorEffect
         Source = source;
     }
 
-    public static void ApplyEffectToTarget(Actor target, Actor source, EffectType effectType, float effectPower, float duration, ElementType element = ElementType.PHYSICAL)
+    public static void ApplyEffectToTarget(Actor target, Actor source, EffectType effectType, float effectPower, float duration, float auraEffectiveness = 1.0f, ElementType element = ElementType.PHYSICAL)
     {
         LayerMask mask = target.GetActorType() == ActorType.ALLY ? (LayerMask)LayerMask.GetMask("Hero") : (LayerMask)LayerMask.GetMask("Enemy");
         switch (effectType)
         {
             case EffectType.BLEED:
-                target.AddStatusEffect(new BleedEffect(target, source, effectPower, duration));
+                target.AddStatusEffect(new BleedEffect(target, source, effectPower * auraEffectiveness, duration));
                 break;
 
             case EffectType.BURN:
-                target.AddStatusEffect(new BurnEffect(target, source, effectPower, duration));
+                target.AddStatusEffect(new BurnEffect(target, source, effectPower * auraEffectiveness, duration));
                 break;
 
             case EffectType.CHILL:
-                target.AddStatusEffect(new ChillEffect(target, source, effectPower, duration));
+                target.AddStatusEffect(new ChillEffect(target, source, effectPower * auraEffectiveness, duration));
                 break;
 
             case EffectType.ELECTROCUTE:
-                target.AddStatusEffect(new ElectrocuteEffect(target, source, effectPower, duration));
+                target.AddStatusEffect(new ElectrocuteEffect(target, source, effectPower * auraEffectiveness, duration));
                 break;
 
             case EffectType.FRACTURE:
-                target.AddStatusEffect(new FractureEffect(target, source, effectPower, duration));
+                target.AddStatusEffect(new FractureEffect(target, source, effectPower * auraEffectiveness, duration));
                 break;
 
             case EffectType.PACIFY:
-                target.AddStatusEffect(new PacifyEffect(target, source, effectPower, duration));
+                target.AddStatusEffect(new PacifyEffect(target, source, effectPower * auraEffectiveness, duration));
                 break;
 
             case EffectType.RADIATION:
-                target.AddStatusEffect(new RadiationEffect(target, source, effectPower, duration));
+                target.AddStatusEffect(new RadiationEffect(target, source, effectPower * auraEffectiveness, duration));
                 break;
+
             case EffectType.POISON:
-                target.AddStatusEffect(new PoisonEffect(target, source, effectPower, duration));
+                target.AddStatusEffect(new PoisonEffect(target, source, effectPower * auraEffectiveness, duration));
                 break;
+
             case EffectType.STUN:
                 target.AddStatusEffect(new StunEffect(target, source, duration));
                 break;
+
             case EffectType.PLAGUE:
                 target.AddStatusEffect(new PlagueEffect(target, source, duration));
                 break;
+
             case EffectType.EXPLODE_MAX_LIFE:
             case EffectType.EXPLODE_OVERKILL:
             case EffectType.EXPLODE_HIT_DAMAGE:
@@ -100,21 +103,32 @@ public abstract class ActorEffect
             case EffectType.EXPLODE_RADIATION:
                 source.StartCoroutine(InstantEffects.ApplyExplosionEffect(target, source, effectType, mask, effectPower, element));
                 break;
+
             case EffectType.SPREAD_DAMAGING_STATUSES:
             case EffectType.SPREAD_BLEED:
             case EffectType.SPREAD_BURN:
             case EffectType.SPREAD_RADIATION:
+            case EffectType.SPREAD_STATUSES:
                 InstantEffects.ApplyStatusSpreadEffect(target, source, effectType, mask);
                 break;
+
             case EffectType.CLEAR_STATUSES:
                 break;
+
             case EffectType.BUFF:
                 break;
+
             case EffectType.DEBUFF:
                 break;
 
-            case EffectType.SPREAD_STATUSES:
+            case EffectType.BODYGUARD_AURA:
+                target.AddStatusEffect(new BodyguardAura(target, source, effectPower, duration, auraEffectiveness));
                 break;
+
+            case EffectType.MASS_SHIELD_AURA:
+                target.AddStatusEffect(new MassShieldAura(target, source, effectPower, duration, auraEffectiveness));
+                break;
+
             default:
                 return;
         }
@@ -124,5 +138,4 @@ public abstract class ActorEffect
     {
         return (ActorEffect)MemberwiseClone();
     }
-
 }

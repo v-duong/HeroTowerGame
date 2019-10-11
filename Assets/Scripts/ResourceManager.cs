@@ -37,6 +37,8 @@ public class ResourceManager : MonoBehaviour
     private Dictionary<string, Sprite> currentSpriteList;
     private Dictionary<string, SpriteAtlas> loadedSpriteAtlases;
 
+    public List<ArchetypeBase> ArchetypeBasesList => archetypeList.Values.ToList();
+
     public int AbilityCount { get; private set; }
     public int EquipmentCount { get; private set; }
     public int PrefixCount { get; private set; }

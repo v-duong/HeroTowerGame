@@ -141,8 +141,10 @@ public class EnemyActor : Actor
 
             ActorAbility actorAbility = new ActorAbility(abilityBase, layer);
             actorAbility.SetDamageAndSpeedModifier((ability.damageMultiplier - 1f) * 100f, (ability.attackPerSecMultiplier - 1f) * 100f);
+            actorAbility.UpdateAbilityLevel(Data.GetAbilityLevel());
             actorAbility.SetAbilityOwner(this);
             AddAbilityToList(actorAbility);
+            Data.abilities.Add(actorAbility);
             actorAbility.UpdateAbilityStats(Data);
             actorAbility.StartFiring(this);
         }

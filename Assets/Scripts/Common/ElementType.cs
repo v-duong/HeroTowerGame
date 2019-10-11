@@ -14,6 +14,8 @@ public enum ElementType
 
 public class ElementalData
 {
+    public const int DEFAULT_RESISTANCE_CAP = 80;
+    public const int HARD_RESISTANCE_CAP = 95;
     private readonly Dictionary<ElementType, int> resists;
     private readonly Dictionary<ElementType, int> resistCaps;
     public readonly Dictionary<ElementType, int> negations;
@@ -26,7 +28,7 @@ public class ElementalData
         foreach (ElementType element in Enum.GetValues(typeof(ElementType)))
         {
             resists[element] = 0;
-            resistCaps[element] = 80;
+            resistCaps[element] = DEFAULT_RESISTANCE_CAP;
             negations[element] = 0;
         }
     }
@@ -52,7 +54,7 @@ public class ElementalData
 
     public void SetResistanceCap(ElementType e, int value)
     {
-        resistCaps[e] = value;
+        resistCaps[e] = Math.Min(value, HARD_RESISTANCE_CAP);
     }
 
     public int GetNegation(ElementType e)

@@ -24,17 +24,7 @@ public class TeamWindow : MonoBehaviour
     public void SetHeroToSlot(HeroData hero)
     {
         UIManager.Instance.CloseCurrentWindow();
-        List<HeroData[]> teams = GameManager.Instance.PlayerStats.heroTeams;
-        if (hero.assignedTeam != -1)
-        {
-            for (int i = 0; i < 5; i++)
-            {
-                if (teams[hero.assignedTeam][i] == hero)
-                    teams[hero.assignedTeam][i] = null;
-            }
-        }
-        teams[selectedTeam][selectedSlot] = hero;
-        hero.assignedTeam = selectedTeam;
+        GameManager.Instance.PlayerStats.SetHeroToTeamSlot(hero, selectedTeam, selectedSlot);
         members[selectedSlot].heroNameText.text = hero.Name;
         UpdateTeamSlots();
     }

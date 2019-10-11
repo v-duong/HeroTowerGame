@@ -265,14 +265,6 @@ public class HeroData : ActorData
         return GetAbilityLevel();
     }
 
-    public int GetAbilityLevel()
-    {
-        if (Level != 100)
-            return (int)((Level - 1) / 2d);
-        else
-            return 50;
-    }
-
     public Equipment GetEquipmentInSlot(EquipSlotType slot)
     {
         return equipList[(int)slot].equip;
@@ -294,13 +286,13 @@ public class HeroData : ActorData
             {
                 Equipment mainWeapon = equipList[(int)EquipSlotType.WEAPON].equip;
 
-                if (mainWeapon == null || GetEquipmentGroupTypes(EquipSlotType.WEAPON).Contains(GroupType.TWO_HANDED_WEAPON))
+                if (mainWeapon == null)
                     slot = EquipSlotType.WEAPON;
                 else if ((mainWeapon.GetGroupTypes().Contains(GroupType.MELEE_WEAPON) && !equip.GetGroupTypes().Contains(GroupType.MELEE_WEAPON))
                          || (mainWeapon.GetGroupTypes().Contains(GroupType.RANGED_WEAPON) && !equip.GetGroupTypes().Contains(GroupType.RANGED_WEAPON)))
                     return false;
             }
-            else if (GetEquipmentGroupTypes(equip).Contains(GroupType.TWO_HANDED_WEAPON))
+            else if (GetEquipmentGroupTypes(equip).Contains(GroupType.TWO_HANDED_WEAPON) && !HasSpecialBonus(BonusType.TWO_HANDED_WEAPONS_ARE_ONE_HANDED))
             {
                 if (slot == EquipSlotType.WEAPON && equipList[(int)EquipSlotType.OFF_HAND].equip != null)
                     UnequipFromSlot(EquipSlotType.OFF_HAND);
@@ -487,8 +479,10 @@ public class HeroData : ActorData
         else if (mainHand is Weapon && offHand != null)
         {
             HashSet<GroupType> mainTypes = GetEquipmentGroupTypes(mainHand);
-            if (mainTypes.Contains(GroupType.TWO_HANDED_WEAPON))
+            if (mainTypes.Contains(GroupType.TWO_HANDED_WEAPON) && !HasSpecialBonus(BonusType.TWO_HANDED_WEAPONS_ARE_ONE_HANDED))
+            {
                 UnequipFromSlot(EquipSlotType.OFF_HAND);
+            }
             else if (offHand is Weapon)
             {
                 if (mainTypes.Contains(GroupType.MELEE_WEAPON) && !GetEquipmentGroupTypes(offHand).Contains(GroupType.MELEE_WEAPON))
@@ -654,27 +648,38 @@ public class HeroData : ActorData
         int ShieldFromEquip = 0;
         int DodgeFromEquip = 0;
         int ResolveFromEquip = 0;
+        float baseBlock = 0;
+        float baseProtection = 0;
+        bool hasShield = false;
         foreach (HeroEquipData equippedItem in equipList)
         {
-            if (equippedItem.equip != null && equippedItem.equip.GetItemType() == ItemType.ARMOR)
+            if(equippedItem.equip == null)
+                continue;
+            if (equippedItem.equip.GetItemType() == ItemType.ARMOR)
             {
                 Armor equip = equippedItem.equip as Armor;
                 ArmorFromEquip += equip.armor;
                 ShieldFromEquip += equip.shield;
                 DodgeFromEquip += equip.dodgeRating;
                 ResolveFromEquip += equip.resolveRating;
+
+                if (equippedItem.equip.GetGroupTypes().Contains(GroupType.SHIELD))
+                {
+                    hasShield = true;
+                    baseBlock = equip.blockChance;
+                    baseProtection = equip.blockProtection;
+                }
             }
         }
 
-        Armor = Math.Max(GetMultiStatBonus(GroupTypes, BonusType.GLOBAL_ARMOR).CalculateStat(BaseArmor + ArmorFromEquip), 0);
         MaximumManaShield = Math.Max(GetMultiStatBonus(GroupTypes, BonusType.GLOBAL_MAX_SHIELD).CalculateStat(BaseManaShield + ShieldFromEquip), 0);
-        float test =  Math.Max(GetMultiStatBonus(GroupTypes, BonusType.GLOBAL_MAX_SHIELD).CalculateStat(1), 0);
-        Debug.Log(MaximumManaShield + " " + BaseManaShield + " " + ShieldFromEquip + " " + test);
         if (MaximumManaShield != 0)
         {
             float shieldPercent = CurrentManaShield / MaximumManaShield;
             CurrentManaShield = MaximumManaShield * shieldPercent;
         }
+
+        Armor = Math.Max(GetMultiStatBonus(GroupTypes, BonusType.GLOBAL_ARMOR).CalculateStat(BaseArmor + ArmorFromEquip), 0);
         DodgeRating = Math.Max(GetMultiStatBonus(GroupTypes, BonusType.GLOBAL_DODGE_RATING).CalculateStat(BaseDodgeRating + DodgeFromEquip), 0);
         ResolveRating = Math.Max(GetMultiStatBonus(GroupTypes, BonusType.GLOBAL_RESOLVE_RATING).CalculateStat(BaseResolveRating + ResolveFromEquip), 0);
 
@@ -684,6 +689,34 @@ public class HeroData : ActorData
         AfflictedStatusDamageResistance = Math.Min(GetMultiStatBonus(GroupTypes, BonusType.AFFLICTED_STATUS_DAMAGE_RESISTANCE).CalculateStat(statusResistance), 90) / 100f;
         AfflictedStatusDamageResistance = 1f - AfflictedStatusDamageResistance;
         AfflictedStatusThreshold = Math.Max(GetMultiStatBonus(GroupTypes, BonusType.AFFLICTED_STATUS_THRESHOLD).CalculateStat(1f + statusThreshold), 0.01f);
+
+        if (hasShield)
+        {
+            float BlockChanceCap = Math.Min(GetMultiStatBonus(GroupTypes, BonusType.MAX_SHIELD_BLOCK_CHANCE).CalculateStat(BLOCK_CHANCE_CAP), 100f);
+            float BlockProtectionCap = Math.Min(GetMultiStatBonus(GroupTypes, BonusType.MAX_SHIELD_BLOCK_PROTECTION).CalculateStat(BLOCK_PROTECTION_CAP), 100f);
+
+            BlockChance = Math.Min(GetMultiStatBonus(GroupTypes, BonusType.SHIELD_BLOCK_CHANCE).CalculateStat(baseBlock), BlockChanceCap) / 100f;
+            BlockProtection = Math.Min(GetMultiStatBonus(GroupTypes, BonusType.SHIELD_BLOCK_PROTECTION).CalculateStat(baseProtection), BlockProtectionCap) / 100f;
+        }
+        else
+        {
+            BlockChance = 0;
+            BlockProtection = 0;
+        }
+
+        if (GetGroupTypes(true).Contains(GroupType.DUAL_WIELD) || (GetGroupTypes(true).Contains(GroupType.TWO_HANDED_WEAPON) && !GetGroupTypes(true).Contains(GroupType.RANGED_WEAPON)))
+        {
+            float attackParryCap = Math.Min(GetMultiStatBonus(GroupTypes, BonusType.WEAPON_ATTACK_MAX_PARRY_CHANCE).CalculateStat(ATTACK_PARRY_CAP), 100f);
+            float spellParryCap = Math.Min(GetMultiStatBonus(GroupTypes, BonusType.WEAPON_SPELL_MAX_PARRY_CHANCE).CalculateStat(SPELL_PARRY_CAP), 100f);
+
+            AttackParryChance = Math.Min(GetMultiStatBonus(GroupTypes, BonusType.WEAPON_ATTACK_PARRY_CHANCE).CalculateStat(0f), attackParryCap);
+            SpellParryChance = Math.Min(GetMultiStatBonus(GroupTypes, BonusType.WEAPON_SPELL_PARRY_CHANCE).CalculateStat(0f), spellParryCap);
+
+        } else
+        {
+            AttackParryChance = 0;
+            SpellParryChance = 0;
+        }
     }
 
     public override void GetTotalStatBonus(BonusType type, IEnumerable<GroupType> tags, Dictionary<BonusType, StatBonus> abilityBonusProperties, StatBonus inputStatBonus)
@@ -808,9 +841,14 @@ public class HeroData : ActorData
     public HashSet<GroupType> GetEquipmentGroupTypes(Equipment equip)
     {
         HashSet<GroupType> groupTypes = equip.GetGroupTypes();
+        HashSet<GroupType> additionalTypes = new HashSet<GroupType>();
 
         if (specialBonuses.ContainsKey(BonusType.ONE_HANDED_WEAPONS_ARE_TWO_HANDED) && groupTypes.Contains(GroupType.ONE_HANDED_WEAPON))
-            groupTypes.Add(GroupType.TWO_HANDED_WEAPON);
+            additionalTypes.Add(GroupType.TWO_HANDED_WEAPON);
+        if (specialBonuses.ContainsKey(BonusType.TWO_HANDED_WEAPONS_ARE_ONE_HANDED) && groupTypes.Contains(GroupType.TWO_HANDED_WEAPON))
+            additionalTypes.Add(GroupType.ONE_HANDED_SWORD);
+
+        groupTypes.UnionWith(additionalTypes);
 
         return groupTypes;
     }

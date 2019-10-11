@@ -6,7 +6,7 @@
 
     public override GroupType StatusTag => GroupType.SELF_IS_POISONED;
 
-    public override int MaxStacks => 25;
+    public override int MaxStacks => 30;
 
     public PoisonEffect(Actor target, Actor source, float inputDamage, float duration) : base(target, source)
     {

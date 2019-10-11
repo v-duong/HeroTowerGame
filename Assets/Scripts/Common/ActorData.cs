@@ -4,7 +4,14 @@ using UnityEngine;
 
 public abstract partial class ActorData
 {
+    public const float BLOCK_CHANCE_CAP = 80f;
+    public const float BLOCK_PROTECTION_CAP = 90f;
+
+    public const float ATTACK_PARRY_CAP = 40f;
+    public const float SPELL_PARRY_CAP = 40f;
+
     protected const float DUAL_WIELD_ATTACK_SPEED_BONUS = 10f;
+
     public Guid Id { get; protected set; }
     public int Level { get; set; }
     public int Experience { get; set; }
@@ -46,6 +53,16 @@ public abstract partial class ActorData
     public float AfflictedStatusThreshold { get; protected set; }
     public int AfflictedStatusAvoidance { get; protected set; }
     public float AfflictedStatusDuration { get; protected set; }
+
+    public float BlockChance { get; protected set; }
+    public float BlockProtection { get; protected set; }
+
+    public float AttackParryChance { get; protected set; }
+    public float SpellParryChance { get; protected set; }
+
+    public float PoisonResistance { get; protected set; }
+
+    public bool RechargeCannotBeStopped { get; set; }
 
     public int GetNegation(ElementType e) => ElementData.GetNegation(e);
 
@@ -200,17 +217,17 @@ public abstract partial class ActorData
     protected void ApplyResistanceBonuses()
     {
         ElementData.SetResistanceCap(ElementType.FIRE, (int)GetMultiStatBonus(GroupTypes, BonusType.MAX_FIRE_RESISTANCE, BonusType.MAX_ELEMENTAL_RESISTANCES, BonusType.MAX_ALL_NONPHYSICAL_RESISTANCES)
-            .CalculateStat(80f));
+            .CalculateStat(ElementalData.DEFAULT_RESISTANCE_CAP));
         ElementData.SetResistanceCap(ElementType.COLD, (int)GetMultiStatBonus(GroupTypes, BonusType.MAX_COLD_RESISTANCE, BonusType.MAX_ELEMENTAL_RESISTANCES, BonusType.MAX_ALL_NONPHYSICAL_RESISTANCES)
-            .CalculateStat(80f));
+            .CalculateStat(ElementalData.DEFAULT_RESISTANCE_CAP));
         ElementData.SetResistanceCap(ElementType.LIGHTNING, (int)GetMultiStatBonus(GroupTypes, BonusType.MAX_LIGHTNING_RESISTANCE, BonusType.MAX_ELEMENTAL_RESISTANCES, BonusType.MAX_ALL_NONPHYSICAL_RESISTANCES)
-            .CalculateStat(80f));
+            .CalculateStat(ElementalData.DEFAULT_RESISTANCE_CAP));
         ElementData.SetResistanceCap(ElementType.EARTH, (int)GetMultiStatBonus(GroupTypes, BonusType.MAX_EARTH_RESISTANCE, BonusType.MAX_ELEMENTAL_RESISTANCES, BonusType.MAX_ALL_NONPHYSICAL_RESISTANCES)
-            .CalculateStat(80f));
+            .CalculateStat(ElementalData.DEFAULT_RESISTANCE_CAP));
         ElementData.SetResistanceCap(ElementType.DIVINE, (int)GetMultiStatBonus(GroupTypes, BonusType.MAX_DIVINE_RESISTANCE, BonusType.MAX_PRIMORDIAL_RESISTANCES, BonusType.MAX_ALL_NONPHYSICAL_RESISTANCES)
-            .CalculateStat(80f));
+            .CalculateStat(ElementalData.DEFAULT_RESISTANCE_CAP));
         ElementData.SetResistanceCap(ElementType.VOID, (int)GetMultiStatBonus(GroupTypes, BonusType.MAX_VOID_RESISTANCE, BonusType.MAX_PRIMORDIAL_RESISTANCES, BonusType.MAX_ALL_NONPHYSICAL_RESISTANCES)
-            .CalculateStat(80f));
+            .CalculateStat(ElementalData.DEFAULT_RESISTANCE_CAP));
 
         ElementData[ElementType.PHYSICAL] = (int)GetMultiStatBonus(GroupTypes, BonusType.PHYSICAL_RESISTANCE).CalculateStat(0f);
         ElementData[ElementType.FIRE] = (int)GetMultiStatBonus(GroupTypes, BonusType.FIRE_RESISTANCE, BonusType.ELEMENTAL_RESISTANCES, BonusType.ALL_NONPHYSICAL_RESISTANCES).CalculateStat(0f);
@@ -257,6 +274,7 @@ public abstract partial class ActorData
         ShieldRestoreDelayModifier = Math.Max(GetMultiStatBonus(GroupTypes, BonusType.SHIELD_RESTORE_DELAY).CalculateStat(1f), 0.05f);
         DamageTakenModifier = Math.Max(GetMultiStatBonus(GroupTypes, BonusType.DAMAGE_TAKEN).CalculateStat(1f), 0.01f);
 
+        ApplyResistanceBonuses();
         SetNegation(ElementType.PHYSICAL, GetMultiStatBonus(GroupTypes, BonusType.PHYSICAL_RESISTANCE_NEGATION).CalculateStat(0));
         SetNegation(ElementType.FIRE, GetMultiStatBonus(GroupTypes, BonusType.FIRE_RESISTANCE_NEGATION, BonusType.ELEMENTAL_RESISTANCE_NEGATION).CalculateStat(0));
         SetNegation(ElementType.COLD, GetMultiStatBonus(GroupTypes, BonusType.COLD_RESISTANCE_NEGATION, BonusType.ELEMENTAL_RESISTANCE_NEGATION).CalculateStat(0));
@@ -267,6 +285,7 @@ public abstract partial class ActorData
 
         AfflictedStatusAvoidance = GetMultiStatBonus(GroupTypes, BonusType.AFFLICTED_STATUS_AVOIDANCE).CalculateStat(0);
         AfflictedStatusDuration = Math.Max(GetMultiStatBonus(GroupTypes, BonusType.AFFLICTED_STATUS_DURATION).CalculateStat(1f), 0.01f);
+        PoisonResistance = Math.Min(GetMultiStatBonus(GroupTypes, BonusType.POISON_SHIELD_RESISTANCE).CalculateStat(0), 100) / 100f;
 
         OnHitData.UpdateStatusEffectData(this, GetGroupTypes(), null);
     }
@@ -278,4 +297,12 @@ public abstract partial class ActorData
     public abstract int GetResistance(ElementType element);
 
     public abstract HashSet<BonusType> BonusesIntersection(IEnumerable<BonusType> abilityBonuses, IEnumerable<BonusType> bonuses);
+
+    public int GetAbilityLevel()
+    {
+        if (Level != 100)
+            return (int)((Level - 1) / 2d);
+        else
+            return 50;
+    }
 }
