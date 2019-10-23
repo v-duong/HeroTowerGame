@@ -148,8 +148,8 @@ public class HeroCreationPanel : MonoBehaviour
         {
             archetypeSlot1Text.text = primaryArchetype.Name;
             archetypeSlot2Text.text = secondaryArchetype.Name;
-            infoText.text += "Health Growth: " + (primaryArchetype.Base.healthGrowth + (secondaryArchetype.Base.healthGrowth / 2)) + "\n";
-            infoText.text += "SP Growth: " + (primaryArchetype.Base.soulPointGrowth + (secondaryArchetype.Base.soulPointGrowth / 2)) + "\n";
+            infoText.text += "Health Growth: " + (primaryArchetype.Base.healthGrowth + (secondaryArchetype.Base.healthGrowth / 4)) + "\n";
+            infoText.text += "SP Growth: " + (primaryArchetype.Base.soulPointGrowth + (secondaryArchetype.Base.soulPointGrowth / 4)) + "\n";
             infoText.text += "STR Growth: " + (primaryArchetype.Base.strengthGrowth + (secondaryArchetype.Base.strengthGrowth / 2)) + "\n";
             infoText.text += "INT Growth: " + (primaryArchetype.Base.intelligenceGrowth + (secondaryArchetype.Base.intelligenceGrowth / 2)) + "\n";
             infoText.text += "AGI Growth: " + (primaryArchetype.Base.agilityGrowth + (secondaryArchetype.Base.agilityGrowth / 2)) + "\n";

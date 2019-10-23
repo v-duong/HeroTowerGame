@@ -15,6 +15,7 @@ public class RadiationEffect : ActorEffect
         damagePerSecond = inputDamage;
         this.duration = duration;
         timeSinceLastCheck = 0;
+        MaxStacks = source.Data.OnHitData.effectData[EffectType.RADIATION].MaxStacks;
     }
 
     public override void OnApply()

@@ -45,6 +45,7 @@ public class Spawner : MonoBehaviour
         foreach (var goal in StageManager.Instance.BattleManager.GoalList)
         {
             nodesToGoal.Add(Pathfinding.FindPath(transform.position, goal.transform.position, StageManager.Instance.PathTilemap, false));
+            
         }
         nodesAreOutdated = false;
     }

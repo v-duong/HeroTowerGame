@@ -16,7 +16,7 @@ public static class Helpers
     public static double ENEMY_SCALING = 1.012;
 
     private static List<BonusType> maxDamageTypes;
-    private static List<BonusType> damageTypes;
+    private static Dictionary<string, BonusType> cachedDamageTypes;
 
     private static readonly Dictionary<ElementType, HashSet<BonusType>> conversionTypes = new Dictionary<ElementType, HashSet<BonusType>>();
 
@@ -88,11 +88,87 @@ public static class Helpers
     {
         if (abilityType == AbilityType.ATTACK || abilityType == AbilityType.SPELL)
         {
-            //ATTACK_ELEMENTAL_DAMAGE, SPELL_ELEMENTAL_DAMAGE
-            min.Add((BonusType)Enum.Parse(typeof(BonusType), abilityType.ToString() + "_" + element.ToString() + "_DAMAGE_MIN"));
-            max.Add((BonusType)Enum.Parse(typeof(BonusType), abilityType.ToString() + "_" + element.ToString() + "_DAMAGE_MAX"));
-            //ATTACK_DAMAGE, SPELL_DAMAGE
-            multi.Add((BonusType)Enum.Parse(typeof(BonusType), abilityType.ToString() + "_DAMAGE"));
+            switch (element)
+            {
+                case ElementType.PHYSICAL when abilityType == AbilityType.ATTACK:
+                    min.Add(BonusType.ATTACK_PHYSICAL_DAMAGE_MIN);
+                    max.Add(BonusType.ATTACK_PHYSICAL_DAMAGE_MAX);
+                    break;
+
+                case ElementType.PHYSICAL when abilityType == AbilityType.SPELL:
+                    min.Add(BonusType.SPELL_PHYSICAL_DAMAGE_MIN);
+                    max.Add(BonusType.SPELL_PHYSICAL_DAMAGE_MAX);
+                    break;
+
+                case ElementType.FIRE when abilityType == AbilityType.ATTACK:
+                    min.Add(BonusType.ATTACK_FIRE_DAMAGE_MIN);
+                    max.Add(BonusType.ATTACK_FIRE_DAMAGE_MAX);
+                    break;
+
+                case ElementType.FIRE when abilityType == AbilityType.SPELL:
+                    min.Add(BonusType.SPELL_FIRE_DAMAGE_MIN);
+                    max.Add(BonusType.SPELL_FIRE_DAMAGE_MAX);
+                    break;
+
+                case ElementType.COLD when abilityType == AbilityType.ATTACK:
+                    min.Add(BonusType.ATTACK_COLD_DAMAGE_MIN);
+                    max.Add(BonusType.ATTACK_COLD_DAMAGE_MAX);
+                    break;
+
+                case ElementType.COLD when abilityType == AbilityType.SPELL:
+                    min.Add(BonusType.SPELL_COLD_DAMAGE_MIN);
+                    max.Add(BonusType.SPELL_COLD_DAMAGE_MAX);
+                    break;
+
+                case ElementType.LIGHTNING when abilityType == AbilityType.ATTACK:
+                    min.Add(BonusType.ATTACK_LIGHTNING_DAMAGE_MIN);
+                    max.Add(BonusType.ATTACK_LIGHTNING_DAMAGE_MAX);
+                    break;
+
+                case ElementType.LIGHTNING when abilityType == AbilityType.SPELL:
+                    min.Add(BonusType.SPELL_LIGHTNING_DAMAGE_MIN);
+                    max.Add(BonusType.SPELL_LIGHTNING_DAMAGE_MAX);
+                    break;
+
+                case ElementType.EARTH when abilityType == AbilityType.ATTACK:
+                    min.Add(BonusType.ATTACK_EARTH_DAMAGE_MIN);
+                    max.Add(BonusType.ATTACK_EARTH_DAMAGE_MAX);
+                    break;
+
+                case ElementType.EARTH when abilityType == AbilityType.SPELL:
+                    min.Add(BonusType.SPELL_EARTH_DAMAGE_MIN);
+                    max.Add(BonusType.SPELL_EARTH_DAMAGE_MAX);
+                    break;
+
+                case ElementType.DIVINE when abilityType == AbilityType.ATTACK:
+                    min.Add(BonusType.ATTACK_DIVINE_DAMAGE_MIN);
+                    max.Add(BonusType.ATTACK_DIVINE_DAMAGE_MAX);
+                    break;
+
+                case ElementType.DIVINE when abilityType == AbilityType.SPELL:
+                    min.Add(BonusType.SPELL_DIVINE_DAMAGE_MIN);
+                    max.Add(BonusType.SPELL_DIVINE_DAMAGE_MAX);
+                    break;
+
+                case ElementType.VOID when abilityType == AbilityType.ATTACK:
+                    min.Add(BonusType.ATTACK_VOID_DAMAGE_MIN);
+                    max.Add(BonusType.ATTACK_VOID_DAMAGE_MAX);
+                    break;
+
+                case ElementType.VOID when abilityType == AbilityType.SPELL:
+                    min.Add(BonusType.SPELL_VOID_DAMAGE_MIN);
+                    max.Add(BonusType.SPELL_VOID_DAMAGE_MAX);
+                    break;
+            }
+
+            if (abilityType == AbilityType.ATTACK)
+            {
+                multi.Add(BonusType.ATTACK_DAMAGE);
+            }
+            else if (abilityType == AbilityType.SPELL)
+            {
+                multi.Add(BonusType.SPELL_DAMAGE);
+            }
         }
 
         switch (shotType)
@@ -121,8 +197,37 @@ public static class Helpers
 
     public static void GetGlobalAndFlatDamageTypes(ElementType element, ICollection<GroupType> tags, HashSet<BonusType> min, HashSet<BonusType> max, HashSet<BonusType> multi)
     {
-        min.Add((BonusType)Enum.Parse(typeof(BonusType), "GLOBAL_" + element.ToString() + "_DAMAGE_MIN"));
-        max.Add((BonusType)Enum.Parse(typeof(BonusType), "GLOBAL_" + element.ToString() + "_DAMAGE_MAX"));
+        switch (element)
+        {
+            case ElementType.PHYSICAL:
+                min.Add(BonusType.GLOBAL_PHYSICAL_DAMAGE_MIN);
+                max.Add(BonusType.GLOBAL_PHYSICAL_DAMAGE_MAX);
+                break;
+            case ElementType.FIRE:
+                min.Add(BonusType.GLOBAL_FIRE_DAMAGE_MIN);
+                max.Add(BonusType.GLOBAL_FIRE_DAMAGE_MAX);
+                break;
+            case ElementType.COLD:
+                min.Add(BonusType.GLOBAL_COLD_DAMAGE_MIN);
+                max.Add(BonusType.GLOBAL_COLD_DAMAGE_MAX);
+                break;
+            case ElementType.LIGHTNING:
+                min.Add(BonusType.GLOBAL_LIGHTNING_DAMAGE_MIN);
+                max.Add(BonusType.GLOBAL_LIGHTNING_DAMAGE_MAX);
+                break;
+            case ElementType.EARTH:
+                min.Add(BonusType.GLOBAL_EARTH_DAMAGE_MIN);
+                max.Add(BonusType.GLOBAL_EARTH_DAMAGE_MAX);
+                break;
+            case ElementType.DIVINE:
+                min.Add(BonusType.GLOBAL_DIVINE_DAMAGE_MIN);
+                max.Add(BonusType.GLOBAL_DIVINE_DAMAGE_MAX);
+                break;
+            case ElementType.VOID:
+                min.Add(BonusType.GLOBAL_VOID_DAMAGE_MIN);
+                max.Add(BonusType.GLOBAL_VOID_DAMAGE_MAX);
+                break;
+        }
 
         multi.Add(BonusType.GLOBAL_DAMAGE);
 

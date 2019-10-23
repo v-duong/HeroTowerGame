@@ -5,28 +5,38 @@ public class BleedEffect : ActorEffect
 {
     public const float BASE_DURATION = 2.0f;
     public const float BASE_DAMAGE_MULTIPLIER = 0.1f;
-    protected float damagePerSecond;
+    public float damagePerSecond;
+    protected float bonusDamageMultiplier;
     protected Vector2 lastPosition;
     protected float timeSinceLastCheck;
 
     public override GroupType StatusTag => GroupType.SELF_IS_BLEEDING;
 
-    public BleedEffect(Actor target, Actor source, float inputDamage, float duration) : base(target, source)
+    public BleedEffect(Actor target, Actor source, float inputDamage, float duration, int maxStacks = 1, float bonusMulti = 1f) : base(target, source)
     {
         effectType = EffectType.BLEED;
         damagePerSecond = inputDamage;
         this.duration = duration;
         timeSinceLastCheck = 0;
         lastPosition = target.transform.position;
+        MaxStacks = source.Data.OnHitData.effectData[EffectType.BLEED].MaxStacks;
+        bonusDamageMultiplier = source.Data.OnHitData.effectData[EffectType.BLEED].SecondaryEffectiveness;
     }
 
     public override void OnApply()
     {
+        if (Source.Data.HasSpecialBonus(BonusType.BLEED_STACKS_EXPLODE_AT_MAX))
+        {
+            List<ActorEffect> statusList = target.GetStatusEffectAll(EffectType.BLEED);
+            if (statusList.Count >= MaxStacks)
+            {
+                InstantEffects.ApplyStatusExplosionEffect(target, Source, EffectType.BLEED, statusList);
+            }
+        }
     }
 
     public override void OnExpire()
     {
-
     }
 
     public override void Update(float deltaTime)
@@ -34,20 +44,20 @@ public class BleedEffect : ActorEffect
         float tick = DurationUpdate(deltaTime);
         float additionalDamage = 0;
         timeSinceLastCheck += tick;
-        if (timeSinceLastCheck >= 0.2f)
+        if (timeSinceLastCheck >= 0.2f && bonusDamageMultiplier > 0)
         {
             timeSinceLastCheck -= 0.2f;
             Vector2 position = target.transform.position;
             float distance = Mathf.Sqrt((position - lastPosition).sqrMagnitude);
             lastPosition = position;
-            additionalDamage = distance * damagePerSecond * 0.2f;
+            additionalDamage = distance * damagePerSecond * bonusDamageMultiplier;
         }
-        target.ApplySingleElementDamage(ElementType.PHYSICAL, damagePerSecond * tick + additionalDamage, Source.Data.OnHitData, false, true);
+        target.ApplySingleElementDamage(ElementType.PHYSICAL, (damagePerSecond + additionalDamage) * tick, Source.Data.OnHitData, false, true);
     }
 
     public override float GetEffectValue()
     {
-        return damagePerSecond * (target.Data.GetResistance(ElementType.PHYSICAL) - Source.Data.GetNegation(ElementType.PHYSICAL)) / 100f ;
+        return damagePerSecond * (target.Data.GetResistance(ElementType.PHYSICAL) - Source.Data.GetNegation(ElementType.PHYSICAL)) / 100f;
     }
 
     public override float GetSimpleEffectValue()

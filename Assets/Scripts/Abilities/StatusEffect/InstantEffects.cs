@@ -26,6 +26,51 @@ public static class InstantEffects
         }
     }
 
+    public static void ApplyStatusExplosionEffect(Actor target, Actor source, EffectType statusToExplode, List<ActorEffect> listToExplode = null)
+    {
+        LayerMask mask = target.GetActorType() == ActorType.ALLY ? (LayerMask)LayerMask.GetMask("Hero") : (LayerMask)LayerMask.GetMask("Enemy");
+
+        if (listToExplode == null)
+        {
+            listToExplode = target.GetStatusEffectAll(statusToExplode);
+        }
+
+        float explodeDamage = 0f;
+        ElementType explodeElement = ElementType.PHYSICAL;
+        EffectApplicationFlags restrictionFlags = EffectApplicationFlags.NONE;
+
+        if (statusToExplode == EffectType.BLEED)
+        {
+            restrictionFlags |= EffectApplicationFlags.CANNOT_BLEED;
+            explodeElement = ElementType.PHYSICAL;
+            foreach (BleedEffect bleedEffect in listToExplode)
+            {
+                explodeDamage += bleedEffect.damagePerSecond * bleedEffect.duration;
+                bleedEffect.duration = 0;
+                target.RemoveStatusEffect(bleedEffect, true);
+            }
+        }
+
+        if (explodeDamage == 0)
+            return;
+
+        Collider2D[] hits = Physics2D.OverlapCircleAll(target.transform.position, 0.75f, mask);
+        foreach (Collider2D hit in hits)
+        {
+            Actor aoeTarget = hit.gameObject.GetComponent<Actor>();
+
+            if (aoeTarget.Data.IsDead)
+                continue;
+
+            Dictionary<ElementType, MinMaxRange> damageDict = new Dictionary<ElementType, MinMaxRange>
+                    {
+                        { explodeElement, new MinMaxRange((int)explodeDamage,(int)explodeDamage) }
+                    };
+
+            aoeTarget.ApplyDamage(source.ScaleSecondaryDamageValue(aoeTarget, damageDict, ExplosionTags), source.Data.OnHitData, true, true, statusToExplode, restrictionFlags);
+        }
+    }
+
     public static void ApplyStatusSpreadEffect(Actor target, Actor source, EffectType effectType, LayerMask mask)
     {
         List<ActorEffect> effectsToApply = new List<ActorEffect>();

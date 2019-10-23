@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: HighlightAnim
   m_EditorClassIdentifier: 
   m_AnimatedSprites:
-  - {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
-  - {fileID: 10905, guid: 0000000000000000f000000000000000, type: 0}
-  _color: {r: 0.2160216, g: 0.7169812, b: 0.16571736, a: 0.5529412}
+  - {fileID: 7273889984496384276, guid: 4ab5401b45d19784e9f8363193e0b2d2, type: 3}
+  - {fileID: 7273889984496384276, guid: 4ab5401b45d19784e9f8363193e0b2d2, type: 3}
+  _color: {r: 0.21698111, g: 0.21698111, b: 0.21698111, a: 1}
   m_MinSpeed: 1
   m_MaxSpeed: 1
   m_AnimationStartTime: 0

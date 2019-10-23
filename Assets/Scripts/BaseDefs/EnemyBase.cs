@@ -24,6 +24,9 @@ public class EnemyBase
     [JsonConverter(typeof(StringEnumConverter))]
     public readonly EnemyType enemyType;
     [JsonProperty]
+    [JsonConverter(typeof(StringEnumConverter))]
+    public readonly TargetingPriorityType targetingPriority;
+    [JsonProperty]
     public readonly List<EnemyAbilityBase> abilitiesList;
     [JsonProperty]
     public readonly string spriteName;

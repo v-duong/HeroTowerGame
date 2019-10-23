@@ -232,8 +232,8 @@ public class StatBonusCollection
         if (groupTypes == null)
             return returnBonus;
 
-        var intersectingTypes = GetGroupTypeIntersect(groupTypes).ToList();
-        if (intersectingTypes.Count == 0)
+        var intersectingTypes = GetGroupTypeIntersect(groupTypes);
+        if (intersectingTypes.Count() == 0)
             return returnBonus;
 
         foreach (GroupType type in intersectingTypes)

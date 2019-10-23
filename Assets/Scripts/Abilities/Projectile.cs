@@ -11,6 +11,7 @@ public class Projectile : MonoBehaviour
     public float currentSpeed;
     public float timeToLive = 2.5f;
     public List<Actor> sharedHitList;
+    public float damageMultiplier = 1f;
     public Vector3 CurrentHeading { get; private set; }
     public LinkedActorAbility linkedAbility;
     public AbilityOnHitDataContainer onHitData;
@@ -95,7 +96,6 @@ public class Projectile : MonoBehaviour
             if (onHitData.SourceActor.Data.HasSpecialBonus(BonusType.PROJECTILE_DAMAGE_SCALES_WITH_DISTANCE))
             {
                 damageModifier += Math.Min(Vector2.Distance(onHitData.SourceActor.transform.position, transform.position) * 0.03f, 0.3f);
-                Debug.Log(damageModifier);
             }
             bool didProjHit = onHitData.sourceAbility.ApplyDamageToActor(actor, true, damageModifier);
             AddToAlreadyHit(actor);

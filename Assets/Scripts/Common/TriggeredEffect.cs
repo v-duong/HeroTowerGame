@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using UnityEngine;
 
 public class TriggeredEffect
 {
@@ -23,7 +22,9 @@ public class TriggeredEffect
     public void OnTrigger(Actor target, Actor source)
     {
         if (!RollTriggerChance())
+        {
             return;
+        }
 
         switch (BaseEffect.effectTargetType)
         {
@@ -40,26 +41,38 @@ public class TriggeredEffect
             case AbilityTargetType.ALL:
             case AbilityTargetType.NONE:
                 break;
+
             default:
                 break;
         }
-
-        
     }
 
     private void ApplyEffect(Actor target, Actor source)
     {
         switch (BaseEffect.effectType)
-            {
-                case EffectType.DEBUFF:
-                case EffectType.BUFF:
-                    string buffName = sourceName + BaseEffect.statBonusType.ToString() + BaseEffect.statModifyType.ToString();
-                    ApplyBuffEffect(target, source, buffName);
-                    return;
-                default:
-                    ActorEffect.ApplyEffectToTarget(target, source, BaseEffect.effectType, Value, BaseEffect.effectDuration, 1.0f, BaseEffect.effectElement);
-                    return;
-            }
+        {
+            case EffectType.DEBUFF:
+            case EffectType.BUFF:
+                string buffName = sourceName + BaseEffect.statBonusType.ToString() + BaseEffect.statModifyType.ToString();
+                ApplyBuffEffect(target, source, buffName);
+                return;
+
+            case EffectType.BLEED:
+            case EffectType.BURN:
+            case EffectType.CHILL:
+            case EffectType.ELECTROCUTE:
+            case EffectType.FRACTURE:
+            case EffectType.PACIFY:
+            case EffectType.RADIATION:
+            case EffectType.POISON:
+                float effectPowerMultiplier = source.Data.OnHitData.effectData[BaseEffect.effectType].Effectiveness;
+                ActorEffect.ApplyEffectToTarget(target, source, BaseEffect.effectType, Value * effectPowerMultiplier * target.Data.AfflictedStatusDamageResistance, source.Data.OnHitData.effectData[BaseEffect.effectType].Duration);
+                break;
+
+            default:
+                ActorEffect.ApplyEffectToTarget(target, source, BaseEffect.effectType, Value, BaseEffect.effectDuration, 1.0f, BaseEffect.effectElement);
+                return;
+        }
     }
 
     public void ApplyBuffEffect(Actor target, Actor source, string buffName)

@@ -11723,7 +11723,6 @@ MonoBehaviour:
   infoText: {fileID: 911286521}
   UpgradeButtonParent: {fileID: 0}
   EquipButtonParent: {fileID: 246601655}
-  inventorySlot: {fileID: 0}
   NameBackground: {fileID: 1896184848}
 --- !u!114 &718629406
 MonoBehaviour:

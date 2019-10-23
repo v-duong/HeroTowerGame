@@ -106,6 +106,7 @@ public class HeroActor : Actor
         {
             x.StopFiring(this);
         }
+        Data.OnHitData.ApplyTriggerEffects(TriggerType.ON_DEATH, this);
 
         DisableActor();
     }
@@ -114,15 +115,4 @@ public class HeroActor : Actor
     {
         return ActorType.ALLY;
     }
-}
-
-public enum TargetingPriorityType
-{
-    CLOSEST,
-    FURTHEST,
-    FIRST,
-    RANDOM,
-    LEAST_HEALTH,
-    MOST_HEALTH,
-    PRIORITIZE_RARITY
 }

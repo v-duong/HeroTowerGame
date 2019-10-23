@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 
 public abstract class ActorEffect
 {
@@ -21,14 +22,24 @@ public abstract class ActorEffect
     public abstract float GetSimpleEffectValue();
 
     public abstract GroupType StatusTag { get; }
-    public virtual int MaxStacks => 1;
+    public int MaxStacks = 1;
+    public virtual bool StacksIncrementExistingEffect => false;
+    public int Stacks { get; protected set;}
+
+    public virtual void SetStacks(int newStackValue)
+    {
+        Stacks = newStackValue;
+        if (newStackValue > MaxStacks)
+            Stacks = MaxStacks;
+    }
 
     protected float DurationUpdate(float dT)
     {
         if (dT > duration)
         {
+            float oldDuration = duration;
             duration = 0;
-            return duration;
+            return oldDuration;
         }
         else
         {
@@ -47,6 +58,7 @@ public abstract class ActorEffect
     {
         this.target = target;
         Source = source;
+        Stacks = 1;
     }
 
     public static void ApplyEffectToTarget(Actor target, Actor source, EffectType effectType, float effectPower, float duration, float auraEffectiveness = 1.0f, ElementType element = ElementType.PHYSICAL)
@@ -55,11 +67,11 @@ public abstract class ActorEffect
         switch (effectType)
         {
             case EffectType.BLEED:
-                target.AddStatusEffect(new BleedEffect(target, source, effectPower * auraEffectiveness, duration));
+                target.AddStatusEffect(new BleedEffect(target, source, effectPower * auraEffectiveness * target.Data.OnHitData.effectData[EffectType.BLEED].Resistance, duration));
                 break;
 
             case EffectType.BURN:
-                target.AddStatusEffect(new BurnEffect(target, source, effectPower * auraEffectiveness, duration));
+                target.AddStatusEffect(new BurnEffect(target, source, effectPower * auraEffectiveness * target.Data.OnHitData.effectData[EffectType.BURN].Resistance, duration));
                 break;
 
             case EffectType.CHILL:
@@ -67,7 +79,7 @@ public abstract class ActorEffect
                 break;
 
             case EffectType.ELECTROCUTE:
-                target.AddStatusEffect(new ElectrocuteEffect(target, source, effectPower * auraEffectiveness, duration));
+                target.AddStatusEffect(new ElectrocuteEffect(target, source, effectPower * auraEffectiveness * target.Data.OnHitData.effectData[EffectType.ELECTROCUTE].Resistance, duration));
                 break;
 
             case EffectType.FRACTURE:
@@ -79,11 +91,11 @@ public abstract class ActorEffect
                 break;
 
             case EffectType.RADIATION:
-                target.AddStatusEffect(new RadiationEffect(target, source, effectPower * auraEffectiveness, duration));
+                target.AddStatusEffect(new RadiationEffect(target, source, effectPower * auraEffectiveness * target.Data.OnHitData.effectData[EffectType.RADIATION].Resistance, duration));
                 break;
 
             case EffectType.POISON:
-                target.AddStatusEffect(new PoisonEffect(target, source, effectPower * auraEffectiveness, duration));
+                target.AddStatusEffect(new PoisonEffect(target, source, effectPower * auraEffectiveness * target.Data.OnHitData.effectData[EffectType.POISON].Resistance, duration));
                 break;
 
             case EffectType.STUN:
@@ -128,7 +140,14 @@ public abstract class ActorEffect
             case EffectType.MASS_SHIELD_AURA:
                 target.AddStatusEffect(new MassShieldAura(target, source, effectPower, duration, auraEffectiveness));
                 break;
-
+            case EffectType.BERSERK:
+                target.AddStatusEffect(new BerserkEffect(target, source, effectPower, duration));
+                break;
+            case EffectType.KNOCKBACK:
+                break;
+            case EffectType.REPEAT_OFFENDER_BUFF:
+                target.AddStatusEffect(new RepeatOffenderBuffEffect(target, source, effectPower, duration));
+                break;
             default:
                 return;
         }

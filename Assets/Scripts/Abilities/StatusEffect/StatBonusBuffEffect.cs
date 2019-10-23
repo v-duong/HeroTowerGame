@@ -12,8 +12,6 @@ public class StatBonusBuffEffect : ActorEffect
 
     public override GroupType StatusTag => buffType;
 
-    public override int MaxStacks => 1;
-
     protected List<Tuple<BonusType, ModifyType, float>> bonus;
 
     public StatBonusBuffEffect(Actor target, Actor source, List<Tuple<BonusType,ModifyType,float>> bonuses, float duration, string buffName, EffectType effectType) : base(target, source)
@@ -23,15 +21,18 @@ public class StatBonusBuffEffect : ActorEffect
         BuffName = buffName;
         bonus = bonuses;
         BuffPower = 0;
-        foreach(Tuple<BonusType, ModifyType, float> tuple in bonus)
+        foreach (Tuple<BonusType, ModifyType, float> tuple in bonus)
         {
-            target.Data.AddTemporaryBonus(tuple.Item3, tuple.Item1, tuple.Item2, true);
             BuffPower += tuple.Item3;
         }
     }
 
     public override void OnApply()
     {
+        foreach (Tuple<BonusType, ModifyType, float> tuple in bonus)
+        {
+            target.Data.AddTemporaryBonus(tuple.Item3, tuple.Item1, tuple.Item2, true);
+        }
     }
 
     public override void OnExpire()

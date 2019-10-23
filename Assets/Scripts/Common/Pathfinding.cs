@@ -7,21 +7,21 @@ public static class Pathfinding
 {
     private class QueueNode : FastPriorityQueueNode
     {
-        public Vector3 data;
+        public Vector2 data;
 
-        public QueueNode(Vector3 v)
+        public QueueNode(Vector2 v)
         {
             data = v;
         }
     }
 
     // A* pathfinding on tilemap
-    public static List<Vector3> FindPath(Vector3 start, Vector3 end, Tilemap t, bool useDiagonals)
+    public static List<Vector3> FindPath(Vector2 start, Vector2 end, Tilemap t, bool useDiagonals)
     {
         List<Vector3> ret = new List<Vector3>();
-        Dictionary<Vector3, Vector3> cameFrom = new Dictionary<Vector3, Vector3>();
-        Dictionary<Vector3, float> cost = new Dictionary<Vector3, float>();
-        Vector3 current;
+        Dictionary<Vector2, Vector2> cameFrom = new Dictionary<Vector2, Vector2>();
+        Dictionary<Vector2, float> cost = new Dictionary<Vector2, float>();
+        Vector2 current;
         float newcost = 0;
         float dist = 0;
         FastPriorityQueue<QueueNode> queue = new FastPriorityQueue<QueueNode>(64);
@@ -32,7 +32,7 @@ public static class Pathfinding
         {
             current = queue.Dequeue().data;
 
-            if (Vector3.SqrMagnitude(end - current) < 0.5f)
+            if (Vector2.SqrMagnitude(end - current) < 0.5f)
             {
                 if (!cameFrom.ContainsKey(end) && cameFrom.ContainsKey(current))
                 {
@@ -58,7 +58,7 @@ public static class Pathfinding
                     if (useDiagonals)
                        dist = Mathf.Max(Mathf.Abs(neighbor.x - end.x), Mathf.Abs(neighbor.y - end.y));
                     else
-                        dist = Vector3.Distance(neighbor, end);
+                        dist = Vector2.Distance(neighbor, end);
                     queue.Enqueue(new QueueNode(neighbor), newcost + dist);
                     cameFrom[neighbor] = current;
                 }
@@ -71,15 +71,15 @@ public static class Pathfinding
     }
 
     //recursively traverse the generated path
-    public static void TraverseCameFrom(Vector3 currentVector, Dictionary<Vector3, Vector3> previousPath, List<Vector3> returnList)
+    public static void TraverseCameFrom(Vector2 currentVector, Dictionary<Vector2, Vector2> previousPath, List<Vector3> returnList)
     {
         if (!previousPath.ContainsKey(currentVector))
         {
-            returnList.Add(currentVector);
+            returnList.Add(new Vector3 (currentVector.x, currentVector.y, -3));
             return;
         }
         TraverseCameFrom(previousPath[currentVector], previousPath, returnList);
-        returnList.Add(currentVector);
+        returnList.Add(new Vector3(currentVector.x, currentVector.y, -3));
     }
 
     public static List<Vector3> GetTileNeighbor(Tilemap t, Vector3 vector)

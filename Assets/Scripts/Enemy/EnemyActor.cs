@@ -77,6 +77,23 @@ public class EnemyActor : Actor
         }
     }
 
+    private void LateUpdate()
+    {
+        if (Data.BaseEnemyData.enemyType == EnemyType.TARGET_ATTACKER)
+        {
+            foreach(ActorAbility ability in Data.abilities)
+            {
+                if ((ability.abilityBase.abilityType == AbilityType.ATTACK || ability.abilityBase.abilityType == AbilityType.SPELL) && ability.targetList.Count > 0)
+                {
+                    isMoving = false;
+                    return;
+                }
+            }
+
+            isMoving = true;
+        }
+    }
+
     public void CalculateRotatedOffset()
     {
         var nodes = ParentSpawner.GetNodesToGoal(indexOfGoal);
@@ -124,6 +141,9 @@ public class EnemyActor : Actor
         foreach (EnemyBase.EnemyAbilityBase ability in enemyBase.abilitiesList)
         {
             AbilityBase abilityBase = ResourceManager.Instance.GetAbilityBase(ability.abilityName);
+
+            if (Data.BaseEnemyData.enemyType == EnemyType.NON_ATTACKER && abilityBase.abilityType != AbilityType.AURA && abilityBase.abilityType != AbilityType.SELF_BUFF)
+                continue;
 
             int layer;
             if (abilityBase.targetType == AbilityTargetType.ENEMY)
@@ -181,6 +201,8 @@ public class EnemyActor : Actor
 
     public override void Death()
     {
+        Data.OnHitData.ApplyTriggerEffects(TriggerType.ON_DEATH, this);
+
         StageManager.Instance.BattleManager.enemiesSpawned -= 1;
         StageManager.Instance.BattleManager.currentEnemyList.Remove(this);
         ClearStatusEffects(true);

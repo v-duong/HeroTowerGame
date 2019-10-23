@@ -135,9 +135,13 @@ public abstract partial class ActorData
             RemoveSpecialBonus(type);
             return true;
         }
+        Debug.Log(type + " " + restriction + " " + modifier + " " + value);
         bool isRemoved = statBonuses[type].RemoveBonus(restriction, modifier, value);
         if (statBonuses[type].IsEmpty())
+        {
+            Debug.Log("REMOVED " + type);
             statBonuses.Remove(type);
+        }
         return isRemoved;
     }
 
@@ -152,7 +156,8 @@ public abstract partial class ActorData
 
     public void RemoveTemporaryBonus(float value, BonusType type, ModifyType modifier, bool deferUpdate)
     {
-        temporaryBonuses[type].RemoveBonus(modifier, value);
+        if (temporaryBonuses.ContainsKey(type))
+            temporaryBonuses[type].RemoveBonus(modifier, value);
         if (!deferUpdate)
             UpdateActorData();
     }
@@ -192,7 +197,6 @@ public abstract partial class ActorData
 
     protected void ApplyHealthBonuses()
     {
-        
         float percentage = CurrentHealth / MaximumHealth;
         MaximumHealth = (int)Math.Max(GetMultiStatBonus(GroupTypes, BonusType.MAX_HEALTH).CalculateStat(BaseHealth), 1);
         if (MaximumHealth > 1)
@@ -269,7 +273,12 @@ public abstract partial class ActorData
     public virtual void UpdateActorData()
     {
         float percentShieldRegen = GetMultiStatBonus(GroupTypes, BonusType.PERCENT_SHIELD_REGEN).CalculateStat(0f) / 100f;
-        ShieldRegenRate = GetMultiStatBonus(GroupTypes, BonusType.SHIELD_REGEN).CalculateStat(percentShieldRegen * MaximumManaShield);
+
+        if (HasSpecialBonus(BonusType.SHIELD_RESTORE_APPLIES_TO_REGEN))
+            ShieldRegenRate = GetMultiStatBonus(GroupTypes, BonusType.SHIELD_REGEN, BonusType.SHIELD_RESTORE_SPEED).CalculateStat(percentShieldRegen * MaximumManaShield);
+        else
+            ShieldRegenRate = GetMultiStatBonus(GroupTypes, BonusType.SHIELD_REGEN).CalculateStat(percentShieldRegen * MaximumManaShield);
+
         ShieldRestoreRate = Math.Max(GetMultiStatBonus(GroupTypes, BonusType.SHIELD_RESTORE_SPEED).CalculateStat(0.1f), 0f) * MaximumManaShield;
         ShieldRestoreDelayModifier = Math.Max(GetMultiStatBonus(GroupTypes, BonusType.SHIELD_RESTORE_DELAY).CalculateStat(1f), 0.05f);
         DamageTakenModifier = Math.Max(GetMultiStatBonus(GroupTypes, BonusType.DAMAGE_TAKEN).CalculateStat(1f), 0.01f);

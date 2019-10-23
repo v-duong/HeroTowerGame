@@ -33,12 +33,12 @@ public class InputManager : MonoBehaviour
         float ratio = (float)Screen.width / Screen.height;
         maxNegativeX = bounds.center.x - bounds.extents.x + mainCamera.orthographicSize * ratio;
         maxPositiveX = bounds.center.x + bounds.extents.x - mainCamera.orthographicSize * ratio;
-        maxNegativeY = bounds.center.y - bounds.extents.y + mainCamera.orthographicSize;
-        maxPositiveY = bounds.center.y + bounds.extents.y - mainCamera.orthographicSize;
+        maxNegativeY = bounds.center.y - bounds.extents.y;
+        maxPositiveY = bounds.center.y + bounds.extents.y;
         if (maxNegativeY > maxPositiveY)
         {
-            maxNegativeY = 0;
-            maxPositiveY = 0;
+            maxNegativeY = -1;
+            maxPositiveY = 1;
         }
         if (maxNegativeX > maxPositiveX)
         {
@@ -75,11 +75,11 @@ public class InputManager : MonoBehaviour
 
         if (IsSummoningMode)
         {
-            if (Input.GetMouseButtonDown(0) && !EventSystem.current.IsPointerOverGameObject())
+            if (Input.GetMouseButtonDown(0))
             {
                 Vector3 spawnLocation = mainCamera.ScreenToWorldPoint(Input.mousePosition);
                 Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
-                RaycastHit2D hit = Physics2D.Raycast(ray.origin, ray.direction);
+                RaycastHit2D hit = Physics2D.Raycast(ray.origin, ray.direction, LayerMask.GetMask("Enemy", "Hero", "Obstacles", "Path"));
 
                 if (hit.collider != null)
                 {
@@ -123,7 +123,9 @@ public class InputManager : MonoBehaviour
 
             if (Input.GetMouseButtonDown(0))
             {
-                if (!EventSystem.current.IsPointerOverGameObject())
+                if (!EventSystem.current.IsPointerOverGameObject()
+                    || EventSystem.current.currentSelectedGameObject == null
+                    || EventSystem.current.currentSelectedGameObject.GetComponent<UIHealthBar>() != null)
                     selectedHero.StartMovement(moveLocation);
                 IsMovementMode = false;
                 selectedHero = null;
@@ -131,7 +133,7 @@ public class InputManager : MonoBehaviour
         }
         else
         {
-            if (Input.GetMouseButtonDown(0) && !EventSystem.current.IsPointerOverGameObject())
+            if (Input.GetMouseButtonDown(0))
             {
                 LayerMask mask = LayerMask.GetMask("Hero", "Enemy");
                 Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);

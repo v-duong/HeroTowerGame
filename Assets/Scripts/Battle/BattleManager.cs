@@ -7,6 +7,7 @@ public class BattleManager : MonoBehaviour
 {
     private List<Spawner> spawnerList;
     private List<Goal> goalList;
+    private int spawnCoroutinesRunning = 0;
     private Coroutine waveCoroutine;
     private StageInfoBase stageInfo;
 
@@ -45,11 +46,11 @@ public class BattleManager : MonoBehaviour
         {
             if (playerHealth <= 0)
             {
-                EndBattle(false);
+                EndBattle(victory: false);
             }
-            else if (finishedSpawn && currentEnemyList.Count == 0)
+            else if (finishedSpawn && currentEnemyList.Count == 0 && spawnCoroutinesRunning == 0)
             {
-                EndBattle(true);
+                EndBattle(victory: true);
             }
         }
     }
@@ -71,7 +72,7 @@ public class BattleManager : MonoBehaviour
     private void EndBattle(bool victory)
     {
         StageManager.Instance.BattleManager.ProjectilePool.ReturnAll();
-        foreach(EnemyActor enemy in currentEnemyList)
+        foreach (EnemyActor enemy in currentEnemyList)
         {
             enemy.DisableActor();
             EnemyPool.ReturnToPool(enemy);
@@ -137,56 +138,12 @@ public class BattleManager : MonoBehaviour
     private IEnumerator SpawnWaveCo(int currentWave)
     {
         EnemyWave waveToSpawn = Waves[currentWave];
-        EnemyBase enemyBase;
-        RarityType rarity;
-        Dictionary<BonusType, StatBonus> bonuses = new Dictionary<BonusType, StatBonus>();
+
         for (int i = 0; i < waveToSpawn.enemyList.Count; i++)
         {
-            enemyBase = ResourceManager.Instance.GetEnemyBase(waveToSpawn.enemyList[i].enemyName);
-            rarity = waveToSpawn.enemyList[i].enemyRarity;
-
-            bonuses.Clear();
-            foreach (string affixName in waveToSpawn.enemyList[i].bonusProperties)
-            {
-                AffixBase affixBase = ResourceManager.Instance.GetAffixBase(affixName, AffixType.MONSTERMOD);
-                foreach (AffixBonusProperty prop in affixBase.affixBonuses)
-                {
-                    StatBonus bonus;
-                    if (bonuses.ContainsKey(prop.bonusType))
-                        bonus = bonuses[prop.bonusType];
-                    else
-                    {
-                        bonus = new StatBonus();
-                        bonuses.Add(prop.bonusType, bonus);
-                    }
-                    bonus.AddBonus(prop.modifyType, prop.minValue);
-                }
-            }
-
-            for (int j = 0; j < waveToSpawn.enemyList[i].enemyCount; j++)
-            {
-                Spawner spawner = SpawnerList[waveToSpawn.enemyList[i].spawnerIndex];
-                yield return new WaitForSeconds(waveToSpawn.delayBetweenSpawns);
-
-                EnemyActor enemy = EnemyPool.GetEnemy(spawner.transform);
-                
-                enemy.ParentSpawner = spawner;
-                Vector3 positionOffset = new Vector3(Random.Range(-0.5f, 0.5f), Random.Range(-0.5f, 0.5f), 0);
-                //Vector3 positionOffset = new Vector3(-0.5f, -0.5f, 0);
-                enemy.positionOffset = positionOffset;
-                enemy.rotatedOffset = positionOffset;
-
-                enemy.SetBase(enemyBase, rarity, stageInfo.monsterLevel);
-                enemy.Data.SetMobBonuses(bonuses);
-                if (enemyBase.isBoss || waveToSpawn.enemyList[i].isBossOverride)
-                    enemy.isBoss = true;
-
-                enemy.Init();
-
-                currentEnemyList.Add(enemy);
-                enemiesSpawned++;
-            }
+            StartCoroutine(SpawnEnemyList(waveToSpawn.enemyList[i], waveToSpawn.delayBetweenSpawns));
         }
+
         if (currentWave + 1 < Waves.Count)
         {
             yield return new WaitForSeconds(waveToSpawn.delayUntilNextWave);
@@ -196,6 +153,59 @@ public class BattleManager : MonoBehaviour
         {
             finishedSpawn = true;
         }
+
+        yield break;
+    }
+
+    private IEnumerator SpawnEnemyList(EnemyWaveItem enemyWaveItem, float delayBetween)
+    {
+        spawnCoroutinesRunning++;
+
+        Dictionary<BonusType, StatBonus> bonuses = new Dictionary<BonusType, StatBonus>();
+        EnemyBase enemyBase = ResourceManager.Instance.GetEnemyBase(enemyWaveItem.enemyName);
+        RarityType rarity = enemyWaveItem.enemyRarity;
+
+        foreach (string affixName in enemyWaveItem.bonusProperties)
+        {
+            AffixBase affixBase = ResourceManager.Instance.GetAffixBase(affixName, AffixType.MONSTERMOD);
+            foreach (AffixBonusProperty prop in affixBase.affixBonuses)
+            {
+                StatBonus bonus;
+                if (bonuses.ContainsKey(prop.bonusType))
+                    bonus = bonuses[prop.bonusType];
+                else
+                {
+                    bonus = new StatBonus();
+                    bonuses.Add(prop.bonusType, bonus);
+                }
+                bonus.AddBonus(prop.modifyType, prop.minValue);
+            }
+        }
+
+        for (int j = 0; j < enemyWaveItem.enemyCount; j++)
+        {
+            Spawner spawner = SpawnerList[enemyWaveItem.spawnerIndex];
+
+            EnemyActor enemy = EnemyPool.GetEnemy(spawner.transform);
+
+            enemy.ParentSpawner = spawner;
+            Vector3 positionOffset = new Vector3(Random.Range(-0.5f, 0.5f), Random.Range(-0.5f, 0.5f), 0);
+            //Vector3 positionOffset = new Vector3(-0.5f, -0.5f, 0);
+            enemy.positionOffset = positionOffset;
+            enemy.rotatedOffset = positionOffset;
+
+            enemy.SetBase(enemyBase, rarity, stageInfo.monsterLevel);
+            enemy.Data.SetMobBonuses(bonuses);
+            if (enemyBase.isBoss || enemyWaveItem.isBossOverride)
+                enemy.isBoss = true;
+
+            enemy.Init();
+
+            currentEnemyList.Add(enemy);
+            enemiesSpawned++;
+            yield return new WaitForSeconds(delayBetween);
+        }
+        spawnCoroutinesRunning--;
         yield break;
     }
 

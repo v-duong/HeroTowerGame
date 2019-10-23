@@ -104,8 +104,8 @@ public class XpStockPanel : MonoBehaviour
 
         if (selectedHero.SecondaryArchetype != null)
         {
-            newHealth += selectedHero.SecondaryArchetype.HealthGrowth / 2 * levelDifference;
-            newSoulpoint += selectedHero.SecondaryArchetype.SoulPointGrowth / 2 * levelDifference;
+            newHealth += selectedHero.SecondaryArchetype.HealthGrowth / 4 * levelDifference;
+            newSoulpoint += selectedHero.SecondaryArchetype.SoulPointGrowth / 4 * levelDifference;
             newStrength += selectedHero.SecondaryArchetype.StrengthGrowth / 2 * levelDifference;
             newIntelligence += selectedHero.SecondaryArchetype.IntelligenceGrowth / 2 * levelDifference;
             newAgility += selectedHero.SecondaryArchetype.AgilityGrowth / 2 * levelDifference;

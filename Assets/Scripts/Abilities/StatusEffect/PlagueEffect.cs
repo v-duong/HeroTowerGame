@@ -56,7 +56,7 @@ public class PlagueEffect : ActorEffect
     public override void Update(float deltaTime)
     {
         float tick = DurationUpdate(deltaTime);
-        target.ApplySingleElementDamage(ElementType.PHYSICAL, target.Data.CurrentHealth * 0.01f * tick, Source.Data.OnHitData, false, true);
+        target.ApplySingleElementDamage(ElementType.PHYSICAL, target.Data.CurrentHealth * 0.02f * tick, Source.Data.OnHitData, false, true);
     }
 
     public override float GetEffectValue()

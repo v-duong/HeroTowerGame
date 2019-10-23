@@ -1,10 +1,11 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using UnityEngine;
 
 public class ElectrocuteEffect : ActorEffect
 {
     public const float BASE_DURATION = 2.0f;
     private const float BASE_RADIUS = 2f;
-    public const float BASE_DAMAGE_MULTIPLIER = 0.05f;
+    public const float BASE_DAMAGE_MULTIPLIER = 0.04f;
     protected float damage;
     protected float timeElapsed;
 
@@ -15,6 +16,7 @@ public class ElectrocuteEffect : ActorEffect
         effectType = EffectType.ELECTROCUTE;
         damage = inputDamage;
         this.duration = duration;
+        MaxStacks = source.Data.OnHitData.effectData[EffectType.ELECTROCUTE].MaxStacks;
     }
 
     public override void OnApply()
@@ -40,13 +42,25 @@ public class ElectrocuteEffect : ActorEffect
             hits = Physics2D.OverlapCircleAll(target.transform.position, range, LayerMask.GetMask("Hero"));
         }
 
-        int index = Random.Range(0, hits.Length);
-        Actor secondaryTarget = hits[index].gameObject.GetComponent<Actor>();
+        List<Actor> collidedActors = new List<Actor>();
+        foreach (Collider2D collider in hits)
+        {
+            Actor targetActor = collider.gameObject.GetComponent<Actor>();
+            if (targetActor == null || targetActor.Data.IsDead)
+                continue;
+            collidedActors.Add(targetActor);
+        }
 
-        target.ApplySingleElementDamage(ElementType.LIGHTNING, damage * timeElapsed, Source.Data.OnHitData, false, true);
+        if (collidedActors.Count > 0)
+        {
+            int index = Random.Range(0, collidedActors.Count);
+            Actor secondaryTarget = collidedActors[index];
 
-        if (secondaryTarget != null)
-            secondaryTarget.ApplySingleElementDamage(ElementType.LIGHTNING, damage * timeElapsed, Source.Data.OnHitData, false, true);
+            if (secondaryTarget != null)
+                secondaryTarget.ApplySingleElementDamage(ElementType.LIGHTNING, damage * timeElapsed, Source.Data.OnHitData, false, true);
+        }
+
+        target.ApplySingleElementDamage(ElementType.LIGHTNING, damage * timeElapsed * 1.5f, Source.Data.OnHitData, false, true);
 
         /*
         foreach(Collider2D c in hits)
@@ -55,14 +69,12 @@ public class ElectrocuteEffect : ActorEffect
             secondaryTarget.ApplySingleElementDamage(ElementType.LIGHTNING, damage * timeElapsed, false);
         }
         */
-
     }
 
     public override void Update(float deltaTime)
     {
         float tick = DurationUpdate(deltaTime);
         timeElapsed += tick;
-
     }
 
     public override float GetEffectValue()

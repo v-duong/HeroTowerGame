@@ -31,12 +31,15 @@ public abstract class Actor : MonoBehaviour
     {
         float dT = Time.deltaTime;
         int index = statusEffects.Count - 1;
+        bool needsUpdate = false;
+
         while (index >= 0)
         {
             statusEffects[index].Update(dT);
             if (statusEffects[index].duration <= 0)
             {
-                RemoveStatusEffect(statusEffects[index]);
+                RemoveStatusEffect(statusEffects[index], true);
+                needsUpdate = true;
             }
             index--;
         }
@@ -47,10 +50,14 @@ public abstract class Actor : MonoBehaviour
             buffEffects[index].Update(dT);
             if (buffEffects[index].duration <= 0)
             {
-                RemoveStatusEffect(buffEffects[index]);
+                RemoveStatusEffect(buffEffects[index], true);
+                needsUpdate = true;
             }
             index--;
         }
+
+        if (needsUpdate)
+            Data.UpdateActorData();
     }
 
     protected void Start()
@@ -119,6 +126,8 @@ public abstract class Actor : MonoBehaviour
         if (statusEffect.effectType == EffectType.BUFF || statusEffect.effectType == EffectType.DEBUFF)
         {
             buffEffects.Add((StatBonusBuffEffect)statusEffect);
+            statusEffect.OnApply();
+            Data.UpdateActorData();
         }
         else
         {
@@ -127,28 +136,36 @@ public abstract class Actor : MonoBehaviour
             if (statusEffect.Source.GetActorType() != this.GetActorType())
                 statusEffect.duration *= Data.AfflictedStatusDuration;
 
-            if (existingStatus.Count == 1 && statusEffect.MaxStacks == 1)
+            int stackCount;
+            if (existingStatus.Count > 0 && statusEffect.StacksIncrementExistingEffect)
             {
-                if (statusEffect.GetSimpleEffectValue() > existingStatus[0].GetSimpleEffectValue())
-                    RemoveStatusEffect(existingStatus[0]);
-                else if (statusEffect.GetSimpleEffectValue() == existingStatus[0].GetSimpleEffectValue())
-                {
-                    existingStatus[0].RefreshDuration(statusEffect.duration);
-                    return;
-                }
-                else
-                    return;
+                stackCount = existingStatus[0].Stacks;
             }
-            else if (existingStatus.Count == statusEffect.MaxStacks)
+            else
+                stackCount = existingStatus.Count;
+
+            if (statusEffect.StacksIncrementExistingEffect && stackCount > 0)
             {
-                ActorEffect effectToRemove = existingStatus.Find(x => x.GetSimpleEffectValue() < statusEffect.GetSimpleEffectValue());
-                if (effectToRemove != null)
-                    RemoveStatusEffect(effectToRemove);
-                else
-                    return;
-            }
-            else if (existingStatus.Count > statusEffect.MaxStacks)
+                if (stackCount < statusEffect.MaxStacks)
+                    existingStatus[0].SetStacks(existingStatus[0].Stacks + 1);
                 return;
+            }
+            else
+            {
+                if (stackCount == statusEffect.MaxStacks)
+                {
+                    ActorEffect effectToRemove = existingStatus.Find(x => x.GetSimpleEffectValue() < statusEffect.GetSimpleEffectValue());
+                    if (effectToRemove != null)
+                        RemoveStatusEffect(effectToRemove, true);
+                    else
+                    {
+                        existingStatus.OrderBy(x => x.duration).First().RefreshDuration(statusEffect.duration);
+                        return;
+                    }
+                }
+                else if (stackCount > statusEffect.MaxStacks)
+                    return;
+            }
 
             statusEffects.Add(statusEffect);
             //Debug.Log(Data.Name + " " + statusEffect + " " + statusEffect.GetSimpleEffectValue());
@@ -158,7 +175,7 @@ public abstract class Actor : MonoBehaviour
         }
     }
 
-    public void RemoveStatusEffect(ActorEffect statusEffect)
+    public void RemoveStatusEffect(ActorEffect statusEffect, bool deferUpdates)
     {
         statusEffect.OnExpire();
 
@@ -167,9 +184,13 @@ public abstract class Actor : MonoBehaviour
         else
         {
             statusEffects.Remove(statusEffect);
-            actorTags.Remove(statusEffect.StatusTag);
+
+            if (GetStatusEffect(statusEffect.effectType) == null)
+                actorTags.Remove(statusEffect.StatusTag);
         }
-        Data.UpdateActorData();
+
+        if (!deferUpdates)
+            Data.UpdateActorData();
     }
 
     public ActorEffect GetStatusEffect(EffectType effect)
@@ -184,6 +205,11 @@ public abstract class Actor : MonoBehaviour
             actorEffects.OrderBy(x => x.GetSimpleEffectValue());
             return actorEffects[0];
         }
+    }
+
+    public List<ActorEffect> GetStatusEffectAll(EffectType effect)
+    {
+        return statusEffects.FindAll(x => x.effectType == effect);
     }
 
     public void ClearStatusEffects(bool useExpireEffects)
@@ -337,19 +363,21 @@ public abstract class Actor : MonoBehaviour
     {
         if (target.Data.AttackPhasing > 0 && abilityType == AbilityType.ATTACK)
         {
-            if (target.Data.AttackPhasing == 100 || UnityEngine.Random.Range(0, 100) < (target.Data.AttackPhasing))
+            if (target.Data.AttackPhasing == 100 || UnityEngine.Random.Range(0, 100) < target.Data.AttackPhasing)
                 return true;
         }
         else if (target.Data.MagicPhasing > 0 && abilityType == AbilityType.SPELL)
         {
-            if (target.Data.MagicPhasing == 100 || UnityEngine.Random.Range(0, 100) < (target.Data.MagicPhasing))
+            if (target.Data.MagicPhasing == 100 || UnityEngine.Random.Range(0, 100) < target.Data.MagicPhasing)
                 return true;
         }
 
         return false;
     }
 
-    public void ApplyDamage(Dictionary<ElementType, float> damage, OnHitDataContainer onHitData, bool isHit, bool isFromSecondaryEffect, EffectType? sourceType = null)
+    public void ApplyDamage(Dictionary<ElementType, float> damage, OnHitDataContainer onHitData, bool isHit,
+                            bool isFromSecondaryEffect, EffectType? sourceType = null,
+                            EffectApplicationFlags restrictionFlags = EffectApplicationFlags.NONE)
     {
         float total = 0;
 
@@ -358,79 +386,56 @@ public abstract class Actor : MonoBehaviour
 
         Dictionary<ElementType, float> damageTaken = new Dictionary<ElementType, float>(damage);
 
-        float overallDamageMod = Data.DamageTakenModifier;
+        float damageTakenModifier = Data.DamageTakenModifier;
+        float damageReduction = 1f;
 
-        if (isHit && !isFromSecondaryEffect)
-            overallDamageMod *= onHitData.directHitDamage;
-
-        if (isBoss)
-            overallDamageMod *= onHitData.vsBossDamage;
-
-        if (damage.ContainsKey(ElementType.PHYSICAL))
+        if (isHit)
         {
-            float armorReductionRate = 1.0f;
-            if (isHit && Data.Armor > 0)
+            if (!isFromSecondaryEffect)
+                damageTakenModifier *= onHitData.directHitDamage;
+
+            if (DidTargetBlock(this))
             {
-                armorReductionRate = 1.0f - (Data.Armor / (Data.Armor + damage[ElementType.PHYSICAL]));
+                damageReduction *= 1f - Data.BlockProtection;
+                damageTakenModifier *= damageReduction;
+                Data.OnHitData.ApplyTriggerEffects(TriggerType.ON_BLOCK, onHitData.SourceActor);
             }
-            float resistanceReductionRate = 1.0f - ((Data.GetResistance(ElementType.PHYSICAL) - onHitData.GetNegation(ElementType.PHYSICAL)) / 100f);
-            float physicalReduction = armorReductionRate * resistanceReductionRate;
-            //Debug.Log(Data.GetResistance(ElementType.PHYSICAL) + " " + onHitData.physicalNegation + " " + damage[ElementType.PHYSICAL]);
-            float physicalDamage = physicalReduction * damage[ElementType.PHYSICAL] * overallDamageMod;
-            total += Math.Max(0, physicalDamage);
+
+            //if (isBoss)
+            //damageTakenModifier *= onHitData.vsBossDamage;
         }
 
-        if (damage.ContainsKey(ElementType.FIRE))
+        foreach (ElementType elementType in damage.Keys)
         {
-            float fireDamage = (1f - (Data.GetResistance(ElementType.FIRE) - onHitData.GetNegation(ElementType.FIRE)) / 100f) * damage[ElementType.FIRE] * overallDamageMod;
-            total += Math.Max(0, fireDamage);
+            if (elementType == ElementType.PHYSICAL && damage.ContainsKey(ElementType.PHYSICAL))
+            {
+                float armorReductionRate = 1.0f;
+                if (isHit && Data.Armor > 0)
+                {
+                    armorReductionRate = 1.0f - (Data.Armor / (Data.Armor + damage[ElementType.PHYSICAL]));
+                }
+                float resistanceReductionRate = 1.0f - ((Data.GetResistance(ElementType.PHYSICAL) - onHitData.GetNegation(ElementType.PHYSICAL)) / 100f);
+                float physicalReduction = armorReductionRate * resistanceReductionRate;
+                //Debug.Log(Data.GetResistance(ElementType.PHYSICAL) + " " + onHitData.physicalNegation + " " + damage[ElementType.PHYSICAL]);
+                float physicalDamage = physicalReduction * damage[ElementType.PHYSICAL] * damageTakenModifier;
+                total += Math.Max(0, physicalDamage);
+                damageTaken[ElementType.PHYSICAL] = damage[ElementType.PHYSICAL] * damageReduction;
+            }
+            else
+            {
+                if (damage.ContainsKey(elementType))
+                {
+                    float fireDamage = (1f - (Data.GetResistance(elementType) - onHitData.GetNegation(elementType)) / 100f) * damage[elementType] * damageTakenModifier;
+                    total += Math.Max(0, fireDamage);
+                    damageTaken[elementType] = damage[elementType] * damageReduction;
+                }
+            }
         }
-
-        if (damage.ContainsKey(ElementType.COLD))
-        {
-            float coldDamage = (1f - (Data.GetResistance(ElementType.COLD) - onHitData.GetNegation(ElementType.COLD)) / 100f) * damage[ElementType.COLD] * overallDamageMod;
-            total += Math.Max(0, coldDamage);
-            //Debug.Log(damage[ElementType.COLD] + " " + coldDamage);
-            damageTaken[ElementType.COLD] = coldDamage;
-        }
-
-        if (damage.ContainsKey(ElementType.LIGHTNING))
-        {
-            float lightningDamage = (1f - (Data.GetResistance(ElementType.LIGHTNING) - onHitData.GetNegation(ElementType.LIGHTNING)) / 100f) * damage[ElementType.LIGHTNING] * overallDamageMod;
-            total += Math.Max(0, lightningDamage);
-        }
-
-        if (damage.ContainsKey(ElementType.EARTH))
-        {
-            float earthDamage = (1f - (Data.GetResistance(ElementType.EARTH) - onHitData.GetNegation(ElementType.EARTH)) / 100f) * damage[ElementType.EARTH] * overallDamageMod;
-            total += Math.Max(0, earthDamage);
-            damageTaken[ElementType.EARTH] = earthDamage;
-        }
-
-        if (damage.ContainsKey(ElementType.DIVINE))
-        {
-            float divineDamage = (1f - (Data.GetResistance(ElementType.DIVINE) - onHitData.GetNegation(ElementType.DIVINE)) / 100f) * damage[ElementType.DIVINE] * overallDamageMod;
-            total += Math.Max(0, divineDamage);
-            damageTaken[ElementType.DIVINE] = divineDamage;
-        }
-
-        if (damage.ContainsKey(ElementType.VOID))
-        {
-            float voidDamage = (1f - (Data.GetResistance(ElementType.VOID) - onHitData.GetNegation(ElementType.VOID)) / 100f) * damage[ElementType.VOID] * overallDamageMod;
-            total += Math.Max(0, voidDamage);
-        }
-
-        if (total == 0)
-            return;
 
         if (sourceType == EffectType.POISON)
-        {
             total = ModifyCurrentShield(total * Data.PoisonResistance, true) + (total * (1f - Data.PoisonResistance));
-        }
         else
-        {
             total = ModifyCurrentShield(total, true);
-        }
 
         if (Data.HealthIsHitsToKill && isHit && total >= 1f)
         {
@@ -450,87 +455,119 @@ public abstract class Actor : MonoBehaviour
                 if (bodyguard.TransferDamage(total, out float damageMod))
                 {
                     total *= 1f - bodyguard.DamageTransferRate;
-                    Debug.Log(damageMod + " guard");
                     foreach (ElementType element in Enum.GetValues(typeof(ElementType)))
                     {
                         if (damage.ContainsKey(element))
                             damage[element] *= damageMod;
                     }
-                    bodyguard.Source.ApplyAfterHitEffects(damage, onHitData);
+                    bodyguard.Source.ApplyAfterHitEffects(damage, onHitData, restrictionFlags);
                 }
             }
 
             ModifyCurrentHealth(total);
         }
 
-        if (Data.IsDead)
-        {
-            onHitData.ApplyTriggerEffects(TriggerType.ON_KILL, this);
-        }
-        if (isHit)
+        if (onHitData.SourceActor != this)
         {
             if (Data.IsDead)
-                onHitData.ApplyTriggerEffects(TriggerType.ON_HIT_KILL, this);
-            ApplyAfterHitEffects(damageTaken, onHitData);
+            {
+                onHitData.ApplyTriggerEffects(TriggerType.ON_KILL, this);
+
+                if (isHit)
+                    onHitData.ApplyTriggerEffects(TriggerType.ON_HIT_KILL, this);
+            }
+            else
+                Data.OnHitData.ApplyTriggerEffects(TriggerType.WHEN_HIT_BY, this);
+        }
+
+        if (isHit)
+        {
+            ApplyAfterHitEffects(damageTaken, onHitData, restrictionFlags);
         }
     }
 
-    public void ApplyAfterHitEffects(Dictionary<ElementType, float> damage, OnHitDataContainer onHitData)
+    public void ApplyAfterHitEffects(Dictionary<ElementType, float> damage, OnHitDataContainer onHitData, EffectApplicationFlags restrictionFlags)
     {
         onHitData.ApplyTriggerEffects(TriggerType.ON_HIT, this);
 
+        float HealthForThreshold = Data.MaximumHealth * Data.AfflictedStatusThreshold;
+        if (Data.HasSpecialBonus(BonusType.USE_SHIELD_FOR_STATUS_THRESHOLD))
+        {
+            HealthForThreshold = Data.MaximumManaShield * Data.AfflictedStatusThreshold;
+        }
+
         if (damage.ContainsKey(ElementType.PHYSICAL) && damage[ElementType.PHYSICAL] > 0)
         {
-            if (onHitData.DidEffectProc(EffectType.BLEED, Data.AfflictedStatusAvoidance))
+            if (!restrictionFlags.HasFlag(EffectApplicationFlags.CANNOT_BLEED)
+                && onHitData.DidEffectProc(EffectType.BLEED, Data.AfflictedStatusAvoidance))
             {
-                onHitData.ApplyEffectToTarget(this, EffectType.BLEED, damage[ElementType.PHYSICAL] * onHitData.GetEffectEffectiveness(EffectType.BLEED) * Data.AfflictedStatusDamageResistance * BleedEffect.BASE_DAMAGE_MULTIPLIER);
+                onHitData.ApplyEffectToTarget(this, EffectType.BLEED, damage[ElementType.PHYSICAL] * onHitData.effectData[EffectType.BLEED].Effectiveness * Data.AfflictedStatusDamageResistance * BleedEffect.BASE_DAMAGE_MULTIPLIER);
             }
-            if (onHitData.DidEffectProc(EffectType.POISON, Data.AfflictedStatusAvoidance))
+            if (!restrictionFlags.HasFlag(EffectApplicationFlags.CANNOT_POISON)
+                && onHitData.DidEffectProc(EffectType.POISON, Data.AfflictedStatusAvoidance))
             {
-                onHitData.ApplyEffectToTarget(this, EffectType.POISON, damage[ElementType.PHYSICAL] * onHitData.GetEffectEffectiveness(EffectType.POISON) * Data.AfflictedStatusDamageResistance * PoisonEffect.BASE_DAMAGE_MULTIPLIER);
+                onHitData.ApplyEffectToTarget(this, EffectType.POISON, damage[ElementType.PHYSICAL] * onHitData.effectData[EffectType.POISON].Effectiveness * Data.AfflictedStatusDamageResistance * PoisonEffect.BASE_DAMAGE_MULTIPLIER);
             }
         }
 
-        if (damage.ContainsKey(ElementType.FIRE) && damage[ElementType.FIRE] > 0 && onHitData.DidEffectProc(EffectType.BURN, Data.AfflictedStatusAvoidance))
+        if (!restrictionFlags.HasFlag(EffectApplicationFlags.CANNOT_BURN)
+            && damage.ContainsKey(ElementType.FIRE)
+            && damage[ElementType.FIRE] > 0
+            && onHitData.DidEffectProc(EffectType.BURN, Data.AfflictedStatusAvoidance))
         {
             //float percent = (damage[ElementType.FIRE] * onHitData.GetEffectEffectiveness(EffectType.BURN) * Data.AfflictedStatusDamageResistance) / damage[ElementType.FIRE];
             //Debug.Log(damage[ElementType.FIRE] + " BURN  " + damage[ElementType.FIRE] * onHitData.GetEffectEffectiveness(EffectType.BURN) * Data.AfflictedStatusDamageResistance + "   " + percent.ToString("F3"));
-            onHitData.ApplyEffectToTarget(this, EffectType.BURN, damage[ElementType.FIRE] * onHitData.GetEffectEffectiveness(EffectType.BURN) * Data.AfflictedStatusDamageResistance * BurnEffect.BASE_DAMAGE_MULTIPLIER);
+            onHitData.ApplyEffectToTarget(this, EffectType.BURN, damage[ElementType.FIRE] * onHitData.effectData[EffectType.BURN].Effectiveness * Data.AfflictedStatusDamageResistance * BurnEffect.BASE_DAMAGE_MULTIPLIER);
         }
 
-        if (damage.ContainsKey(ElementType.COLD) && damage[ElementType.COLD] > 0 && onHitData.DidEffectProc(EffectType.CHILL, Data.AfflictedStatusAvoidance))
+        if (!restrictionFlags.HasFlag(EffectApplicationFlags.CANNOT_CHILL)
+            && damage.ContainsKey(ElementType.COLD)
+            && damage[ElementType.COLD] > 0
+            && onHitData.DidEffectProc(EffectType.CHILL, Data.AfflictedStatusAvoidance))
         {
-            float percentageDealt = damage[ElementType.COLD] / Data.MaximumHealth;
+            float percentageDealt = damage[ElementType.COLD] / HealthForThreshold;
 
-            float chillEffectPower = ChillEffect.BASE_CHILL_EFFECT * Math.Min(percentageDealt / (ChillEffect.BASE_CHILL_THRESHOLD * Data.AfflictedStatusThreshold), 1f) * onHitData.GetEffectEffectiveness(EffectType.CHILL);
+            float chillEffectPower = ChillEffect.BASE_CHILL_EFFECT * Math.Min(percentageDealt / ChillEffect.BASE_CHILL_THRESHOLD, 1f) * onHitData.effectData[EffectType.CHILL].Effectiveness;
             //Debug.Log(damage[ElementType.COLD] + " " + percentageDealt + " " + chillEffectPower);
             onHitData.ApplyEffectToTarget(this, EffectType.CHILL, chillEffectPower);
         }
 
-        if (damage.ContainsKey(ElementType.LIGHTNING) && damage[ElementType.LIGHTNING] > 0 && onHitData.DidEffectProc(EffectType.ELECTROCUTE, Data.AfflictedStatusAvoidance))
+        if (!restrictionFlags.HasFlag(EffectApplicationFlags.CANNOT_ELECTROCUTE)
+            && damage.ContainsKey(ElementType.LIGHTNING)
+            && damage[ElementType.LIGHTNING] > 0
+            && onHitData.DidEffectProc(EffectType.ELECTROCUTE, Data.AfflictedStatusAvoidance))
         {
-            onHitData.ApplyEffectToTarget(this, EffectType.ELECTROCUTE, damage[ElementType.LIGHTNING] * onHitData.GetEffectEffectiveness(EffectType.ELECTROCUTE) * Data.AfflictedStatusDamageResistance * ElectrocuteEffect.BASE_DAMAGE_MULTIPLIER);
+            onHitData.ApplyEffectToTarget(this, EffectType.ELECTROCUTE, damage[ElementType.LIGHTNING] * onHitData.effectData[EffectType.ELECTROCUTE].Effectiveness * Data.AfflictedStatusDamageResistance * ElectrocuteEffect.BASE_DAMAGE_MULTIPLIER);
         }
 
-        if (damage.ContainsKey(ElementType.EARTH) && damage[ElementType.EARTH] > 0 && onHitData.DidEffectProc(EffectType.FRACTURE, Data.AfflictedStatusAvoidance))
+        if (!restrictionFlags.HasFlag(EffectApplicationFlags.CANNOT_FRACTURE)
+            && damage.ContainsKey(ElementType.EARTH)
+            && damage[ElementType.EARTH] > 0
+            && onHitData.DidEffectProc(EffectType.FRACTURE, Data.AfflictedStatusAvoidance))
         {
-            float percentageDealt = damage[ElementType.EARTH] / Data.MaximumHealth;
-            float fractureEffectPower = FractureEffect.BASE_FRACTURE_EFFECT * Math.Min(percentageDealt / (FractureEffect.BASE_FRACTURE_THRESHOLD * Data.AfflictedStatusThreshold), 1f) * onHitData.GetEffectEffectiveness(EffectType.FRACTURE);
+            float percentageDealt = damage[ElementType.EARTH] / HealthForThreshold;
+            float fractureEffectPower = FractureEffect.BASE_FRACTURE_EFFECT * Math.Min(percentageDealt / FractureEffect.BASE_FRACTURE_THRESHOLD, 1f) * onHitData.effectData[EffectType.FRACTURE].Effectiveness;
 
             onHitData.ApplyEffectToTarget(this, EffectType.FRACTURE, fractureEffectPower);
         }
 
-        if (damage.ContainsKey(ElementType.DIVINE) && damage[ElementType.DIVINE] > 0 && onHitData.DidEffectProc(EffectType.PACIFY, Data.AfflictedStatusAvoidance))
+        if (!restrictionFlags.HasFlag(EffectApplicationFlags.CANNOT_PACIFY)
+            && damage.ContainsKey(ElementType.DIVINE)
+            && damage[ElementType.DIVINE] > 0
+            && onHitData.DidEffectProc(EffectType.PACIFY, Data.AfflictedStatusAvoidance))
         {
-            float percentageDealt = damage[ElementType.DIVINE] / Data.MaximumHealth;
-            float pacifyEffectPower = PacifyEffect.BASE_PACIFY_EFFECT * Math.Min(percentageDealt / (PacifyEffect.BASE_PACIFY_THRESHOLD * Data.AfflictedStatusThreshold), 1f) * onHitData.GetEffectEffectiveness(EffectType.PACIFY);
+            float percentageDealt = damage[ElementType.DIVINE] / HealthForThreshold;
+            float pacifyEffectPower = PacifyEffect.BASE_PACIFY_EFFECT * Math.Min(percentageDealt / PacifyEffect.BASE_PACIFY_THRESHOLD, 1f) * onHitData.effectData[EffectType.PACIFY].Effectiveness;
 
             onHitData.ApplyEffectToTarget(this, EffectType.PACIFY, pacifyEffectPower);
         }
 
-        if (damage.ContainsKey(ElementType.VOID) && damage[ElementType.VOID] > 0 && onHitData.DidEffectProc(EffectType.RADIATION, Data.AfflictedStatusAvoidance))
+        if (!restrictionFlags.HasFlag(EffectApplicationFlags.CANNOT_RADIATION)
+            && damage.ContainsKey(ElementType.VOID)
+            && damage[ElementType.VOID] > 0
+            && onHitData.DidEffectProc(EffectType.RADIATION, Data.AfflictedStatusAvoidance))
         {
-            onHitData.ApplyEffectToTarget(this, EffectType.RADIATION, damage[ElementType.VOID] * onHitData.GetEffectEffectiveness(EffectType.RADIATION) * Data.AfflictedStatusDamageResistance * RadiationEffect.BASE_DAMAGE_MULTIPLIER);
+            onHitData.ApplyEffectToTarget(this, EffectType.RADIATION, damage[ElementType.VOID] * onHitData.effectData[EffectType.RADIATION].Effectiveness * Data.AfflictedStatusDamageResistance * RadiationEffect.BASE_DAMAGE_MULTIPLIER);
         }
     }
 
@@ -589,47 +626,44 @@ public abstract class Actor : MonoBehaviour
 
         foreach (ElementType elementType in Enum.GetValues(typeof(ElementType)))
         {
-            if (baseDamage.ContainsKey(elementType))
+            minDamage[(int)elementType] = baseDamage[elementType].min;
+            maxDamage[(int)elementType] = baseDamage[elementType].max;
+
+            HashSet<BonusType> minTypes = new HashSet<BonusType>();
+            HashSet<BonusType> maxTypes = new HashSet<BonusType>();
+            HashSet<BonusType> multiTypes = new HashSet<BonusType>();
+
+            Helpers.GetGlobalAndFlatDamageTypes(elementType, tagsToUse, minTypes, maxTypes, multiTypes);
+            multiTypes.UnionWith(Helpers.GetMultiplierTypes(AbilityType.NON_ABILITY, elementType));
+
+            StatBonus minBonus = Data.GetMultiStatBonus(tagsToUse, minTypes.ToArray());
+            StatBonus maxBonus = Data.GetMultiStatBonus(tagsToUse, maxTypes.ToArray());
+            StatBonus multiBonus = new StatBonus();
+
+            foreach (KeyValuePair<BonusType, StatBonus> keyValue in whenHitBonusDict)
             {
-                minDamage[(int)elementType] = baseDamage[elementType].min;
-                maxDamage[(int)elementType] = baseDamage[elementType].max;
+                if (minTypes.Contains(keyValue.Key))
+                    minBonus.AddBonuses(keyValue.Value);
+                else if (maxTypes.Contains(keyValue.Key))
+                    maxBonus.AddBonuses(keyValue.Value);
+                else if (multiTypes.Contains(keyValue.Key))
+                    multiBonus.AddBonuses(keyValue.Value);
+            }
 
-                HashSet<BonusType> minTypes = new HashSet<BonusType>();
-                HashSet<BonusType> maxTypes = new HashSet<BonusType>();
-                HashSet<BonusType> multiTypes = new HashSet<BonusType>();
-
-                Helpers.GetGlobalAndFlatDamageTypes(elementType, tagsToUse, minTypes, maxTypes, multiTypes);
-                multiTypes.UnionWith(Helpers.GetMultiplierTypes(AbilityType.NON_ABILITY, elementType));
-
-                StatBonus minBonus = Data.GetMultiStatBonus(tagsToUse, minTypes.ToArray());
-                StatBonus maxBonus = Data.GetMultiStatBonus(tagsToUse, maxTypes.ToArray());
-                StatBonus multiBonus = new StatBonus();
-
-                foreach (KeyValuePair<BonusType, StatBonus> keyValue in whenHitBonusDict)
-                {
-                    if (minTypes.Contains(keyValue.Key))
-                        minBonus.AddBonuses(keyValue.Value);
-                    else if (maxTypes.Contains(keyValue.Key))
-                        maxBonus.AddBonuses(keyValue.Value);
-                    else if (multiTypes.Contains(keyValue.Key))
-                        multiBonus.AddBonuses(keyValue.Value);
-                }
-
-                HashSet<BonusType> availableConversions = Data.BonusesIntersection(null, Helpers.GetConversionTypes(elementType));
-                if (availableConversions.Count > 0)
-                {
-                    Array.Clear(conversions, 0, 7);
-                    ActorAbility.GetElementConversionValues(Data, tagsToUse, availableConversions, conversions, null);
-                    MinMaxRange baseRange = ActorAbility.CalculateDamageConversion(Data, convertedMinDamage, convertedMaxDamage, tagsToUse, baseDamage[elementType], conversions, elementType, multiTypes, minBonus, maxBonus, multiBonus);
-                    minDamage[(int)elementType] = baseRange.min;
-                    maxDamage[(int)elementType] = baseRange.max;
-                }
-                else
-                {
-                    Data.GetMultiStatBonus(multiBonus, null, tagsToUse, multiTypes.ToArray());
-                    minDamage[(int)elementType] = (int)Math.Max(multiBonus.CalculateStat(baseDamage[elementType].min + minBonus.CalculateStat(0f)), 0);
-                    maxDamage[(int)elementType] = (int)Math.Max(multiBonus.CalculateStat(baseDamage[elementType].max + maxBonus.CalculateStat(0f)), 0);
-                }
+            HashSet<BonusType> availableConversions = Data.BonusesIntersection(null, Helpers.GetConversionTypes(elementType));
+            if (availableConversions.Count > 0)
+            {
+                Array.Clear(conversions, 0, 7);
+                ActorAbility.GetElementConversionValues(Data, tagsToUse, availableConversions, conversions, null);
+                MinMaxRange baseRange = ActorAbility.CalculateDamageConversion(Data, convertedMinDamage, convertedMaxDamage, tagsToUse, baseDamage[elementType], conversions, elementType, multiTypes, minBonus, maxBonus, multiBonus);
+                minDamage[(int)elementType] = baseRange.min;
+                maxDamage[(int)elementType] = baseRange.max;
+            }
+            else
+            {
+                Data.GetMultiStatBonus(multiBonus, null, tagsToUse, multiTypes.ToArray());
+                minDamage[(int)elementType] = (int)Math.Max(multiBonus.CalculateStat(baseDamage[elementType].min + minBonus.CalculateStat(0f)), 0);
+                maxDamage[(int)elementType] = (int)Math.Max(multiBonus.CalculateStat(baseDamage[elementType].max + maxBonus.CalculateStat(0f)), 0);
             }
         }
 
@@ -640,9 +674,6 @@ public abstract class Actor : MonoBehaviour
         foreach (ElementType elementType in Enum.GetValues(typeof(ElementType)))
         {
             float damage = UnityEngine.Random.Range(minDamage[(int)elementType] + convertedMinDamage[(int)elementType], maxDamage[(int)elementType] + convertedMaxDamage[(int)elementType] + 1);
-
-            if (damage > 0)
-                Debug.Log(elementType + " " + damage);
 
             if (isCrit)
                 damage *= 1 + (Data.GetMultiStatBonus(tagsToUse, BonusType.GLOBAL_CRITICAL_DAMAGE).CalculateStat(50) / 100f);

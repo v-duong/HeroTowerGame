@@ -186,7 +186,7 @@ public class HeroDetailWindow : MonoBehaviour
     public void DebugLevelUp()
     {
         if (hero != null)
-            hero.AddExperience(50000);
+            hero.AddExperience(500020);
         UpdateWindow();
     }
 

@@ -185,8 +185,8 @@ public class HeroData : ActorData
 
         if (SecondaryArchetype != null)
         {
-            BaseHealth += SecondaryArchetype.HealthGrowth / 2;
-            BaseSoulPoints += SecondaryArchetype.SoulPointGrowth / 2;
+            BaseHealth += SecondaryArchetype.HealthGrowth / 4;
+            BaseSoulPoints += SecondaryArchetype.SoulPointGrowth / 4;
             BaseStrength += SecondaryArchetype.StrengthGrowth / 2;
             BaseIntelligence += SecondaryArchetype.IntelligenceGrowth / 2;
             BaseAgility += SecondaryArchetype.AgilityGrowth / 2;
@@ -247,11 +247,18 @@ public class HeroData : ActorData
     {
         if (slot >= 3)
             return false;
-        if (abilitySlotList[slot].Ability == null)
+
+        AbilitySlot abilitySlot = abilitySlotList[slot];
+
+        if (abilitySlot.Ability == null)
             return false;
-        IAbilitySource source = abilitySlotList[slot].source;
-        source.OnAbilityUnequip(abilitySlotList[slot].Ability.abilityBase, this, slot);
-        abilitySlotList[slot].ClearAbility();
+
+        IAbilitySource source = abilitySlot.source;
+        source.OnAbilityUnequip(abilitySlot.Ability.abilityBase, this, slot);
+
+        abilitySlot.Ability.ClearTriggeredEffects(this, abilitySlot.Ability.abilityBase.idName + slot);
+
+        abilitySlot.ClearAbility();
         return true;
     }
 
@@ -262,7 +269,12 @@ public class HeroData : ActorData
 
     public int GetAbilityLevel(AbilityBase ability)
     {
-        return GetAbilityLevel();
+        int level = GetAbilityLevel();
+        int levelBonuses = 0;
+
+        levelBonuses += GetMultiStatBonus(GroupTypes, BonusType.ALL_ABILITY_LEVEL).CalculateStat(0);
+
+        return level + levelBonuses;
     }
 
     public Equipment GetEquipmentInSlot(EquipSlotType slot)
@@ -352,7 +364,14 @@ public class HeroData : ActorData
         equipList[slotNum].equip = null;
         equip.equippedToHero = null;
 
-        RemoveEquipmentBonuses(equip.GetAllAffixes());
+        if (equipList[slotNum].isDisabled)
+        {
+            equipList[slotNum].isDisabled = false;
+        }
+        else
+        {
+            RemoveEquipmentBonuses(equip.GetAllAffixes());
+        }
 
         UpdateActorData();
         return true;
@@ -461,7 +480,7 @@ public class HeroData : ActorData
         UpdateAbilities();
         UpdateDefenses();
 
-        movementSpeed = Math.Max(GetMultiStatBonus(GroupTypes, BonusType.MOVEMENT_SPEED).CalculateStat(2f), 0.1f);
+        movementSpeed = Math.Max(GetMultiStatBonus(GroupTypes, BonusType.MOVEMENT_SPEED).CalculateStat(2f), 0.0f);
 
         base.UpdateActorData();
     }
@@ -653,7 +672,7 @@ public class HeroData : ActorData
         bool hasShield = false;
         foreach (HeroEquipData equippedItem in equipList)
         {
-            if(equippedItem.equip == null)
+            if (equippedItem.equip == null)
                 continue;
             if (equippedItem.equip.GetItemType() == ItemType.ARMOR)
             {
@@ -684,7 +703,7 @@ public class HeroData : ActorData
         ResolveRating = Math.Max(GetMultiStatBonus(GroupTypes, BonusType.GLOBAL_RESOLVE_RATING).CalculateStat(BaseResolveRating + ResolveFromEquip), 0);
 
         int statusThreshold = (int)(ResolveRating / 5f / 100f);
-        int statusResistance = (int)(ResolveRating / 15f);
+        int statusResistance = (int)(ResolveRating / 25f);
 
         AfflictedStatusDamageResistance = Math.Min(GetMultiStatBonus(GroupTypes, BonusType.AFFLICTED_STATUS_DAMAGE_RESISTANCE).CalculateStat(statusResistance), 90) / 100f;
         AfflictedStatusDamageResistance = 1f - AfflictedStatusDamageResistance;
@@ -711,8 +730,8 @@ public class HeroData : ActorData
 
             AttackParryChance = Math.Min(GetMultiStatBonus(GroupTypes, BonusType.WEAPON_ATTACK_PARRY_CHANCE).CalculateStat(0f), attackParryCap);
             SpellParryChance = Math.Min(GetMultiStatBonus(GroupTypes, BonusType.WEAPON_SPELL_PARRY_CHANCE).CalculateStat(0f), spellParryCap);
-
-        } else
+        }
+        else
         {
             AttackParryChance = 0;
             SpellParryChance = 0;
@@ -767,19 +786,21 @@ public class HeroData : ActorData
         if (!GameManager.Instance.isInBattle)
             ClearTemporaryBonuses(false);
 
+        //update aura/buffs first
         foreach (AbilitySlot abilitySlot in abilitySlotList)
         {
             if (abilitySlot.Ability == null)
                 continue;
 
             ActorAbility actorAbility = abilitySlot.Ability;
-            if ((actorAbility.abilityBase.abilityType == AbilityType.SELF_BUFF || actorAbility.abilityBase.abilityType == AbilityType.AURA))
+            if (actorAbility.abilityBase.abilityType == AbilityType.SELF_BUFF || actorAbility.abilityBase.abilityType == AbilityType.AURA)
             {
                 actorAbility.UpdateAbilityLevel(GetAbilityLevel(actorAbility.abilityBase));
                 actorAbility.UpdateAbilityStats(this);
             }
         }
 
+        //update other abilities so they are updated with buff effects
         foreach (AbilitySlot abilitySlot in abilitySlotList)
         {
             if (abilitySlot.Ability == null)
@@ -938,10 +959,7 @@ public class HeroData : ActorData
             }
 
             Ability = new ActorAbility(abilityBase, layer);
-            if (slot == 1)
-            {
-                Ability.SetAsSecondaryAbility();
-            }
+            Ability.SetAbilitySlotNum(slot);
             this.source = source;
         }
 

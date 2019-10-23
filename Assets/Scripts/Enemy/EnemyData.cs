@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 public class EnemyData : ActorData
 {
-    public EnemyBase BaseData { get; protected set; }
+    public EnemyBase BaseEnemyData { get; protected set; }
     protected Dictionary<BonusType, StatBonus> mobBonuses;
     public int minAttackDamage;
     public int maxAttackDamage;
@@ -28,7 +28,7 @@ public class EnemyData : ActorData
 
     public void SetBase(EnemyBase enemyBase, RarityType rarity, int level, EnemyActor actor)
     {
-        BaseData = enemyBase;
+        BaseEnemyData = enemyBase;
         Name = enemyBase.idName;
         Level = level;
         CurrentActor = actor;
@@ -56,7 +56,7 @@ public class EnemyData : ActorData
 
         float extraManaShield = CurrentHealth * GetMultiStatBonus(GroupTypes, BonusType.HEALTH_AS_EXTRA_SHIELD).CalculateStat(0) / 100f;
         MaximumManaShield = Math.Max(GetMultiStatBonus(GroupTypes, BonusType.GLOBAL_MAX_SHIELD).CalculateStat(BaseManaShield + (int)extraManaShield), 0);
-         
+
         if (MaximumManaShield != 0)
         {
             float shieldPercent = CurrentManaShield / MaximumManaShield;
@@ -68,7 +68,7 @@ public class EnemyData : ActorData
             ability.UpdateAbilityStats(this);
         }
 
-        movementSpeed = GetMultiStatBonus(GroupTypes, BonusType.MOVEMENT_SPEED).CalculateStat(BaseData.movementSpeed);
+        movementSpeed = GetMultiStatBonus(GroupTypes, BonusType.MOVEMENT_SPEED).CalculateStat(BaseEnemyData.movementSpeed);
 
         Armor = Math.Max(GetMultiStatBonus(GroupTypes, BonusType.GLOBAL_ARMOR).CalculateStat(BaseArmor), 0);
         DodgeRating = Math.Max(GetMultiStatBonus(GroupTypes, BonusType.GLOBAL_DODGE_RATING).CalculateStat(BaseDodgeRating), 0);
@@ -85,8 +85,6 @@ public class EnemyData : ActorData
 
         BlockChance = Math.Min(GetMultiStatBonus(GroupTypes, BonusType.SHIELD_BLOCK_CHANCE).CalculateStat(0f), BlockChanceCap) / 100f;
         BlockProtection = Math.Min(GetMultiStatBonus(GroupTypes, BonusType.SHIELD_BLOCK_PROTECTION).CalculateStat(0f), BlockProtectionCap) / 100f;
-
-
 
         base.UpdateActorData();
     }

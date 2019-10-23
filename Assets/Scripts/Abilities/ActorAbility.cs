@@ -44,7 +44,7 @@ public class ActorAbility
 
     public int targetLayer;
     public int targetMask;
-    public bool isSecondaryAbility;
+    public int abilitySlot;
     protected float finalDamageModifier = 1.0f;
 
     private float AreaScaling;
@@ -122,15 +122,18 @@ public class ActorAbility
         }
     }
 
-    public void SetAsSecondaryAbility()
+    public void SetAbilitySlotNum(int slot)
     {
-        isSecondaryAbility = true;
-        StatBonus speedPenalty = new StatBonus();
-        speedPenalty.AddBonus(ModifyType.MULTIPLY, -25);
-        StatBonus damagePenalty = new StatBonus();
-        damagePenalty.AddBonus(ModifyType.MULTIPLY, -50);
-        abilityBonuses.Add(BonusType.GLOBAL_ABILITY_SPEED, speedPenalty);
-        abilityBonuses.Add(BonusType.GLOBAL_DAMAGE, damagePenalty);
+        abilitySlot = slot;
+        if (slot > 0)
+        {
+            StatBonus speedPenalty = new StatBonus();
+            speedPenalty.AddBonus(ModifyType.MULTIPLY, -25);
+            StatBonus damagePenalty = new StatBonus();
+            damagePenalty.AddBonus(ModifyType.MULTIPLY, -50);
+            abilityBonuses.Add(BonusType.GLOBAL_ABILITY_SPEED, speedPenalty);
+            abilityBonuses.Add(BonusType.GLOBAL_DAMAGE, damagePenalty);
+        }
     }
 
     public void SetDamageAndSpeedModifier(float damage, float speed)
@@ -511,9 +514,9 @@ public class ActorAbility
                 data.GetMultiStatBonus(rangeBonus, abilityBonuses, tags, BonusType.RANGED_ATTACK_RANGE);
             }
 
-            MainCriticalChance = critBonus.CalculateStat(data.BaseData.attackCriticalChance);
-            Cooldown = 1 / speedBonus.CalculateStat(data.BaseData.attackSpeed);
-            TargetRange = rangeBonus.CalculateStat(data.BaseData.attackTargetRange);
+            MainCriticalChance = critBonus.CalculateStat(data.BaseEnemyData.attackCriticalChance);
+            Cooldown = 1 / speedBonus.CalculateStat(data.BaseEnemyData.attackSpeed);
+            TargetRange = rangeBonus.CalculateStat(data.BaseEnemyData.attackTargetRange);
         }
         MainCriticalDamage = 1f + (critDamageBonus.CalculateStat(50) / 100f);
 
@@ -901,6 +904,18 @@ public class ActorAbility
 
     protected void UpdateOnHitDataBonuses(ActorData data, IEnumerable<GroupType> tags)
     {
+        string triggeredEffectSourceName = abilityBase.idName + abilitySlot;
+
+        ClearTriggeredEffects(data, triggeredEffectSourceName);
+        foreach (TriggeredEffectBonusProperty triggerProp in abilityBase.triggeredEffects)
+        {
+            TriggeredEffect triggeredEffect = new TriggeredEffect(triggerProp, triggerProp.effectMinValue + triggerProp.effectMaxValue * abilityLevel, triggeredEffectSourceName);
+            triggeredEffects[triggerProp.triggerType].Add(triggeredEffect);
+
+            if (abilityBase.abilityType == AbilityType.AURA || abilityBase.abilityType == AbilityType.SELF_BUFF)
+                data.TriggeredEffects[triggerProp.triggerType].Add(triggeredEffect);
+        }
+
         if (abilityBase.abilityType == AbilityType.AURA || abilityBase.abilityType == AbilityType.SELF_BUFF)
             return;
 
@@ -926,14 +941,16 @@ public class ActorAbility
 
         StatBonus voidNegate = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.VOID_RESISTANCE_NEGATION, BonusType.PRIMORDIAL_RESISTANCE_NEGATION);
         abilityOnHitData.SetNegation(ElementType.VOID, voidNegate.CalculateStat(0));
+    }
 
+    public void ClearTriggeredEffects(ActorData data, string triggeredEffectSourceName)
+    {
         foreach (TriggerType t in Enum.GetValues(typeof(TriggerType)))
         {
             triggeredEffects[t].Clear();
-        }
-        foreach (TriggeredEffectBonusProperty triggerProp in abilityBase.triggeredEffects)
-        {
-            triggeredEffects[triggerProp.triggerType].Add(new TriggeredEffect(triggerProp, abilityLevel, abilityBase.idName));
+
+            if (abilityBase.abilityType == AbilityType.AURA || abilityBase.abilityType == AbilityType.SELF_BUFF)
+                data.TriggeredEffects[t].RemoveAll(x => x.sourceName == triggeredEffectSourceName);
         }
     }
 
@@ -1002,64 +1019,65 @@ public class ActorAbility
 
         foreach (ElementType elementType in values)
         {
-            if (dicToUse.ContainsKey(elementType))
+            minDamage[(int)elementType] = dicToUse[elementType].calculatedRange.min;
+            maxDamage[(int)elementType] = dicToUse[elementType].calculatedRange.max;
+            if (whenHitBonusDict.Count > 0)
             {
-                minDamage[(int)elementType] = dicToUse[elementType].calculatedRange.min;
-                maxDamage[(int)elementType] = dicToUse[elementType].calculatedRange.max;
-                if (whenHitBonusDict.Count > 0)
+                StatBonus minBonus = new StatBonus();
+                StatBonus maxBonus = new StatBonus();
+                StatBonus multiBonus = new StatBonus();
+                HashSet<BonusType> minTypes = new HashSet<BonusType>();
+                HashSet<BonusType> maxTypes = new HashSet<BonusType>();
+                HashSet<BonusType> multiTypes = new HashSet<BonusType>();
+
+                Helpers.GetGlobalAndFlatDamageTypes(elementType, abilityBase.abilityType, abilityBase.abilityShotType, damageTags, minTypes, maxTypes, multiTypes);
+                multiTypes.UnionWith(Helpers.GetMultiplierTypes(abilityBase.abilityType, elementType));
+                foreach (KeyValuePair<BonusType, StatBonus> keyValue in whenHitBonusDict)
                 {
-                    StatBonus minBonus = new StatBonus();
-                    StatBonus maxBonus = new StatBonus();
-                    StatBonus multiBonus = new StatBonus();
-                    HashSet<BonusType> minTypes = new HashSet<BonusType>();
-                    HashSet<BonusType> maxTypes = new HashSet<BonusType>();
-                    HashSet<BonusType> multiTypes = new HashSet<BonusType>();
+                    if (minTypes.Contains(keyValue.Key))
+                        minBonus.AddBonuses(keyValue.Value);
+                    else if (maxTypes.Contains(keyValue.Key))
+                        maxBonus.AddBonuses(keyValue.Value);
+                    else if (multiTypes.Contains(keyValue.Key))
+                        multiBonus.AddBonuses(keyValue.Value);
+                }
 
-                    Helpers.GetGlobalAndFlatDamageTypes(elementType, abilityBase.abilityType, abilityBase.abilityShotType, damageTags, minTypes, maxTypes, multiTypes);
-                    multiTypes.UnionWith(Helpers.GetMultiplierTypes(abilityBase.abilityType, elementType));
-                    foreach (KeyValuePair<BonusType, StatBonus> keyValue in whenHitBonusDict)
-                    {
-                        if (minTypes.Contains(keyValue.Key))
-                            minBonus.AddBonuses(keyValue.Value);
-                        else if (maxTypes.Contains(keyValue.Key))
-                            maxBonus.AddBonuses(keyValue.Value);
-                        else if (multiTypes.Contains(keyValue.Key))
-                            multiBonus.AddBonuses(keyValue.Value);
-                    }
+                float flatDamageMod;
 
-                    float flatDamageMod;
+                if (abilityBase.abilityType == AbilityType.ATTACK)
+                {
+                    flatDamageMod = abilityBase.weaponMultiplier + abilityBase.weaponMultiplierScaling * abilityLevel;
+                }
+                else
+                {
+                    flatDamageMod = abilityBase.flatDamageMultiplier;
+                }
 
-                    if (abilityBase.abilityType == AbilityType.ATTACK)
-                    {
-                        flatDamageMod = abilityBase.weaponMultiplier + abilityBase.weaponMultiplierScaling * abilityLevel;
-                    }
-                    else
-                    {
-                        flatDamageMod = abilityBase.flatDamageMultiplier;
-                    }
+                minBonus.AddBonuses(dicToUse[elementType].minBonus);
+                maxBonus.AddBonuses(dicToUse[elementType].maxBonus);
 
-                    minBonus.AddBonuses(dicToUse[elementType].minBonus);
-                    maxBonus.AddBonuses(dicToUse[elementType].maxBonus);
-
-                    HashSet<BonusType> availableConversions = source.Data.BonusesIntersection(abilityBonuses.Keys, Helpers.GetConversionTypes(elementType));
-                    if (availableConversions.Count > 0)
-                    {
-                        GetElementConversionValues(source.Data, weaponTags, availableConversions, offhandDamageBase[elementType].conversions, abilityBonuses);
-                        MinMaxRange baseRange = CalculateDamageConversion(source.Data, flatDamageMod, convertedMinDamage, convertedMaxDamage, weaponTags, dicToUse[elementType], elementType, multiTypes, minBonus, maxBonus, multiBonus);
-                        minDamage[(int)elementType] = baseRange.min;
-                        maxDamage[(int)elementType] = baseRange.max;
-                    }
-                    else
-                    {
-                        multiBonus.AddBonuses(dicToUse[elementType].multiplierBonus);
-                        minDamage[(int)elementType] = (int)Math.Max(multiBonus.CalculateStat(dicToUse[elementType].baseMin + minBonus.CalculateStat(0f) * flatDamageMod) * finalDamageModifier, 0);
-                        maxDamage[(int)elementType] = (int)Math.Max(multiBonus.CalculateStat(dicToUse[elementType].baseMax + maxBonus.CalculateStat(0f) * flatDamageMod) * finalDamageModifier, 0);
-                    }
+                HashSet<BonusType> availableConversions = source.Data.BonusesIntersection(abilityBonuses.Keys, Helpers.GetConversionTypes(elementType));
+                if (availableConversions.Count > 0)
+                {
+                    GetElementConversionValues(source.Data, weaponTags, availableConversions, offhandDamageBase[elementType].conversions, abilityBonuses);
+                    MinMaxRange baseRange = CalculateDamageConversion(source.Data, flatDamageMod, convertedMinDamage, convertedMaxDamage, weaponTags, dicToUse[elementType], elementType, multiTypes, minBonus, maxBonus, multiBonus);
+                    minDamage[(int)elementType] = baseRange.min;
+                    maxDamage[(int)elementType] = baseRange.max;
+                }
+                else
+                {
+                    multiBonus.AddBonuses(dicToUse[elementType].multiplierBonus);
+                    minDamage[(int)elementType] = (int)Math.Max(multiBonus.CalculateStat(dicToUse[elementType].baseMin + minBonus.CalculateStat(0f) * flatDamageMod) * finalDamageModifier, 0);
+                    maxDamage[(int)elementType] = (int)Math.Max(multiBonus.CalculateStat(dicToUse[elementType].baseMax + maxBonus.CalculateStat(0f) * flatDamageMod) * finalDamageModifier, 0);
                 }
             }
         }
 
         bool isCrit = UnityEngine.Random.Range(0f, 100f) < critChance;
+        if (isCrit)
+        {
+            abilityOnHitData.ApplyTriggerEffects(TriggerType.ON_CRIT, target);
+        }
 
         foreach (ElementType elementType in values)
         {
@@ -1176,13 +1194,13 @@ public class ActorAbility
             switch (abilityBase.abilityType)
             {
                 case AbilityType.AURA:
-                    ApplyAuraBuff(AbilityOwner);
+                    ApplyAuraBuff(AbilityOwner, 0.75f);
                     foreach (Actor target in targetList)
-                        ApplyAuraBuff(target);
+                        ApplyAuraBuff(target, 0.75f);
                     break;
 
                 case AbilityType.SELF_BUFF:
-                    ApplyAuraBuff(AbilityOwner);
+                    ApplyAuraBuff(AbilityOwner, float.PositiveInfinity);
                     yield break;
 
                 default:
@@ -1193,7 +1211,7 @@ public class ActorAbility
         }
     }
 
-    protected void ApplyAuraBuff(Actor target)
+    protected void ApplyAuraBuff(Actor target, float duration)
     {
         if (auraBuffBonus.cachedAuraBonuses.Count > 0)
         {
@@ -1215,11 +1233,11 @@ public class ActorAbility
                 }
                 else
                 {
-                    target.RemoveStatusEffect(buff);
+                    target.RemoveStatusEffect(buff, true);
                 }
             }
 
-            target.AddStatusEffect(new StatBonusBuffEffect(target, AbilityOwner, auraBuffBonus.cachedAuraBonuses, 0.75f, abilityBase.idName, BuffType));
+            target.AddStatusEffect(new StatBonusBuffEffect(target, AbilityOwner, auraBuffBonus.cachedAuraBonuses, duration, abilityBase.idName, BuffType));
         }
 
         foreach (Tuple<EffectType, float> specialEffect in auraBuffBonus.cachedAuraSpecialEffects)
@@ -1697,6 +1715,8 @@ public class ActorAbility
             criticalDamage = OffhandCriticalDamage;
         }
 
+        criticalChance = Math.Min(criticalChance, 1f);
+
         foreach (ElementType element in Enum.GetValues(typeof(ElementType)))
         {
             if (damage.ContainsKey(element))
@@ -1712,22 +1732,25 @@ public class ActorAbility
 
     public bool ApplyDamageToActor(Actor target, bool isHit, float damageModifier = 1f)
     {
-        damageModifier = 1f;
         if (target == null || target.Data.IsDead)
         {
             return false;
         }
 
+        damageModifier = 1f;
         if (isHit)
         {
             if (Actor.DidTargetPhase(target, abilityBase.abilityType))
+            {
+                target.Data.OnHitData.ApplyTriggerEffects(TriggerType.ON_PHASING, AbilityOwner);
                 return false;
+            }
 
             if (Actor.DidTargetDodge(target, abilityOnHitData.accuracy))
+            {
+                target.Data.OnHitData.ApplyTriggerEffects(TriggerType.ON_DODGE, AbilityOwner);
                 return false;
-
-            if (Actor.DidTargetBlock(target))
-                damageModifier *= (1f - target.Data.BlockProtection);
+            }
         }
 
         Dictionary<ElementType, float> damageDict = CalculateDamageValues(target, AbilityOwner, damageModifier);

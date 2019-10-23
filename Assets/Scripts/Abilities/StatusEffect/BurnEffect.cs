@@ -1,7 +1,7 @@
 ﻿public class BurnEffect : ActorEffect
 {
     public const float BASE_DURATION = 2.0f;
-    public const float BASE_DAMAGE_MULTIPLIER = 0.10f;
+    public const float BASE_DAMAGE_MULTIPLIER = 0.15f;
     protected float damagePerSecond;
 
     public override GroupType StatusTag => GroupType.SELF_IS_BURNING;
@@ -11,6 +11,7 @@
         effectType = EffectType.BURN;
         damagePerSecond = inputDamage;
         this.duration = duration;
+        MaxStacks = source.Data.OnHitData.effectData[EffectType.BURN].MaxStacks;
     }
 
     public override void OnApply()
