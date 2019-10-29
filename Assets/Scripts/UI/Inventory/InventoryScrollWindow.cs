@@ -2,15 +2,22 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class InventoryScrollWindow : MonoBehaviour
 {
     [SerializeField]
     private InventorySlot SlotPrefab;
 
+    public Button confirmButton;
+    private Action<List<Item>> confirmOnClick = null;
+
     private InventorySlotPool _inventorySlotPool;
     private List<InventorySlot> SlotsInUse = new List<InventorySlot>();
     private Action<Item> currentCallback = null;
+    private List<Item> selectedItems = new List<Item>();
+    public bool isMultiSelectMode = false;
+
 
     private void OnEnable()
     {
@@ -25,6 +32,11 @@ public class InventoryScrollWindow : MonoBehaviour
                 _inventorySlotPool = new InventorySlotPool(SlotPrefab, GameManager.Instance.PlayerStats.EquipmentInventory.Count);
             return _inventorySlotPool;
         }
+    }
+
+    public void ResetMultiSelectList()
+    {
+        selectedItems.Clear();
     }
 
     private void InitializeInventorySlots<T>(IList<T> itemInventory, Action<Item> callback = null) where T : Item
@@ -148,8 +160,30 @@ public class InventoryScrollWindow : MonoBehaviour
         slot.gameObject.transform.SetAsLastSibling();
         SlotsInUse.Add(slot);
         slot.item = item;
-        slot.onClickAction = callback;
         slot.UpdateSlot();
+
+        slot.multiSelectMode = isMultiSelectMode;
+        if (isMultiSelectMode)
+            slot.onClickAction = ToggleItemMultiSelect;
+        else
+            slot.onClickAction = callback;
+
+        if (selectedItems.Contains(item))
+        {
+            slot.slotImage.color = Color.green;
+            slot.alreadySelected = true;
+        } else
+        {
+            slot.alreadySelected = false;
+        }
+    }
+
+    public void ToggleItemMultiSelect(Item item)
+    {
+        if (!selectedItems.Contains(item))
+            selectedItems.Add(item);
+        else
+            selectedItems.Remove(item);
     }
 
     public void RemoveEquipmentSlot(AffixedItem item)
@@ -167,6 +201,16 @@ public class InventoryScrollWindow : MonoBehaviour
         {
             slot.onClickAction = callback;
         }
+    }
+
+    public void SetConfirmCallback(Action<List<Item>> callback)
+    {
+        confirmOnClick = callback;
+    }
+
+    public void ConfirmOnClick()
+    {
+        confirmOnClick?.Invoke(selectedItems);
     }
 }
 

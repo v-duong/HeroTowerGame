@@ -332,6 +332,10 @@ MonoBehaviour:
     type: 3}
   abilityContainerPrefab: {fileID: 5517317699776473116, guid: 7e860e6fa18b2b24396cbd63e034707c,
     type: 3}
+  damageTextPrefab: {fileID: 1742307524835335932, guid: 464346b69a5ca2d4c82fc0ff83389cdd,
+    type: 3}
+  targetingCirclePrefab: {fileID: 9012056664430877953, guid: d7f40d835dce5824e98c341878bce51a,
+    type: 3}
 --- !u!4 &1360361551
 Transform:
   m_ObjectHideFlags: 0

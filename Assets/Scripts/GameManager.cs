@@ -29,8 +29,7 @@ public class GameManager : MonoBehaviour
 
     private void Start()
     {
-        QualitySettings.vSyncCount = 0;
-        Application.targetFrameRate = 30;
+        QualitySettings.vSyncCount = 1;
         isInBattle = false;
         currentSceneName = "mainMenu";
 
@@ -84,6 +83,7 @@ public class GameManager : MonoBehaviour
     /// <param name="stageInfoBase"></param>
     public void MoveToBattle(StageInfoBase stageInfoBase)
     {
+        SetTimescale(1);
         SceneManager.LoadScene("loadingScene", LoadSceneMode.Additive);
         currentSceneName = "stage" + stageInfoBase.sceneAct + '-' + stageInfoBase.sceneStage;
 
@@ -101,20 +101,28 @@ public class GameManager : MonoBehaviour
     /// <returns></returns>
     private IEnumerator LoadBattleRoutine(string sceneName, StageInfoBase stageInfoBase)
     {
-        AsyncOperation asyncOperation = SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Additive);
-        while (!asyncOperation.isDone)
+        AsyncOperation asyncOperation = SceneManager.LoadSceneAsync("battleUI", LoadSceneMode.Additive);
+        AsyncOperation asyncOperation2 = SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Additive);
+        while (!asyncOperation.isDone || !asyncOperation2.isDone)
         {
             yield return null;
         }
-        StageManager.Instance.HighlightMap.gameObject.SetActive(false);
+
         Scene scene = SceneManager.GetSceneByName(sceneName);
         SceneManager.SetActiveScene(scene);
+
+        SetUpBattleScene(scene);
+
+
+        InputManager.Instance.ResetManager();
         StageManager.Instance.BattleManager.SetStageBase(stageInfoBase);
         StageManager.Instance.BattleManager.InitializeProjectilePool();
         ParticleManager.Instance.ClearParticleSystems();
+        StageManager.Instance.HighlightMap.gameObject.SetActive(false);
         isInBattle = true;
 
-        yield return LoadBattleUI(scene);
+
+        UIManager.Instance.LoadingScreen.endLoadingScreen = true;
     }
 
     /// <summary>
@@ -122,13 +130,8 @@ public class GameManager : MonoBehaviour
     /// </summary>
     /// <param name="sceneToMergeTo"></param>
     /// <returns></returns>
-    private IEnumerator LoadBattleUI(Scene sceneToMergeTo)
+    private void SetUpBattleScene(Scene sceneToMergeTo)
     {
-        AsyncOperation asyncOperation = SceneManager.LoadSceneAsync("battleUI", LoadSceneMode.Additive);
-        while (!asyncOperation.isDone)
-        {
-            yield return null;
-        }
         Scene scene = SceneManager.GetSceneByName("battleUI");
         SceneManager.MergeScenes(scene, sceneToMergeTo);
         SummonScrollWindow summonScroll = UIManager.Instance.SummonScrollWindow;
@@ -150,7 +153,7 @@ public class GameManager : MonoBehaviour
             if (heroActor == null)
                 continue;
 
-            foreach (AbilityBase abilityBase in heroActor.GetAbilitiesInList())
+            foreach (AbilityBase abilityBase in heroActor.GetAbilitiyBasesInList())
             {
                 abilitiesInUse.Add(abilityBase);
                 if (abilityBase.hasLinkedAbility)
@@ -180,7 +183,12 @@ public class GameManager : MonoBehaviour
         Bounds bounds = StageManager.Instance.DisplayMap.localBounds;
         StageManager.Instance.stageBounds = bounds;
         InputManager.Instance.SetCameraBounds();
+        StageManager.Instance.WorldCanvas.GetComponent<Canvas>().worldCamera = Camera.main;
+    }
 
-        UIManager.Instance.LoadingScreen.endLoadingScreen = true;
+    public static void SetTimescale(float value)
+    {
+        Time.timeScale = value;
+        Time.fixedDeltaTime = 0.02f * Time.timeScale;
     }
 }

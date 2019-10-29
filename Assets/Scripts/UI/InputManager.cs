@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -20,11 +21,32 @@ public class InputManager : MonoBehaviour
     private bool isZooming;     // Is the camera zooming?
     private static float speed = 3.0f;
 
+    private Queue<TargetingCircle> targetingCirclesAvailable = new Queue<TargetingCircle>();
+    private List<TargetingCircle> targetingCirclesInUse = new List<TargetingCircle>();
+
     public void SetSummoning(HeroActor actor, Action summonCallback)
     {
         IsSummoningMode = true;
         selectedHero = actor;
         onSummonCallback = summonCallback;
+    }
+
+    public void ResetManager()
+    {
+        IsMovementMode = false;
+        IsSummoningMode = false;
+        selectedHero = null;
+        onSummonCallback = null;
+
+        targetingCirclesAvailable.Clear();
+        targetingCirclesInUse.Clear();
+
+        for (int i = 0; i < 4; i++)
+        {
+            TargetingCircle circle = Instantiate(ResourceManager.Instance.TargetingCirclePrefab);
+            circle.gameObject.SetActive(false);
+            targetingCirclesAvailable.Enqueue(circle);
+        }
     }
 
     public void SetCameraBounds()
@@ -33,8 +55,8 @@ public class InputManager : MonoBehaviour
         float ratio = (float)Screen.width / Screen.height;
         maxNegativeX = bounds.center.x - bounds.extents.x + mainCamera.orthographicSize * ratio;
         maxPositiveX = bounds.center.x + bounds.extents.x - mainCamera.orthographicSize * ratio;
-        maxNegativeY = bounds.center.y - bounds.extents.y;
-        maxPositiveY = bounds.center.y + bounds.extents.y;
+        maxNegativeY = bounds.center.y - bounds.extents.y + mainCamera.orthographicSize / 2;
+        maxPositiveY = bounds.center.y + bounds.extents.y - mainCamera.orthographicSize / 2;
         if (maxNegativeY > maxPositiveY)
         {
             maxNegativeY = -1;
@@ -85,16 +107,14 @@ public class InputManager : MonoBehaviour
                 {
                     if (hit.collider.gameObject.layer >= 11)
                         return;
-                    else
-                    {
-                    }
                 }
 
                 spawnLocation = Helpers.ReturnTilePosition(StageManager.Instance.HighlightMap.tilemap, spawnLocation, -3);
                 selectedHero.transform.position = spawnLocation;
                 selectedHero.gameObject.SetActive(true);
+                selectedHero.EnableHealthBar();
+                selectedHero.ClearMovement();
                 IsSummoningMode = false;
-                selectedHero = null;
                 onSummonCallback?.Invoke();
             }
             /*
@@ -116,7 +136,7 @@ public class InputManager : MonoBehaviour
             }
             */
         }
-        else if (IsMovementMode)
+        else if (IsMovementMode && !isDragging)
         {
             Vector3 moveLocation = mainCamera.ScreenToWorldPoint(Input.mousePosition);
             moveLocation.z = -3;
@@ -124,8 +144,7 @@ public class InputManager : MonoBehaviour
             if (Input.GetMouseButtonDown(0))
             {
                 if (!EventSystem.current.IsPointerOverGameObject()
-                    || EventSystem.current.currentSelectedGameObject == null
-                    || EventSystem.current.currentSelectedGameObject.GetComponent<UIHealthBar>() != null)
+                    || EventSystem.current.currentSelectedGameObject == null)
                     selectedHero.StartMovement(moveLocation);
                 IsMovementMode = false;
                 selectedHero = null;
@@ -135,33 +154,7 @@ public class InputManager : MonoBehaviour
         {
             if (Input.GetMouseButtonDown(0))
             {
-                LayerMask mask = LayerMask.GetMask("Hero", "Enemy");
-                Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
-                RaycastHit2D hit = Physics2D.Raycast(ray.origin, ray.direction, 50, mask);
-
-                if (hit.collider != null)
-                {
-                    if (hit.collider.gameObject.layer == 13)
-                    {
-                        HeroActor hero = hit.collider.gameObject.GetComponent<HeroActor>();
-                        if (hero != null)
-                        {
-                            selectedHero = hero;
-                            IsMovementMode = true;
-                            UIManager.Instance.BattleCharInfoPanel.SetTarget(hero.Data);
-                        }
-                    }
-                    else if (hit.collider.gameObject.layer == 12)
-                    {
-                        EnemyActor enemy = hit.collider.gameObject.GetComponent<EnemyActor>();
-                        if (enemy != null)
-                        {
-                            UIManager.Instance.BattleCharInfoPanel.SetTarget(enemy.Data);
-                        }
-                    }
-                    return;
-                }
-                isDragging = true;
+                OnMouseDownHandler();
             }
 
             if (Input.mouseScrollDelta.y != 0)
@@ -180,6 +173,92 @@ public class InputManager : MonoBehaviour
                 Vector3 move = new Vector3(Input.GetAxis("Mouse X") * dragspeed * speedMultiplier, Input.GetAxis("Mouse Y") * dragspeed * speedMultiplier, 0);
                 mainCamera.transform.Translate(-move, Space.Self);
                 ClampCameraPosition();
+            }
+        }
+    }
+
+    private void OnMouseDownHandler()
+    {
+        LayerMask mask = LayerMask.GetMask("Hero", "Enemy");
+        Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
+        RaycastHit2D hit = Physics2D.Raycast(ray.origin, ray.direction, 50, mask);
+
+        if (EventSystem.current.IsPointerOverGameObject())
+            return;
+
+        if (hit.collider != null)
+        {
+            if (hit.collider.gameObject.layer == 13)
+            {
+                HeroActor hero = hit.collider.gameObject.GetComponent<HeroActor>();
+                if (hero != null)
+                {
+                    OnTargetSelect(hero);
+                }
+            }
+            else if (hit.collider.gameObject.layer == 12)
+            {
+                EnemyActor enemy = hit.collider.gameObject.GetComponent<EnemyActor>();
+                if (enemy != null)
+                {
+                    OnTargetSelect(enemy);
+                }
+            }
+            //return;
+        }
+        else
+        {
+            OnTargetSelect(null);
+        }
+        if (!EventSystem.current.IsPointerOverGameObject())
+            isDragging = true;
+    }
+
+    public void OnTargetSelect(Actor actor)
+    {
+        UIManager.Instance.BattleCharInfoPanel.SetTarget(actor);
+
+        foreach (TargetingCircle circle in targetingCirclesInUse)
+        {
+            circle.transform.SetParent(null);
+            circle.gameObject.SetActive(false);
+            targetingCirclesAvailable.Enqueue(circle);
+        }
+
+        targetingCirclesInUse.Clear();
+
+        if (actor != null)
+        {
+            int i = 0;
+            foreach (ActorAbility ability in actor.GetInstancedAbilities())
+            {
+                TargetingCircle circle = targetingCirclesAvailable.Dequeue();
+                targetingCirclesInUse.Add(circle);
+                circle.transform.localScale = new Vector3(ability.TargetRange * 2, ability.TargetRange * 2, 1);
+                circle.gameObject.SetActive(true);
+                circle.transform.SetParent(actor.transform, false);
+                circle.transform.localPosition = Vector3.zero;
+                circle.transform.eulerAngles = new Vector3(0,0,i*12);
+
+                switch (i)
+                {
+                    case 0:
+                        circle.SetColor(new Color(0.7f,1f,1f));
+                        break;
+                    case 1:
+                        circle.SetColor(new Color(1f, 0.7f, 1f));
+                        break;
+                    case 2:
+                        circle.SetColor(new Color(1f, 1f, 0.7f));
+                        break;
+                    case 3:
+                        circle.SetColor(new Color(1f, 1f, 1f));
+                        break;
+                    default:
+                        break;
+                }
+
+                i++;
             }
         }
     }

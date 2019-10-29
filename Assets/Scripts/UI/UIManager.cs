@@ -35,6 +35,7 @@ public class UIManager : MonoBehaviour
     private TeamWindow _teamWindow;
     private WorkshopParentWindow _workshopParentWindow;
     private ItemCraftingPanel _itemCraftingPanel;
+    private WorkshopCategoryPanel _workshopCategoryPanel;
     private StageSelectPanel _stageSelectPanel;
     private PopUpWindow _popUpWindow;
 
@@ -274,6 +275,18 @@ public class UIManager : MonoBehaviour
         }
     }
 
+    public WorkshopCategoryPanel WorkshopCategoryPanel
+    {
+        get
+        {
+            if (_workshopCategoryPanel == null)
+            {
+                _workshopCategoryPanel = WorkshopCanvas.GetComponentInChildren<WorkshopCategoryPanel>(true);
+            }
+            return _workshopCategoryPanel;
+        }
+    }
+
     public StageSelectPanel StageSelectPanel
     {
         get
@@ -353,7 +366,7 @@ public class UIManager : MonoBehaviour
         EquipDetailWindow.UpdateWindowEquipment(hero);
     }
 
-    public void OpenInventoryWindow(bool closeWindows, bool showDefault, bool showCategories = true)
+    public void OpenInventoryWindow(bool closeWindows, bool showDefault, bool showCategories = true, bool multiSelect = false)
     {
         if (closeWindows)
             CloseAllWindows();
@@ -362,11 +375,22 @@ public class UIManager : MonoBehaviour
 
         if (showCategories)
         {
+            InvScrollContent.isMultiSelectMode = false;
             ItemCategoryPanel.gameObject.SetActive(true);
+            InvScrollContent.confirmButton.gameObject.SetActive(false);
+            rect.offsetMin = new Vector2(rect.offsetMin.x, 60);
+        }
+        else if (multiSelect)
+        {
+            InvScrollContent.isMultiSelectMode = true;
+            ItemCategoryPanel.gameObject.SetActive(false);
+            InvScrollContent.confirmButton.gameObject.SetActive(true);
             rect.offsetMin = new Vector2(rect.offsetMin.x, 60);
         }
         else
         {
+            InvScrollContent.isMultiSelectMode = false;
+            InvScrollContent.confirmButton.gameObject.SetActive(false);
             ItemCategoryPanel.gameObject.SetActive(false);
             rect.offsetMin = new Vector2(rect.offsetMin.x, 0);
         }
@@ -398,8 +422,7 @@ public class UIManager : MonoBehaviour
     {
         if (closeWindows)
             CloseAllWindows();
-        OpenWindow(WorkshopParentWindow.gameObject, closeWindows);
-        WorkshopParentWindow.Instance.SetItemCraftingPanelActive();
+        OpenWindow(WorkshopCategoryPanel.gameObject, closeWindows);
     }
 
     public void OpenStageSelectWindow(bool closeWindows = true)

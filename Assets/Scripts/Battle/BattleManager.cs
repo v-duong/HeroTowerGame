@@ -81,10 +81,17 @@ public class BattleManager : MonoBehaviour
         currentEnemyList.Clear();
         StopAllCoroutines();
         battleEnded = true;
+        GameManager.Instance.isInBattle = false;
+        BattleEndWindow battleEndWindow = UIManager.Instance.BattleUICanvas.GetComponentInChildren<BattleEndWindow>(true);
+
         if (victory)
         {
             Debug.Log("VIC");
+
+            battleEndWindow.ShowVictoryWindow();
+
             int gainedExp = (int)(stageInfo.baseExperience * (stageInfo.expMultiplier + (extraWaves / 5)));
+
             foreach (HeroData hero in GameManager.Instance.inBattleHeroes)
             {
                 hero.AddExperience(gainedExp);
@@ -126,6 +133,7 @@ public class BattleManager : MonoBehaviour
         else
         {
             Debug.Log("FAIL");
+            battleEndWindow.ShowLoseWindow();
         }
     }
 

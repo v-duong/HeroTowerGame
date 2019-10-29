@@ -155,15 +155,187 @@ public class ActorAbility
             LinkedAbility.SetAbilityOwner(AbilityOwner);
     }
 
-    protected void UpdateCurrentTarget(Actor actor)
+    protected void UpdateCurrentTarget()
     {
         if (targetList.Count > 0)
         {
-            CurrentTarget = targetList[0];
+            if (AbilityOwner.forcedTarget != null && !AbilityOwner.forcedTarget.Data.IsDead && targetList.Contains(AbilityOwner.forcedTarget))
+            {
+                CurrentTarget = AbilityOwner.forcedTarget;
+                return;
+            }
+
+            RarityType rarity = RarityType.NORMAL;
+            bool foundAttacker = false;
+            bool prioritizeRarity = AbilityOwner.targetingFlags.HasFlag(SecondaryTargetingFlags.PRIORITIZE_RARITY);
+            bool prioritizeAttacker = AbilityOwner.targetingFlags.HasFlag(SecondaryTargetingFlags.PRIORITIZE_ATTACKERS);
+
+            switch (AbilityOwner.targetingPriority)
+            {
+                case PrimaryTargetingType.CLOSEST:
+                    float maxDistance = float.PositiveInfinity;
+                    foreach (Actor actor in targetList)
+                    {
+                        if (CheckSecondaryFlags(prioritizeRarity, prioritizeAttacker, ref rarity, ref foundAttacker, actor))
+                            continue;
+
+                        float distance = Vector3.SqrMagnitude(actor.transform.position - AbilityOwner.transform.position);
+                        if (Vector3.SqrMagnitude(actor.transform.position - AbilityOwner.transform.position) < maxDistance)
+                        {
+                            maxDistance = distance;
+                            CurrentTarget = actor;
+                        }
+                    }
+                    break;
+
+                case PrimaryTargetingType.FURTHEST:
+                    float minDistance = 0;
+
+                    foreach (Actor actor in targetList)
+                    {
+                        if (CheckSecondaryFlags(prioritizeRarity, prioritizeAttacker, ref rarity, ref foundAttacker, actor))
+                            continue;
+
+                        float distance = Vector3.SqrMagnitude(actor.transform.position - AbilityOwner.transform.position);
+                        if (distance > minDistance)
+                        {
+                            minDistance = distance;
+                            CurrentTarget = actor;
+                        }
+                    }
+                    break;
+
+                case PrimaryTargetingType.FIRST:
+                    int maxNode = 0;
+                    float maxNodeDistance = 1f;
+
+                    if (AbilityOwner.GetActorType() == ActorType.ENEMY)
+                        CurrentTarget = targetList[UnityEngine.Random.Range(0, targetList.Count)];
+
+                    foreach (Actor actor in targetList)
+                    {
+                        if (CheckSecondaryFlags(prioritizeRarity, prioritizeAttacker, ref rarity, ref foundAttacker, actor))
+                            continue;
+
+                        if (actor is EnemyActor)
+                        {
+                            if (actor.NextMovementNode > maxNode || actor.NextMovementNode == maxNode && ((EnemyActor)actor).distanceToNextNode < maxNodeDistance)
+                            {
+                                maxNode = actor.NextMovementNode;
+                                maxNodeDistance = ((EnemyActor)actor).distanceToNextNode;
+                                CurrentTarget = actor;
+                            }
+                        }
+                    }
+
+                    break;
+
+                case PrimaryTargetingType.LAST:
+                    int minNode = int.MaxValue;
+                    float minNodeDistance = 0f;
+
+                    if (AbilityOwner.GetActorType() == ActorType.ENEMY)
+                        CurrentTarget = targetList[UnityEngine.Random.Range(0, targetList.Count)];
+
+                    foreach (Actor actor in targetList)
+                    {
+                        if (CheckSecondaryFlags(prioritizeRarity, prioritizeAttacker, ref rarity, ref foundAttacker, actor))
+                            continue;
+
+                        if (actor is EnemyActor)
+                        {
+                            if (actor.NextMovementNode < minNode || actor.NextMovementNode == minNode && ((EnemyActor)actor).distanceToNextNode > minNodeDistance)
+                            {
+                                maxNode = actor.NextMovementNode;
+                                maxNodeDistance = ((EnemyActor)actor).distanceToNextNode;
+                                CurrentTarget = actor;
+                            }
+                        }
+                    }
+
+                    break;
+
+                case PrimaryTargetingType.RANDOM:
+                    CurrentTarget = targetList[UnityEngine.Random.Range(0, targetList.Count)];
+                    break;
+
+                case PrimaryTargetingType.LEAST_HEALTH:
+                    float minHealth = float.PositiveInfinity;
+
+                    foreach (Actor actor in targetList)
+                    {
+                        if (CheckSecondaryFlags(prioritizeRarity, prioritizeAttacker, ref rarity, ref foundAttacker, actor))
+                            continue;
+
+                        float currentHealth = (actor.Data.CurrentHealth + actor.Data.CurrentManaShield) / actor.Data.AggroPriorityModifier;
+                        if (currentHealth < minHealth)
+                        {
+                            minHealth = currentHealth;
+                            CurrentTarget = actor;
+                        }
+                    }
+                    break;
+
+                case PrimaryTargetingType.MOST_HEALTH:
+                    float maxHealth = 0;
+
+                    foreach (Actor actor in targetList)
+                    {
+                        if (CheckSecondaryFlags(prioritizeRarity, prioritizeAttacker, ref rarity, ref foundAttacker, actor))
+                            continue;
+
+                        float currentHealth = (actor.Data.CurrentHealth + actor.Data.CurrentManaShield) * actor.Data.AggroPriorityModifier;
+                        if (currentHealth > maxHealth)
+                        {
+                            maxHealth = currentHealth;
+                            CurrentTarget = actor;
+                        }
+                    }
+                    break;
+                case PrimaryTargetingType.LOWEST_HEALTH_PERCENT:
+                    break;
+                case PrimaryTargetingType.HIGHEST_HEALTH_PERCENT:
+                    break;
+                default:
+                    CurrentTarget = targetList[0];
+                    break;
+            }
         }
         else
         {
             CurrentTarget = null;
+        }
+    }
+
+    private bool CheckSecondaryFlags(bool priorityRarity, bool prioritizeAttacker, ref RarityType highestRarity, ref bool foundAttacker, Actor actor)
+    {
+        if (actor is EnemyActor)
+        {
+            if (priorityRarity && ((EnemyActor)actor).enemyRarity < highestRarity)
+            {
+                return true;
+            }
+            else
+            {
+                highestRarity = ((EnemyActor)actor).enemyRarity;
+            }
+
+            if (prioritizeAttacker
+                && ((EnemyActor)actor).Data.BaseEnemyData.enemyType != EnemyType.TARGET_ATTACKER
+                && ((EnemyActor)actor).Data.BaseEnemyData.enemyType != EnemyType.HIT_AND_RUN)
+            {
+                return true;
+            }
+            else
+            {
+                foundAttacker = true;
+            }
+
+            return false;
+        }
+        else
+        {
+            return false;
         }
     }
 
@@ -172,7 +344,7 @@ public class ActorAbility
         if (actor == AbilityOwner)
             return;
         targetList.Add(actor);
-        UpdateCurrentTarget(actor);
+        //UpdateCurrentTarget(actor);
     }
 
     public void RemoveFromTargetList(Actor actor)
@@ -180,7 +352,7 @@ public class ActorAbility
         targetList.Remove(actor);
         if (CurrentTarget == actor)
         {
-            UpdateCurrentTarget(actor);
+            //UpdateCurrentTarget(actor);
         }
     }
 
@@ -862,22 +1034,26 @@ public class ActorAbility
         {
             mainDamageBase[element].baseMin = 0;
             mainDamageBase[element].baseMax = 0;
+            MinMaxRange abilityBaseDamage;
 
             if (damageLevels.ContainsKey(element))
             {
-                MinMaxRange abilityBaseDamage = damageLevels[element].damage[abilityLevel];
+                abilityBaseDamage = damageLevels[element].damage[abilityLevel];
+            } else
+            {
+                abilityBaseDamage = new MinMaxRange();
+            }
 
-                if (abilityBase.abilityType == AbilityType.ATTACK && element == ElementType.PHYSICAL)
-                {
-                    flatDamageMod = abilityBase.weaponMultiplier + abilityBase.weaponMultiplierScaling * 50;
-                    mainDamageBase[element].baseMin = (abilityBaseDamage.min + data.minAttackDamage) * flatDamageMod;
-                    mainDamageBase[element].baseMax = (abilityBaseDamage.max + data.maxAttackDamage) * flatDamageMod;
-                }
-                else
-                {
-                    mainDamageBase[element].baseMin = abilityBaseDamage.min;
-                    mainDamageBase[element].baseMax = abilityBaseDamage.max;
-                }
+            if (abilityBase.abilityType == AbilityType.ATTACK && element == ElementType.PHYSICAL)
+            {
+                flatDamageMod = abilityBase.weaponMultiplier + abilityBase.weaponMultiplierScaling * 50;
+                mainDamageBase[element].baseMin = (abilityBaseDamage.min + data.minAttackDamage) * flatDamageMod;
+                mainDamageBase[element].baseMax = (abilityBaseDamage.max + data.maxAttackDamage) * flatDamageMod;
+            }
+            else
+            {
+                mainDamageBase[element].baseMin = abilityBaseDamage.min;
+                mainDamageBase[element].baseMax = abilityBaseDamage.max;
             }
 
             IList<GroupType> damageTags = abilityBase.GetGroupTypes();
@@ -1136,45 +1312,51 @@ public class ActorAbility
             if (AbilityOwner.attackLocks > 0)
                 yield return null;
 
-            if (CurrentTarget != null)
+            if (targetList.Count > 0)
             {
-                switch (abilityBase.abilityShotType)
+                UpdateCurrentTarget();
+
+                if (CurrentTarget != null)
                 {
-                    case AbilityShotType.PROJECTILE:
-                    case AbilityShotType.PROJECTILE_NOVA:
-                        FireProjectile();
-                        break;
+                    switch (abilityBase.abilityShotType)
+                    {
+                        case AbilityShotType.PROJECTILE:
+                        case AbilityShotType.PROJECTILE_NOVA:
+                            FireProjectile();
+                            break;
 
-                    case AbilityShotType.ARC_AOE:
-                    case AbilityShotType.NOVA_ARC_AOE:
-                        FireArcAoe();
-                        break;
+                        case AbilityShotType.ARC_AOE:
+                        case AbilityShotType.NOVA_ARC_AOE:
+                            FireArcAoe();
+                            break;
 
-                    case AbilityShotType.NOVA_AOE:
-                    case AbilityShotType.RADIAL_AOE:
-                        FireRadialAoe();
-                        break;
+                        case AbilityShotType.NOVA_AOE:
+                        case AbilityShotType.RADIAL_AOE:
+                            FireRadialAoe();
+                            break;
 
-                    case AbilityShotType.HITSCAN_SINGLE:
-                        FireHitscan();
-                        break;
+                        case AbilityShotType.HITSCAN_SINGLE:
+                            FireHitscan();
+                            break;
 
-                    case AbilityShotType.HITSCAN_MULTI:
-                        FireHitscanMulti();
-                        break;
+                        case AbilityShotType.HITSCAN_MULTI:
+                            FireHitscanMulti();
+                            break;
 
-                    case AbilityShotType.LINEAR_AOE:
-                        FireLinearAoe();
-                        break;
+                        case AbilityShotType.LINEAR_AOE:
+                            FireLinearAoe();
+                            break;
 
-                    case AbilityShotType.FORWARD_MOVING_ARC:
-                    case AbilityShotType.FORWARD_MOVING_RADIAL:
-                    case AbilityShotType.FORWARD_MOVING_LINEAR:
-                        FireMovingAoe();
-                        break;
+                        case AbilityShotType.FORWARD_MOVING_ARC:
+                        case AbilityShotType.FORWARD_MOVING_RADIAL:
+                        case AbilityShotType.FORWARD_MOVING_LINEAR:
+                            FireMovingAoe();
+                            break;
+                    }
+                    fired = true;
                 }
-                fired = true;
             }
+
             if (fired)
             {
                 fired = false;
@@ -1749,6 +1931,12 @@ public class ActorAbility
             if (Actor.DidTargetDodge(target, abilityOnHitData.accuracy))
             {
                 target.Data.OnHitData.ApplyTriggerEffects(TriggerType.ON_DODGE, AbilityOwner);
+                return false;
+            }
+
+            if (Actor.DidTargetParry(target, abilityBase.abilityType))
+            {
+                target.Data.OnHitData.ApplyTriggerEffects(TriggerType.ON_PARRY, AbilityOwner);
                 return false;
             }
         }

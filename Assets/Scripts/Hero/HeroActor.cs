@@ -21,7 +21,7 @@ public class HeroActor : Actor
     public void Initialize(HeroData data)
     {
         Data = data;
-        nextMovementNode = 1;
+        NextMovementNode = 1;
         movementNodes = new List<Vector3>();
         if (data.GetAbilityFromSlot(0) != null)
         {
@@ -35,19 +35,25 @@ public class HeroActor : Actor
         }
     }
 
+    public void ClearMovement()
+    {
+        movementNodes.Clear();
+        NextMovementNode = 0;
+    }
+
     protected override void Move()
     {
         var dt = Time.deltaTime;
-        if (movementNodes != null && nextMovementNode < movementNodes.Count)
+        if (movementNodes != null && NextMovementNode < movementNodes.Count)
         {
-            Vector3 vector = movementNodes[nextMovementNode] - transform.position;
+            Vector3 vector = movementNodes[NextMovementNode] - transform.position;
             float dist = vector.sqrMagnitude;
 
-            transform.position = Vector3.MoveTowards(transform.position, movementNodes[nextMovementNode], Data.movementSpeed * dt * actorTimeScale);
+            transform.position = Vector3.MoveTowards(transform.position, movementNodes[NextMovementNode], Data.movementSpeed * dt * actorTimeScale);
 
             if (dist <= 0.15f * Data.movementSpeed * dt)
             {
-                nextMovementNode++;
+                NextMovementNode++;
             }
         }
         else
@@ -67,7 +73,7 @@ public class HeroActor : Actor
             movementNodes.Clear();
             movementNodes.Add(destination);
             isMoving = true;
-            nextMovementNode = 0;
+            NextMovementNode = 0;
         }
         else
         {
@@ -78,7 +84,7 @@ public class HeroActor : Actor
             movementNodes = Pathfinding.FindPath(startPos, destination, StageManager.Instance.HighlightMap.tilemap, true);
             if (movementNodes != null)
             {
-                nextMovementNode = 1;
+                NextMovementNode = 1;
                 isMoving = true;
             }
         }
@@ -102,12 +108,11 @@ public class HeroActor : Actor
 
     public override void Death()
     {
-        foreach (var x in instancedAbilitiesList)
-        {
-            x.StopFiring(this);
-        }
         Data.OnHitData.ApplyTriggerEffects(TriggerType.ON_DEATH, this);
-
+        Data.ClearTemporaryBonuses(true);
+        ClearStatusEffects(true);
+        ClearMovement();
+        UIManager.Instance.SummonScrollWindow.SetHeroDead(this);
         DisableActor();
     }
 

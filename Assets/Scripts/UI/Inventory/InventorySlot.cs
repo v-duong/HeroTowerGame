@@ -13,6 +13,8 @@ public class InventorySlot : MonoBehaviour
     public TextMeshProUGUI groupText;
     public TextMeshProUGUI slotText;
     public Action<Item> onClickAction;
+    public bool multiSelectMode = false;
+    public bool alreadySelected = false;
 
     public void UpdateSlot()
     {
@@ -59,6 +61,14 @@ public class InventorySlot : MonoBehaviour
     {
         if (onClickAction != null)
         {
+            if (multiSelectMode)
+            {
+                alreadySelected = !alreadySelected;
+                if (alreadySelected)
+                    slotImage.color = Color.green;
+                else
+                    slotImage.color = Helpers.ReturnRarityColor(item.Rarity);
+            }
             onClickAction?.Invoke(item);
             return;
         }

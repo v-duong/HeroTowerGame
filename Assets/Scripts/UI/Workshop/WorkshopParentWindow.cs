@@ -24,15 +24,6 @@ public class WorkshopParentWindow : MonoBehaviour
         currentWorkshopPanel = itemCraftingPanel;
     }
 
-    private void OnEnable()
-    {
-        categoryPanel.SetActive(true);
-    }
-
-    private void OnDisable()
-    {
-        categoryPanel.SetActive(false);
-    }
 
     private void SetPanelActive(GameObject panel)
     {
@@ -41,23 +32,14 @@ public class WorkshopParentWindow : MonoBehaviour
         currentWorkshopPanel = panel;
     }
 
-    public void SetItemCraftingPanelActive()
+    public void SetCategoryPanelActive()
     {
-        SetPanelActive(itemCraftingPanel);
+        UIManager.Instance.OpenWindow(categoryPanel, false);
     }
 
-    public void SetHeroCreatePanelActive()
+    public void OpenPanel(GameObject panel)
     {
-        SetPanelActive(heroCreationPanel);
-    }
-
-    public void SetXpStockPanelActive()
-    {
-        SetPanelActive(XpStockPanel);
-    }
-
-    public void SetExtractAbilityPanelActive()
-    {
-        SetPanelActive(AbilityExtractPanel);
+        UIManager.Instance.OpenWindow(this.gameObject, true);
+        SetPanelActive(panel);
     }
 }

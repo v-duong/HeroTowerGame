@@ -64,8 +64,6 @@ public class AbilityExtractPanel : MonoBehaviour
         selectedArchetypeItem = item as ArchetypeItem;
         archetypeSlot.GetComponentInChildren<TextMeshProUGUI>().text = selectedArchetypeItem.Name;
 
-        AddExtractSlot(null);
-
         foreach (AbilityBase ability in selectedArchetypeItem.Base.GetArchetypeAbilities(true))
         {
             AddExtractSlot(ability);
@@ -87,14 +85,7 @@ public class AbilityExtractPanel : MonoBehaviour
         }
         slot.transform.SetParent(scrollViewContent.transform, true);
         slot.GetComponent<Button>().onClick.RemoveAllListeners();
-        if (ability == null)
-        {
-            slot.textField.text = ArchetypeItem.GetFragmentWorth(selectedArchetypeItem.Base.stars) + " Fragments";
-        }
-        else
-        {
             slot.textField.text = ability.idName;
-        }
         slot.GetComponent<Button>().onClick.AddListener(delegate { ExtractableSlotOnClick(ability); });
         slotsInUse.Add(slot);
         return slot;

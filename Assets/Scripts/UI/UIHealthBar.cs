@@ -30,27 +30,31 @@ private RectTransform m_healthBarFillArea;
     private float healthDifference;
     private float shieldDifference;
 
-    public void Initialize(float maxHealth, float currentHealth, float maxShield, float currentShield, Transform actorTransform)
+    public void InitializeForActor(float maxHealth, float currentHealth, float maxShield, float currentShield, Transform actorTransform)
     {
         transform.SetParent(StageManager.Instance.WorldCanvas.transform, false);
-        UpdateHealthBar(maxHealth, currentHealth, maxShield, currentShield);
+        UpdateHealthBar(maxHealth, currentHealth, maxShield, currentShield, false);
         UpdatePosition(actorTransform);
     }
 
     public void UpdatePosition(Transform actorTransform)
     {
+        
         Vector2 newPos = actorTransform.position;
         newPos.y += DELAY_TIME;
+        /*
         newPos = RectTransformUtility.WorldToScreenPoint(Camera.main, newPos);
+        transform.position = newPos;
+        */
         transform.position = newPos;
     }
 
     private void Update()
     {
-        float scaleRatio = 1f / InputManager.Instance.zoomRatio;
-        transform.localScale = new Vector3(scaleRatio, scaleRatio, scaleRatio);
+        //float scaleRatio = 1f / InputManager.Instance.zoomRatio;
+        //transform.localScale = new Vector3(scaleRatio, scaleRatio, scaleRatio);
 
-        if (barDelay > 0f)
+        if (barDelay > 0f && (recentlyDamagedHealth || recentlyDamagedShield))
         {
             if (recentlyDamagedHealth)
             {
@@ -71,12 +75,19 @@ private RectTransform m_healthBarFillArea;
         }
     }
 
-    public void UpdateHealthBar(float maxHealth, float currentHealth, float maxShield, float currentShield)
+    public void UpdateHealthBar(float maxHealth, float currentHealth, float maxShield, float currentShield, bool showRecentDamage)
     {
         float oldHealthPercent = currentHealthPercent.x;
         currentHealthPercent.x = currentHealth / maxHealth;
 
-        if (oldHealthPercent > currentHealthPercent.x)
+        if (!showRecentDamage)
+        {
+            barDelay = 0;
+            recentlyDamagedHealth = false;
+            recentlyDamagedShield = false;
+        }
+
+        if (oldHealthPercent > currentHealthPercent.x && showRecentDamage)
         {
             recentlyDamagedHealth = true;
 
@@ -96,7 +107,7 @@ private RectTransform m_healthBarFillArea;
             float oldShieldPercent = currentShieldPercent.x;
             currentShieldPercent.x = currentShield / maxShield;
 
-            if (oldShieldPercent > currentShieldPercent.x)
+            if (oldShieldPercent > currentShieldPercent.x && showRecentDamage)
             {
                 recentlyDamagedShield = true;
                 if (barDelay <= 0f)

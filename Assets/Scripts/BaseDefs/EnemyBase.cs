@@ -25,7 +25,7 @@ public class EnemyBase
     public readonly EnemyType enemyType;
     [JsonProperty]
     [JsonConverter(typeof(StringEnumConverter))]
-    public readonly TargetingPriorityType targetingPriority;
+    public readonly PrimaryTargetingType targetingPriority;
     [JsonProperty]
     public readonly List<EnemyAbilityBase> abilitiesList;
     [JsonProperty]

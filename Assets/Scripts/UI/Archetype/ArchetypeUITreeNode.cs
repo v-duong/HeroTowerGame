@@ -38,6 +38,10 @@ public class ArchetypeUITreeNode : MonoBehaviour
         {
             nodeButton.image.color = new Color(1f, 1f, 1f, 1);
         }
+        else
+        {
+            nodeButton.image.color = new Color(0.8f, 0.8f, 0.8f, 1);
+        }
     }
 
     public void UpdateNodePreview()
@@ -103,5 +107,25 @@ public class ArchetypeUITreeNode : MonoBehaviour
     {
         ArchetypeNodeInfoPanel panel = UIManager.Instance.ArchetypeNodeInfoPanel;
         panel.SetAndUpdatePanel(node, archetypeData, this);
+    }
+
+    public bool IsTherePathExcludingNode(ArchetypeUITreeNode uiNode, List<ArchetypeUITreeNode> traversedNodes)
+    {
+        if (node == null || this == uiNode || traversedNodes.Contains(this))
+            return false;
+
+        traversedNodes.Add(this);
+
+        if (node.initialLevel > 0)
+            return true;
+
+        foreach (ArchetypeUITreeNode connectedNode in connectedNodes)
+        {
+            Debug.Log(connectedNode.node.idName);
+            if (archetypeData.GetNodeLevel(node) > 0 && connectedNode.IsTherePathExcludingNode(uiNode, traversedNodes))
+                return true;
+        }
+
+        return false;
     }
 }

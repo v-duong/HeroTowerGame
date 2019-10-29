@@ -74,7 +74,7 @@ public class EnemyData : ActorData
         DodgeRating = Math.Max(GetMultiStatBonus(GroupTypes, BonusType.GLOBAL_DODGE_RATING).CalculateStat(BaseDodgeRating), 0);
         ResolveRating = Math.Max(GetMultiStatBonus(GroupTypes, BonusType.GLOBAL_RESOLVE_RATING).CalculateStat(BaseResolveRating), 0);
         AttackPhasing = Math.Max(GetMultiStatBonus(GroupTypes, BonusType.ATTACK_PHASING).CalculateStat(BaseAttackPhasing), 0);
-        MagicPhasing = Math.Max(GetMultiStatBonus(GroupTypes, BonusType.MAGIC_PHASING).CalculateStat(BaseMagicPhasing), 0);
+        SpellPhasing = Math.Max(GetMultiStatBonus(GroupTypes, BonusType.MAGIC_PHASING).CalculateStat(BaseSpellPhasing), 0);
 
         AfflictedStatusDamageResistance = Math.Min(GetMultiStatBonus(GroupTypes, BonusType.AFFLICTED_STATUS_DAMAGE_RESISTANCE).CalculateStat(0f), 90) / 100f;
         AfflictedStatusDamageResistance = 1f - AfflictedStatusDamageResistance;

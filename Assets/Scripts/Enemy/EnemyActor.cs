@@ -7,6 +7,7 @@ public class EnemyActor : Actor
     public List<Affix> mobAffixes;
     public Vector3 positionOffset;
     public Vector3 rotatedOffset;
+    public float distanceToNextNode = 0f;
 
     private bool skippedAngleChange = false;
     private Vector3 previousHeading;
@@ -42,7 +43,7 @@ public class EnemyActor : Actor
     // Use this for initialization
     public void Init()
     {
-        nextMovementNode = 1;
+        NextMovementNode = 1;
         Data.CurrentHealth = Data.MaximumHealth;
         Data.CurrentManaShield = Data.MaximumManaShield;
         CalculateRotatedOffset();
@@ -54,10 +55,10 @@ public class EnemyActor : Actor
     {
         var dt = Time.deltaTime;
         var nodes = ParentSpawner.GetNodesToGoal(indexOfGoal);
-        if (nodes != null && nextMovementNode < nodes.Count)
+        if (nodes != null && NextMovementNode < nodes.Count)
         {
             //float dist = Vector3.Distance(nodes[nextMovementNode], this.transform.position);
-            Vector3 destination = nodes[nextMovementNode] + rotatedOffset;
+            Vector3 destination = nodes[NextMovementNode] + rotatedOffset;
 
             transform.position = Vector3.MoveTowards(transform.position, destination, Data.movementSpeed * dt * actorTimeScale);
 
@@ -65,9 +66,12 @@ public class EnemyActor : Actor
 
             if (dist <= 0.1f * Data.movementSpeed * Data.movementSpeed * dt)
             {
-                nextMovementNode++;
+                NextMovementNode++;
                 CalculateRotatedOffset();
             }
+
+            if (NextMovementNode < nodes.Count)
+                distanceToNextNode = Vector3.SqrMagnitude(nodes[NextMovementNode] - transform.position);
         }
         else
         {
@@ -81,7 +85,7 @@ public class EnemyActor : Actor
     {
         if (Data.BaseEnemyData.enemyType == EnemyType.TARGET_ATTACKER)
         {
-            foreach(ActorAbility ability in Data.abilities)
+            foreach (ActorAbility ability in Data.abilities)
             {
                 if ((ability.abilityBase.abilityType == AbilityType.ATTACK || ability.abilityBase.abilityType == AbilityType.SPELL) && ability.targetList.Count > 0)
                 {
@@ -99,10 +103,10 @@ public class EnemyActor : Actor
         var nodes = ParentSpawner.GetNodesToGoal(indexOfGoal);
         Vector3 nextPos, heading;
         float angle;
-        if (nextMovementNode + 1 < nodes.Count)
+        if (NextMovementNode + 1 < nodes.Count)
         {
-            nextPos = nodes[nextMovementNode + 1];
-            heading = nextPos - nodes[nextMovementNode];
+            nextPos = nodes[NextMovementNode + 1];
+            heading = nextPos - nodes[NextMovementNode];
             angle = Vector3.SignedAngle(previousHeading, heading.normalized, Vector3.forward);
             if (angle > 0 && !skippedAngleChange && positionOffset.x * positionOffset.y > 0 || angle < 0 && !skippedAngleChange && positionOffset.x * positionOffset.y < 0)
             {
@@ -127,6 +131,8 @@ public class EnemyActor : Actor
     {
         enemyRarity = rarity;
         Data.SetBase(enemyBase, rarity, level, this);
+
+        targetingPriority = enemyBase.targetingPriority;
 
         if (rarity == RarityType.RARE)
         {
@@ -191,7 +197,7 @@ public class EnemyActor : Actor
     public Vector3? GetMovementNode(int lookahead)
     {
         var nodes = ParentSpawner.GetNodesToGoal(indexOfGoal);
-        int index = nextMovementNode + lookahead;
+        int index = NextMovementNode + lookahead;
         if (index > nodes.Count - 1)
         {
             return null;

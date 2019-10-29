@@ -40,14 +40,14 @@ public abstract partial class ActorData
     public int BaseArmor { get; protected set; }
     public int BaseDodgeRating { get; protected set; }
     public int BaseAttackPhasing { get; protected set; }
-    public int BaseMagicPhasing { get; protected set; }
+    public int BaseSpellPhasing { get; protected set; }
     public int BaseResolveRating { get; protected set; }
 
     public int Armor { get; protected set; }
     public int DodgeRating { get; protected set; }
     public int ResolveRating { get; protected set; }
     public int AttackPhasing { get; protected set; }
-    public int MagicPhasing { get; protected set; }
+    public int SpellPhasing { get; protected set; }
     public float DamageTakenModifier { get; protected set; }
     public float AfflictedStatusDamageResistance { get; protected set; }
     public float AfflictedStatusThreshold { get; protected set; }
@@ -63,6 +63,8 @@ public abstract partial class ActorData
     public float PoisonResistance { get; protected set; }
 
     public bool RechargeCannotBeStopped { get; set; }
+
+    public float AggroPriorityModifier { get; protected set; }
 
     public int GetNegation(ElementType e) => ElementData.GetNegation(e);
 
@@ -135,11 +137,9 @@ public abstract partial class ActorData
             RemoveSpecialBonus(type);
             return true;
         }
-        Debug.Log(type + " " + restriction + " " + modifier + " " + value);
         bool isRemoved = statBonuses[type].RemoveBonus(restriction, modifier, value);
         if (statBonuses[type].IsEmpty())
         {
-            Debug.Log("REMOVED " + type);
             statBonuses.Remove(type);
         }
         return isRemoved;
@@ -295,6 +295,8 @@ public abstract partial class ActorData
         AfflictedStatusAvoidance = GetMultiStatBonus(GroupTypes, BonusType.AFFLICTED_STATUS_AVOIDANCE).CalculateStat(0);
         AfflictedStatusDuration = Math.Max(GetMultiStatBonus(GroupTypes, BonusType.AFFLICTED_STATUS_DURATION).CalculateStat(1f), 0.01f);
         PoisonResistance = Math.Min(GetMultiStatBonus(GroupTypes, BonusType.POISON_SHIELD_RESISTANCE).CalculateStat(0), 100) / 100f;
+
+        AggroPriorityModifier = Math.Max(GetMultiStatBonus(GroupTypes, BonusType.AGGRO_PRIORITY_RATE).CalculateStat(1f), 0);
 
         OnHitData.UpdateStatusEffectData(this, GetGroupTypes(), null);
     }

@@ -22,6 +22,12 @@ public class ResourceManager : MonoBehaviour
     [SerializeField]
     private GameObject abilityContainerPrefab;
 
+    [SerializeField]
+    private FloatingDamageText damageTextPrefab;
+
+    [SerializeField]
+    private TargetingCircle targetingCirclePrefab;
+
     private Dictionary<string, AbilityBase> abilityList;
     private Dictionary<string, EquipmentBase> equipmentList;
     private Dictionary<string, UniqueBase> uniqueList;
@@ -47,6 +53,9 @@ public class ResourceManager : MonoBehaviour
     public GameObject HeroPrefab => heroPrefab;
     public EnemyActor EnemyPrefab => enemyPrefab;
     public GameObject AbilityContainerPrefab => abilityContainerPrefab;
+    public FloatingDamageText DamageTextPrefab => damageTextPrefab;
+    public TargetingCircle TargetingCirclePrefab => targetingCirclePrefab;
+
 
     private AssetBundle jsonBundle;
 

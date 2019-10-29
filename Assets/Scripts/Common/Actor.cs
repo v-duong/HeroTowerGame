@@ -14,12 +14,15 @@ public abstract class Actor : MonoBehaviour
     private readonly List<StatBonusBuffEffect> buffEffects = new List<StatBonusBuffEffect>();
     protected UIHealthBar healthBar;
     protected List<ActorAbility> instancedAbilitiesList = new List<ActorAbility>();
-    protected int nextMovementNode;
+    public int NextMovementNode { get; protected set; }
     protected bool isMoving;
     public bool isBoss = false;
     public int attackLocks = 0;
     public HashSet<GroupType> actorTags = new HashSet<GroupType>();
     public HashSet<GroupType> actorTargetTags = new HashSet<GroupType>();
+    public PrimaryTargetingType targetingPriority = PrimaryTargetingType.CLOSEST;
+    public SecondaryTargetingFlags targetingFlags = SecondaryTargetingFlags.NONE;
+    public Actor forcedTarget = null;
 
     public abstract ActorType GetActorType();
 
@@ -66,7 +69,7 @@ public abstract class Actor : MonoBehaviour
         InitializeHealthBar();
     }
 
-    protected void Update()
+    protected virtual void Update()
     {
         UpdateStatusEffects();
         ApplyRegenEffects();
@@ -118,7 +121,7 @@ public abstract class Actor : MonoBehaviour
     public void InitializeHealthBar()
     {
         if (healthBar != null)
-            healthBar.Initialize(Data.MaximumHealth, Data.CurrentHealth, Data.MaximumManaShield, Data.CurrentManaShield, transform);
+            healthBar.InitializeForActor(Data.MaximumHealth, Data.CurrentHealth, Data.MaximumManaShield, Data.CurrentManaShield, transform);
     }
 
     public void AddStatusEffect(ActorEffect statusEffect)
@@ -169,9 +172,9 @@ public abstract class Actor : MonoBehaviour
 
             statusEffects.Add(statusEffect);
             //Debug.Log(Data.Name + " " + statusEffect + " " + statusEffect.GetSimpleEffectValue());
-            Data.UpdateActorData();
             statusEffect.OnApply();
             actorTags.Add(statusEffect.StatusTag);
+            Data.UpdateActorData();
         }
     }
 
@@ -257,7 +260,7 @@ public abstract class Actor : MonoBehaviour
         collider.gameObject.layer = ability.targetLayer;
     }
 
-    public List<AbilityBase> GetAbilitiesInList()
+    public List<AbilityBase> GetAbilitiyBasesInList()
     {
         List<AbilityBase> ret = new List<AbilityBase>();
         foreach (ActorAbility ability in instancedAbilitiesList)
@@ -265,6 +268,11 @@ public abstract class Actor : MonoBehaviour
             ret.Add(ability.abilityBase);
         }
         return ret;
+    }
+
+    public IList<ActorAbility> GetInstancedAbilities()
+    {
+        return instancedAbilitiesList.AsReadOnly();
     }
 
     public void ModifyCurrentHealth(float mod)
@@ -277,7 +285,7 @@ public abstract class Actor : MonoBehaviour
         else
             Data.CurrentHealth -= mod;
 
-        healthBar.UpdateHealthBar(Data.MaximumHealth, Data.CurrentHealth, Data.MaximumManaShield, Data.CurrentManaShield);
+        healthBar.UpdateHealthBar(Data.MaximumHealth, Data.CurrentHealth, Data.MaximumManaShield, Data.CurrentManaShield, true);
     }
 
     public float ModifyCurrentShield(float mod, bool interruptRecharge)
@@ -295,10 +303,10 @@ public abstract class Actor : MonoBehaviour
             Data.CurrentManaShield = Data.MaximumManaShield;
             remainingDamage = 0;
         }
-        else if (Data.CurrentManaShield < mod)
+        else if (mod > Data.CurrentManaShield )
         {
-            Data.CurrentManaShield = 0;
             remainingDamage = mod - Data.CurrentManaShield;
+            Data.CurrentManaShield = 0;
         }
         else
         {
@@ -311,7 +319,7 @@ public abstract class Actor : MonoBehaviour
             Data.CurrentShieldDelay = Math.Max(BASE_SHIELD_RESTORE_DELAY * Data.ShieldRestoreDelayModifier, 1f);
         }
 
-        healthBar.UpdateHealthBar(Data.MaximumHealth, Data.CurrentHealth, Data.MaximumManaShield, Data.CurrentManaShield);
+        healthBar.UpdateHealthBar(Data.MaximumHealth, Data.CurrentHealth, Data.MaximumManaShield, Data.CurrentManaShield, true);
 
         return remainingDamage;
     }
@@ -351,8 +359,25 @@ public abstract class Actor : MonoBehaviour
         if (target.Data.DodgeRating > 0)
         {
             float dodgePercent = 1f - (accuracy / (accuracy + target.Data.DodgeRating / 2f));
-            dodgePercent = Mathf.Min(dodgePercent, 85f);
-            if (UnityEngine.Random.Range(0, 100f) < dodgePercent)
+            dodgePercent = Mathf.Min(dodgePercent, 0.85f);
+
+            if (UnityEngine.Random.Range(0, 1f) < dodgePercent)
+                return true;
+        }
+
+        return false;
+    }
+
+    public static bool DidTargetParry(Actor target, AbilityType abilityType)
+    {
+        if (target.Data.AttackParryChance > 0 && abilityType == AbilityType.ATTACK)
+        {
+            if (target.Data.AttackParryChance == 100 || UnityEngine.Random.Range(0, 100) < target.Data.AttackParryChance)
+                return true;
+        }
+        else if (target.Data.SpellParryChance > 0 && abilityType == AbilityType.SPELL)
+        {
+            if (target.Data.SpellParryChance == 100 || UnityEngine.Random.Range(0, 100) < target.Data.SpellParryChance )
                 return true;
         }
 
@@ -366,9 +391,9 @@ public abstract class Actor : MonoBehaviour
             if (target.Data.AttackPhasing == 100 || UnityEngine.Random.Range(0, 100) < target.Data.AttackPhasing)
                 return true;
         }
-        else if (target.Data.MagicPhasing > 0 && abilityType == AbilityType.SPELL)
+        else if (target.Data.SpellPhasing > 0 && abilityType == AbilityType.SPELL)
         {
-            if (target.Data.MagicPhasing == 100 || UnityEngine.Random.Range(0, 100) < target.Data.MagicPhasing)
+            if (target.Data.SpellPhasing == 100 || UnityEngine.Random.Range(0, 100) < target.Data.SpellPhasing)
                 return true;
         }
 
@@ -432,16 +457,22 @@ public abstract class Actor : MonoBehaviour
             }
         }
 
+        float actualDamageTaken = total;
+
         if (sourceType == EffectType.POISON)
             total = ModifyCurrentShield(total * Data.PoisonResistance, true) + (total * (1f - Data.PoisonResistance));
         else
             total = ModifyCurrentShield(total, true);
 
+        actualDamageTaken -= total;
+
         if (Data.HealthIsHitsToKill && isHit && total >= 1f)
         {
             ModifyCurrentHealth(1);
+
+            actualDamageTaken += 1;
         }
-        else
+        else if (total > 0)
         {
             MassShieldAura massShield = (MassShieldAura)GetStatusEffect(EffectType.MASS_SHIELD_AURA);
             if (massShield != null && massShield.Source != this)
@@ -464,6 +495,8 @@ public abstract class Actor : MonoBehaviour
                 }
             }
 
+            actualDamageTaken += total;
+
             ModifyCurrentHealth(total);
         }
 
@@ -482,6 +515,10 @@ public abstract class Actor : MonoBehaviour
 
         if (isHit)
         {
+            FloatingDamageText damageText  = Instantiate(ResourceManager.Instance.DamageTextPrefab, StageManager.Instance.WorldCanvas.transform);
+            damageText.transform.position = this.transform.position;
+            damageText.SetDamageText(actualDamageTaken);
+
             ApplyAfterHitEffects(damageTaken, onHitData, restrictionFlags);
         }
     }
@@ -592,7 +629,11 @@ public abstract class Actor : MonoBehaviour
     public void EnableHealthBar()
     {
         if (healthBar != null)
+        {
             healthBar.gameObject.SetActive(true);
+            healthBar.UpdatePosition(transform);
+            healthBar.UpdateHealthBar(Data.MaximumHealth, Data.CurrentHealth, Data.MaximumManaShield, Data.CurrentManaShield, true);
+        }
     }
 
     public Dictionary<ElementType, float> ScaleSecondaryDamageValue(Actor target, Dictionary<ElementType, MinMaxRange> baseDamage, IEnumerable<GroupType> effectTags)

@@ -75,7 +75,7 @@ public class HeroData : ActorData
         BaseDodgeRating = 0;
         BaseResolveRating = 0;
         BaseAttackPhasing = 0;
-        BaseMagicPhasing = 0;
+        BaseSpellPhasing = 0;
         movementSpeed = 2.5f;
 
         archetypeList[0] = new HeroArchetypeData(heroSaveData.primaryArchetypeData, this);
@@ -115,13 +115,18 @@ public class HeroData : ActorData
 
     public void InitHeroActor(GameObject actor)
     {
-        CurrentHealth = MaximumHealth;
-        CurrentManaShield = MaximumManaShield;
-        CurrentSoulPoints = 50;
+        ResetHealthShieldValues();
         HeroActor hero = actor.AddComponent<HeroActor>();
         CurrentActor = hero;
         OnHitData.SourceActor = hero;
         hero.Initialize(this);
+    }
+
+    public void ResetHealthShieldValues()
+    {
+        CurrentHealth = MaximumHealth;
+        CurrentManaShield = MaximumManaShield;
+        CurrentSoulPoints = 50;
     }
 
     private void Initialize(string name = "")
@@ -141,7 +146,7 @@ public class HeroData : ActorData
         BaseDodgeRating = 0;
         BaseResolveRating = 0;
         BaseAttackPhasing = 0;
-        BaseMagicPhasing = 0;
+        BaseSpellPhasing = 0;
         movementSpeed = 2.5f;
         IsLocked = false;
         isDualWielding = false;
@@ -550,7 +555,7 @@ public class HeroData : ActorData
         ApplySoulPointBonuses();
         CalculateDefenses();
         AttackPhasing = Math.Max(GetMultiStatBonus(GroupTypes, BonusType.ATTACK_PHASING).CalculateStat(BaseAttackPhasing), 0);
-        MagicPhasing = Math.Max(GetMultiStatBonus(GroupTypes, BonusType.MAGIC_PHASING).CalculateStat(BaseMagicPhasing), 0);
+        SpellPhasing = Math.Max(GetMultiStatBonus(GroupTypes, BonusType.MAGIC_PHASING).CalculateStat(BaseSpellPhasing), 0);
     }
 
     private void UpdateHeroAttributes()

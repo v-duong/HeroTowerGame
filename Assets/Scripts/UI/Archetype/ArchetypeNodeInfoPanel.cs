@@ -9,6 +9,7 @@ public class ArchetypeNodeInfoPanel : MonoBehaviour
     public TextMeshProUGUI infoText;
     public ArchetypeUITreeNode uiNode;
     public Button levelButton;
+    public Button delevelButton;
     public HeroData hero;
     private bool isPreviewMode;
 
@@ -16,9 +17,15 @@ public class ArchetypeNodeInfoPanel : MonoBehaviour
     {
         ClearPanel();
         if (isPreviewMode)
+        {
             levelButton.gameObject.SetActive(false);
+            delevelButton.gameObject.SetActive(false);
+        }
         else
+        {
             levelButton.gameObject.SetActive(true);
+            delevelButton.gameObject.SetActive(true);
+        }
     }
 
     public void SetPreviewMode(bool set)
@@ -29,6 +36,7 @@ public class ArchetypeNodeInfoPanel : MonoBehaviour
     public void ClearPanel()
     {
         levelButton.interactable = false;
+        delevelButton.interactable = false;
         infoText.text = "";
     }
 
@@ -54,6 +62,11 @@ public class ArchetypeNodeInfoPanel : MonoBehaviour
             levelButton.interactable = true;
         else
             levelButton.interactable = false;
+
+        if (archetypeData.GetNodeLevel(node) > 0 && node.initialLevel == 0 && IsChildrenIndependent())
+            delevelButton.interactable = true;
+        else
+            delevelButton.interactable = false;
 
         infoText.text = "";
         if (node.type == NodeType.ABILITY)
@@ -145,5 +158,37 @@ public class ArchetypeNodeInfoPanel : MonoBehaviour
                     uiTreeNode.EnableNode();
             }
         }
+    }
+
+    public void DelevelNode()
+    {
+        if (archetypeData.GetNodeLevel(node) == 0 || archetypeData.GetNodeLevel(node) == node.initialLevel)
+            return;
+        if (archetypeData.IsNodeMaxLevel(node))
+        {
+            foreach (ArchetypeUITreeNode uiTreeNode in uiNode.connectedNodes)
+            {
+                if (archetypeData.GetNodeLevel(uiTreeNode.node) == 0)
+                    uiTreeNode.DisableNode();
+            }
+        }
+
+        archetypeData.DelevelNode(node);
+        hero.ModifyArchetypePoints(1);
+        UpdatePanel();
+        uiNode.UpdateNode();
+    }
+
+    private bool IsChildrenIndependent()
+    {
+        foreach (ArchetypeUITreeNode uiTreeNode in uiNode.connectedNodes)
+        {
+            if (archetypeData.GetNodeLevel(uiTreeNode.node) > 0 && !uiTreeNode.IsTherePathExcludingNode(uiNode, new System.Collections.Generic.List<ArchetypeUITreeNode>()))
+            {
+                Debug.Log("DEPEND " + uiTreeNode.node.idName);
+                return false;
+            }
+        } 
+        return true;
     }
 }

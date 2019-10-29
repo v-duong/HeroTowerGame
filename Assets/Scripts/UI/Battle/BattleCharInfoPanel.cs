@@ -3,34 +3,97 @@ using UnityEngine;
 
 public class BattleCharInfoPanel : MonoBehaviour
 {
-    public TextMeshProUGUI text;
-    private ActorData data;
+    [SerializeField]
+    private GameObject heroControls;
+
+    private Actor actor;
     private string targetName;
+
+    public TextMeshProUGUI infoText;
+    public TextMeshProUGUI targetText;
+    public TextMeshProUGUI statusText;
 
     public void Update()
     {
-        if (data == null || data.IsDead)
+        if (actor == null || actor.Data.IsDead)
         {
+            this.gameObject.SetActive(false);
             targetName = null;
-            data = null;
-            text.text = "";
+            actor = null;
+            infoText.text = "";
             return;
         }
-        text.text = targetName + "\n";
-        if (data.CurrentHealth < 1 && data.CurrentHealth > 0)
-            text.text += "Health: " + data.CurrentHealth.ToString("F2") + "/" + data.MaximumHealth;
+        infoText.text = targetName + "\n";
+        if (actor.Data.CurrentHealth < 1 && actor.Data.CurrentHealth > 0)
+            infoText.text += "Health: " + actor.Data.CurrentHealth.ToString("F2") + "/" + actor.Data.MaximumHealth;
         else
-            text.text += "Health: " + data.CurrentHealth.ToString("F0") + "/" + data.MaximumHealth;
+            infoText.text += "Health: " + actor.Data.CurrentHealth.ToString("F0") + "/" + actor.Data.MaximumHealth;
 
-        if (data.MaximumManaShield > 0)
+        if (actor.Data.MaximumManaShield > 0)
         {
-            text.text += "\nShield: " + data.CurrentManaShield.ToString("F0") + "/" + data.MaximumManaShield;
+            infoText.text += "\nShield: " + actor.Data.CurrentManaShield.ToString("F0") + "/" + actor.Data.MaximumManaShield;
+        }
+
+        var a = actor.GetStatusEffect(EffectType.CHILL);
+        if (a != null)
+        {
+            statusText.text = "Chill " + a.GetSimpleEffectValue() + "%";
+        }
+        else
+        {
+            statusText.text = "";
         }
     }
 
-    public void SetTarget(ActorData data)
+    public void SetTarget(Actor actor)
     {
-        this.data = data;
-        targetName = LocalizationManager.Instance.GetLocalizationText_Enemy(data.Name, ".name");
+        this.actor = actor;
+        if (actor != null)
+        {
+            this.gameObject.SetActive(true);
+
+            if (actor.GetActorType() == ActorType.ALLY)
+            {
+                heroControls.SetActive(true);
+                targetText.text = actor.targetingPriority.ToString();
+            }
+            else
+            {
+                heroControls.SetActive(false);
+            }
+
+            targetName = LocalizationManager.Instance.GetLocalizationText_Enemy(actor.Data.Name, ".name");
+        }
+    }
+
+    public void SetTimescale(float value)
+    {
+        GameManager.SetTimescale(value);
+    }
+
+    public void MoveHero()
+    {
+        InputManager.Instance.selectedHero = actor as HeroActor;
+        InputManager.Instance.IsMovementMode = true;
+    }
+
+    public void TargetSelectionOnClick(int i)
+    {
+        switch (actor.targetingPriority)
+        {
+            case PrimaryTargetingType.CLOSEST when i < 0:
+                actor.targetingPriority = PrimaryTargetingType.RANDOM;
+                break;
+
+            case PrimaryTargetingType.RANDOM when i > 0:
+                actor.targetingPriority = PrimaryTargetingType.CLOSEST;
+                break;
+
+            default:
+                actor.targetingPriority += i;
+                break;
+        }
+
+        targetText.text = actor.targetingPriority.ToString();
     }
 }
