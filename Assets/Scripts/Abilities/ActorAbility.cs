@@ -1465,10 +1465,11 @@ public class ActorAbility
     protected IEnumerator FireHitscan(Vector3 origin, Actor target, List<Actor> sharedHitlist)
     {
         Actor lastHitTarget;
-        emitParams.position = target.transform.position;
+        
 
         yield return new WaitForSeconds(HitscanDelay);
 
+        emitParams.position = target.transform.position;
         ParticleManager.Instance.EmitAbilityParticle(abilityBase.idName, emitParams, 1);
         ApplyDamageToActor(target, true);
 
@@ -1722,8 +1723,10 @@ public class ActorAbility
             if (particleSystem != null)
             {
                 GameObject particle = GameObject.Instantiate(particleSystem.gameObject, pooledProjectile.transform, false);
+                particle.transform.localPosition = Vector3.zero;
                 pooledProjectile.particles = particle.GetComponent<ParticleSystem>();
                 pooledProjectile.particles.transform.localScale = new Vector2(ProjectileSize, ProjectileSize);
+                pooledProjectile.particles.Play();
             }
 
             pooledProjectile.GetComponent<SpriteRenderer>().sprite = ResourceManager.Instance.GetSprite(abilityBase.idName);
@@ -1783,13 +1786,20 @@ public class ActorAbility
         Debug.DrawLine(origin, origin + horizontal, Color.red, 1);
         Debug.DrawLine(origin, origin - horizontal, Color.red, 1);
         Debug.DrawLine(origin - horizontal, origin - horizontal + (heading * AreaLength), Color.red, 1);
+        Debug.DrawLine(origin + horizontal, origin + horizontal + (heading * AreaLength), Color.red, 1);
         */
 
-        Collider2D[] hits = Physics2D.OverlapAreaAll(origin + horizontal, origin - horizontal + (heading * AreaLength), targetMask);
+        emitParams.position = origin;
+        float angle = Vector2.SignedAngle(Vector2.up, heading);
+        Debug.Log(angle);
+        ParticleManager.Instance.EmitAbilityParticle_Rotated(abilityBase.idName, emitParams, AreaScaling, angle, AbilityOwner.transform);
 
-        foreach (Collider2D hit in hits)
+        //Collider2D[] hits = Physics2D.OverlapAreaAll(origin + horizontal, origin - horizontal + (heading * AreaLength), targetMask);
+        RaycastHit2D[] hitcast = Physics2D.BoxCastAll(origin, new Vector2(AreaRadius*2f, AreaRadius * 2f), angle, heading, AreaLength, targetMask);
+
+        foreach (RaycastHit2D hit in hitcast)
         {
-            Actor actor = hit.GetComponent<Actor>();
+            Actor actor = hit.transform.GetComponent<Actor>();
             if (actor == null)
                 continue;
 

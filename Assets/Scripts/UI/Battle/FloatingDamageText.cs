@@ -3,7 +3,7 @@ using UnityEngine;
 
 public class FloatingDamageText : MonoBehaviour
 {
-    private const float TEXT_DURATION = 1f;
+    private const float TEXT_DURATION = 0.5f;
 
     [SerializeField]
     private TextMeshProUGUI text;

@@ -48,6 +48,10 @@ public class GameManager : MonoBehaviour
         foreach (ArchetypeBase archetypeBase in ResourceManager.Instance.ArchetypeBasesList)
         {
             PlayerStats.AddArchetypeToInventory(ArchetypeItem.CreateArchetypeItem(archetypeBase, 100));
+            foreach (var ability in archetypeBase.GetArchetypeAbilities(false))
+            {
+                PlayerStats.AddAbilityToInventory(AbilityCoreItem.CreateAbilityItemFromArchetype(archetypeBase, ability));
+            }
         }
     }
 

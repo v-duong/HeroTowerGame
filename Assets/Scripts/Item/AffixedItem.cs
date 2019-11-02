@@ -15,11 +15,11 @@ public abstract class AffixedItem : Item
             return false;
 
         if (!currentPrefixesAreImmutable)
-            foreach (Affix affix in prefixes)
+            foreach (Affix affix in prefixes.Where(x => !x.IsLocked))
                 affix.RerollValue();
 
         if (!currentSuffixesAreImmutable)
-            foreach (Affix affix in suffixes)
+            foreach (Affix affix in suffixes.Where(x => !x.IsLocked))
                 affix.RerollValue();
 
         UpdateItemStats();
@@ -29,9 +29,9 @@ public abstract class AffixedItem : Item
 
     public Affix GetRandomAffix()
     {
-        if (prefixes.Count > 0 || suffixes.Count > 0)
+        List<Affix> temp = prefixes.Concat(suffixes).Where(x => !x.IsLocked).ToList();
+        if (temp.Count > 0)
         {
-            List<Affix> temp = prefixes.Concat(suffixes).ToList();
             return temp[Random.Range(0, temp.Count)];
         }
         else
@@ -40,12 +40,25 @@ public abstract class AffixedItem : Item
 
     public Affix GetRandomAffix(AffixType type)
     {
+        List<Affix> listToRemoveFrom;
         if (type == AffixType.PREFIX && prefixes.Count > 0)
-            return prefixes[Random.Range(0, prefixes.Count)];
+        {
+            listToRemoveFrom = prefixes;
+        }
         else if (type == AffixType.SUFFIX && suffixes.Count > 0)
-            return suffixes[Random.Range(0, suffixes.Count)];
-        else
+        {
+            listToRemoveFrom = suffixes;
+        } else
+        {
             return null;
+        }
+
+        var newList = listToRemoveFrom.Where(x => !x.IsLocked).ToList();
+
+        if (newList.Count == 0)
+            return null;
+
+        return newList[Random.Range(0, newList.Count)];
     }
 
     public bool RemoveRandomAffix()
@@ -89,13 +102,17 @@ public abstract class AffixedItem : Item
             return false;
 
         if (!currentPrefixesAreImmutable)
-            prefixes.Clear();
+            prefixes.RemoveAll(x => !x.IsLocked);
         if (!currentSuffixesAreImmutable)
-            suffixes.Clear();
+            suffixes.RemoveAll(x => !x.IsLocked);
 
         if (setRarityToNormal && prefixes.Count == 0 && suffixes.Count == 0)
         {
             Rarity = RarityType.NORMAL;
+            UpdateName();
+        } else if (setRarityToNormal && (prefixes.Count + suffixes.Count) <= 2)
+        {
+            Rarity = RarityType.UNCOMMON;
             UpdateName();
         }
 
@@ -278,12 +295,12 @@ public abstract class AffixedItem : Item
 
     public WeightList<AffixBase> GetAllPossiblePrefixes(Dictionary<GroupType, float> weightModifiers)
     {
-        return ResourceManager.Instance.GetPossibleAffixes(AffixType.PREFIX, ItemLevel, GetGroupTypes(), GetBonusTagTypeList(AffixType.PREFIX),weightModifiers);
+        return ResourceManager.Instance.GetPossibleAffixes(AffixType.PREFIX, ItemLevel, GetGroupTypes(), GetBonusTagTypeList(AffixType.PREFIX), weightModifiers);
     }
 
     public WeightList<AffixBase> GetAllPossibleSuffixes(Dictionary<GroupType, float> weightModifiers)
     {
-        return ResourceManager.Instance.GetPossibleAffixes(AffixType.SUFFIX, ItemLevel, GetGroupTypes(), GetBonusTagTypeList(AffixType.SUFFIX),weightModifiers);
+        return ResourceManager.Instance.GetPossibleAffixes(AffixType.SUFFIX, ItemLevel, GetGroupTypes(), GetBonusTagTypeList(AffixType.SUFFIX), weightModifiers);
     }
 
     public abstract bool UpgradeRarity();

@@ -40,6 +40,14 @@ public class AbilityCoreItem : Item, IAbilitySource
         }
     }
 
+    public static AbilityCoreItem CreateAbilityItemFromArchetype(ArchetypeBase archetypeItem, AbilityBase abilityBase)
+    {
+        {
+            string name = archetypeItem.idName + "'s " + LocalizationManager.Instance.GetLocalizationText_Ability(abilityBase.idName)[0];
+            return new AbilityCoreItem(abilityBase, name);
+        }
+    }
+
     public override ItemType GetItemType()
     {
         return ItemType.ABILITY;

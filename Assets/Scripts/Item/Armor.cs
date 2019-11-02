@@ -44,13 +44,13 @@ public class Armor : Equipment
     {
         HashSet<GroupType> tags = new HashSet<GroupType>
         {
-            GroupType.ALL_ARMOR,
             Base.group
         };
         switch (Base.equipSlot)
         {
             case EquipSlotType.BODY_ARMOR:
                 tags.Add(GroupType.BODY_ARMOR);
+                tags.Add(GroupType.ALL_ARMOR);
                 break;
 
             case EquipSlotType.WEAPON:
@@ -70,6 +70,7 @@ public class Armor : Equipment
                     case GroupType.INT_WILL_SHIELD:
                     case GroupType.AGI_WILL_SHIELD:
                         tags.Add(GroupType.SHIELD);
+                        tags.Add(GroupType.ALL_ARMOR);
                         if (Enum.TryParse(Base.group.ToString().Replace("SHIELD", "ARMOR"), out GroupType derived))
                             tags.Add(derived);
                         break;
@@ -79,27 +80,35 @@ public class Armor : Equipment
                 break;
 
             case EquipSlotType.HEADGEAR:
+                tags.Add(GroupType.HEADGEAR);
+                tags.Add(GroupType.ALL_ARMOR);
                 break;
 
             case EquipSlotType.GLOVES:
+                tags.Add(GroupType.GLOVES);
+                tags.Add(GroupType.ALL_ARMOR);
                 break;
 
             case EquipSlotType.BOOTS:
+                tags.Add(GroupType.BOOTS);
+                tags.Add(GroupType.ALL_ARMOR);
                 break;
 
             case EquipSlotType.BELT:
+                tags.Add(GroupType.BELT);
+                tags.Add(GroupType.ALL_ACCESSORY);
                 break;
 
             case EquipSlotType.NECKLACE:
+                tags.Add(GroupType.NECKLACE);
+                tags.Add(GroupType.ALL_ACCESSORY);
                 break;
 
             case EquipSlotType.RING_SLOT_1:
-                break;
-
             case EquipSlotType.RING_SLOT_2:
-                break;
-
             case EquipSlotType.RING:
+                tags.Add(GroupType.RING);
+                tags.Add(GroupType.ALL_ACCESSORY);
                 break;
         }
         return tags;

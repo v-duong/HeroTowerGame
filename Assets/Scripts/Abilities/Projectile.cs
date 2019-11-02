@@ -81,6 +81,16 @@ public class Projectile : MonoBehaviour
         //transform.rotation = Quaternion.AngleAxis(angle, Vector3.forward);
 
         transform.up = (transform.position + CurrentHeading * currentSpeed) - transform.position;
+
+
+        if (particles != null && particles.main.startRotation.mode == ParticleSystemCurveMode.Constant)
+        {
+            var main = particles.main;
+            var newStartRotate = particles.main.startRotation;
+            newStartRotate.constant = -Mathf.Deg2Rad * transform.eulerAngles.z;
+            main.startRotation = newStartRotate;
+        }
+
     }
 
     public void OnTriggerEnter2D(Collider2D collision)
@@ -191,7 +201,7 @@ public class Projectile : MonoBehaviour
     {
         float dt = Time.deltaTime;
         //this.transform.position += currentHeading.normalized * currentSpeed * dt;
-        if (currentTarget != null)
+        if (currentTarget != null && !currentTarget.Data.IsDead)
         {
             Vector3 headingShift = Vector3.RotateTowards(CurrentHeading.normalized, (currentTarget.transform.position - transform.position).normalized, homingRate * Mathf.Deg2Rad * dt, 1);
             CurrentHeading = headingShift.normalized;

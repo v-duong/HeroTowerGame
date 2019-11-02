@@ -3,17 +3,25 @@ using UnityEngine;
 
 public class BattleEndWindow : MonoBehaviour
 {
-    public TextMeshProUGUI text;
+    public TextMeshProUGUI headerText;
+    public TextMeshProUGUI bodyText;
 
     public void ShowVictoryWindow()
     {
         this.gameObject.SetActive(true);
-        text.text = "Winner";
+        headerText.text = "Winner";
+        bodyText.text = "";
     }
 
     public void ShowLoseWindow()
     {
         this.gameObject.SetActive(true);
-        text.text = "Lose";
+        headerText.text = "Lose";
+        bodyText.text = "";
+    }
+
+    public void AddToBodyText(string s)
+    {
+        bodyText.text += s;
     }
 }

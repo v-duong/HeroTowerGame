@@ -23,6 +23,7 @@ public class HeroActor : Actor
         Data = data;
         NextMovementNode = 1;
         movementNodes = new List<Vector3>();
+        targetingPriority = PrimaryTargetingType.FIRST;
         if (data.GetAbilityFromSlot(0) != null)
         {
             ActorAbility firstAbility = data.GetAbilityFromSlot(0);

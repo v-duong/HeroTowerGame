@@ -42,6 +42,8 @@ public class UIManager : MonoBehaviour
     public GameObject currentWindow;
     public Stack<GameObject> previousWindows = new Stack<GameObject>();
 
+    public Button buttonPrefab;
+
     public static HeroData selectedHero;
 
     public Canvas InvCanvas

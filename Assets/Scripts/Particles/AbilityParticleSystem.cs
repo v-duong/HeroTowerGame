@@ -11,6 +11,8 @@ public class AbilityParticleSystem : MonoBehaviour
     public float waitUntilNextEmit;
     public bool scaleStartSize;
     public bool scaleShapeSize;
+    public bool rotateVelocity;
+    public bool rotateParticles;
     private float baseConstant;
     private float baseShapeSize;
     private Vector3 baseShapePosition;
@@ -58,10 +60,23 @@ public class AbilityParticleSystem : MonoBehaviour
             ScaleShapeSize(scaling);
         }
 
+        Vector3 rotationVector = new Vector3(0, 0, rotationAngle);
+
+        if (rotateVelocity)
+        {
+            Vector3 resultVelocity = Quaternion.Euler(rotationVector) * new Vector3(psVelOverLife.x.constant, psVelOverLife.y.constant, psVelOverLife.z.constant);
+            emitParams.velocity = resultVelocity;
+        }
+
+        if (rotateParticles)
+        {
+            emitParams.rotation = -rotationAngle;
+        }
+
         Vector3 offsetPosition = parent.position - transform.position;
         psVelOverLife.orbitalOffsetX = offsetPosition.x;
         psVelOverLife.orbitalOffsetY = offsetPosition.y;
-        Vector3 rotationVector = new Vector3(0, 0, rotationAngle);
+        
         psShape.position = Quaternion.Euler(rotationVector) * psShape.position;
         psShape.rotation = rotationVector;
 

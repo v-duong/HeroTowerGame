@@ -98,10 +98,24 @@ public class BattleManager : MonoBehaviour
             }
             GameManager.Instance.PlayerStats.ModifyExpStock((int)(gainedExp * 0.25f));
 
+            battleEndWindow.AddToBodyText("Experience +" + gainedExp + "\nStocked Experience +" + (gainedExp*0.25f) + "\n");
+
             // Get Consumables
             int consumableDrops = Random.Range(stageInfo.consumableDropCountMin, stageInfo.consumableDropCountMax + 1);
+            Dictionary<ConsumableType, int> consumablesCount = new Dictionary<ConsumableType, int>();
             for (int i = 0; i < consumableDrops; i++)
-                GameManager.Instance.AddRandomConsumableToInventory();
+            {
+                ConsumableType consumable = GameManager.Instance.GetRandomConsumable();
+                GameManager.Instance.PlayerStats.consumables[consumable]++;
+                if (!consumablesCount.ContainsKey(consumable))
+                    consumablesCount.Add(consumable,0);
+                consumablesCount[consumable]++;
+            }
+
+            foreach(KeyValuePair<ConsumableType, int> keyValue in consumablesCount)
+            {
+                battleEndWindow.AddToBodyText(keyValue.Key.ToString() + " +" + keyValue.Value + "\n");
+            }
 
             //Get Equipment
             int equipmentDrops = Random.Range(stageInfo.equipmentDropCountMin, stageInfo.equipmentDropCountMax + 1);

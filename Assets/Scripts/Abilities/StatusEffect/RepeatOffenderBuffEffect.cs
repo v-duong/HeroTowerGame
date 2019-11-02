@@ -19,6 +19,7 @@ public class RepeatOffenderBuffEffect : ActorEffect
         this.duration = duration;
         effectCooldown = 0;
 
+        // 100% crit chance, 150 crit damage
         bonuses = new List<Tuple<BonusType, ModifyType, float>>
             {
                 new Tuple<BonusType, ModifyType, float>(BonusType.GLOBAL_CRITICAL_CHANCE, ModifyType.ADDITIVE, 5f + 0.3f * effectLevel),

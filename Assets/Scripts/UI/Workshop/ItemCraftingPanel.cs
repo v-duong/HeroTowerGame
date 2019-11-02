@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -24,9 +25,6 @@ public class ItemCraftingPanel : MonoBehaviour
 
     [SerializeField]
     private TextMeshProUGUI rightInfo;
-
-    [SerializeField]
-    private Button confirmButton;
 
     private void OnDisable()
     {
@@ -68,12 +66,7 @@ public class ItemCraftingPanel : MonoBehaviour
         if (currentItem == null)
         {
             itemSlot.GetComponentInChildren<Image>().color = Helpers.ReturnRarityColor(RarityType.NORMAL);
-            confirmButton.interactable = false;
             return;
-        }
-        if (selectedOption == null)
-        {
-            confirmButton.interactable = false;
         }
         itemSlot.text.text = currentItem.Name;
         itemSlot.GetComponentInChildren<Image>().color = Helpers.ReturnRarityColor(currentItem.Rarity);
@@ -183,9 +176,10 @@ public class ItemCraftingPanel : MonoBehaviour
         if (currentItem == null)
             return;
         PopUpWindow popUpWindow = UIManager.Instance.PopUpWindow;
-        UIManager.Instance.OpenWindow(popUpWindow.gameObject, false);
+        popUpWindow.OpenTextWindow();
         popUpWindow.confirmButton.onClick.RemoveAllListeners();
         popUpWindow.confirmButton.onClick.AddListener(delegate { UIManager.Instance.CloseCurrentWindow(); });
+        popUpWindow.confirmButtonText.text = "Close";
         popUpWindow.textField.text = "";
         popUpWindow.textField.fontSize = 16;
         popUpWindow.textField.lineSpacing = 16;
@@ -223,74 +217,82 @@ public class ItemCraftingPanel : MonoBehaviour
         }
     }
 
-    public void RerollAffixOnClick(Button button)
+    public void RerollAffixOnClick()
     {
         if (currentItem == null)
             return;
-        SetSelectedOption(currentItem.RerollAffixesAtRarity);
+        currentItem.RerollAffixesAtRarity();
+        UpdatePanels();
     }
 
-    public void RerollValuesOnClick(Button button)
+    public void RerollValuesOnClick()
     {
         if (currentItem == null)
             return;
-        SetSelectedOption(currentItem.RerollValues);
+        currentItem.RerollValues();
+        UpdatePanels();
     }
 
-    public void AddAffixOnClick(Button button)
+    public void AddAffixOnClick()
     {
         if (currentItem == null)
             return;
-        SetSelectedOption(currentItem.AddRandomAffix);
+        currentItem.AddRandomAffix();
+        UpdatePanels();
     }
 
-    public void RemoveAffixOnClick(Button button)
+    public void RemoveAffixOnClick()
     {
         if (currentItem == null)
             return;
-        SetSelectedOption(currentItem.RemoveRandomAffix);
+        currentItem.RemoveRandomAffix();
+        UpdatePanels();
     }
 
-    public void UpgradeRarityOnClick(Button button)
+    public void UpgradeRarityOnClick()
     {
         if (currentItem == null)
             return;
-        SetSelectedOption(currentItem.UpgradeRarity);
+        currentItem.UpgradeRarity();
+        UpdatePanels();
     }
 
-    public void NormalToUncommonOnClick(Button button)
+    public void ToNormalOnClick()
     {
         if (currentItem == null)
             return;
-        SetSelectedOption(currentItem.UpgradeNormalToUncommon);
+        currentItem.SetRarityToNormal();
+        UpdatePanels();
     }
 
-    public void NormalToRareOnClick(Button button)
+    public void LockAffixOnClick()
     {
         if (currentItem == null)
             return;
-        SetSelectedOption(currentItem.UpgradeNormalToRare);
-    }
+        PopUpWindow popUpWindow = UIManager.Instance.PopUpWindow;
+        popUpWindow.OpenVerticalWindow();
+        popUpWindow.confirmButton.onClick.RemoveAllListeners();
+        popUpWindow.confirmButton.onClick.AddListener(delegate { UIManager.Instance.CloseCurrentWindow(); });
+        popUpWindow.confirmButtonText.text = "Cancel";
 
-    public void ToNormalOnClick(Button button)
-    {
-        if (currentItem == null)
-            return;
-        SetSelectedOption(currentItem.SetRarityToNormal);
-    }
-
-    private void SetSelectedOption(Func<bool> option)
-    {
-        if (option != null)
+        foreach(Affix affix in currentItem.prefixes.Concat(currentItem.suffixes))
         {
-            selectedOption = option;
-            confirmButton.interactable = true;
+            if (affix.IsLocked)
+                continue;
+            Button button = Instantiate(UIManager.Instance.buttonPrefab);
+            button.GetComponentInChildren<TextMeshProUGUI>().fontSize = 16;
+            button.GetComponentInChildren<TextMeshProUGUI>().text = Affix.BuildAffixString(affix.Base, 5, affix.GetAffixValues(), affix.GetEffectValues());
+            button.onClick.AddListener(delegate { LockAffixCallback(affix); });
+            popUpWindow.AddObjectToViewport(button.gameObject);
         }
-        else
-        {
-            selectedOption = null;
-            confirmButton.interactable = false;
-        }
+
+        UpdatePanels();
+    }
+
+    public void LockAffixCallback(Affix affix)
+    {
+        UIManager.Instance.CloseCurrentWindow();
+        affix.SetAffixLock(true);
     }
 
     public void ApplyActionOnClick()

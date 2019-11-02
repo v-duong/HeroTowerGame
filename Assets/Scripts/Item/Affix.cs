@@ -7,15 +7,17 @@ public class Affix
     private readonly List<float> affixValues;
     private readonly List<float> addedEffectValues;
     public bool IsCrafted { get; private set; }
+    public bool IsLocked { get; private set; }
     public AffixType AffixType { get; private set; }
    
 
-    public Affix(AffixBase affixBase, bool isCrafted = false)
+    public Affix(AffixBase affixBase, bool isCrafted = false, bool isLocked = false)
     {
         Base = affixBase;
         affixValues = new List<float>();
         AffixType = affixBase.affixType;
         IsCrafted = isCrafted;
+        IsLocked = isLocked;
         foreach (AffixBonusProperty mod in affixBase.affixBonuses)
         {
             if (mod.readAsFloat)
@@ -38,12 +40,13 @@ public class Affix
         }
     }
 
-    public Affix(AffixBase a, List<float> values, List<float> effectValues, bool isCrafted)
+    public Affix(AffixBase a, List<float> values, List<float> effectValues, bool isCrafted, bool isLocked)
     {
         Base = a;
         affixValues = new List<float>();
         AffixType = a.affixType;
         IsCrafted = isCrafted;
+        IsLocked = isLocked;
         int i = 0;
         foreach (AffixBonusProperty mod in a.affixBonuses)
         {
@@ -111,6 +114,11 @@ public class Affix
     public float GetEffectValue(int index)
     {
         return addedEffectValues[index];
+    }
+
+    public void SetAffixLock(bool value)
+    {
+        IsLocked = value;
     }
 
     public static string BuildAffixString(AffixBase Base, int indent, IList<float> affixValues = null, IList<float> effectValues = null)

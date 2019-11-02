@@ -909,12 +909,10 @@ public class HeroData : ActorData
         {
             foreach (AbilityCoreItem abilityCore in GameManager.Instance.PlayerStats.AbilityInventory)
             {
-                Debug.Log(abilityCore.SourceId + " " + sourceId);
                 if (abilityCore.SourceId != sourceId)
                     continue;
                 else
                 {
-                    Debug.Log("TEST");
                     EquipAbility(ability, slot, abilityCore);
                     return;
                 }

@@ -2,10 +2,10 @@
 
 public enum PrimaryTargetingType
 {
-    CLOSEST,
-    FURTHEST,
     FIRST,
     LAST,
+    CLOSEST,
+    FURTHEST,
     LEAST_HEALTH,
     MOST_HEALTH,
     LOWEST_HEALTH_PERCENT,
