@@ -85,4 +85,15 @@ public class StageManager : MonoBehaviour
         Instance = this;
         DontDestroyOnLoad(this.gameObject);
     }
+
+    public void InitalizeStage()
+    {
+        DisplayMap.CompressBounds();
+        Bounds bounds = Instance.DisplayMap.localBounds;
+        stageBounds = bounds;
+        InputManager.Instance.SetCameraBounds();
+        WorldCanvas.GetComponent<Canvas>().worldCamera = Camera.main;
+        HighlightMap.gameObject.SetActive(false);
+        BattleManager.Initialize();
+    }
 }

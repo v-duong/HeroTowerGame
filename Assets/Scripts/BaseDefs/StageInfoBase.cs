@@ -69,11 +69,14 @@ public class EnemyWaveItem
     [JsonProperty]
     public readonly bool isBossOverride;
     [JsonProperty]
+    public readonly float startDelay;
+    [JsonProperty]
     public readonly int enemyCount;
     [JsonProperty]
     public readonly int spawnerIndex; // which spawn point to spawn from
     [JsonProperty]
     public readonly int goalIndex; // which goal to head toward
+
 }
 
 public class WeightBase

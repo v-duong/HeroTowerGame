@@ -89,8 +89,11 @@ public class EnemyActor : Actor
             {
                 if ((ability.abilityBase.abilityType == AbilityType.ATTACK || ability.abilityBase.abilityType == AbilityType.SPELL) && ability.targetList.Count > 0)
                 {
-                    isMoving = false;
-                    return;
+                    if (ability.targetList.FindAll(x => Vector3.Distance(transform.position, x.transform.position) <= ability.TargetRange).Count > 0)
+                    {
+                        isMoving = false;
+                        return;
+                    }
                 }
             }
 
@@ -134,13 +137,27 @@ public class EnemyActor : Actor
 
         targetingPriority = enemyBase.targetingPriority;
 
-        if (rarity == RarityType.RARE)
+        if (isBoss)
         {
-            AddRandomMobAffixes(3);
+            if (!enemyBase.isBoss)
+            {
+                Data.AddStatBonus(BonusType.MAX_HEALTH, GroupType.NO_GROUP, ModifyType.MULTIPLY, 1200);
+                Data.AddStatBonus(BonusType.GLOBAL_DAMAGE, GroupType.NO_GROUP, ModifyType.MULTIPLY, 75);
+                this.transform.localScale = new Vector3(1.28f, 1.28f);
+            }
+        }
+        else if (rarity == RarityType.RARE)
+        {
+            Data.AddStatBonus(BonusType.MAX_HEALTH, GroupType.NO_GROUP, ModifyType.MULTIPLY, 500);
+            Data.AddStatBonus(BonusType.GLOBAL_DAMAGE, GroupType.NO_GROUP, ModifyType.MULTIPLY, 30);
+            this.transform.localScale = new Vector3(1.14f, 1.14f);
+            AddRandomStatAffixes(3);
         }
         else if (rarity == RarityType.UNCOMMON)
         {
-            AddRandomMobAffixes(1);
+            Data.AddStatBonus(BonusType.MAX_HEALTH, GroupType.NO_GROUP, ModifyType.MULTIPLY, 200);
+            Data.AddStatBonus(BonusType.GLOBAL_DAMAGE, GroupType.NO_GROUP, ModifyType.MULTIPLY, 10);
+            AddRandomStatAffixes(1);
         }
 
         instancedAbilitiesList.Clear();
@@ -176,7 +193,7 @@ public class EnemyActor : Actor
         }
     }
 
-    public void AddRandomMobAffixes(int affixCount)
+    public void AddRandomStatAffixes(int affixCount)
     {
         List<string> bonusTags = new List<string>();
         foreach (Affix a in mobAffixes)

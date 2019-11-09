@@ -13,12 +13,15 @@ public class SummonScrollSlot : MonoBehaviour
     [SerializeField]
     private Slider respawnTimer;
 
+
+
     public HeroActor actor;
     public UIHealthBar healthBar;
     public bool heroSummoned = false;
     public bool heroDead = false;
     private float currentRespawnTime = 0f;
     private float maxRespawnTime = 0f;
+    
 
     public void SetActor(HeroActor actor)
     {
@@ -72,4 +75,5 @@ public class SummonScrollSlot : MonoBehaviour
         respawnTimer.gameObject.SetActive(true);
         respawnTimer.value = 1f;
     }
+
 }

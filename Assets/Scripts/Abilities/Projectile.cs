@@ -55,6 +55,7 @@ public class Projectile : MonoBehaviour
             }
 
             ReturnToPool();
+            return;
         }
 
         if (isOffscreen)
@@ -64,6 +65,7 @@ public class Projectile : MonoBehaviour
                 transform.position.y < bounds.center.y - bounds.extents.y || transform.position.y > bounds.center.y + bounds.extents.y)
             {
                 ReturnToPool();
+                return;
             }
         }
 
@@ -81,7 +83,6 @@ public class Projectile : MonoBehaviour
         //transform.rotation = Quaternion.AngleAxis(angle, Vector3.forward);
 
         transform.up = (transform.position + CurrentHeading * currentSpeed) - transform.position;
-
 
         if (particles != null && particles.main.startRotation.mode == ParticleSystemCurveMode.Constant)
         {

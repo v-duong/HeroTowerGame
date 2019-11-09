@@ -60,7 +60,6 @@ public class XpStockPanel : MonoBehaviour
 
     public void UpdateSliderValues()
     {
-        GameManager.Instance.PlayerStats.ModifyExpStock(200000000);
         int level = Mathf.Min(selectedHero.Level + 1, 100);
         levelSlider.value = level;
         selectedLevel = level;

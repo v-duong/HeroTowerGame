@@ -6,7 +6,11 @@ public class SummonScrollWindow : MonoBehaviour
     [SerializeField]
     private SummonScrollSlot prefab;
 
+    [SerializeField]
+    private GameObject panelParent;
+
     private readonly List<SummonScrollSlot> summonSlots = new List<SummonScrollSlot>();
+    private bool isHidden = false;
 
     public void AddHeroActor(HeroActor actor)
     {
@@ -21,6 +25,24 @@ public class SummonScrollWindow : MonoBehaviour
         if (slot != null)
         {
             slot.OnHeroDeath();
+        }
+    }
+
+    public void HideToggle()
+    {
+        isHidden = !isHidden;
+        RectTransform parentRect = panelParent.transform as RectTransform;
+        RectTransform infoRect = UIManager.Instance.BattleCharInfoPanel.transform as RectTransform;
+
+        if (isHidden)
+        {
+            parentRect.anchoredPosition = new Vector2(0, -85);
+            infoRect.anchoredPosition = new Vector2(0, 15);
+        }
+        else
+        {
+            parentRect.anchoredPosition = new Vector2(0, 0);
+            infoRect.anchoredPosition = new Vector2(0, 100);
         }
     }
 }

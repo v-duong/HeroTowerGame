@@ -49,6 +49,10 @@ public class InventorySlot : MonoBehaviour
                 infoText.text += "PrmDPS: " + weapon.GetPrimordialDPS().ToString("n1") + "\n";
                 break;
 
+            case ItemType.ACCESSORY:
+                Accessory accessory = item as Accessory;
+                groupText.text = LocalizationManager.Instance.GetLocalizationText_GroupType(accessory.Base.group.ToString());
+                break;
             default:
                 break;
         }

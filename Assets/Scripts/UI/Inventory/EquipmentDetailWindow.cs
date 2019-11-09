@@ -32,7 +32,7 @@ public class EquipmentDetailWindow : MonoBehaviour
 
     public void UpdateWindowEquipment(HeroData hero)
     {
-        GetComponent<Outline>().effectColor = Helpers.ReturnRarityColor(equip.Rarity);
+        GetComponentInChildren<Outline>().effectColor = Helpers.ReturnRarityColor(equip.Rarity);
         NameBackground.color = Helpers.ReturnRarityColor(equip.Rarity);
         nameText.text = equip.Name;
         infoText.text = "";
@@ -102,10 +102,14 @@ public class EquipmentDetailWindow : MonoBehaviour
 
         if (hero != null)
         {
+            EquipButtonParent.gameObject.SetActive(true);
             EquipButtonParent.GetComponentInChildren<Button>().interactable = hero.CanEquipItem(equip);
         }
         else
+        {
+            EquipButtonParent.gameObject.SetActive(false);
             EquipButtonParent.GetComponentInChildren<Button>().interactable = true;
+        }
     }
 
     public void UpdateWindowEquipment_Armor(Armor armorItem)
@@ -198,6 +202,7 @@ public class EquipmentDetailWindow : MonoBehaviour
         UIManager ui = UIManager.Instance;
         if (type == 0)
         {
+            return;
             RectTransform t = GetComponent<RectTransform>();
             t.sizeDelta = ui.itemWindowSize;
             t.anchoredPosition = new Vector2((ui.referenceResolution.x - ui.itemWindowSize.x) / 2, (ui.itemWindowSize.y - ui.referenceResolution.y) / 2);

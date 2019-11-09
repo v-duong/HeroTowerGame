@@ -117,12 +117,11 @@ public class GameManager : MonoBehaviour
 
         SetUpBattleScene(scene);
 
-
-        InputManager.Instance.ResetManager();
         StageManager.Instance.BattleManager.SetStageBase(stageInfoBase);
         StageManager.Instance.BattleManager.InitializeProjectilePool();
+        StageManager.Instance.InitalizeStage();
+        InputManager.Instance.ResetManager();
         ParticleManager.Instance.ClearParticleSystems();
-        StageManager.Instance.HighlightMap.gameObject.SetActive(false);
         isInBattle = true;
 
 
@@ -183,11 +182,6 @@ public class GameManager : MonoBehaviour
             Debug.Log(abilityBase.idName);
 
         ResourceManager.Instance.LoadSpritesToBeUsed(abilitiesInUse);
-        StageManager.Instance.DisplayMap.CompressBounds();
-        Bounds bounds = StageManager.Instance.DisplayMap.localBounds;
-        StageManager.Instance.stageBounds = bounds;
-        InputManager.Instance.SetCameraBounds();
-        StageManager.Instance.WorldCanvas.GetComponent<Canvas>().worldCamera = Camera.main;
     }
 
     public static void SetTimescale(float value)

@@ -130,6 +130,10 @@ public class EnemyData : ActorData
         return;
     }
 
+    /// <summary>
+    /// Used for wave bonuses, not individual mob bonuses
+    /// </summary>
+    /// <param name="dict"></param>
     public void SetMobBonuses(Dictionary<BonusType, StatBonus> dict)
     {
         mobBonuses = dict;

@@ -292,10 +292,13 @@ public class ActorAbility
                         }
                     }
                     break;
+
                 case PrimaryTargetingType.LOWEST_HEALTH_PERCENT:
                     break;
+
                 case PrimaryTargetingType.HIGHEST_HEALTH_PERCENT:
                     break;
+
                 default:
                     CurrentTarget = targetList[0];
                     break;
@@ -1039,7 +1042,8 @@ public class ActorAbility
             if (damageLevels.ContainsKey(element))
             {
                 abilityBaseDamage = damageLevels[element].damage[abilityLevel];
-            } else
+            }
+            else
             {
                 abilityBaseDamage = new MinMaxRange();
             }
@@ -1465,7 +1469,6 @@ public class ActorAbility
     protected IEnumerator FireHitscan(Vector3 origin, Actor target, List<Actor> sharedHitlist)
     {
         Actor lastHitTarget;
-        
 
         yield return new WaitForSeconds(HitscanDelay);
 
@@ -1702,35 +1705,41 @@ public class ActorAbility
                 }
             }
 
+            pooledProjectile.transform.localScale = new Vector2(ProjectileSize, ProjectileSize);
+            pooledProjectile.pierceCount = ProjectilePierce;
+            pooledProjectile.chainCount = ProjectileChain;
+            pooledProjectile.homingRate = ProjectileHoming;
+
             if (abilityBase.hasLinkedAbility)
                 pooledProjectile.linkedAbility = LinkedAbility;
 
             pooledProjectile.timeToLive = 4f * abilityBase.projectileLifespanMulti;
-            pooledProjectile.currentSpeed = abilityBase.projectileSpeed;
+            pooledProjectile.currentSpeed = ProjectileSpeed;
             pooledProjectile.onHitData = abilityOnHitData;
             pooledProjectile.gameObject.layer = targetLayer;
             pooledProjectile.layerMask = targetMask;
-            pooledProjectile.pierceCount = ProjectilePierce;
-            pooledProjectile.chainCount = ProjectileChain;
-            pooledProjectile.transform.localScale = new Vector2(ProjectileSize, ProjectileSize);
-            pooledProjectile.homingRate = ProjectileHoming;
 
-            AbilityParticleSystem particleSystem = ParticleManager.Instance.GetParticleSystem(abilityBase.idName);
-            if (particleSystem == null)
-            {
-                particleSystem = ParticleManager.Instance.GetParticleSystem(abilityBase.effectSprite);
-            }
-            if (particleSystem != null)
-            {
-                GameObject particle = GameObject.Instantiate(particleSystem.gameObject, pooledProjectile.transform, false);
-                particle.transform.localPosition = Vector3.zero;
-                pooledProjectile.particles = particle.GetComponent<ParticleSystem>();
-                pooledProjectile.particles.transform.localScale = new Vector2(ProjectileSize, ProjectileSize);
-                pooledProjectile.particles.Play();
-            }
-
-            pooledProjectile.GetComponent<SpriteRenderer>().sprite = ResourceManager.Instance.GetSprite(abilityBase.idName);
+            SetProjectileEffects(pooledProjectile, ProjectileSize);
         }
+    }
+
+    private void SetProjectileEffects(Projectile pooledProjectile, float scaleFactor)
+    {
+        AbilityParticleSystem particleSystem = ParticleManager.Instance.GetParticleSystem(abilityBase.idName);
+        if (particleSystem == null)
+        {
+            particleSystem = ParticleManager.Instance.GetParticleSystem(abilityBase.effectSprite);
+        }
+        if (particleSystem != null)
+        {
+            GameObject particle = GameObject.Instantiate(particleSystem.gameObject, pooledProjectile.transform, false);
+            particle.transform.localPosition = Vector3.zero;
+            pooledProjectile.particles = particle.GetComponent<ParticleSystem>();
+            pooledProjectile.particles.transform.localScale = new Vector2(scaleFactor, scaleFactor);
+            pooledProjectile.particles.Play();
+        }
+
+        pooledProjectile.GetComponent<SpriteRenderer>().sprite = ResourceManager.Instance.GetSprite(abilityBase.idName);
     }
 
     protected void FireMovingAoe(Vector3 origin, Actor target)
@@ -1744,12 +1753,15 @@ public class ActorAbility
         {
             pooledProjectile = StageManager.Instance.BattleManager.BoxProjectilePool.GetProjectile();
             BoxCollider2D collider = pooledProjectile.GetComponent<BoxCollider2D>();
-            collider.size = new Vector2(AreaRadius * 2f, 1f * AreaScaling);
+            collider.size = new Vector2(AreaRadius * 2f, 0.75f);
+            collider.offset = new Vector2(0, collider.size.y / 2f);
         }
         else
         {
             pooledProjectile = StageManager.Instance.BattleManager.ProjectilePool.GetProjectile();
         }
+
+        pooledProjectile.pierceCount = 999;
 
         pooledProjectile.SetHeading(heading);
         pooledProjectile.transform.position = origin;
@@ -1764,17 +1776,8 @@ public class ActorAbility
         pooledProjectile.onHitData = abilityOnHitData;
         pooledProjectile.gameObject.layer = targetLayer;
         pooledProjectile.layerMask = targetMask;
-        pooledProjectile.pierceCount = 999;
 
-        AbilityParticleSystem particleSystem = ParticleManager.Instance.GetParticleSystem(abilityBase.idName, abilityBase.effectSprite);
-
-        if (particleSystem != null)
-        {
-            GameObject particle = GameObject.Instantiate(particleSystem.gameObject, pooledProjectile.transform, false);
-            pooledProjectile.particles = particle.GetComponent<ParticleSystem>();
-        }
-
-        pooledProjectile.GetComponent<SpriteRenderer>().sprite = ResourceManager.Instance.GetSprite(abilityBase.idName);
+        SetProjectileEffects(pooledProjectile, AreaScaling);
     }
 
     protected void FireLinearAoe(Vector3 origin, Vector3 target)
@@ -1795,7 +1798,7 @@ public class ActorAbility
         ParticleManager.Instance.EmitAbilityParticle_Rotated(abilityBase.idName, emitParams, AreaScaling, angle, AbilityOwner.transform);
 
         //Collider2D[] hits = Physics2D.OverlapAreaAll(origin + horizontal, origin - horizontal + (heading * AreaLength), targetMask);
-        RaycastHit2D[] hitcast = Physics2D.BoxCastAll(origin, new Vector2(AreaRadius*2f, AreaRadius * 2f), angle, heading, AreaLength, targetMask);
+        RaycastHit2D[] hitcast = Physics2D.BoxCastAll(origin, new Vector2(AreaRadius * 2f, AreaRadius * 2f), angle, heading, AreaLength, targetMask);
 
         foreach (RaycastHit2D hit in hitcast)
         {
