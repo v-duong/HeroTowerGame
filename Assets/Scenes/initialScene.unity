@@ -242,6 +242,7 @@ MonoBehaviour:
     type: 3}
   boxProjectilePrefab: {fileID: 596675810340079556, guid: ea27321de77f95e46a5132d00bb4b73b,
     type: 3}
+  selectedTeamNum: 0
   isInBattle: 0
 --- !u!4 &1063661410
 Transform:

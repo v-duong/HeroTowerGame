@@ -361,7 +361,6 @@ public class UIManager : MonoBehaviour
     {
         if (closeWindows)
             CloseAllWindows();
-        EquipDetailWindow.SetTransform(0);
         OpenWindow(EquipDetailWindow.gameObject, false);
         EquipDetailWindow.callback = callback;
         EquipDetailWindow.equip = equipment;
@@ -398,7 +397,9 @@ public class UIManager : MonoBehaviour
         }
 
         if (showDefault)
+        {
             InvScrollContent.ShowAllEquipment();
+        }
 
         OpenWindow(InvWindowCanvas.gameObject, closeWindows);
 

@@ -87,6 +87,10 @@ public class InputManager : MonoBehaviour
     private void Start()
     {
         mainCamera = Camera.main;
+        if (Application.platform != RuntimePlatform.WindowsEditor && Application.platform != RuntimePlatform.WindowsPlayer)
+        {
+            dragspeed = 0.01f;
+        }
     }
 
     // Update is called once per frame
@@ -97,7 +101,7 @@ public class InputManager : MonoBehaviour
 
         if (IsSummoningMode)
         {
-            if (Input.GetMouseButtonDown(0))
+            if (Input.GetMouseButtonDown(0) && Input.touchCount < 2)
             {
                 Vector3 spawnLocation = mainCamera.ScreenToWorldPoint(Input.mousePosition);
                 Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
@@ -117,31 +121,13 @@ public class InputManager : MonoBehaviour
                 IsSummoningMode = false;
                 onSummonCallback?.Invoke();
             }
-            /*
-            if (Input.GetKey(KeyCode.RightArrow))
-            {
-                transform.Translate(new Vector3(speed * Time.deltaTime, 0, 0));
-            }
-            if (Input.GetKey(KeyCode.LeftArrow))
-            {
-                transform.Translate(new Vector3(-speed * Time.deltaTime, 0, 0));
-            }
-            if (Input.GetKey(KeyCode.DownArrow))
-            {
-                transform.Translate(new Vector3(0, -speed * Time.deltaTime, 0));
-            }
-            if (Input.GetKey(KeyCode.UpArrow))
-            {
-                transform.Translate(new Vector3(0, speed * Time.deltaTime, 0));
-            }
-            */
         }
         else if (IsMovementMode && !isDragging)
         {
             Vector3 moveLocation = mainCamera.ScreenToWorldPoint(Input.mousePosition);
             moveLocation.z = -3;
 
-            if (Input.GetMouseButtonDown(0))
+            if (Input.GetMouseButtonDown(0) && Input.touchCount < 2)
             {
                 if (!EventSystem.current.IsPointerOverGameObject()
                     || EventSystem.current.currentSelectedGameObject == null)
@@ -155,11 +141,26 @@ public class InputManager : MonoBehaviour
             if (Input.GetMouseButtonDown(0))
             {
                 OnMouseDownHandler();
+                return;
             }
 
-            if (Input.mouseScrollDelta.y != 0)
+            if (Input.mouseScrollDelta.y != 0
+                || (Input.touchCount == 2 && Input.GetTouch(0).phase == TouchPhase.Moved && Input.GetTouch(1).phase == TouchPhase.Moved))
             {
-                mainCamera.orthographicSize = Mathf.Clamp(mainCamera.orthographicSize - Input.mouseScrollDelta.y * 0.5f, 4f, 13f);
+                float scrollValue;
+
+                if (Input.touchCount == 2)
+                {
+                    var curDist = Input.GetTouch(0).position - Input.GetTouch(1).position;
+                    var prevDist = Input.GetTouch(0).position - Input.GetTouch(0).deltaPosition - (Input.GetTouch(1).position - Input.GetTouch(1).deltaPosition);
+                    scrollValue = (curDist.magnitude - prevDist.magnitude) / 25f;
+                }
+                else
+                {
+                    scrollValue = Input.mouseScrollDelta.y;
+                }
+
+                mainCamera.orthographicSize = Mathf.Clamp(mainCamera.orthographicSize - scrollValue * 0.5f, 4f, 13f);
                 zoomRatio = mainCamera.orthographicSize / 7.0f;
                 SetCameraBounds();
                 ClampCameraPosition();
@@ -167,10 +168,20 @@ public class InputManager : MonoBehaviour
 
             if (!Input.GetMouseButton(0)) isDragging = false;
 
-            if (isDragging)
+            if (isDragging && Input.touchCount < 2)
             {
+                Vector3 move;
                 float speedMultiplier = zoomRatio;
-                Vector3 move = new Vector3(Input.GetAxis("Mouse X") * dragspeed * speedMultiplier, Input.GetAxis("Mouse Y") * dragspeed * speedMultiplier, 0);
+
+                if (Input.touchCount == 1)
+                {
+                    move = new Vector3(Input.touches[0].deltaPosition.x * dragspeed * speedMultiplier, Input.touches[0].deltaPosition.y * dragspeed * speedMultiplier, 0);
+                }
+                else
+                {
+                    move = new Vector3(Input.GetAxis("Mouse X") * dragspeed * speedMultiplier, Input.GetAxis("Mouse Y") * dragspeed * speedMultiplier, 0);
+                }
+
                 mainCamera.transform.Translate(-move, Space.Self);
                 ClampCameraPosition();
             }
@@ -238,22 +249,26 @@ public class InputManager : MonoBehaviour
                 circle.gameObject.SetActive(true);
                 circle.transform.SetParent(actor.transform, false);
                 circle.transform.localPosition = Vector3.zero;
-                circle.transform.eulerAngles = new Vector3(0,0,i*12);
+                circle.transform.eulerAngles = new Vector3(0, 0, i * 12);
 
                 switch (i)
                 {
                     case 0:
-                        circle.SetColor(new Color(0.7f,1f,1f));
+                        circle.SetColor(new Color(0.7f, 1f, 1f));
                         break;
+
                     case 1:
                         circle.SetColor(new Color(1f, 0.7f, 1f));
                         break;
+
                     case 2:
                         circle.SetColor(new Color(1f, 1f, 0.7f));
                         break;
+
                     case 3:
                         circle.SetColor(new Color(1f, 1f, 1f));
                         break;
+
                     default:
                         break;
                 }

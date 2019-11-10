@@ -71,12 +71,40 @@ public class EnemyActor : Actor
             }
 
             if (NextMovementNode < nodes.Count)
+            {
                 distanceToNextNode = Vector3.SqrMagnitude(nodes[NextMovementNode] - transform.position);
+
+                Vector3 nextDestination = nodes[NextMovementNode] + rotatedOffset;
+
+                float xDiff = nextDestination.x - transform.position.x;
+
+                if (xDiff > 0)
+                    GetComponentInChildren<SpriteRenderer>().flipX = true;
+                else if (xDiff < 0)
+                    GetComponentInChildren<SpriteRenderer>().flipX = false;
+            }
         }
         else
         {
             Debug.Log("END PATH");
-            StageManager.Instance.BattleManager.playerHealth--;
+            switch (enemyRarity)
+            {
+                case RarityType.NORMAL when isBoss:
+                    StageManager.Instance.BattleManager.ModifyPlayerHealth(-10, true);
+                    break;
+                case RarityType.NORMAL:
+                    StageManager.Instance.BattleManager.ModifyPlayerHealth(-1, true);
+                    break;
+                case RarityType.UNCOMMON:
+                    StageManager.Instance.BattleManager.ModifyPlayerHealth(-2, true);
+                    break;
+                case RarityType.RARE:
+                    StageManager.Instance.BattleManager.ModifyPlayerHealth(-5, true);
+                    break;
+                default:
+                    StageManager.Instance.BattleManager.ModifyPlayerHealth(-1, true);
+                    break;
+            }
             Death();
         }
     }
@@ -137,28 +165,44 @@ public class EnemyActor : Actor
 
         targetingPriority = enemyBase.targetingPriority;
 
+        float sizeScaling = enemyBase.sizeScaling;
+        MaterialPropertyBlock propertyBlock;
+
         if (isBoss)
         {
             if (!enemyBase.isBoss)
             {
                 Data.AddStatBonus(BonusType.MAX_HEALTH, GroupType.NO_GROUP, ModifyType.MULTIPLY, 1200);
                 Data.AddStatBonus(BonusType.GLOBAL_DAMAGE, GroupType.NO_GROUP, ModifyType.MULTIPLY, 75);
-                this.transform.localScale = new Vector3(1.28f, 1.28f);
+                sizeScaling *= 1.28f;
             }
+            propertyBlock=  ResourceManager.Instance.bossMaterialBlock;
         }
         else if (rarity == RarityType.RARE)
         {
             Data.AddStatBonus(BonusType.MAX_HEALTH, GroupType.NO_GROUP, ModifyType.MULTIPLY, 500);
             Data.AddStatBonus(BonusType.GLOBAL_DAMAGE, GroupType.NO_GROUP, ModifyType.MULTIPLY, 30);
-            this.transform.localScale = new Vector3(1.14f, 1.14f);
+            this.transform.localScale = new Vector3(1.14f * enemyBase.sizeScaling, 1.14f * enemyBase.sizeScaling);
+            sizeScaling *= 1.14f;
             AddRandomStatAffixes(3);
+            propertyBlock = ResourceManager.Instance.rareMaterialBlock;
         }
         else if (rarity == RarityType.UNCOMMON)
         {
             Data.AddStatBonus(BonusType.MAX_HEALTH, GroupType.NO_GROUP, ModifyType.MULTIPLY, 200);
             Data.AddStatBonus(BonusType.GLOBAL_DAMAGE, GroupType.NO_GROUP, ModifyType.MULTIPLY, 10);
             AddRandomStatAffixes(1);
+            propertyBlock = ResourceManager.Instance.uncommonMaterialBlock;
+        } else
+        {
+            propertyBlock = ResourceManager.Instance.normalMaterialBlock;
         }
+
+        propertyBlock.SetTexture("_MainTex", GetComponent<SpriteRenderer>().sprite.texture);
+        //GetComponent<Renderer>().SetPropertyBlock(propertyBlock);
+        GetComponent<SpriteRenderer>().SetPropertyBlock(propertyBlock);
+
+        this.transform.localScale = Vector3.one * sizeScaling;
 
         instancedAbilitiesList.Clear();
         foreach (EnemyBase.EnemyAbilityBase ability in enemyBase.abilitiesList)
@@ -190,6 +234,7 @@ public class EnemyActor : Actor
             Data.abilities.Add(actorAbility);
             actorAbility.UpdateAbilityStats(Data);
             actorAbility.StartFiring(this);
+            actorAbility.abilityCollider.transform.localScale = Vector3.one / sizeScaling;
         }
     }
 

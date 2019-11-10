@@ -17,6 +17,8 @@ public class EnemyBase
     [JsonProperty]
     public readonly float healthScaling;
     [JsonProperty]
+    public readonly float sizeScaling;
+    [JsonProperty]
     public readonly float movementSpeed;
     [JsonProperty]
     public readonly int[] resistances;

@@ -62,6 +62,8 @@ public class InventoryScrollWindow : MonoBehaviour
             currentCallback = null;
         ClearSlots();
         InitializeInventorySlots(GameManager.Instance.PlayerStats.EquipmentInventory, currentCallback);
+        UIManager.Instance.ItemCategoryPanel.SetEquipmentSelected();
+        
     }
 
     public void ShowAllArchetypes(bool resetCallback = true, bool addNullSlot = false)
@@ -72,6 +74,7 @@ public class InventoryScrollWindow : MonoBehaviour
         if (addNullSlot)
             AddInventorySlot(null);
         InitializeInventorySlots(GameManager.Instance.PlayerStats.ArchetypeInventory, currentCallback);
+        UIManager.Instance.ItemCategoryPanel.SetArchetypeSelected();
     }
 
     public void ShowAllAbility(bool resetCallback = true, bool addNullSlot = false)
@@ -82,6 +85,7 @@ public class InventoryScrollWindow : MonoBehaviour
         if (addNullSlot)
             AddInventorySlot(null);
         InitializeInventorySlots(GameManager.Instance.PlayerStats.AbilityInventory, currentCallback);
+        UIManager.Instance.ItemCategoryPanel.SetAbilitySelected();
     }
 
     public void ShowArchetypesFiltered(List<ArchetypeBase> filter, bool resetCallback = true, bool addNullSlot = false)

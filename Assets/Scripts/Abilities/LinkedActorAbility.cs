@@ -61,7 +61,7 @@ public class LinkedActorAbility : ActorAbility
         {
             case AbilityShotType.PROJECTILE_NOVA:
             case AbilityShotType.PROJECTILE:
-                FireProjectile(origin, target);
+                AbilityOwner.StartCoroutine(FireProjectile(origin, target));
                 break;
 
             case AbilityShotType.ARC_AOE:
@@ -90,7 +90,7 @@ public class LinkedActorAbility : ActorAbility
         {
             case AbilityShotType.PROJECTILE_NOVA:
             case AbilityShotType.PROJECTILE:
-                FireProjectile(origin, null, target);
+                AbilityOwner.StartCoroutine(FireProjectile(origin, null, target));
                 break;
 
             case AbilityShotType.ARC_AOE:

@@ -68,20 +68,35 @@ public abstract class Equipment : AffixedItem
         return e;
     }
 
-    public static Equipment CreateEquipmentFromBase(string equipmentString, int ilvl)
+    public static Equipment CreateEquipmentFromBase(string equipmentString, int ilvl, RarityType rarity = RarityType.NORMAL)
     {
         EquipmentBase equipmentBase = ResourceManager.Instance.GetEquipmentBase(equipmentString);
         if (equipmentBase == null)
             return null;
-        return CreateEquipmentFromBase(equipmentBase, ilvl);
+
+        Equipment equip = CreateEquipmentFromBase(equipmentBase, ilvl);
+
+        if (rarity > RarityType.NORMAL)
+        {
+            equip.Rarity = rarity;
+            equip.RerollAffixesAtRarity();
+        }
+
+        return equip;
     }
 
-    public static Equipment CreateRandomEquipment(int ilvl, GroupType? group = null)
+    public static Equipment CreateRandomEquipment(int ilvl, GroupType? group = null, RarityType rarity = RarityType.NORMAL)
     {
-        return CreateEquipmentFromBase(ResourceManager.Instance.GetRandomEquipmentBase(ilvl, group), ilvl);
+        Equipment equip = CreateEquipmentFromBase(ResourceManager.Instance.GetRandomEquipmentBase(ilvl, group), ilvl);
+        if (rarity > RarityType.NORMAL)
+        {
+            equip.Rarity = rarity;
+            equip.RerollAffixesAtRarity();
+        }
+        return equip;
     }
 
-    public static Equipment CreateRandomUnique(int ilvl, GroupType? group =null)
+    public static Equipment CreateRandomUnique(int ilvl, GroupType? group = null)
     {
         return CreateUniqueFromBase(ResourceManager.Instance.GetRandomUniqueBase(ilvl, group), ilvl);
     }
@@ -90,13 +105,14 @@ public abstract class Equipment : AffixedItem
     {
         Equipment e = CreateEquipmentFromBase(uniqueBase, ilvl);
         e.Rarity = RarityType.UNIQUE;
-        foreach(AffixBase affixBase in uniqueBase.fixedUniqueAffixes)
+        foreach (AffixBase affixBase in uniqueBase.fixedUniqueAffixes)
         {
             e.prefixes.Add(new Affix(affixBase));
         }
         e.UpdateItemStats();
         return e;
     }
+
     public static Equipment CreateUniqueFromBase(string uniqueId, int ilvl, int uniqueVersion)
     {
         UniqueBase uniqueBase = ResourceManager.Instance.GetUniqueBase(uniqueId);
@@ -107,12 +123,12 @@ public abstract class Equipment : AffixedItem
             Equipment e = CreateEquipmentFromBase(uniqueBase, ilvl);
             e.Rarity = RarityType.UNIQUE;
             return e;
-        } else
+        }
+        else
         {
             return CreateUniqueFromBase(uniqueBase, ilvl);
         }
     }
-
 
     public override bool UpgradeRarity()
     {

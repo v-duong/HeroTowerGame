@@ -33,6 +33,7 @@ public class BattlePlayerInfoPanel : MonoBehaviour
         }
         else
         {
+            nextWavePanel.gameObject.SetActive(true);
             nextWavePanel.startwaveButton.gameObject.SetActive(true);
             nextWavePanel.waveNumText.text = "Wave " + waveNum;
             nextWavePanel.timeUntilNext = timeUntil;
@@ -59,6 +60,7 @@ public class BattlePlayerInfoPanel : MonoBehaviour
 
         if (waveAfter != null)
         {
+            waveAfterPanel.gameObject.SetActive(true);
             waveAfterPanel.waveNumText.text = "Wave " + (waveNum + 1);
             string waveAfterEnemyString = "";
 

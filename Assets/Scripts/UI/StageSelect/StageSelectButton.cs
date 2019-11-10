@@ -12,9 +12,4 @@ public class StageSelectButton : UIKeyButton
         stageNum = stageInfoBase.stage;
         textMesh.text = "Stage " + stageInfo.stage + " " + stageInfo.difficulty;
     }
-
-    public void StageButtonOnClick()
-    {
-        GameManager.Instance.MoveToBattle(stageInfo);
-    }
 }

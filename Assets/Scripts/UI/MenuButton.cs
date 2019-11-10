@@ -64,8 +64,4 @@ public class MenuButton : UIKeyButton
         SaveManager.Instance.Save();
     }
 
-    public void LoadMainMenu()
-    {
-        GameManager.Instance.MoveToMainMenu();
-    }
 }

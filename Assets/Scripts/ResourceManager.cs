@@ -56,8 +56,12 @@ public class ResourceManager : MonoBehaviour
     public FloatingDamageText DamageTextPrefab => damageTextPrefab;
     public TargetingCircle TargetingCirclePrefab => targetingCirclePrefab;
 
-
     private AssetBundle jsonBundle;
+
+    public MaterialPropertyBlock normalMaterialBlock;
+    public MaterialPropertyBlock uncommonMaterialBlock;
+    public MaterialPropertyBlock rareMaterialBlock;
+    public MaterialPropertyBlock bossMaterialBlock;
 
     public AbilityBase GetAbilityBase(string id)
     {
@@ -242,15 +246,15 @@ public class ResourceManager : MonoBehaviour
     /// <param name="affixBonusTypeStrings">List of strings to determine which affixes have already been applied to target</param>
     /// <param name="weightModifiers">Values to multiply base spawn weight by if they match the group tags</param>
     /// <returns></returns>
-    public AffixBase GetRandomAffixBase(AffixType type, int ilvl, HashSet<GroupType> targetTypeTags, List<string> affixBonusTypeStrings, Dictionary<GroupType, float> weightModifiers = null)
+    public AffixBase GetRandomAffixBase(AffixType type, int ilvl, HashSet<GroupType> targetTypeTags, List<string> affixBonusTypeStrings, Dictionary<GroupType, float> weightModifiers = null, float affixLevelSkewFactor = 1f)
     {
-        WeightList<AffixBase> possibleAffixList = GetPossibleAffixes(type, ilvl, targetTypeTags, affixBonusTypeStrings, weightModifiers);
+        WeightList<AffixBase> possibleAffixList = GetPossibleAffixes(type, ilvl, targetTypeTags, affixBonusTypeStrings, weightModifiers, affixLevelSkewFactor);
         if (possibleAffixList.Count == 0)
             return null;
         return possibleAffixList.ReturnWeightedRandom();
     }
 
-    public WeightList<AffixBase> GetPossibleAffixes(AffixType type, int ilvl, HashSet<GroupType> targetTypeTags, List<string> affixBonusTypeStrings, Dictionary<GroupType, float> weightModifiers)
+    public WeightList<AffixBase> GetPossibleAffixes(AffixType type, int ilvl, HashSet<GroupType> targetTypeTags, List<string> affixBonusTypeStrings, Dictionary<GroupType, float> weightModifiers, float affixLevelSkewFactor)
     {
         if (targetTypeTags == null)
         {
@@ -294,12 +298,18 @@ public class ResourceManager : MonoBehaviour
 
         foreach (AffixBase affixBase in affixList.Values)
         {
-            float weightMultiplier = 1.0f;
-            int baseWeight = 0;
             // check if affix type has already been applied to target
             if (affixBonusTypeStrings != null && affixBonusTypeStrings.Count > 0)
                 if (affixBonusTypeStrings.Contains(affixBase.AffixBonusTypeString))
                     continue;
+
+            //check if affix is drop only
+            if (affixBase.groupTypes.Contains(GroupType.DROP_ONLY) && !targetTypeTags.Contains(GroupType.DROP_ONLY))
+                continue;
+
+            float weightMultiplier = 1.0f;
+            int baseWeight = 0;
+
             if (affixBase.spawnLevel <= ilvl)
             {
                 foreach (AffixWeight affixWeight in affixBase.spawnWeight)
@@ -319,6 +329,9 @@ public class ResourceManager : MonoBehaviour
                             weightMultiplier *= weightModifiers[groupTag];
                         }
                     }
+
+                    if (affixLevelSkewFactor != 1f)
+                        weightMultiplier *= Mathf.Lerp(1 / affixLevelSkewFactor, affixLevelSkewFactor, affixBase.spawnLevel / ilvl);
 
                     if (weightMultiplier == 0)
                         continue;
@@ -557,5 +570,19 @@ public class ResourceManager : MonoBehaviour
         PrefixCount = prefixList.Count;
         SuffixCount = suffixList.Count;
         ArchetypeCount = archetypeList.Count;
+
+        normalMaterialBlock = new MaterialPropertyBlock();
+        uncommonMaterialBlock = new MaterialPropertyBlock();
+        rareMaterialBlock = new MaterialPropertyBlock();
+        bossMaterialBlock = new MaterialPropertyBlock();
+
+        normalMaterialBlock.SetInt("_EnableGlow", 0);
+        uncommonMaterialBlock.SetInt("_EnableGlow", 1);
+        rareMaterialBlock.SetInt("_EnableGlow", 1);
+        bossMaterialBlock.SetInt("_EnableGlow", 1);
+
+        uncommonMaterialBlock.SetColor("_GlowColor", new Color32(11, 234, 251, 255));
+        rareMaterialBlock.SetColor("_GlowColor", new Color32(245, 246, 13, 255));
+        bossMaterialBlock.SetColor("_GlowColor", new Color32(225, 73, 46, 255));
     }
 }

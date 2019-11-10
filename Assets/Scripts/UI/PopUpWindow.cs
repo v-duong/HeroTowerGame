@@ -33,6 +33,7 @@ public class PopUpWindow : MonoBehaviour
         gridScrollView.SetActive(false);
         isVertical = false;
         isGrid = false;
+        ((RectTransform)textField.transform).anchoredPosition = Vector3.zero;
     }
 
     public void OpenVerticalWindow()

@@ -48,7 +48,8 @@ public abstract class AffixedItem : Item
         else if (type == AffixType.SUFFIX && suffixes.Count > 0)
         {
             listToRemoveFrom = suffixes;
-        } else
+        }
+        else
         {
             return null;
         }
@@ -110,7 +111,8 @@ public abstract class AffixedItem : Item
         {
             Rarity = RarityType.NORMAL;
             UpdateName();
-        } else if (setRarityToNormal && (prefixes.Count + suffixes.Count) <= 2)
+        }
+        else if (setRarityToNormal && (prefixes.Count + suffixes.Count) <= 2)
         {
             Rarity = RarityType.UNCOMMON;
             UpdateName();
@@ -126,7 +128,7 @@ public abstract class AffixedItem : Item
         return ClearAffixes(true);
     }
 
-    public bool RerollAffixesAtRarity()
+    public bool RerollAffixesAtRarity(Dictionary<GroupType, float> weightModifiers = null, float affixLevelSkewFactor = 1f, HashSet<GroupType> additionalTypes = null)
     {
         int affixCap = GetAffixCap();
 
@@ -140,9 +142,9 @@ public abstract class AffixedItem : Item
             ClearAffixes(false);
             affixCount = prefixes.Count + suffixes.Count;
             if (affixCount == 0)
-                AddRandomAffix();
+                AddRandomAffix(weightModifiers, affixLevelSkewFactor, additionalTypes);
             if (affixCount == 1 && Random.Range(0, 2) == 0)
-                AddRandomAffix();
+                AddRandomAffix(weightModifiers, affixLevelSkewFactor, additionalTypes);
             UpdateName();
             return true;
         }
@@ -153,14 +155,14 @@ public abstract class AffixedItem : Item
 
             // rolls the mimimum of 4 for rare and 5 for epics
             for (int j = affixCount; j < affixCap + 1; j++)
-                AddRandomAffix();
+                AddRandomAffix(weightModifiers, affixLevelSkewFactor, additionalTypes);
 
             affixCount = prefixes.Count + suffixes.Count;
 
             // 50% roll to continue rolling affixes
             while ((Random.Range(0, 2) == 0) && affixCount < (affixCap * 2))
             {
-                AddRandomAffix();
+                AddRandomAffix(weightModifiers, affixLevelSkewFactor, additionalTypes);
                 affixCount = prefixes.Count + suffixes.Count;
             }
             UpdateName();
@@ -169,13 +171,17 @@ public abstract class AffixedItem : Item
         return false;
     }
 
-    public virtual bool AddRandomAffix()
+    public virtual bool AddRandomAffix(Dictionary<GroupType, float> weightModifiers = null, float affixLevelSkewFactor = 1f, HashSet<GroupType> additionalGroupTypes = null)
     {
         AffixType? affixType = GetRandomOpenAffixType();
         if (affixType == null)
             return false;
 
-        return AddAffix(ResourceManager.Instance.GetRandomAffixBase((AffixType)affixType, ItemLevel, GetGroupTypes(), GetBonusTagTypeList((AffixType)affixType)));
+        HashSet<GroupType> groupTypes = GetGroupTypes();
+        if (additionalGroupTypes != null)
+            groupTypes.UnionWith(additionalGroupTypes);
+
+        return AddAffix(ResourceManager.Instance.GetRandomAffixBase((AffixType)affixType, ItemLevel, groupTypes, GetBonusTagTypeList((AffixType)affixType)));
     }
 
     public List<string> GetBonusTagTypeList(AffixType type)
@@ -199,23 +205,6 @@ public abstract class AffixedItem : Item
             return false;
         Rarity = RarityType.UNCOMMON;
         AddRandomAffix();
-        if (Random.Range(0, 2) == 0)
-            AddRandomAffix();
-        UpdateName();
-        return true;
-    }
-
-    public bool UpgradeNormalToRare()
-    {
-        if (Rarity != RarityType.NORMAL)
-            return false;
-        Rarity = RarityType.RARE;
-        AddRandomAffix();
-        AddRandomAffix();
-        AddRandomAffix();
-        AddRandomAffix();
-        if (Random.Range(0, 2) == 0)
-            AddRandomAffix();
         if (Random.Range(0, 2) == 0)
             AddRandomAffix();
         UpdateName();
@@ -295,12 +284,12 @@ public abstract class AffixedItem : Item
 
     public WeightList<AffixBase> GetAllPossiblePrefixes(Dictionary<GroupType, float> weightModifiers)
     {
-        return ResourceManager.Instance.GetPossibleAffixes(AffixType.PREFIX, ItemLevel, GetGroupTypes(), GetBonusTagTypeList(AffixType.PREFIX), weightModifiers);
+        return ResourceManager.Instance.GetPossibleAffixes(AffixType.PREFIX, ItemLevel, GetGroupTypes(), GetBonusTagTypeList(AffixType.PREFIX), weightModifiers, 1f);
     }
 
     public WeightList<AffixBase> GetAllPossibleSuffixes(Dictionary<GroupType, float> weightModifiers)
     {
-        return ResourceManager.Instance.GetPossibleAffixes(AffixType.SUFFIX, ItemLevel, GetGroupTypes(), GetBonusTagTypeList(AffixType.SUFFIX), weightModifiers);
+        return ResourceManager.Instance.GetPossibleAffixes(AffixType.SUFFIX, ItemLevel, GetGroupTypes(), GetBonusTagTypeList(AffixType.SUFFIX), weightModifiers, 1f);
     }
 
     public abstract bool UpgradeRarity();

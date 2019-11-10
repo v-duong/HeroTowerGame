@@ -197,18 +197,6 @@ public class EquipmentDetailWindow : MonoBehaviour
         infoText.text += "Range: " + weaponItem.WeaponRange.ToString("F2") + "\n";
     }
 
-    public void SetTransform(int type)
-    {
-        UIManager ui = UIManager.Instance;
-        if (type == 0)
-        {
-            return;
-            RectTransform t = GetComponent<RectTransform>();
-            t.sizeDelta = ui.itemWindowSize;
-            t.anchoredPosition = new Vector2((ui.referenceResolution.x - ui.itemWindowSize.x) / 2, (ui.itemWindowSize.y - ui.referenceResolution.y) / 2);
-        }
-    }
-
     public void OnEquipClick()
     {
         callback?.Invoke(equip);

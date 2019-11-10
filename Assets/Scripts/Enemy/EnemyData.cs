@@ -24,6 +24,7 @@ public class EnemyData : ActorData
     public void ClearData()
     {
         mobBonuses.Clear();
+        statBonuses.Clear();
     }
 
     public void SetBase(EnemyBase enemyBase, RarityType rarity, int level, EnemyActor actor)

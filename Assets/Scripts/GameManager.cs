@@ -15,6 +15,7 @@ public class GameManager : MonoBehaviour
     [SerializeField]
     public Projectile boxProjectilePrefab;
 
+    public int selectedTeamNum;
     public bool isInBattle;
     public List<HeroData> inBattleHeroes = new List<HeroData>();
     private string currentSceneName = "";
@@ -38,6 +39,7 @@ public class GameManager : MonoBehaviour
 #endif
 
         PlayerStats = new PlayerStats();
+        /*
         for (int i = 0; i < 50; i++)
         {
             Equipment equipment = Equipment.CreateRandomEquipment(100);
@@ -45,6 +47,7 @@ public class GameManager : MonoBehaviour
             equipment.RerollAffixesAtRarity();
             PlayerStats.AddEquipmentToInventory(equipment);
         }
+
         foreach (ArchetypeBase archetypeBase in ResourceManager.Instance.ArchetypeBasesList)
         {
             PlayerStats.AddArchetypeToInventory(ArchetypeItem.CreateArchetypeItem(archetypeBase, 100));
@@ -53,6 +56,35 @@ public class GameManager : MonoBehaviour
                 PlayerStats.AddAbilityToInventory(AbilityCoreItem.CreateAbilityItemFromArchetype(archetypeBase, ability));
             }
         }
+        */
+
+        Equipment startingSword = Equipment.CreateEquipmentFromBase(ResourceManager.Instance.GetEquipmentBase("OneHandedSword1"), 1);
+        Equipment startingBow = Equipment.CreateEquipmentFromBase(ResourceManager.Instance.GetEquipmentBase("Bow1"), 1);
+        Equipment startingWand = Equipment.CreateEquipmentFromBase(ResourceManager.Instance.GetEquipmentBase("Wand1"), 1);
+
+        startingSword.SetRarity(RarityType.UNCOMMON);
+        startingSword.AddAffix(ResourceManager.Instance.GetAffixBase("LocalPhysicalDamageAdditive1", AffixType.PREFIX));
+        startingSword.AddAffix(ResourceManager.Instance.GetAffixBase("StrFlat1", AffixType.SUFFIX));
+
+        startingBow.SetRarity(RarityType.UNCOMMON);
+        startingBow.AddAffix(ResourceManager.Instance.GetAffixBase("LocalPhysicalDamageAdditive1", AffixType.PREFIX));
+        startingBow.AddAffix(ResourceManager.Instance.GetAffixBase("AgiFlat1", AffixType.SUFFIX));
+
+        startingWand.SetRarity(RarityType.UNCOMMON);
+        startingWand.AddAffix(ResourceManager.Instance.GetAffixBase("SpellDamage1", AffixType.PREFIX));
+        startingWand.AddAffix(ResourceManager.Instance.GetAffixBase("IntFlat1", AffixType.SUFFIX));
+
+        PlayerStats.AddEquipmentToInventory(startingSword);
+        PlayerStats.AddEquipmentToInventory(startingBow);
+        PlayerStats.AddEquipmentToInventory(startingWand);
+
+        HeroData startingSoldier = HeroData.CreateNewHero("Soldier", ArchetypeItem.CreateArchetypeItem(ResourceManager.Instance.GetArchetypeBase("Soldier"), 1));
+        HeroData startingRanger = HeroData.CreateNewHero("Ranger", ArchetypeItem.CreateArchetypeItem(ResourceManager.Instance.GetArchetypeBase("Ranger"), 1));
+        HeroData startingMage = HeroData.CreateNewHero("Mage", ArchetypeItem.CreateArchetypeItem(ResourceManager.Instance.GetArchetypeBase("Mage"), 1));
+
+        PlayerStats.AddHeroToList(startingSoldier);
+        PlayerStats.AddHeroToList(startingRanger);
+        PlayerStats.AddHeroToList(startingMage);
     }
 
     public ConsumableType GetRandomConsumable()
@@ -117,13 +149,13 @@ public class GameManager : MonoBehaviour
 
         SetUpBattleScene(scene);
 
+        StageManager.Instance.BattleManager.selectedTeam = selectedTeamNum;
         StageManager.Instance.BattleManager.SetStageBase(stageInfoBase);
         StageManager.Instance.BattleManager.InitializeProjectilePool();
         StageManager.Instance.InitalizeStage();
         InputManager.Instance.ResetManager();
         ParticleManager.Instance.ClearParticleSystems();
         isInBattle = true;
-
 
         UIManager.Instance.LoadingScreen.endLoadingScreen = true;
     }
@@ -142,7 +174,7 @@ public class GameManager : MonoBehaviour
         HashSet<AbilityBase> abilitiesInUse = new HashSet<AbilityBase>();
         inBattleHeroes.Clear();
 
-        foreach (HeroData data in PlayerStats.heroTeams[0])
+        foreach (HeroData data in PlayerStats.heroTeams[selectedTeamNum])
         {
             if (data == null)
                 continue;

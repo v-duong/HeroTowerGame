@@ -10,6 +10,7 @@ public static class Helpers
     public static readonly Color UNCOMMON_COLOR = new Color(0.4f, 0.7f, 0.9f);
     public static readonly Color RARE_COLOR = new Color(1.0f, 0.9f, 0.25f);
     public static readonly Color NORMAL_COLOR = new Color(0.7f, 0.7f, 0.7f);
+    public static readonly Color SELECTION_COLOR = new Color(0.2f, 0.9f, 0.82f);
 
     public static double SCALING_FACTOR = 1.042;
     public static double LEVEL_SCALING_FACTOR = 0.402;

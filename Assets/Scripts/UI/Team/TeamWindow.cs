@@ -1,16 +1,50 @@
 ﻿using System.Collections.Generic;
-using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class TeamWindow : MonoBehaviour
 {
     public int selectedTeam = 0;
     private int selectedSlot = 0;
     public List<TeamMemberSlot> members;
+    public List<Button> teamNumButtons;
 
     private void OnEnable()
     {
         selectedTeam = 0;
+        for (int i = 0; i < teamNumButtons.Count; i++)
+        {
+            Button button = teamNumButtons[i];
+            if (i == 0)
+            {
+                button.image.color = Helpers.SELECTION_COLOR;
+            }
+            else
+            {
+                button.image.color = Color.white;
+            }
+        }
+
+        UpdateTeamSlots();
+    }
+
+    public void OnClickTeamNumber(int teamNum)
+    {
+        if (selectedTeam == teamNum)
+            return;
+        selectedTeam = teamNum;
+        for (int i = 0; i < teamNumButtons.Count; i++)
+        {
+            Button button = teamNumButtons[i];
+            if (i == teamNum)
+            {
+                button.image.color = Helpers.SELECTION_COLOR;
+            }
+            else
+            {
+                button.image.color = Color.white;
+            }
+        }
         UpdateTeamSlots();
     }
 
@@ -37,7 +71,8 @@ public class TeamWindow : MonoBehaviour
             if (hero != null)
             {
                 members[i].heroNameText.text = hero.Name;
-            } else
+            }
+            else
             {
                 members[i].heroNameText.text = "EMPTY";
             }

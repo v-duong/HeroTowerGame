@@ -47,10 +47,17 @@ public class HeroActor : Actor
         var dt = Time.deltaTime;
         if (movementNodes != null && NextMovementNode < movementNodes.Count)
         {
-            Vector3 vector = movementNodes[NextMovementNode] - transform.position;
-            float dist = vector.sqrMagnitude;
+            Vector3 destination = movementNodes[NextMovementNode] - transform.position;
+            float dist = destination.sqrMagnitude;
 
             transform.position = Vector3.MoveTowards(transform.position, movementNodes[NextMovementNode], Data.movementSpeed * dt * actorTimeScale);
+
+            float xDiff = movementNodes[NextMovementNode].x - this.transform.position.x;
+
+            if (xDiff > 0)
+                GetComponent<SpriteRenderer>().flipX = true;
+            else if (xDiff < 0)
+                GetComponent<SpriteRenderer>().flipX = false;
 
             if (dist <= 0.15f * Data.movementSpeed * dt)
             {

@@ -18,6 +18,7 @@ public class EnemyPool : QueueObjectPool<EnemyActor>
         ret.ClearStatusEffects(false);
         ret.Data.ClearData();
         ret.transform.position = inherit.transform.position;
+        ret.mobAffixes.Clear();
         return ret;
     }
 

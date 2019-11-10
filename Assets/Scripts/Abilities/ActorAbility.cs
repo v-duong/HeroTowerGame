@@ -54,6 +54,8 @@ public class ActorAbility
     private IEnumerator firingRoutine;
     private ParticleSystem.EmitParams emitParams = new ParticleSystem.EmitParams();
 
+    private Coroutine currentShotCoroutine;
+
     public ActorAbility(AbilityBase ability, int layer)
     {
         if (ability == null)
@@ -143,6 +145,7 @@ public class ActorAbility
         damageMod.AddBonus(ModifyType.MULTIPLY, damage);
         speedMod.AddBonus(ModifyType.MULTIPLY, speed);
         abilityBonuses.Add(BonusType.GLOBAL_DAMAGE, damageMod);
+        abilityBonuses.Add(BonusType.AURA_EFFECT, damageMod);
         abilityBonuses.Add(BonusType.GLOBAL_ABILITY_SPEED, speedMod);
     }
 
@@ -1364,6 +1367,10 @@ public class ActorAbility
             if (fired)
             {
                 fired = false;
+                while (currentShotCoroutine != null)
+                {
+                    yield return null;
+                }
                 yield return new WaitForSeconds(Cooldown);
             }
             else
@@ -1634,7 +1641,7 @@ public class ActorAbility
         }
     }
 
-    protected void FireProjectile(Vector3 origin, Actor target, Vector3? positionOverride = null)
+    protected IEnumerator FireProjectile(Vector3 origin, Actor target, Vector3? positionOverride = null)
     {
         Vector3 heading;
 
@@ -1720,7 +1727,14 @@ public class ActorAbility
             pooledProjectile.layerMask = targetMask;
 
             SetProjectileEffects(pooledProjectile, ProjectileSize);
+
+            if (!isSpread)
+                yield return new WaitForSeconds(abilityBase.hitscanDelay);
         }
+
+        currentShotCoroutine = null;
+
+        yield break;
     }
 
     private void SetProjectileEffects(Projectile pooledProjectile, float scaleFactor)
@@ -1860,7 +1874,7 @@ public class ActorAbility
             //that node. If travel time of projectile and enemy of node are within
             //error then shoot toward that node.
             //Only calculate few nodes ahead for performance and game balance.
-            FireProjectile(abilityCollider.transform.position, CurrentTarget);
+            currentShotCoroutine = AbilityOwner.StartCoroutine(FireProjectile(abilityCollider.transform.position, CurrentTarget));
             return;
 
             for (int i = 0; i < 9; i++)
@@ -1888,7 +1902,7 @@ public class ActorAbility
         }
         else
         {
-            FireProjectile(abilityCollider.transform.position, CurrentTarget);
+            currentShotCoroutine = AbilityOwner.StartCoroutine(FireProjectile(abilityCollider.transform.position, CurrentTarget));
         }
     }
 

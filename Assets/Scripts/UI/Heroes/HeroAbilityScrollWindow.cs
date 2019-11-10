@@ -16,6 +16,7 @@ public class HeroAbilityScrollWindow : MonoBehaviour
     public void OnEnable()
     {
         InitializeAbilitySlots();
+        ((RectTransform)transform).anchoredPosition = Vector3.zero;
     }
 
     public void InitializeAbilitySlots()

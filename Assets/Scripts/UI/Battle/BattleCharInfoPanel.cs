@@ -23,7 +23,7 @@ public class BattleCharInfoPanel : MonoBehaviour
             infoText.text = "";
             return;
         }
-        infoText.text = targetName + "\n";
+        infoText.text = "Lv" + actor.Data.Level + " " + targetName + "\n";
         if (actor.Data.CurrentHealth < 1 && actor.Data.CurrentHealth > 0)
             infoText.text += "Health: " + actor.Data.CurrentHealth.ToString("F2") + "/" + actor.Data.MaximumHealth;
         else
