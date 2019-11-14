@@ -42,6 +42,8 @@ public class StageInfoBase
     public readonly int sceneAct;
     [JsonProperty]
     public readonly int sceneStage;
+    [JsonProperty]
+    public readonly string requiredToUnlock;
 
 }
 

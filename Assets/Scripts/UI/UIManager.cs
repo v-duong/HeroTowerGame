@@ -323,6 +323,8 @@ public class UIManager : MonoBehaviour
 
     public void CloseCurrentWindow()
     {
+        if (currentWindow == null)
+            return;
         currentWindow.SetActive(false);
         if (previousWindows.Count > 0)
         {
@@ -373,6 +375,7 @@ public class UIManager : MonoBehaviour
             CloseAllWindows();
 
         RectTransform rect = InvWindowRect.GetComponent<RectTransform>();
+        InvScrollContent.showItemValues = false;
 
         if (showCategories)
         {
@@ -394,6 +397,11 @@ public class UIManager : MonoBehaviour
             InvScrollContent.confirmButton.gameObject.SetActive(false);
             ItemCategoryPanel.gameObject.SetActive(false);
             rect.offsetMin = new Vector2(rect.offsetMin.x, 0);
+        }
+
+        if (!InvScrollContent.isMultiSelectMode)
+        {
+            InvScrollContent.ResetMultiSelectList();
         }
 
         if (showDefault)

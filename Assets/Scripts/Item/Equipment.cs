@@ -184,6 +184,93 @@ public abstract class Equipment : AffixedItem
         return affixes;
     }
 
+    public override int GetItemValue()
+    {
+        float affixValueMultiplier = 1;
+        float rollValue;
+        int actualAffixCount;
+        if (Rarity != RarityType.UNIQUE)
+        {
+            foreach (Affix affix in GetAllAffixes())
+            {
+                if (affix.AffixType == AffixType.INNATE)
+                    continue;
+                int weightValue = 0;
+                foreach (var weight in affix.Base.spawnWeight)
+                {
+                    if (GetGroupTypes().Contains(weight.type))
+                    {
+                        weightValue = weight.weight;
+                        break;
+                    }
+                }
+
+                float weightModifier;
+                if (weightValue > 0)
+                {
+                    weightModifier = 1000f / weightValue;
+                }
+                else
+                {
+                    weightModifier = 5f;
+                }
+
+                affixValueMultiplier += weightModifier;
+
+                if (affix.Base.affixBonuses.Count == 0)
+                    continue;
+                rollValue = 0;
+
+                for (int i = 0; i < affix.Base.affixBonuses.Count; i++)
+                {
+                    //UnityEngine.Debug.Log(affix.Base.idName + " " + +rollValueMultiplier + " " + affix.GetAffixValue(i) + " " + affix.Base.affixBonuses[i].minValue);
+                    float valueDifference = affix.Base.affixBonuses[i].maxValue - affix.Base.affixBonuses[i].minValue;
+                    if (valueDifference == 0)
+                    {
+                        rollValue += 0.7f;
+                        continue;
+                    }
+                    rollValue += (affix.GetAffixValue(i) - affix.Base.affixBonuses[i].minValue) / valueDifference * 0.7f;
+                }
+                rollValue /= affix.Base.affixBonuses.Count;
+                affixValueMultiplier += rollValue;
+            }
+        }
+        else
+        {
+            UniqueBase uniqueBase = Base as UniqueBase;
+            float rollValueMultiplier = 0f;
+            actualAffixCount = 0;
+            foreach (Affix affix in GetAllAffixes())
+            {
+                if (affix.Base.affixBonuses.Count == 0)
+                    continue;
+                rollValue = 0;
+                for (int i = 0; i < affix.Base.affixBonuses.Count; i++)
+                {
+                    //UnityEngine.Debug.Log(affix.Base.idName + " " + +rollValueMultiplier + " " + affix.GetAffixValue(i) + " " + affix.Base.affixBonuses[i].minValue);
+                    float valueDifference = affix.Base.affixBonuses[i].maxValue - affix.Base.affixBonuses[i].minValue;
+                    if (valueDifference == 0)
+                    {
+                        rollValue += 0.5f;
+                        continue;
+                    }
+                    rollValue += (affix.GetAffixValue(i) - affix.Base.affixBonuses[i].minValue) / valueDifference;
+                }
+                rollValueMultiplier += rollValue / affix.Base.affixBonuses.Count;
+                actualAffixCount++;
+            }
+            rollValueMultiplier = 1 + rollValueMultiplier / actualAffixCount;
+
+            if (uniqueBase.spawnWeight == 0)
+                affixValueMultiplier = 500f * rollValueMultiplier;
+            else
+                affixValueMultiplier = Math.Min((1000f / uniqueBase.spawnWeight) * (uniqueBase.dropLevel / 100f) * 50f * rollValueMultiplier, 500f);
+        }
+
+        return Math.Max((int)(affixValueMultiplier * ItemLevel * 1.5f), 1);
+    }
+
     protected static void GetLocalModValues(Dictionary<BonusType, StatBonus> dic, List<Affix> affixes, ItemType itemType)
     {
         int startValue;

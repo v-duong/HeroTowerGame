@@ -17,6 +17,7 @@ public class InventoryScrollWindow : MonoBehaviour
     private Action<Item> currentCallback = null;
     private List<Item> selectedItems = new List<Item>();
     public bool isMultiSelectMode = false;
+    public bool showItemValues = false;
 
 
     private void OnEnable()
@@ -158,12 +159,12 @@ public class InventoryScrollWindow : MonoBehaviour
 
     public void AddInventorySlot(Item item, Action<Item> callback = null)
     {
-        InventorySlot slot;
-        slot = InventorySlotPool.GetSlot();
+        InventorySlot slot = InventorySlotPool.GetSlot();
         slot.gameObject.transform.SetParent(transform, false);
         slot.gameObject.transform.SetAsLastSibling();
         SlotsInUse.Add(slot);
         slot.item = item;
+        slot.showItemValue = showItemValues;
         slot.UpdateSlot();
 
         slot.multiSelectMode = isMultiSelectMode;

@@ -105,7 +105,7 @@ public class AbilityExtractPanel : MonoBehaviour
         if (selectedAbilityBase == null)
         {
             GameManager.Instance.PlayerStats.RemoveArchetypeFromInventory(selectedArchetypeItem);
-            GameManager.Instance.PlayerStats.ModifyArchetypeFragments(ArchetypeItem.GetFragmentWorth(selectedArchetypeItem.Base.stars));
+            GameManager.Instance.PlayerStats.ModifyArchetypeFragments(selectedArchetypeItem.GetItemValue());
         }
         else
         {

@@ -9,7 +9,6 @@ public class Affix
     public bool IsCrafted { get; private set; }
     public bool IsLocked { get; private set; }
     public AffixType AffixType { get; private set; }
-   
 
     public Affix(AffixBase affixBase, bool isCrafted = false, bool isLocked = false)
     {
@@ -121,7 +120,7 @@ public class Affix
         IsLocked = value;
     }
 
-    public static string BuildAffixString(AffixBase Base, int indent, IList<float> affixValues = null, IList<float> effectValues = null)
+    public static string BuildAffixString(AffixBase Base, int indent, Affix instancedAffix = null, IList<float> affixValues = null, IList<float> effectValues = null)
     {
         List<int> bonusesToSkip = new List<int>();
         string s = "";
@@ -172,6 +171,12 @@ public class Affix
 
             s += "<indent=" + indent + "%>";
             s += LocalizationManager.Instance.GetLocalizationText_TriggeredEffect(triggeredEffect, effectValues[i]);
+        }
+
+        if (instancedAffix != null)
+        {
+            if (instancedAffix.IsLocked)
+                s = "<color=#A9942C>" + s + "</color>";
         }
 
         return s;

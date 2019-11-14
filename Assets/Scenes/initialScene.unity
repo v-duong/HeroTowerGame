@@ -386,6 +386,7 @@ MonoBehaviour:
   selectedHero: {fileID: 0}
   IsMovementMode: 0
   zoomRatio: 1
+  pointerId: 0
 --- !u!4 &1382361696
 Transform:
   m_ObjectHideFlags: 0

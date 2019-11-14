@@ -9,6 +9,22 @@ public abstract class AffixedItem : Item
     private bool currentPrefixesAreImmutable = false;
     private bool currentSuffixesAreImmutable = false;
 
+    public abstract bool UpgradeRarity();
+
+    public abstract bool UpdateItemStats();
+
+    public abstract HashSet<GroupType> GetGroupTypes();
+
+    public abstract void UpdateName();
+
+    public virtual List<Affix> GetAllAffixes()
+    {
+        List<Affix> affixes = new List<Affix>();
+        affixes.AddRange(prefixes);
+        affixes.AddRange(suffixes);
+        return affixes;
+    }
+
     public bool RerollValues()
     {
         if (prefixes.Count == 0 && suffixes.Count == 0)
@@ -29,6 +45,9 @@ public abstract class AffixedItem : Item
 
     public Affix GetRandomAffix()
     {
+        if (Rarity == RarityType.UNIQUE)
+            return null;
+
         List<Affix> temp = prefixes.Concat(suffixes).Where(x => !x.IsLocked).ToList();
         if (temp.Count > 0)
         {
@@ -232,6 +251,9 @@ public abstract class AffixedItem : Item
 
     public AffixType? GetRandomOpenAffixType()
     {
+        if (Rarity == RarityType.UNIQUE)
+            return null;
+
         int affixCap = GetAffixCap();
 
         if (prefixes.Count < affixCap && suffixes.Count < affixCap)
@@ -292,19 +314,137 @@ public abstract class AffixedItem : Item
         return ResourceManager.Instance.GetPossibleAffixes(AffixType.SUFFIX, ItemLevel, GetGroupTypes(), GetBonusTagTypeList(AffixType.SUFFIX), weightModifiers, 1f);
     }
 
-    public abstract bool UpgradeRarity();
-
-    public abstract bool UpdateItemStats();
-
-    public abstract HashSet<GroupType> GetGroupTypes();
-
-    public abstract void UpdateName();
-
-    public virtual List<Affix> GetAllAffixes()
+    public void RemoveAllAffixLocks()
     {
-        List<Affix> affixes = new List<Affix>();
-        affixes.AddRange(prefixes);
-        affixes.AddRange(suffixes);
-        return affixes;
+        foreach (Affix affix in GetAllAffixes())
+            affix.SetAffixLock(false);
+    }
+
+    public int GetLockCount()
+    {
+        int lockCount = 0;
+        foreach (Affix affix in GetAllAffixes())
+            if (affix.IsLocked)
+                lockCount++;
+        return lockCount;
+    }
+
+    public static int GetToNormalCost(AffixedItem currentItem)
+    {
+        return currentItem.ItemLevel * 3;
+    }
+
+    public static int GetRerollAffixCost(AffixedItem currentItem)
+    {
+        switch (currentItem.Rarity)
+        {
+            case RarityType.UNCOMMON:
+                return currentItem.ItemLevel * 4;
+
+            case RarityType.RARE:
+                return currentItem.ItemLevel * 15;
+
+            case RarityType.EPIC:
+                return currentItem.ItemLevel * 30;
+
+            default:
+                return 0;
+        }
+    }
+
+    public static int GetAddAffixCost(AffixedItem currentItem)
+    {
+        switch (currentItem.Rarity)
+        {
+            case RarityType.UNCOMMON:
+                return currentItem.ItemLevel * 3;
+
+            case RarityType.RARE:
+                return currentItem.ItemLevel * 25;
+
+            case RarityType.EPIC:
+                return currentItem.ItemLevel * 50;
+
+            default:
+                return 0;
+        }
+    }
+
+    public static int GetRemoveAffixCost(AffixedItem currentItem)
+    {
+        switch (currentItem.Rarity)
+        {
+            case RarityType.UNCOMMON:
+                return currentItem.ItemLevel * 3;
+
+            case RarityType.RARE:
+                return currentItem.ItemLevel * 15;
+
+            case RarityType.EPIC:
+                return currentItem.ItemLevel * 20;
+
+            default:
+                return 0;
+        }
+    }
+
+    public static int GetRerollValuesCost(AffixedItem currentItem)
+    {
+        switch (currentItem.Rarity)
+        {
+            case RarityType.UNCOMMON:
+                return currentItem.ItemLevel * 1;
+
+            case RarityType.RARE:
+                return currentItem.ItemLevel * 2;
+
+            case RarityType.EPIC:
+                return currentItem.ItemLevel * 3;
+
+            case RarityType.UNIQUE:
+                return currentItem.ItemLevel * 2;
+
+            default:
+                return 0;
+        }
+    }
+
+    public static int GetUpgradeCost(AffixedItem currentItem)
+    {
+        switch (currentItem.Rarity)
+        {
+            case RarityType.NORMAL:
+                return currentItem.ItemLevel * 1;
+
+            case RarityType.UNCOMMON:
+                return currentItem.ItemLevel * 8;
+
+            case RarityType.RARE:
+                return currentItem.ItemLevel * 40;
+
+            default:
+                return 0;
+        }
+    }
+
+    public static int GetLockCost(AffixedItem currentItem)
+    {
+        switch (currentItem.Rarity)
+        {
+            case RarityType.UNCOMMON:
+                return currentItem.ItemLevel * 15;
+
+            case RarityType.RARE:
+                return currentItem.ItemLevel * 50;
+
+            case RarityType.EPIC:
+                return currentItem.ItemLevel * 80;
+
+            case RarityType.UNIQUE:
+                return currentItem.ItemLevel * 20;
+
+            default:
+                return 0;
+        }
     }
 }

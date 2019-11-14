@@ -9,8 +9,8 @@ public class PlayerStats
     public readonly static int maxArchetypeInventory = 100;
     public readonly static int maxAbilityInventory = 100;
     public readonly static int maxHeroes = 100;
-    public readonly static int maxExpStock = 2000000;
-    public readonly static int maxItemFragments = 500000;
+    public readonly static int maxExpStock = 3000000;
+    public readonly static int maxItemFragments = 5000000;
     public readonly static int maxArchetypeFragments = 1000;
 
     public int ItemFragments { get; private set; }
@@ -25,6 +25,7 @@ public class PlayerStats
     private List<ArchetypeItem> archetypeInventory;
     private List<AbilityCoreItem> abilityStorageInventory;
     private List<HeroData> heroList;
+    private Dictionary<string, int> stageClearInfo;
 
     public IList<Equipment> EquipmentInventory
     {
@@ -73,6 +74,7 @@ public class PlayerStats
         equipmentInventory = new List<Equipment>();
         archetypeInventory = new List<ArchetypeItem>();
         abilityStorageInventory = new List<AbilityCoreItem>();
+        stageClearInfo = new Dictionary<string, int>();
         heroList = new List<HeroData>();
         heroTeams = new List<HeroData[]>();
         for (int i = 0; i < HERO_TEAM_MAX_NUM; i++)
@@ -98,7 +100,6 @@ public class PlayerStats
         }
         heroTeams[selectedTeam][selectedSlot] = hero;
         hero.assignedTeam = selectedTeam;
-        
     }
 
     public bool AddEquipmentToInventory(Equipment newEquipment)
@@ -122,7 +123,6 @@ public class PlayerStats
     public bool AddHeroToList(HeroData hero)
     {
         heroList.Add(hero);
-        UIManager.Instance.HeroScrollContent.AddHeroSlot(hero);
         return true;
     }
 
@@ -195,6 +195,29 @@ public class PlayerStats
     public void ClearArchetypeItemInventory()
     {
         archetypeInventory.Clear();
+    }
+
+    public void AddToStageClearCount(string stageId)
+    {
+        if (!stageClearInfo.ContainsKey(stageId))
+            stageClearInfo.Add(stageId, 0);
+        stageClearInfo[stageId]++;
+    }
+
+    public bool IsStageUnlocked(string stageId)
+    {
+        if (!stageClearInfo.ContainsKey(stageId) || stageClearInfo[stageId] == 0)
+            return false;
+        else
+            return true;
+    }
+
+    public int GetStageClearCount(string stageId)
+    {
+        if (!stageClearInfo.ContainsKey(stageId))
+            return 0;
+        else
+            return stageClearInfo[stageId];
     }
 }
 

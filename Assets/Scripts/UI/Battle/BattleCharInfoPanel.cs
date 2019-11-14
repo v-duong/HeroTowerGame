@@ -75,18 +75,19 @@ public class BattleCharInfoPanel : MonoBehaviour
     {
         InputManager.Instance.selectedHero = actor as HeroActor;
         InputManager.Instance.IsMovementMode = true;
+        InputManager.Instance.SetTileHighlight(true);
     }
 
     public void TargetSelectionOnClick(int i)
     {
         switch (actor.targetingPriority)
         {
-            case PrimaryTargetingType.CLOSEST when i < 0:
+            case PrimaryTargetingType.FIRST when i < 0:
                 actor.targetingPriority = PrimaryTargetingType.RANDOM;
                 break;
 
             case PrimaryTargetingType.RANDOM when i > 0:
-                actor.targetingPriority = PrimaryTargetingType.CLOSEST;
+                actor.targetingPriority = PrimaryTargetingType.FIRST;
                 break;
 
             default:

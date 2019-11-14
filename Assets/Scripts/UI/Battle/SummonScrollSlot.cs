@@ -55,13 +55,13 @@ public class SummonScrollSlot : MonoBehaviour
         if (!heroSummoned && !heroDead)
         {
             InputManager.Instance.SetSummoning(actor, SummonCallback);
-            StageManager.Instance.HighlightMap.gameObject.SetActive(true);
+            
         }
     }
 
     public void SummonCallback()
     {
-        StageManager.Instance.HighlightMap.gameObject.SetActive(false);
+        InputManager.Instance.SetTileHighlight(false);
         heroSummoned = true;
         image.color = new Color(0.85f, 0.85f, 0.85f);
     }

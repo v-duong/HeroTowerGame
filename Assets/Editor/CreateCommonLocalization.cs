@@ -116,6 +116,17 @@ public class CreateCommonLocalization
                     keys.Remove(localizationKey);
             }
 
+            List<string> rarityTypes = new List<string>(Enum.GetNames(typeof(RarityType)));
+
+            foreach (string x in rarityTypes)
+            {
+                string localizationKey = "rarityType." + x;
+                if (!localization.ContainsKey(localizationKey))
+                    localization.Add(localizationKey, "");
+                else
+                    keys.Remove(localizationKey);
+            }
+
             string filepath2 = "Assets/Resources/json/localization/UIKeys.txt";
             string uiKeysText = System.IO.File.ReadAllText(filepath2);
 

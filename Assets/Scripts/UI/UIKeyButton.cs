@@ -1,16 +1,27 @@
 ﻿using TMPro;
 using UnityEngine;
-using UnityEngine.UI;
 
 public class UIKeyButton : MonoBehaviour
 {
-    private void OnEnable()
+    public string originalString;
+    public string localizedString;
+    public bool initialized = false;
+
+    private void Start()
     {
-        Text textObject = GetComponentInChildren<Text>();
-        if (textObject != null)
-            textObject.text = LocalizationManager.Instance.GetLocalizationText(textObject.text);
-        TextMeshProUGUI textObject2 = GetComponentInChildren<TextMeshProUGUI>();
-        if (textObject2 != null)
-            textObject2.text = LocalizationManager.Instance.GetLocalizationText(textObject2.text);
+        if (!initialized)
+            Initialize();
+    }
+
+    public void Initialize()
+    {
+        TextMeshProUGUI textComponent = GetComponentInChildren<TextMeshProUGUI>();
+        if (textComponent != null)
+        {
+            originalString = textComponent.text;
+            localizedString = LocalizationManager.Instance.GetLocalizationText(originalString);
+            textComponent.text = localizedString;
+        }
+        initialized = true;
     }
 }

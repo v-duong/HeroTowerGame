@@ -499,6 +499,12 @@ public static class Helpers
         return returnVal;
     }
 
+    public static Vector3Int ReturnTilePosition_Int(Tilemap tilemap, Vector3 position)
+    {
+        Vector3Int cellPos = tilemap.WorldToCell(position);
+        return cellPos;
+    }
+
     public static WeightList<string> CreateWeightListFromWeightBases(List<WeightBase> weightBases)
     {
         WeightList<string> ret = new WeightList<string>();

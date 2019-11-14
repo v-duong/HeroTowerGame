@@ -22,7 +22,7 @@ public class BattleManager : MonoBehaviour
 
     public IReadOnlyList<EnemyWave> Waves { get; private set; }
     public List<EnemyActor> currentEnemyList;
-    public List<HeroData> activeHeroes = new List<HeroData>();
+    public List<HeroActor> activeHeroes = new List<HeroActor>();
 
     public int enemiesSpawned;
     public int selectedTeam;
@@ -141,6 +141,8 @@ public class BattleManager : MonoBehaviour
         if (victory)
         {
             Debug.Log("VIC");
+            if (survivalLoopCount == 0)
+                GameManager.Instance.PlayerStats.AddToStageClearCount(stageInfo.idName);
 
             battleEndWindow.ShowVictoryWindow();
 

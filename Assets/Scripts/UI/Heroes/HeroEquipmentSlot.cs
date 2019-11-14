@@ -1,12 +1,13 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 public class HeroEquipmentSlot : MonoBehaviour
 {
     [SerializeField]
     private EquipSlotType slot;
 
-    public Text slotText;
+    public TextMeshProUGUI slotText;
 
     public EquipSlotType EquipSlot => slot;
 

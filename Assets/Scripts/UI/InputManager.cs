@@ -12,6 +12,7 @@ public class InputManager : MonoBehaviour
     public Action onSummonCallback = null;
     public bool IsMovementMode = false;
     public float zoomRatio = 1.0f;
+    public int pointerId = 0;
 
     private float maxNegativeX, maxPositiveX;
     private float maxNegativeY, maxPositiveY;
@@ -26,6 +27,7 @@ public class InputManager : MonoBehaviour
 
     public void SetSummoning(HeroActor actor, Action summonCallback)
     {
+        SetTileHighlight(true);
         IsSummoningMode = true;
         selectedHero = actor;
         onSummonCallback = summonCallback;
@@ -90,100 +92,148 @@ public class InputManager : MonoBehaviour
         if (Application.platform != RuntimePlatform.WindowsEditor && Application.platform != RuntimePlatform.WindowsPlayer)
         {
             dragspeed = 0.01f;
+            pointerId = 0;
         }
+        else
+        {
+            pointerId = -1;
+        }
+    }
+
+    public void SetTileHighlight(bool active)
+    {
+        StageManager.Instance.HighlightMap.gameObject.SetActive(active);
+    }
+
+    public bool IsLocationTargetable(Vector3 position)
+    {
+        UnityEngine.Tilemaps.Tilemap highlightTilemap = StageManager.Instance.HighlightMap.tilemap;
+        if (highlightTilemap.GetTile(Helpers.ReturnTilePosition_Int(highlightTilemap, position)) == null)
+            return false;
+
+        var correctedPosition = Helpers.ReturnTilePosition(highlightTilemap, position, -3);
+
+        if (StageManager.Instance.BattleManager.activeHeroes.FindAll(x => x.transform.position == correctedPosition).Count > 0)
+            return false;
+
+        return true;
     }
 
     // Update is called once per frame
     private void Update()
     {
         if (!GameManager.Instance.isInBattle)
+        {
+            if (Input.GetKeyUp(KeyCode.Escape))
+            {
+                UIManager.Instance.CloseCurrentWindow();
+            }
             return;
-
-        if (IsSummoningMode)
-        {
-            if (Input.GetMouseButtonDown(0) && Input.touchCount < 2)
-            {
-                Vector3 spawnLocation = mainCamera.ScreenToWorldPoint(Input.mousePosition);
-                Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
-                RaycastHit2D hit = Physics2D.Raycast(ray.origin, ray.direction, LayerMask.GetMask("Enemy", "Hero", "Obstacles", "Path"));
-
-                if (hit.collider != null)
-                {
-                    if (hit.collider.gameObject.layer >= 11)
-                        return;
-                }
-
-                spawnLocation = Helpers.ReturnTilePosition(StageManager.Instance.HighlightMap.tilemap, spawnLocation, -3);
-                selectedHero.transform.position = spawnLocation;
-                selectedHero.gameObject.SetActive(true);
-                selectedHero.EnableHealthBar();
-                selectedHero.ClearMovement();
-                IsSummoningMode = false;
-                onSummonCallback?.Invoke();
-            }
-        }
-        else if (IsMovementMode && !isDragging)
-        {
-            Vector3 moveLocation = mainCamera.ScreenToWorldPoint(Input.mousePosition);
-            moveLocation.z = -3;
-
-            if (Input.GetMouseButtonDown(0) && Input.touchCount < 2)
-            {
-                if (!EventSystem.current.IsPointerOverGameObject()
-                    || EventSystem.current.currentSelectedGameObject == null)
-                    selectedHero.StartMovement(moveLocation);
-                IsMovementMode = false;
-                selectedHero = null;
-            }
         }
         else
         {
-            if (Input.GetMouseButtonDown(0))
+            if (IsSummoningMode)
             {
-                OnMouseDownHandler();
-                return;
+                IsMovementMode = false;
+                if (Input.GetMouseButtonDown(0) && Input.touchCount < 2)
+                {
+                    if (EventSystem.current.IsPointerOverGameObject(pointerId))
+                        return;
+
+                    Vector3 spawnLocation = mainCamera.ScreenToWorldPoint(Input.mousePosition);
+                    spawnLocation.z = -3;
+                    Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
+                    RaycastHit2D hit = Physics2D.Raycast(ray.origin, ray.direction, Mathf.Infinity, LayerMask.GetMask("Enemy", "Hero", "Obstacles", "Paths"));
+
+                    if (hit.collider != null)
+                    {
+                        if (hit.collider.gameObject.layer >= 11)
+                            return;
+                    }
+
+                    if (!IsLocationTargetable(spawnLocation))
+                        return;
+
+                    spawnLocation = Helpers.ReturnTilePosition(StageManager.Instance.HighlightMap.tilemap, spawnLocation, -3);
+
+                    selectedHero.transform.position = spawnLocation;
+                    selectedHero.gameObject.SetActive(true);
+                    selectedHero.EnableHealthBar();
+                    selectedHero.ClearMovement();
+                    StageManager.Instance.BattleManager.activeHeroes.Add(selectedHero);
+                    IsSummoningMode = false;
+                    onSummonCallback?.Invoke();
+                }
             }
-
-            if (Input.mouseScrollDelta.y != 0
-                || (Input.touchCount == 2 && Input.GetTouch(0).phase == TouchPhase.Moved && Input.GetTouch(1).phase == TouchPhase.Moved))
+            else if (IsMovementMode && !isDragging)
             {
-                float scrollValue;
+                IsSummoningMode = false;
+                Vector3 moveLocation = Helpers.ReturnTilePosition(StageManager.Instance.HighlightMap.tilemap, mainCamera.ScreenToWorldPoint(Input.mousePosition), -3);
 
-                if (Input.touchCount == 2)
+                if (Input.GetMouseButtonDown(0) && Input.touchCount < 2)
                 {
-                    var curDist = Input.GetTouch(0).position - Input.GetTouch(1).position;
-                    var prevDist = Input.GetTouch(0).position - Input.GetTouch(0).deltaPosition - (Input.GetTouch(1).position - Input.GetTouch(1).deltaPosition);
-                    scrollValue = (curDist.magnitude - prevDist.magnitude) / 25f;
-                }
-                else
-                {
-                    scrollValue = Input.mouseScrollDelta.y;
-                }
+                    if (!IsLocationTargetable(moveLocation))
+                        return;
 
-                mainCamera.orthographicSize = Mathf.Clamp(mainCamera.orthographicSize - scrollValue * 0.5f, 4f, 13f);
-                zoomRatio = mainCamera.orthographicSize / 7.0f;
-                SetCameraBounds();
-                ClampCameraPosition();
+                    if (!EventSystem.current.IsPointerOverGameObject(pointerId)
+                        || EventSystem.current.currentSelectedGameObject == null)
+                    {
+                        selectedHero.StartMovement(moveLocation);
+                    }
+                    SetTileHighlight(false);
+                    IsMovementMode = false;
+                    selectedHero = null;
+                }
             }
-
-            if (!Input.GetMouseButton(0)) isDragging = false;
-
-            if (isDragging && Input.touchCount < 2)
+            else
             {
-                Vector3 move;
-                float speedMultiplier = zoomRatio;
-
-                if (Input.touchCount == 1)
+                if (Input.GetMouseButtonDown(0))
                 {
-                    move = new Vector3(Input.touches[0].deltaPosition.x * dragspeed * speedMultiplier, Input.touches[0].deltaPosition.y * dragspeed * speedMultiplier, 0);
-                }
-                else
-                {
-                    move = new Vector3(Input.GetAxis("Mouse X") * dragspeed * speedMultiplier, Input.GetAxis("Mouse Y") * dragspeed * speedMultiplier, 0);
+                    OnMouseDownHandler();
+                    return;
                 }
 
-                mainCamera.transform.Translate(-move, Space.Self);
-                ClampCameraPosition();
+                if (Input.mouseScrollDelta.y != 0
+                    || (Input.touchCount == 2 && Input.GetTouch(0).phase == TouchPhase.Moved && Input.GetTouch(1).phase == TouchPhase.Moved))
+                {
+                    float scrollValue;
+
+                    if (Input.touchCount == 2)
+                    {
+                        var curDist = Input.GetTouch(0).position - Input.GetTouch(1).position;
+                        var prevDist = Input.GetTouch(0).position - Input.GetTouch(0).deltaPosition - (Input.GetTouch(1).position - Input.GetTouch(1).deltaPosition);
+                        scrollValue = (curDist.magnitude - prevDist.magnitude) / 25f;
+                    }
+                    else
+                    {
+                        scrollValue = Input.mouseScrollDelta.y;
+                    }
+
+                    mainCamera.orthographicSize = Mathf.Clamp(mainCamera.orthographicSize - scrollValue * 0.5f, 4f, 13f);
+                    zoomRatio = mainCamera.orthographicSize / 7.0f;
+                    SetCameraBounds();
+                    ClampCameraPosition();
+                }
+
+                if (!Input.GetMouseButton(0)) isDragging = false;
+
+                if (isDragging && Input.touchCount < 2)
+                {
+                    Vector3 move;
+                    float speedMultiplier = zoomRatio;
+
+                    if (Input.touchCount == 1)
+                    {
+                        move = new Vector3(Input.touches[0].deltaPosition.x * dragspeed * speedMultiplier, Input.touches[0].deltaPosition.y * dragspeed * speedMultiplier, 0);
+                    }
+                    else
+                    {
+                        move = new Vector3(Input.GetAxis("Mouse X") * dragspeed * speedMultiplier, Input.GetAxis("Mouse Y") * dragspeed * speedMultiplier, 0);
+                    }
+
+                    mainCamera.transform.Translate(-move, Space.Self);
+                    ClampCameraPosition();
+                }
             }
         }
     }
@@ -194,7 +244,7 @@ public class InputManager : MonoBehaviour
         Ray ray = mainCamera.ScreenPointToRay(Input.mousePosition);
         RaycastHit2D hit = Physics2D.Raycast(ray.origin, ray.direction, 50, mask);
 
-        if (EventSystem.current.IsPointerOverGameObject())
+        if (EventSystem.current.IsPointerOverGameObject(pointerId))
             return;
 
         if (hit.collider != null)
@@ -221,7 +271,7 @@ public class InputManager : MonoBehaviour
         {
             OnTargetSelect(null);
         }
-        if (!EventSystem.current.IsPointerOverGameObject())
+        if (!EventSystem.current.IsPointerOverGameObject(pointerId))
             isDragging = true;
     }
 

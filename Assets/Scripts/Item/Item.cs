@@ -13,4 +13,9 @@ public abstract class Item
     public void SetId(Guid id) => Id = id;
     public void SetRarity(RarityType rarity) => Rarity = rarity;
     public abstract ItemType GetItemType();
+
+    public virtual int GetItemValue()
+    {
+        return 0;
+    }
 }

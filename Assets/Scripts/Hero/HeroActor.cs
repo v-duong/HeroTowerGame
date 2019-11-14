@@ -121,6 +121,7 @@ public class HeroActor : Actor
         ClearStatusEffects(true);
         ClearMovement();
         UIManager.Instance.SummonScrollWindow.SetHeroDead(this);
+        StageManager.Instance.BattleManager.activeHeroes.Remove(this);
         DisableActor();
     }
 

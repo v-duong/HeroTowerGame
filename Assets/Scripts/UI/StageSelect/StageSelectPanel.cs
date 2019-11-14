@@ -47,12 +47,14 @@ public class StageSelectPanel : MonoBehaviour
             Button button = selectionPanel.GetComponent<Button>();
             button.onClick.RemoveAllListeners();
             button.onClick.AddListener(delegate { TeamPanelOnClick(selectionPanel); });
+            selectionPanel.GetComponent<Image>().color = Color.white;
 
             int heroCount = 0;
             for (int j = 0; j < 5; j++)
             {
                 HeroData hero = GameManager.Instance.PlayerStats.heroTeams[i][j];
                 TeamSelectionHeroSlot teamSelectionHeroSlot = teamSelectionPanels[i].heroSlots[j];
+                teamSelectionHeroSlot.GetComponent<Image>().color = new Color(0.7f, 0.7f, 0.7f);
                 if (hero != null)
                 {
                     teamSelectionHeroSlot.nameText.text = hero.Name;

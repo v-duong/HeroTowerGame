@@ -513,7 +513,7 @@ MonoBehaviour:
   m_outlineColor:
     serializedVersion: 2
     rgba: 4278190080
-  m_fontSize: 11.6
+  m_fontSize: 19
   m_fontSizeBase: 24
   m_fontWeight: 400
   m_enableAutoSizing: 1
@@ -1226,7 +1226,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 100}
+  m_SizeDelta: {x: 0, y: 115}
   m_Pivot: {x: 0.5, y: 0}
 --- !u!1 &341509705
 GameObject:
@@ -1659,8 +1659,8 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: -7.5}
-  m_SizeDelta: {x: 0, y: -15}
+  m_AnchoredPosition: {x: 0, y: -12.499996}
+  m_SizeDelta: {x: 0, y: -25}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &507402043
 MonoBehaviour:
@@ -2376,7 +2376,7 @@ RectTransform:
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 15}
+  m_SizeDelta: {x: 0, y: 25}
   m_Pivot: {x: 0.5, y: 1}
 --- !u!114 &852038178
 MonoBehaviour:
@@ -3094,14 +3094,16 @@ MonoBehaviour:
   battleInfo: {fileID: 1401552715}
   currentEnemyList: []
   enemiesSpawned: 0
-  startedSpawn: 0
-  finishedSpawn: 0
   selectedTeam: 0
-  battleEnded: 0
   playerHealth: 20
   playerSoulpoints: 10
   stageLevel: 1
   currentWave: 0
+  startedSpawn: 0
+  finishedSpawn: 0
+  battleEnded: 0
+  isSurvivalBattle: 0
+  survivalLoopCount: 0
 --- !u!4 &963618084
 Transform:
   m_ObjectHideFlags: 0
@@ -5091,7 +5093,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 0}
-  m_AnchoredPosition: {x: 0, y: 100}
+  m_AnchoredPosition: {x: 0, y: 115}
   m_SizeDelta: {x: 0, y: 100}
   m_Pivot: {x: 0.5, y: 0}
 --- !u!114 &1708619574
@@ -6076,6 +6078,7 @@ MonoBehaviour:
   nextLoopButton: {fileID: 978939801}
   headerText: {fileID: 2104575542}
   bodyText: {fileID: 217188922}
+  isVictory: 0
 --- !u!1 &1890009541
 GameObject:
   m_ObjectHideFlags: 0

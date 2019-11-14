@@ -35,9 +35,9 @@ public class ArchetypeItem : Item
         return ItemType.ARCHETYPE;
     }
 
-    public static int GetFragmentWorth(int stars)
+    public override int GetItemValue()
     {
-        switch(stars)
+        switch(Base.stars)
         {
             case 0:
                 return 0;

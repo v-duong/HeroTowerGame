@@ -26,6 +26,7 @@ public class ArchetypeDissolvePanel : MonoBehaviour
         }
 
         UIManager.Instance.OpenInventoryWindow(false, false, false, true);
+        UIManager.Instance.InvScrollContent.showItemValues = true;
         UIManager.Instance.InvScrollContent.ShowAllArchetypes(true, false);
         UIManager.Instance.InvScrollContent.SetConfirmCallback(ArchetypeSelectOnClick_Callback);
         hasHitConfirm = false;
@@ -40,7 +41,7 @@ public class ArchetypeDissolvePanel : MonoBehaviour
         {
             if (item is ArchetypeItem archetypeItem)
             {
-                fragmentCount += ArchetypeItem.GetFragmentWorth(archetypeItem.Base.stars);
+                fragmentCount += archetypeItem.GetItemValue() ;
             }
             else
             {
@@ -67,7 +68,7 @@ public class ArchetypeDissolvePanel : MonoBehaviour
 
         foreach (ArchetypeItem item in selectedArchetypes)
         {
-            fragmentCount += ArchetypeItem.GetFragmentWorth(item.Base.stars);
+            fragmentCount += item.GetItemValue();
             GameManager.Instance.PlayerStats.RemoveArchetypeFromInventory(item);
         }
 

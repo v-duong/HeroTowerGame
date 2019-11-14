@@ -38,11 +38,11 @@ public class HeroDetailWindow : MonoBehaviour
 
         if (hero.IsLocked)
         {
-            lockButton.GetComponentInChildren<Text>().text = "Locked";
+            lockButton.GetComponentInChildren<TextMeshProUGUI>().text = "Locked";
         }
         else
         {
-            lockButton.GetComponentInChildren<Text>().text = "Unlocked";
+            lockButton.GetComponentInChildren<TextMeshProUGUI>().text = "Unlocked";
         }
 
         infoText.text = "";
@@ -174,12 +174,12 @@ public class HeroDetailWindow : MonoBehaviour
         if (!hero.IsLocked)
         {
             hero.IsLocked = true;
-            lockButton.GetComponentInChildren<Text>().text = "Locked";
+            lockButton.GetComponentInChildren<TextMeshProUGUI>().text = "Locked";
         }
         else
         {
             hero.IsLocked = false;
-            lockButton.GetComponentInChildren<Text>().text = "Unlocked";
+            lockButton.GetComponentInChildren<TextMeshProUGUI>().text = "Unlocked";
         }
     }
 
@@ -197,5 +197,18 @@ public class HeroDetailWindow : MonoBehaviour
         else
             hero.EquipToSlot(item as Equipment, equipSlot);
         UpdateWindow();
+    }
+
+    public void OpenNameEdit()
+    {
+        UIManager.Instance.PopUpWindow.OpenTextInput(hero.Name);
+        UIManager.Instance.PopUpWindow.textInput.characterLimit = 20;
+        UIManager.Instance.PopUpWindow.textInput.contentType = TMP_InputField.ContentType.Alphanumeric;
+        UIManager.Instance.PopUpWindow.textInput.lineType = TMP_InputField.LineType.SingleLine;
+        UIManager.Instance.PopUpWindow.SetButtonValues("Confirm", delegate {
+            UIManager.Instance.CloseCurrentWindow();
+            hero.Name = UIManager.Instance.PopUpWindow.textInput.text;
+            UpdateWindow();
+        });
     }
 }

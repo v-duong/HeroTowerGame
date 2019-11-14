@@ -85,6 +85,21 @@ public class GameManager : MonoBehaviour
         PlayerStats.AddHeroToList(startingSoldier);
         PlayerStats.AddHeroToList(startingRanger);
         PlayerStats.AddHeroToList(startingMage);
+
+        float total1=0, total2=0, total3=0;
+        for (int i = 0; i < 100; i++)
+        {
+            Equipment e1 = Equipment.CreateRandomEquipment(100, null, RarityType.RARE);
+            Equipment e2 = Equipment.CreateRandomEquipment(50, null, RarityType.RARE);
+            Equipment e3 = Equipment.CreateRandomEquipment(1, null, RarityType.RARE);
+            total1 += e1.GetItemValue();
+            total2 += e2.GetItemValue();
+            total3 += e3.GetItemValue();
+        }
+        total1 /= 100;
+        total2 /= 100;
+        total3 /= 100;
+        Debug.Log(total1.ToString("N1") + " " + total2.ToString("N1") + " " + total3.ToString("N1"));
     }
 
     public ConsumableType GetRandomConsumable()

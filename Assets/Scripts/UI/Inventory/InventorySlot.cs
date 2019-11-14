@@ -15,6 +15,7 @@ public class InventorySlot : MonoBehaviour
     public Action<Item> onClickAction;
     public bool multiSelectMode = false;
     public bool alreadySelected = false;
+    public bool showItemValue = false;
 
     public void UpdateSlot()
     {
@@ -53,9 +54,13 @@ public class InventorySlot : MonoBehaviour
                 Accessory accessory = item as Accessory;
                 groupText.text = LocalizationManager.Instance.GetLocalizationText_GroupType(accessory.Base.group.ToString());
                 break;
+
             default:
                 break;
         }
+
+        if (showItemValue)
+            infoText.text += "\n" + item.GetItemValue() + " Fragments";
 
         slotImage.color = Helpers.ReturnRarityColor(item.Rarity);
         nameImage.color = Helpers.ReturnRarityColor(item.Rarity);
