@@ -42,7 +42,7 @@ public class HeroCreationPanel : MonoBehaviour
             return;
         if (primaryArchetype.Base == secondaryArchetype?.Base)
             return;
-        HeroData hero = HeroData.CreateNewHero("CREATEDHERO" + UnityEngine.Random.Range(3, 240), primaryArchetype, secondaryArchetype);
+        HeroData hero = HeroData.CreateNewHero("CREATEDHERO" + UnityEngine.Random.Range(3, 240), primaryArchetype.Base, secondaryArchetype.Base);
         PlayerStats player = GameManager.Instance.PlayerStats;
         player.AddHeroToList(hero);
         player.RemoveArchetypeFromInventory(primaryArchetype);

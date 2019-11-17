@@ -19,7 +19,18 @@ public class InventoryScrollWindow : MonoBehaviour
     public bool isMultiSelectMode = false;
     public bool showItemValues = false;
 
-
+    private void Start()
+    {
+        GridLayoutGroup grid = GetComponent<GridLayoutGroup>();
+        if (GameManager.Instance.aspectRatio >= 1.85)
+        {
+            grid.cellSize = new Vector2(131, 250);
+        }
+        else
+        {
+            grid.cellSize = new Vector2(140, 250);
+        }
+    }
     private void OnEnable()
     {
         ((RectTransform)transform).anchoredPosition = Vector3.zero;

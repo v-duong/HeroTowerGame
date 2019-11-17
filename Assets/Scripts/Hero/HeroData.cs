@@ -165,7 +165,7 @@ public class HeroData : ActorData
         abilitySlotList = new List<AbilitySlot>() { new AbilitySlot(0), new AbilitySlot(1) };
     }
 
-    public static HeroData CreateNewHero(string name, ArchetypeItem primaryArchetype, ArchetypeItem subArchetype = null)
+    public static HeroData CreateNewHero(string name, ArchetypeBase primaryArchetype, ArchetypeBase subArchetype = null)
     {
         HeroData hero = new HeroData(name);
         hero.archetypeList[0] = new HeroArchetypeData(primaryArchetype, hero);

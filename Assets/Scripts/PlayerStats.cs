@@ -3,6 +3,7 @@ using System.Collections.Generic;
 
 public class PlayerStats
 {
+    public const float EXP_STOCK_RATE = 0.5f;
     public const int HERO_TEAM_MAX_NUM = 5;
     public const int HERO_TEAM_MAX_HEROES = 5;
     public readonly static int maxEquipInventory = 250;
@@ -25,7 +26,7 @@ public class PlayerStats
     private List<ArchetypeItem> archetypeInventory;
     private List<AbilityCoreItem> abilityStorageInventory;
     private List<HeroData> heroList;
-    private Dictionary<string, int> stageClearInfo;
+    public Dictionary<string, int> stageClearInfo;
 
     public IList<Equipment> EquipmentInventory
     {
@@ -104,24 +105,32 @@ public class PlayerStats
 
     public bool AddEquipmentToInventory(Equipment newEquipment)
     {
+        if (equipmentInventory.Contains(newEquipment))
+            return false;
         equipmentInventory.Add(newEquipment);
         return true;
     }
 
     public bool AddArchetypeToInventory(ArchetypeItem newArchetype)
     {
+        if (archetypeInventory.Contains(newArchetype))
+            return false;
         archetypeInventory.Add(newArchetype);
         return true;
     }
 
     public bool AddAbilityToInventory(AbilityCoreItem newAbility)
     {
+        if (abilityStorageInventory.Contains(newAbility))
+            return false;
         abilityStorageInventory.Add(newAbility);
         return true;
     }
 
     public bool AddHeroToList(HeroData hero)
     {
+        if (heroList.Contains(hero))
+            return false;
         heroList.Add(hero);
         return true;
     }
@@ -168,6 +177,12 @@ public class PlayerStats
             ItemFragments = maxItemFragments;
     }
 
+    public void SetItemFragments(int value)
+    {
+        ItemFragments = 0;
+        ModifyItemFragments(value);
+    }
+
     public void ModifyArchetypeFragments(int value)
     {
         ArchetypeFragments += value;
@@ -175,6 +190,12 @@ public class PlayerStats
             ArchetypeFragments = 0;
         if (ArchetypeFragments > maxArchetypeFragments)
             ArchetypeFragments = maxArchetypeFragments;
+    }
+
+    public void SetArchetypeFragments(int value)
+    {
+        ArchetypeFragments = 0;
+        ModifyArchetypeFragments(value);
     }
 
     public void ClearEquipmentInventory()

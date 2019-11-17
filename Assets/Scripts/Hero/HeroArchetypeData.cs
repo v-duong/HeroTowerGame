@@ -28,10 +28,10 @@ public class HeroArchetypeData : IAbilitySource
 
     public Dictionary<int, int> NodeLevels => new Dictionary<int, int>(nodeLevels);
 
-    public HeroArchetypeData(ArchetypeItem archetypeItem, HeroData hero)
+    public HeroArchetypeData(ArchetypeBase archetype, HeroData hero)
     {
         Id = Guid.NewGuid();
-        Base = archetypeItem.Base;
+        Base = archetype;
         this.hero = hero;
         AvailableAbilityList = new ArchetypeLeveledAbilityList();
         InitializeArchetypeData();

@@ -120,10 +120,21 @@ public class Affix
         IsLocked = value;
     }
 
-    public static string BuildAffixString(AffixBase Base, int indent, Affix instancedAffix = null, IList<float> affixValues = null, IList<float> effectValues = null)
+    public static string BuildAffixString(AffixBase Base, float indent, Affix instancedAffix = null, IList<float> affixValues = null, IList<float> effectValues = null, bool showRange = false, bool showTier = false)
     {
         List<int> bonusesToSkip = new List<int>();
         string s = "";
+
+        if (showTier)
+        {
+            indent += 2f;
+            if (Base.tier > 0)
+                s += " T" + Base.tier;
+        }
+
+        if (indent != 0)
+            s += "<indent=" + indent + "em>";
+
         for (int i = 0; i < Base.affixBonuses.Count; i++)
         {
             if (bonusesToSkip.Contains(i))
@@ -140,8 +151,6 @@ public class Affix
                 {
                     bonusesToSkip.Add(matchedIndex);
 
-                    s += "<indent=" + indent + "%>";
-
                     if (bonusProp.restriction != GroupType.NO_GROUP)
                     {
                         s += LocalizationManager.Instance.GetLocalizationText_GroupTypeRestriction(bonusProp.restriction.ToString()) + ", ";
@@ -149,28 +158,37 @@ public class Affix
 
                     s += LocalizationManager.Instance.GetLocalizationText("bonusType." + bonusProp.bonusType.ToString().Replace("_MIN", "")) + " ";
                     if (affixValues != null)
-                        s += "+" + affixValues[i] + "-" + affixValues[matchedIndex] + "</indent>\n";
+                    {
+                        s += "<nobr>+" + affixValues[i] + "~" + affixValues[matchedIndex] + "</nobr>";
+                        if (showRange && (bonusProp.minValue != bonusProp.maxValue || Base.affixBonuses[matchedIndex].minValue != Base.affixBonuses[matchedIndex].maxValue))
+                            s += "<nobr><color=" + Helpers.AFFIX_RANGE_COLOR + "> (" + bonusProp.minValue + "-" + bonusProp.maxValue + ") (" + Base.affixBonuses[matchedIndex].minValue + "-" + Base.affixBonuses[matchedIndex].maxValue + ")</color></nobr>";
+                    }
                     else
-                        s += "+(" + bonusProp.minValue + "-" + bonusProp.maxValue + ")-(" + Base.affixBonuses[matchedIndex].minValue + "-" + Base.affixBonuses[matchedIndex].maxValue + ")</indent>\n";
+                        s += "<nobr>+(" + bonusProp.minValue + "-" + bonusProp.maxValue + ")~(" + Base.affixBonuses[matchedIndex].minValue + "-" + Base.affixBonuses[matchedIndex].maxValue + ")</nobr>";
+
+                    s += '\n';
                     continue;
                 }
             }
 
-            s += "<indent=" + indent + "%>";
             if (affixValues != null)
+            {
                 s += LocalizationManager.Instance.GetLocalizationText_BonusType(bonusProp.bonusType, bonusProp.modifyType, affixValues[i], bonusProp.restriction);
+                if (showRange && bonusProp.minValue != bonusProp.maxValue)
+                    s = s.TrimEnd('\n') + "<nobr><color=" + Helpers.AFFIX_RANGE_COLOR + "> (" + bonusProp.minValue + "-" + bonusProp.maxValue + ")</color></nobr>\n";
+            }
             else
                 s += LocalizationManager.Instance.GetLocalizationText_BonusType(bonusProp.bonusType, bonusProp.modifyType, bonusProp.minValue, bonusProp.maxValue, bonusProp.restriction);
-
-            s = s.TrimEnd('\n') + "</indent>\n";
         }
 
         for (int i = 0; i < Base.triggeredEffects.Count; i++)
         {
             TriggeredEffectBonusProperty triggeredEffect = Base.triggeredEffects[i];
 
-            s += "<indent=" + indent + "%>";
             s += LocalizationManager.Instance.GetLocalizationText_TriggeredEffect(triggeredEffect, effectValues[i]);
+
+            if (showRange && triggeredEffect.effectMinValue != triggeredEffect.effectMaxValue)
+                s = s.TrimEnd('\n') + "<nobr><color=" + Helpers.AFFIX_RANGE_COLOR + "> (" + triggeredEffect.effectMinValue + "-" + triggeredEffect.effectMaxValue + ")</color></nobr>\n";
         }
 
         if (instancedAffix != null)
@@ -178,6 +196,9 @@ public class Affix
             if (instancedAffix.IsLocked)
                 s = "<color=#A9942C>" + s + "</color>";
         }
+
+        if (indent != 0)
+            s = s.TrimEnd('\n') + "</indent>\n";
 
         return s;
     }

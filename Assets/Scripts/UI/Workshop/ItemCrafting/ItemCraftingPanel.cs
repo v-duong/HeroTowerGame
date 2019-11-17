@@ -10,9 +10,12 @@ public class ItemCraftingPanel : MonoBehaviour
     public AffixedItem currentItem;
     private Func<bool> selectedOption = null;
     private Button currentSelectedButton = null;
+    private bool showAffixDetails = false;
 
     [SerializeField]
     private ItemCraftingSlot itemSlot;
+    [SerializeField]
+    private TextMeshProUGUI innates;
 
     [SerializeField]
     private TextMeshProUGUI prefixes;
@@ -33,17 +36,26 @@ public class ItemCraftingPanel : MonoBehaviour
     private TextMeshProUGUI playerFragmentsText;
 
     [SerializeField]
+    private TextMeshProUGUI showAffixDetailsButtonText;
+
+    [SerializeField]
     private List<UIKeyButton> craftingButtons;
+
+
+
+
 
     private void OnDisable()
     {
         selectedOption = null;
         currentSelectedButton = null;
         currentItem = null;
+        showAffixDetails = false;
     }
 
     private void OnEnable()
     {
+        
         UpdatePanels();
     }
 
@@ -70,6 +82,7 @@ public class ItemCraftingPanel : MonoBehaviour
         itemSlot.text.text = "";
         prefixes.text = "";
         suffixes.text = "";
+        innates.text = "";
         leftInfo.text = "";
         rightInfo.text = "";
         playerFragmentsText.text = GameManager.Instance.PlayerStats.ItemFragments.ToString("N0") + " Frags";
@@ -96,15 +109,27 @@ public class ItemCraftingPanel : MonoBehaviour
             suffixes.text = "Suffixes (" + currentItem.suffixes.Count + " / " + affixCap + ")\n";
         }
 
+        if (currentItem is Equipment equip)
+        {
+            if (equip.innate.Count > 0)
+            {
+                innates.text = "Innate\n";
+                foreach (Affix a in equip.innate)
+                {
+                    innates.text += "○" + Affix.BuildAffixString(a.Base, Helpers.AFFIX_STRING_SPACING, a, a.GetAffixValues(), a.GetEffectValues());
+                }
+            }
+        }
+
         foreach (Affix a in currentItem.prefixes)
         {
-            prefixes.text += "○" + Affix.BuildAffixString(a.Base, 5, a, a.GetAffixValues(), a.GetEffectValues());
-            //prefixes.text += "<align=\"right\">" + "T" + a.Base.tier + "</align>";
+            string prefixText = "○" + Affix.BuildAffixString(a.Base, Helpers.AFFIX_STRING_SPACING, a, a.GetAffixValues(), a.GetEffectValues(), showAffixDetails, showAffixDetails && currentItem.Rarity != RarityType.UNIQUE);
+            prefixes.text += prefixText;
         }
 
         foreach (Affix a in currentItem.suffixes)
         {
-            suffixes.text += "○" + Affix.BuildAffixString(a.Base, 5, a, a.GetAffixValues(), a.GetEffectValues());
+            suffixes.text += "○" + Affix.BuildAffixString(a.Base, Helpers.AFFIX_STRING_SPACING, a, a.GetAffixValues(), a.GetEffectValues(), showAffixDetails, showAffixDetails && currentItem.Rarity != RarityType.UNIQUE);
         }
 
         itemValue.text = currentItem.GetItemValue() + " Fragments";
@@ -117,6 +142,14 @@ public class ItemCraftingPanel : MonoBehaviour
 
     public void UpdateButtons()
     {
+        if (showAffixDetails)
+        {
+            showAffixDetailsButtonText.text = "Hide Affix Details";
+        } else
+        {
+            showAffixDetailsButtonText.text = "Show Affix Details";
+        }
+
         foreach (UIKeyButton button in craftingButtons)
         {
             button.GetComponent<CraftingButton>().UpdateButton(currentItem);
@@ -202,8 +235,8 @@ public class ItemCraftingPanel : MonoBehaviour
         popUpWindow.OpenTextWindow();
         popUpWindow.SetButtonValues("Close", delegate { UIManager.Instance.CloseCurrentWindow(); });
         popUpWindow.textField.text = "";
-        popUpWindow.textField.fontSize = 16;
-        popUpWindow.textField.lineSpacing = 16;
+        popUpWindow.textField.fontSize = 18;
+        popUpWindow.textField.paragraphSpacing = 8;
 
         WeightList<AffixBase> possibleAffixes;
         Dictionary<GroupType, float> weightModifiers = null;
@@ -217,7 +250,8 @@ public class ItemCraftingPanel : MonoBehaviour
                 foreach (var affixBaseWeight in possibleAffixes)
                 {
                     float affixPercent = (float)affixBaseWeight.weight / possibleAffixes.Sum * 100f;
-                    popUpWindow.textField.text += affixPercent.ToString("F1") + "%" + Affix.BuildAffixString(affixBaseWeight.item, 15);
+                    popUpWindow.textField.text += affixPercent.ToString("F1") + "%" + Affix.BuildAffixString(affixBaseWeight.item, Helpers.AFFIX_STRING_SPACING+3);
+                    popUpWindow.textField.text += "<line-height=0.2em>\n</line-height>";
                 }
                 popUpWindow.textField.text += "\n";
             }
@@ -232,10 +266,17 @@ public class ItemCraftingPanel : MonoBehaviour
                 foreach (var affixBaseWeight in possibleAffixes)
                 {
                     float affixPercent = (float)affixBaseWeight.weight / possibleAffixes.Sum * 100f;
-                    popUpWindow.textField.text += affixPercent.ToString("F1") + "%" + Affix.BuildAffixString(affixBaseWeight.item, 15);
+                    popUpWindow.textField.text += affixPercent.ToString("F1") + "%" + Affix.BuildAffixString(affixBaseWeight.item, Helpers.AFFIX_STRING_SPACING+3);
+                    popUpWindow.textField.text += "<line-height=0.1em>\n</line-height>";
                 }
             }
         }
+    }
+
+    public void ShowAffixDetailsToggle()
+    {
+        showAffixDetails = !showAffixDetails;
+        UpdatePanels();
     }
 
     public void RerollAffixOnClick()
@@ -310,7 +351,7 @@ public class ItemCraftingPanel : MonoBehaviour
                 continue;
             Button button = Instantiate(UIManager.Instance.buttonPrefab);
             button.GetComponentInChildren<TextMeshProUGUI>().fontSize = 16;
-            button.GetComponentInChildren<TextMeshProUGUI>().text = Affix.BuildAffixString(affix.Base, 5, null, affix.GetAffixValues(), affix.GetEffectValues());
+            button.GetComponentInChildren<TextMeshProUGUI>().text = Affix.BuildAffixString(affix.Base, 0, null, affix.GetAffixValues(), affix.GetEffectValues());
             button.onClick.AddListener(delegate { LockAffixCallback(affix); });
             popUpWindow.AddObjectToViewport(button.gameObject);
         }
@@ -319,6 +360,7 @@ public class ItemCraftingPanel : MonoBehaviour
     public void LockAffixCallback(Affix affix)
     {
         UIManager.Instance.CloseCurrentWindow();
+        currentItem.RemoveAllAffixLocks();
         affix.SetAffixLock(true);
         GameManager.Instance.PlayerStats.ModifyItemFragments(-AffixedItem.GetLockCost(currentItem));
         UpdatePanels();

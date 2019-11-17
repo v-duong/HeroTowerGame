@@ -52,6 +52,9 @@ public abstract class Equipment : AffixedItem
 
     public static Equipment CreateEquipmentFromBase(EquipmentBase equipmentBase, int ilvl)
     {
+        if (equipmentBase == null)
+            return null;
+
         Equipment e;
         if (equipmentBase.equipSlot == EquipSlotType.WEAPON)
         {
@@ -98,12 +101,19 @@ public abstract class Equipment : AffixedItem
 
     public static Equipment CreateRandomUnique(int ilvl, GroupType? group = null)
     {
-        return CreateUniqueFromBase(ResourceManager.Instance.GetRandomUniqueBase(ilvl, group), ilvl);
+        UniqueBase uniqueBase = ResourceManager.Instance.GetRandomUniqueBase(ilvl, group);
+        if (uniqueBase == null)
+            return null;
+        return CreateUniqueFromBase(uniqueBase, ilvl);
     }
 
     public static Equipment CreateUniqueFromBase(UniqueBase uniqueBase, int ilvl)
     {
         Equipment e = CreateEquipmentFromBase(uniqueBase, ilvl);
+
+        if (e == null)
+            return null;
+
         e.Rarity = RarityType.UNIQUE;
         foreach (AffixBase affixBase in uniqueBase.fixedUniqueAffixes)
         {

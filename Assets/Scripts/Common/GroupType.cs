@@ -75,6 +75,7 @@
     PHYSICAL,
     ATTACK,
     MAGIC,
+    SPELL,
     CRITICAL,
     DEBUFF,
     BUFF,

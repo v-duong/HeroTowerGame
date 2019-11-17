@@ -45,6 +45,7 @@ public class ActorAbility
     public int targetLayer;
     public int targetMask;
     public int abilitySlot;
+    public HashSet<GroupType> abilityGroupTypes;
     protected float finalDamageModifier = 1.0f;
 
     private float AreaScaling;
@@ -65,6 +66,14 @@ public class ActorAbility
         abilityBonuses = new Dictionary<BonusType, StatBonus>();
 
         abilityOnHitData = new AbilityOnHitDataContainer(this);
+
+        abilityGroupTypes = new HashSet<GroupType>();
+        abilityGroupTypes.UnionWith(ability.GetGroupTypes());
+
+        if (ability.abilityType == AbilityType.ATTACK)
+            abilityGroupTypes.Add(GroupType.ATTACK);
+        else if (ability.abilityType == AbilityType.SPELL)
+            abilityGroupTypes.Add(GroupType.SPELL);
 
         foreach (ElementType element in Enum.GetValues(typeof(ElementType)))
         {
@@ -708,6 +717,7 @@ public class ActorAbility
             return;
 
         IList<GroupType> damageTags = abilityBase.GetGroupTypes();
+
         Weapon mainWeapon = null, offWeapon = null;
         float flatDamageMod = abilityBase.flatDamageMultiplier;
         DualWielding = false;

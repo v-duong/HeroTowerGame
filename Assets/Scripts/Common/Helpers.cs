@@ -5,6 +5,8 @@ using UnityEngine.Tilemaps;
 
 public static class Helpers
 {
+    public const int AFFIX_STRING_SPACING = 1;
+    public const string AFFIX_RANGE_COLOR = "#666";
     public static readonly Color UNIQUE_COLOR = new Color(1.0f, 0.5f, 0.2f);
     public static readonly Color EPIC_COLOR = new Color(0.86f, 0.35f, 0.86f);
     public static readonly Color UNCOMMON_COLOR = new Color(0.4f, 0.7f, 0.9f);
@@ -529,6 +531,9 @@ public class WeightList<T>
 
     public T ReturnWeightedRandom()
     {
+        if (Sum == 0)
+            return default;
+
         int weight = UnityEngine.Random.Range(1, Sum + 1);
         foreach (WeightListItem<T> x in list)
         {

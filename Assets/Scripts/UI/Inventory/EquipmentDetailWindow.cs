@@ -6,6 +6,7 @@ using UnityEngine.UI;
 
 public class EquipmentDetailWindow : MonoBehaviour
 {
+
     [SerializeField]
     private TextMeshProUGUI nameText;
 
@@ -72,7 +73,7 @@ public class EquipmentDetailWindow : MonoBehaviour
             affixText.text += "Innate\n";
             foreach (Affix a in equip.innate)
             {
-                affixText.text += "○" + Affix.BuildAffixString(a.Base, 5, a, a.GetAffixValues(), a.GetEffectValues());
+                affixText.text += "○" + Affix.BuildAffixString(a.Base, Helpers.AFFIX_STRING_SPACING, a, a.GetAffixValues(), a.GetEffectValues());
             }
             affixText.text += "\n";
         }
@@ -85,7 +86,7 @@ public class EquipmentDetailWindow : MonoBehaviour
                 affixText.text += "Prefix\n";
             foreach (Affix a in equip.prefixes)
             {
-                affixText.text += "○" + Affix.BuildAffixString(a.Base, 5, a, a.GetAffixValues(), a.GetEffectValues());
+                affixText.text += "○" + Affix.BuildAffixString(a.Base, Helpers.AFFIX_STRING_SPACING, a, a.GetAffixValues(), a.GetEffectValues());
             }
         }
 
@@ -96,7 +97,7 @@ public class EquipmentDetailWindow : MonoBehaviour
             affixText.text += "Suffix\n";
             foreach (Affix a in equip.suffixes)
             {
-                affixText.text += "○" + Affix.BuildAffixString(a.Base, 5, a, a.GetAffixValues(), a.GetEffectValues());
+                affixText.text += "○" + Affix.BuildAffixString(a.Base, Helpers.AFFIX_STRING_SPACING, a, a.GetAffixValues(), a.GetEffectValues());
             }
         }
 

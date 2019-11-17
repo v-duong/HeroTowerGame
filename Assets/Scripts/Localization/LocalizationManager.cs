@@ -278,30 +278,34 @@ public class LocalizationManager : MonoBehaviour
             return output;
         }
 
+        output += "<nobr>";
+
         switch (modifyType)
         {
             case ModifyType.FLAT_ADDITION:
                 if (value > 0)
-                    output += " +" + value + "\n";
+                    output += " +" + value;
                 else
-                    output += " " + value + "\n";
+                    output += " " + value;
                 break;
 
             case ModifyType.ADDITIVE:
                 if (value > 0)
-                    output += " +" + value + "%" + "\n";
+                    output += " +" + value + "%";
                 else
-                    output += " " + value + "%" + "\n";
+                    output += " " + value + "%";
                 break;
 
             case ModifyType.MULTIPLY:
-                output += " x" + (1 + value / 100d).ToString(".00##") + "\n";
+                output += " x" + (1 + value / 100d).ToString(".00##");
                 break;
 
             case ModifyType.FIXED_TO:
-                output += " is " + value + "\n";
+                output += " is " + value;
                 break;
         }
+
+        output += "</nobr>\n";
 
         return output;
     }

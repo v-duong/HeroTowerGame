@@ -15,6 +15,7 @@ public class GameManager : MonoBehaviour
     [SerializeField]
     public Projectile boxProjectilePrefab;
 
+    public float aspectRatio;
     public int selectedTeamNum;
     public bool isInBattle;
     public List<HeroData> inBattleHeroes = new List<HeroData>();
@@ -30,6 +31,7 @@ public class GameManager : MonoBehaviour
 
     private void Start()
     {
+        aspectRatio = (float)Screen.height / (float)Screen.width;
         QualitySettings.vSyncCount = 1;
         isInBattle = false;
         currentSceneName = "mainMenu";
@@ -78,15 +80,22 @@ public class GameManager : MonoBehaviour
         PlayerStats.AddEquipmentToInventory(startingBow);
         PlayerStats.AddEquipmentToInventory(startingWand);
 
-        HeroData startingSoldier = HeroData.CreateNewHero("Soldier", ArchetypeItem.CreateArchetypeItem(ResourceManager.Instance.GetArchetypeBase("Soldier"), 1));
-        HeroData startingRanger = HeroData.CreateNewHero("Ranger", ArchetypeItem.CreateArchetypeItem(ResourceManager.Instance.GetArchetypeBase("Ranger"), 1));
-        HeroData startingMage = HeroData.CreateNewHero("Mage", ArchetypeItem.CreateArchetypeItem(ResourceManager.Instance.GetArchetypeBase("Mage"), 1));
+        HeroData startingSoldier = HeroData.CreateNewHero("Soldier", ResourceManager.Instance.GetArchetypeBase("Soldier"), ResourceManager.Instance.GetArchetypeBase("Novice"));
+        HeroData startingRanger = HeroData.CreateNewHero("Ranger", ResourceManager.Instance.GetArchetypeBase("Ranger"), ResourceManager.Instance.GetArchetypeBase("Novice"));
+        HeroData startingMage = HeroData.CreateNewHero("Mage", ResourceManager.Instance.GetArchetypeBase("Mage"), ResourceManager.Instance.GetArchetypeBase("Novice"));
 
         PlayerStats.AddHeroToList(startingSoldier);
         PlayerStats.AddHeroToList(startingRanger);
         PlayerStats.AddHeroToList(startingMage);
 
-        float total1=0, total2=0, total3=0;
+        PlayerStats.SetHeroToTeamSlot(startingSoldier, 0, 0);
+        PlayerStats.SetHeroToTeamSlot(startingRanger, 0, 1);
+        PlayerStats.SetHeroToTeamSlot(startingMage, 0, 2);
+
+        PlayerStats.ModifyItemFragments(50000000);
+
+        /*
+        float total1 = 0, total2 = 0, total3 = 0;
         for (int i = 0; i < 100; i++)
         {
             Equipment e1 = Equipment.CreateRandomEquipment(100, null, RarityType.RARE);
@@ -100,6 +109,7 @@ public class GameManager : MonoBehaviour
         total2 /= 100;
         total3 /= 100;
         Debug.Log(total1.ToString("N1") + " " + total2.ToString("N1") + " " + total3.ToString("N1"));
+        */
     }
 
     public ConsumableType GetRandomConsumable()

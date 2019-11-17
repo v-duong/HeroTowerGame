@@ -60,7 +60,7 @@ public class CraftingButton : MonoBehaviour
                     cost = AffixedItem.GetToNormalCost(currentItem);
                     break;
 
-                case CraftingOptionType.LOCK_AFFIX when currentItem.GetRandomAffix() != null && currentItem.GetLockCount() < 1:
+                case CraftingOptionType.LOCK_AFFIX when currentItem.GetRandomAffix() != null:
                     cost = AffixedItem.GetLockCost(currentItem);
                     break;
 

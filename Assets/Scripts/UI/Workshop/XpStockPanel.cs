@@ -124,6 +124,16 @@ public class XpStockPanel : MonoBehaviour
 
         heroSlot.GetComponentInChildren<TextMeshProUGUI>().text = selectedHero.Name + "\nLv " + selectedHero.Level + "\n\n" + selectedHero.Experience;
 
+        for (int i = 0; i < 100 - selectedHero.Level; i++)
+        {
+            int reqExpForLevel = Helpers.GetRequiredExperience(selectedHero.Level + i);
+            if (reqExpForLevel - selectedHero.Experience > GameManager.Instance.PlayerStats.ExpStock)
+            {
+                levelSlider.maxValue = selectedHero.Level + i;
+                break;
+            }
+        }
+
         if (requiredExperience > GameManager.Instance.PlayerStats.ExpStock || selectedHero.Level == 100)
             confirmButton.interactable = false;
         else

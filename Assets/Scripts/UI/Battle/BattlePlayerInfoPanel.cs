@@ -93,7 +93,11 @@ public class BattlePlayerInfoPanel : MonoBehaviour
     public void EndBattleButton()
     {
         menuParent.SetActive(false);
-        StageManager.Instance.BattleManager.EndBattle(false);
+#if UNITY_EDITOR
+        StageManager.Instance.BattleManager.EndBattle(true);
+#else 
+         StageManager.Instance.BattleManager.EndBattle(false);
+#endif
     }
 
     public void StartBattleButton()

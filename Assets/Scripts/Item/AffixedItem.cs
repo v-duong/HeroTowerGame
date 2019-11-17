@@ -429,6 +429,9 @@ public abstract class AffixedItem : Item
 
     public static int GetLockCost(AffixedItem currentItem)
     {
+        if (currentItem.GetLockCount() >= 1)
+            return 0;
+
         switch (currentItem.Rarity)
         {
             case RarityType.UNCOMMON:

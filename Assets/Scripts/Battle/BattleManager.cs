@@ -5,8 +5,17 @@ using UnityEngine;
 
 public class BattleManager : MonoBehaviour
 {
-    private const float BASE_RARE_DROP_RATE = 0.2f;
+    private const int BASE_UNCOMMON_DROP_WEIGHT = 140;
+    private const int BASE_RARE_DROP_WEIGHT = 50;
+    private const int BASE_EPIC_DROP_WEIGHT = 6;
+    private const int BASE_UNIQUE_DROP_WEIGHT = 4;
+
+    private const int BASE_UNCOMMON_DROP_WEIGHT_STAGE_DROP = 20;
+    private const int BASE_RARE_DROP_WEIGHT_STAGE_DROP = 75;
+    private const int BASE_EPIC_DROP_WEIGHT_STAGE_DROP = 5;
+
     private const float REQUIRED_WAIT_TIME = 0.2f;
+
     public BattlePlayerInfoPanel battleInfo;
 
     private List<Spawner> spawnerList;
@@ -32,6 +41,9 @@ public class BattleManager : MonoBehaviour
     public int currentWave;
 
     private int gainedExp = 0;
+    private int gainedExpThisLoop = 0;
+    private int gainedFragments = 0;
+    private int gainedFragmentsThisLoop = 0;
     private List<Equipment> gainedEquipment = new List<Equipment>();
     private List<ArchetypeItem> gainedArchetypeItems = new List<ArchetypeItem>();
 
@@ -140,13 +152,13 @@ public class BattleManager : MonoBehaviour
 
         if (victory)
         {
-            Debug.Log("VIC");
             if (survivalLoopCount == 0)
                 GameManager.Instance.PlayerStats.AddToStageClearCount(stageInfo.idName);
 
             battleEndWindow.ShowVictoryWindow();
 
             CalculateExpGain(battleEndWindow);
+            CalculateItemFragmentDrops(battleEndWindow);
 
             //AddConsumableDrops(battleEndWindow);
             AddEquipmentDrops(battleEndWindow);
@@ -154,10 +166,12 @@ public class BattleManager : MonoBehaviour
         }
         else
         {
-            Debug.Log("FAIL");
             battleEndWindow.ShowLoseWindow();
 
+            gainedExpThisLoop = gainedExp / -2;
             gainedExp /= 2;
+            gainedFragmentsThisLoop = gainedFragments / -2;
+            gainedFragments /= 2;
 
             if (gainedArchetypeItems.Count > 0)
             {
@@ -178,36 +192,72 @@ public class BattleManager : MonoBehaviour
             }
         }
 
-        battleEndWindow.AddToBodyText("Experience: " + gainedExp + "\nStocked Experience: " + (gainedExp * 0.25f) + "\n");
+        battleEndWindow.SetExpGainValues(gainedExp, gainedExpThisLoop);
+        battleEndWindow.SetFragGainValues(gainedFragments, gainedFragmentsThisLoop);
+        battleEndWindow.UpdateExpString();
+        battleEndWindow.UpdateFragString();
 
         if (gainedArchetypeItems.Count > 0)
         {
-            string gainedArchetypesString = "Archetypes: ";
+            string gainedArchetypesString = "Archetypes:\n";
+            Dictionary<string, int> archetypeCount = new Dictionary<string, int>();
             foreach (ArchetypeItem archetypeItem in gainedArchetypeItems)
             {
-                gainedArchetypesString += archetypeItem.Name + ", ";
+                if (!archetypeCount.ContainsKey(archetypeItem.Name))
+                    archetypeCount.Add(archetypeItem.Name, 0);
+                archetypeCount[archetypeItem.Name]++;
             }
-            gainedArchetypesString = gainedArchetypesString.Trim(',', ' ') + "\n";
+
+            foreach (KeyValuePair<string, int> archetypeEntry in archetypeCount)
+            {
+                gainedArchetypesString += "<indent=10%>" + archetypeEntry.Key + " x" + archetypeEntry.Value + "</indent>\n";
+            }
+
+            gainedArchetypesString += '\n';
+
             battleEndWindow.AddToBodyText(gainedArchetypesString);
+        }
+
+        if (gainedEquipment.Count > 0)
+        {
+            string gainEquipString = "Equipment:\n";
+            Dictionary<string, int> equipmentCount = new Dictionary<string, int>();
+            foreach (Equipment equipment in gainedEquipment)
+            {
+                if (!equipmentCount.ContainsKey(equipment.Base.idName))
+                    equipmentCount.Add(equipment.Base.idName, 0);
+                equipmentCount[equipment.Base.idName]++;
+            }
+
+            foreach (KeyValuePair<string, int> equipEntry in equipmentCount)
+            {
+                gainEquipString += "<indent=10%>" + LocalizationManager.Instance.GetLocalizationText_Equipment(equipEntry.Key) + " x" + equipEntry.Value + "</indent>\n";
+            }
+
+            battleEndWindow.AddToBodyText(gainEquipString);
         }
     }
 
-    public void AllocateRewards(bool isVictory)
+    public void AllocateRewards()
     {
         foreach (HeroData hero in GameManager.Instance.inBattleHeroes)
         {
             hero.AddExperience(gainedExp);
         }
-        GameManager.Instance.PlayerStats.ModifyExpStock((int)(gainedExp * 0.25f));
+
+        PlayerStats playerStats = GameManager.Instance.PlayerStats;
+
+        playerStats.ModifyExpStock((int)(gainedExp * PlayerStats.EXP_STOCK_RATE));
+        playerStats.ModifyItemFragments(gainedFragments);
 
         foreach (Equipment equip in gainedEquipment)
         {
-            GameManager.Instance.PlayerStats.AddEquipmentToInventory(equip);
+            playerStats.AddEquipmentToInventory(equip);
         }
 
         foreach (ArchetypeItem archetypeItem in gainedArchetypeItems)
         {
-            GameManager.Instance.PlayerStats.AddArchetypeToInventory(archetypeItem);
+            playerStats.AddArchetypeToInventory(archetypeItem);
         }
     }
 
@@ -216,7 +266,7 @@ public class BattleManager : MonoBehaviour
         //Get Archetype
         if (stageInfo.archetypeDropList.Count != 0)
         {
-            int archetypeDrops = 1 + survivalLoopCount / 2;
+            int archetypeDrops = 1 + survivalLoopCount / 3;
             for (int i = 0; i < archetypeDrops; i++)
             {
                 WeightList<string> weightList = Helpers.CreateWeightListFromWeightBases(stageInfo.archetypeDropList);
@@ -231,15 +281,34 @@ public class BattleManager : MonoBehaviour
     private void AddEquipmentDrops(BattleEndWindow battleEndWindow)
     {
         //Get Equipment
-        int additionalDrops = (int)(survivalLoopCount * 0.25f);
+        int additionalDrops = (int)(survivalLoopCount / 4);
+        float rarityBoost = 1 + (0.25f * survivalLoopCount);
+        float stageEpicBoost = 1 + (0.25f * survivalLoopCount * 4);
+        float affixLevelSkew = 1.1f + (survivalLoopCount * 0.15f);
         int equipmentDrops = Random.Range(stageInfo.equipmentDropCountMin + additionalDrops, stageInfo.equipmentDropCountMax + 1 + additionalDrops);
+
+        WeightList<RarityType> nonStageDropRarity = new WeightList<RarityType>();
+        nonStageDropRarity.Add(RarityType.UNCOMMON, (int)(BASE_UNCOMMON_DROP_WEIGHT / rarityBoost));
+        nonStageDropRarity.Add(RarityType.RARE, (int)(BASE_RARE_DROP_WEIGHT * rarityBoost));
+        nonStageDropRarity.Add(RarityType.EPIC, (int)(BASE_EPIC_DROP_WEIGHT * rarityBoost));
+        nonStageDropRarity.Add(RarityType.UNIQUE, (int)(BASE_UNIQUE_DROP_WEIGHT * rarityBoost));
+
+        WeightList<RarityType> stageDropRarity = new WeightList<RarityType>();
+        stageDropRarity.Add(RarityType.UNCOMMON, (int)(BASE_UNCOMMON_DROP_WEIGHT_STAGE_DROP / rarityBoost));
+        stageDropRarity.Add(RarityType.RARE, (int)(BASE_RARE_DROP_WEIGHT_STAGE_DROP * rarityBoost));
+        stageDropRarity.Add(RarityType.EPIC, (int)(BASE_EPIC_DROP_WEIGHT_STAGE_DROP * stageEpicBoost));
+
         if (stageInfo.equipmentDropList.Count == 0)
         {
+            int boostedRarityDrops = System.Math.Max(equipmentDrops / 2, 1);
             for (int i = 0; i < equipmentDrops; i++)
             {
-                var equip = Equipment.CreateRandomEquipment(stageLevel + survivalLoopCount);
-                RollEquipmentRarity(equip);
-                gainedEquipment.Add(equip);
+                RarityType rarity;
+                if (i < boostedRarityDrops)
+                    rarity = stageDropRarity.ReturnWeightedRandom();
+                else
+                    rarity = nonStageDropRarity.ReturnWeightedRandom();
+                AddNonStagePoolDrop(affixLevelSkew, rarity);
             }
         }
         else
@@ -249,35 +318,42 @@ public class BattleManager : MonoBehaviour
             for (int i = 0; i < dropsFromStagePool; i++)
             {
                 string baseId = weightList.ReturnWeightedRandom();
-                EquipmentBase equipmentBase = ResourceManager.Instance.GetEquipmentBase(baseId);
-                var equip = Equipment.CreateEquipmentFromBase(equipmentBase, stageLevel + survivalLoopCount);
-                RollEquipmentRarity(equip);
+                var equip = Equipment.CreateEquipmentFromBase(ResourceManager.Instance.GetEquipmentBase(baseId), stageLevel + survivalLoopCount);
+                RollEquipmentRarity(equip, stageDropRarity.ReturnWeightedRandom(), affixLevelSkew);
                 gainedEquipment.Add(equip);
             }
 
             for (int i = 0; i < equipmentDrops - dropsFromStagePool; i++)
             {
-                var equip = Equipment.CreateRandomEquipment(stageLevel + survivalLoopCount);
-                RollEquipmentRarity(equip);
-                gainedEquipment.Add(equip);
+                RarityType rarity = nonStageDropRarity.ReturnWeightedRandom();
+                AddNonStagePoolDrop(affixLevelSkew, rarity);
             }
         }
     }
 
-    private void RollEquipmentRarity(Equipment equip)
+    private void AddNonStagePoolDrop(float affixLevelSkew, RarityType rarity)
     {
-        float rareChance = BASE_RARE_DROP_RATE * (survivalLoopCount + 1);
-        float affixLevelSkew = 1.1f + (survivalLoopCount * 0.1f);
-        if (rareChance > 1f)
+        Equipment equip;
+        if (rarity != RarityType.UNIQUE)
         {
-            float epicChance = (rareChance - 1f) / 4f;
-            equip.SetRarity(Random.Range(0f, 1f) < epicChance ? RarityType.EPIC : RarityType.RARE);
+            equip = Equipment.CreateRandomEquipment(stageLevel + survivalLoopCount);
+            RollEquipmentRarity(equip, rarity, affixLevelSkew);
         }
         else
         {
-            equip.SetRarity(Random.Range(0f, 1f) < rareChance ? RarityType.RARE : RarityType.UNCOMMON);
+            equip = Equipment.CreateRandomUnique(stageLevel + survivalLoopCount);
+            if (equip == null)
+            {
+                equip = Equipment.CreateRandomEquipment(stageLevel + survivalLoopCount);
+                RollEquipmentRarity(equip, RarityType.EPIC, affixLevelSkew);
+            }
         }
+        gainedEquipment.Add(equip);
+    }
 
+    private void RollEquipmentRarity(Equipment equip, RarityType rarity, float affixLevelSkew)
+    {
+        equip.SetRarity(rarity);
         equip.RerollAffixesAtRarity(null, affixLevelSkew, new HashSet<GroupType>() { GroupType.DROP_ONLY });
     }
 
@@ -301,11 +377,20 @@ public class BattleManager : MonoBehaviour
         }
     }
 
+    private void CalculateItemFragmentDrops(BattleEndWindow battleEndWindow)
+    {
+        double multiplier = System.Math.Pow(1.18f, survivalLoopCount);
+        int minDrop = (int)(stageInfo.consumableDropCountMin * multiplier);
+        int maxDrop = (int)(stageInfo.consumableDropCountMax * multiplier);
+        gainedFragmentsThisLoop = Random.Range(minDrop, maxDrop + 1);
+        gainedFragments += gainedFragmentsThisLoop;
+    }
+
     private void CalculateExpGain(BattleEndWindow battleEndWindow)
     {
-        int experience = (int)(stageInfo.baseExperience * (stageInfo.expMultiplier + (0.15f * survivalLoopCount)));
-
-        gainedExp += experience;
+        double multiplier = System.Math.Pow(1.15f, survivalLoopCount) - 1;
+        gainedExpThisLoop = (int)(stageInfo.baseExperience * (stageInfo.expMultiplier + multiplier));
+        gainedExp += gainedExpThisLoop;
     }
 
     public void SpawnWave(int wave)

@@ -18,7 +18,10 @@ public class SaveData
     private readonly List<HeroSaveData> heroList = new List<HeroSaveData>();
     private readonly List<ArchetypeItemSaveData> archetypeItemList = new List<ArchetypeItemSaveData>();
     private readonly Guid[][] heroTeamList = new Guid[PlayerStats.HERO_TEAM_MAX_NUM][];
+    private Dictionary<string, int> stageClearInfo = new Dictionary<string, int>();
     public int expStock;
+    public int itemFragments;
+    public int archetypeFragments;
 
     public void SaveAll()
     {
@@ -52,6 +55,10 @@ public class SaveData
         }
 
         expStock = ps.ExpStock;
+        itemFragments = ps.ItemFragments;
+        archetypeFragments = ps.ArchetypeFragments;
+
+        stageClearInfo = ps.stageClearInfo;
 
         Array.Clear(heroTeamList, 0, PlayerStats.HERO_TEAM_MAX_NUM);
         for (int i = 0; i < PlayerStats.HERO_TEAM_MAX_NUM; i++)
@@ -74,6 +81,9 @@ public class SaveData
         foreach (ConsumablesContainer c in consumableList)
             ps.consumables[c.consumable] = c.value;
         ps.SetExpStock(expStock);
+        ps.SetArchetypeFragments(archetypeFragments);
+        ps.SetItemFragments(itemFragments);
+        ps.stageClearInfo = stageClearInfo;
 
         if (heroTeamList != null)
 
