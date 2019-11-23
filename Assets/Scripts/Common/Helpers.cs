@@ -23,70 +23,6 @@ public static class Helpers
 
     private static readonly Dictionary<ElementType, HashSet<BonusType>> conversionTypes = new Dictionary<ElementType, HashSet<BonusType>>();
 
-    [Obsolete]
-    public static void GetDamageTypes(ElementType element, AbilityType abilityType, AbilityShotType shotType, ICollection<GroupType> tags, HashSet<BonusType> min, HashSet<BonusType> max, HashSet<BonusType> multi)
-    {
-        min.Add((BonusType)Enum.Parse(typeof(BonusType), "GLOBAL_" + element.ToString() + "_DAMAGE_MIN"));
-        max.Add((BonusType)Enum.Parse(typeof(BonusType), "GLOBAL_" + element.ToString() + "_DAMAGE_MAX"));
-        multi.Add((BonusType)Enum.Parse(typeof(BonusType), "GLOBAL_" + element.ToString() + "_DAMAGE"));
-
-        if (abilityType == AbilityType.ATTACK || abilityType == AbilityType.SPELL)
-        {
-            min.Add((BonusType)Enum.Parse(typeof(BonusType), abilityType.ToString() + "_" + element.ToString() + "_DAMAGE_MIN"));
-            max.Add((BonusType)Enum.Parse(typeof(BonusType), abilityType.ToString() + "_" + element.ToString() + "_DAMAGE_MAX"));
-            multi.Add((BonusType)Enum.Parse(typeof(BonusType), abilityType.ToString() + "_" + element.ToString() + "_DAMAGE"));
-            switch (element)
-            {
-                case ElementType.FIRE:
-                case ElementType.COLD:
-                case ElementType.LIGHTNING:
-                case ElementType.EARTH:
-                    multi.Add((BonusType)Enum.Parse(typeof(BonusType), abilityType.ToString() + "_ELEMENTAL_DAMAGE"));
-                    multi.Add(BonusType.GLOBAL_ELEMENTAL_DAMAGE);
-                    break;
-
-                case ElementType.DIVINE:
-                case ElementType.VOID:
-                    multi.Add((BonusType)Enum.Parse(typeof(BonusType), abilityType.ToString() + "_PRIMORDIAL_DAMAGE"));
-                    multi.Add(BonusType.GLOBAL_PRIMORDIAL_DAMAGE);
-                    break;
-            }
-        }
-
-        multi.Add(BonusType.GLOBAL_DAMAGE);
-
-        if (abilityType == AbilityType.ATTACK)
-        {
-            multi.Add(BonusType.ATTACK_DAMAGE);
-        }
-        else if (abilityType == AbilityType.SPELL)
-        {
-            multi.Add(BonusType.SPELL_DAMAGE);
-        }
-
-        if (shotType == AbilityShotType.PROJECTILE)
-        {
-            multi.Add(BonusType.PROJECTILE_DAMAGE);
-        }
-        else if (shotType == AbilityShotType.HITSCAN_SINGLE && tags.Contains(GroupType.RANGED_ATTACK))
-        {
-            multi.Add(BonusType.PROJECTILE_DAMAGE);
-        }
-        else
-        {
-            multi.Add(BonusType.AREA_DAMAGE);
-        }
-
-        if (tags.Contains(GroupType.MELEE_ATTACK))
-        {
-            multi.Add(BonusType.MELEE_ATTACK_DAMAGE);
-        }
-        else if (tags.Contains(GroupType.RANGED_ATTACK))
-        {
-            multi.Add(BonusType.RANGED_ATTACK_DAMAGE);
-        }
-    }
-
     public static void GetGlobalAndFlatDamageTypes(ElementType element, AbilityType abilityType, AbilityShotType shotType, ICollection<GroupType> tags, HashSet<BonusType> min, HashSet<BonusType> max, HashSet<BonusType> multi)
     {
         if (abilityType == AbilityType.ATTACK || abilityType == AbilityType.SPELL)
@@ -250,6 +186,11 @@ public static class Helpers
         else if (tags.Contains(GroupType.RANGED_ATTACK))
         {
             multi.Add(BonusType.RANGED_ATTACK_DAMAGE);
+        }
+
+        if (tags.Contains(GroupType.RETALIATION))
+        {
+            multi.Add(BonusType.RETALIATION_DAMAGE);
         }
     }
 

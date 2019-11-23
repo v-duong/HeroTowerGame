@@ -246,20 +246,59 @@ public class LocalizationManager : MonoBehaviour
         return b.ToLower();
     }
 
-    public string GetLocalizationText_TriggeredEffect(TriggeredEffectBonusProperty triggeredEffect, float value)
+    public string GetLocalizationText_TriggeredEffect(TriggeredEffectBonusProperty triggeredEffect, float value, float? maxValue = null)
     {
         commonLocalizationData.TryGetValue("triggerType." + triggeredEffect.triggerType.ToString(), out string s);
-        string restrictionString = "";
-        if (triggeredEffect.restriction != GroupType.NO_GROUP)
-            restrictionString = GetLocalizationText_GroupTypeRestriction(triggeredEffect.restriction.ToString());
-        s = string.Format(s, restrictionString);
-        string bonusString = GetLocalizationText_BonusType(triggeredEffect.statBonusType, triggeredEffect.statModifyType, value, GroupType.NO_GROUP).TrimEnd('\n');
+        string valueString, effectString, bonusString;
+
+        if (maxValue != null)
+        {
+            valueString = "(" + value.ToString("F0") + "-" + ((float)maxValue).ToString("F0") + ")";
+            bonusString = GetLocalizationText_BonusType(triggeredEffect.statBonusType, triggeredEffect.statModifyType, value, (float)maxValue, GroupType.NO_GROUP).TrimEnd('\n');
+        }
+        else
+        {
+            valueString = value.ToString("F0");
+            bonusString = GetLocalizationText_BonusType(triggeredEffect.statBonusType, triggeredEffect.statModifyType, value, GroupType.NO_GROUP).TrimEnd('\n');
+        }
+
         switch (triggeredEffect.triggerType)
         {
             case TriggerType.WHEN_HITTING:
-                s = bonusString + " " + s;
+                effectString = bonusString;
+                break;
+
+            default:
+                effectString = GetLocalizationText("effectType.bonusProp." + triggeredEffect.effectType);
+                effectString = effectString.Replace("{TARGET}", GetLocalizationText("targetType." + triggeredEffect.effectTargetType.ToString()));
+                effectString = effectString.Replace("{VALUE}", valueString);
+
+                if (triggeredEffect.effectType != EffectType.BUFF && triggeredEffect.effectType != EffectType.DEBUFF)
+                {
+                    effectString = effectString.Replace("{ELEMENT}", GetLocalizationText_Element(triggeredEffect.effectElement));
+                }
+                else
+                {
+                    effectString = effectString.Replace("{BONUS}", bonusString);
+                }
+
+                if (triggeredEffect.effectDuration > 0)
+                {
+                    effectString += " for " + triggeredEffect.effectDuration.ToString("N#.#") + "s";
+                }
                 break;
         }
+
+        string restrictionString = "";
+        if (triggeredEffect.restriction != GroupType.NO_GROUP)
+            restrictionString = GetLocalizationText_GroupTypeRestriction(triggeredEffect.restriction.ToString());
+
+        if (triggeredEffect.triggerChance < 1)
+        {
+            s = triggeredEffect.triggerChance.ToString("P0") + " to " + s;
+        }
+
+        s = string.Format(s, restrictionString, effectString) + '\n';
 
         return s;
     }

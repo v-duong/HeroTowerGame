@@ -3,9 +3,18 @@ using UnityEngine;
 
 public class ParticleManager : MonoBehaviour
 {
+    public ParticleSystem hitEffectPhysicalPrefab;
+    public ParticleSystem hitEffectFirePrefab;
+    public ParticleSystem hitEffectColdPrefab;
+    public ParticleSystem hitEffectLightningPrefab;
+    public ParticleSystem hitEffectEarthPrefab;
+    public ParticleSystem hitEffectDivinePrefab;
+    public ParticleSystem hitEffectVoidPrefab;
+
     public static ParticleManager Instance { get; private set; }
     private Dictionary<string, AbilityParticleSystem> particleSystems = new Dictionary<string, AbilityParticleSystem>();
     private Dictionary<string, bool> hasParticleEffect = new Dictionary<string, bool>();
+    private Dictionary<ElementType, ParticleSystem> hitEffectSystems = new Dictionary<ElementType, ParticleSystem>();
 
     private void Awake()
     {
@@ -70,6 +79,27 @@ public class ParticleManager : MonoBehaviour
             return returnVal;
         else
             return GetParticleSystem(fallbackId);
+    }
+
+    public void InitializeHitEffectInstances()
+    {
+        hitEffectSystems.Clear();
+        hitEffectSystems.Add(ElementType.PHYSICAL, Instantiate(hitEffectPhysicalPrefab));
+        hitEffectSystems.Add(ElementType.FIRE, Instantiate(hitEffectFirePrefab));
+        hitEffectSystems.Add(ElementType.COLD, Instantiate(hitEffectColdPrefab));
+        hitEffectSystems.Add(ElementType.LIGHTNING, Instantiate(hitEffectLightningPrefab));
+        hitEffectSystems.Add(ElementType.EARTH, Instantiate(hitEffectEarthPrefab));
+        hitEffectSystems.Add(ElementType.DIVINE, Instantiate(hitEffectDivinePrefab));
+        hitEffectSystems.Add(ElementType.VOID, Instantiate(hitEffectVoidPrefab));
+    }
+
+    public void EmitOnHitEffect(ElementType element, Vector3 position)
+    {
+        ParticleSystem.EmitParams emitParams = new ParticleSystem.EmitParams
+        {
+            position = position
+        };
+        hitEffectSystems[element]?.Emit(emitParams, 1);
     }
 
     public void ClearParticleSystems()

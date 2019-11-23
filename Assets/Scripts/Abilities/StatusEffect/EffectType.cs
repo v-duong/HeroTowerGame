@@ -30,6 +30,7 @@
     SPREAD_BURN,
     SPREAD_RADIATION,
     CLEAR_STATUSES,
+    RETALIATION_DAMAGE,
 }
 [System.Flags]
 public enum EffectApplicationFlags

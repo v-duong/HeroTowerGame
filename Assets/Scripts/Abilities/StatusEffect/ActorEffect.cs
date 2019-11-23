@@ -148,6 +148,9 @@ public abstract class ActorEffect
             case EffectType.REPEAT_OFFENDER_BUFF:
                 target.AddStatusEffect(new RepeatOffenderBuffEffect(target, source, effectPower, duration));
                 break;
+            case EffectType.RETALIATION_DAMAGE:
+                //source.StartCoroutine(InstantEffects.ApplyRetaliationDamageEffect(target, source, mask, effectPower, element));
+                break;
             default:
                 return;
         }

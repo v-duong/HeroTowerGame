@@ -143,13 +143,28 @@ public class ArchetypeUITreeWindow : MonoBehaviour
             return nodeDict[node];
         }
 
+        int currentNodeLevel = archetype.GetNodeLevel(node);
+
         foreach (int x in node.children)
         {
             ArchetypeSkillNode n = archetype.Base.GetNode(x);
             ArchetypeUITreeNode child = CreateTreeNode(n, traversedNodes, archetype, parent, nodeDict);
-            currentNode.connectedNodes.Add(child);
-            child.connectedNodes.Add(currentNode);
-            parent.AddPoints((currentNode.transform.localPosition + LineOffsetY, child.transform.localPosition + LineOffsetY));
+
+            Color color = Color.black;
+            int childNodeLevel = archetype.GetNodeLevel(n);
+            if (currentNodeLevel > 0 && childNodeLevel > 0)
+            {
+                color = ArchetypeUITreeNode.CONNECTED_COLOR;
+            }
+            else if (currentNodeLevel > 0 || childNodeLevel > 0)
+            {
+                color = ArchetypeUITreeNode.AVAILABLE_COLOR;
+            }
+
+            UILineRenderer.LinePoint point = new UILineRenderer.LinePoint(currentNode.transform.localPosition + LineOffsetY, child.transform.localPosition + LineOffsetY, color);
+            currentNode.connectedNodes.Add(child, point);
+            child.connectedNodes.Add(currentNode, point);
+            parent.AddPoints(point);
         }
 
         return currentNode;
@@ -185,9 +200,10 @@ public class ArchetypeUITreeWindow : MonoBehaviour
         {
             ArchetypeSkillNode n = archetypeBase.GetNode(x);
             ArchetypeUITreeNode child = CreateTreeNode(n, traversedNodes, archetypeBase, parent, nodeDict);
-            currentNode.connectedNodes.Add(child);
-            child.connectedNodes.Add(currentNode);
-            parent.AddPoints((currentNode.transform.localPosition + LineOffsetY, child.transform.localPosition + LineOffsetY));
+            currentNode.connectedNodes.Add(child, null);
+            child.connectedNodes.Add(currentNode, null);
+            UILineRenderer.LinePoint point = new UILineRenderer.LinePoint(currentNode.transform.localPosition + LineOffsetY, child.transform.localPosition + LineOffsetY, Color.black);
+            parent.AddPoints(point);
         }
 
         return currentNode;

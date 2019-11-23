@@ -5,6 +5,13 @@ using UnityEngine;
 public static class InstantEffects
 {
     private static readonly List<GroupType> ExplosionTags = new List<GroupType>() { GroupType.AREA };
+    private static readonly List<GroupType> RetaliationDamageTags = new List<GroupType>() { GroupType.RETALIATION };
+
+    public static IEnumerator ApplyRetaliationDamageEffect(Actor target, Actor source, Dictionary<ElementType, MinMaxRange> damageDict)
+    {
+        yield return null;
+        target.ApplyDamage(source.ScaleSecondaryDamageValue(target, damageDict, RetaliationDamageTags), source.Data.OnHitData, true, false);
+    }
 
     public static IEnumerator ApplyExplosionEffect(Actor target, Actor source, EffectType explosionType, LayerMask mask, float effectPower, ElementType element)
     {

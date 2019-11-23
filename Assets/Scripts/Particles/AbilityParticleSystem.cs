@@ -46,6 +46,7 @@ public class AbilityParticleSystem : MonoBehaviour
             ScaleShapeSize(scaling);
         }
 
+
         ps.Emit(emitParams, emitCount);
     }
 
@@ -79,6 +80,8 @@ public class AbilityParticleSystem : MonoBehaviour
         
         psShape.position = Quaternion.Euler(rotationVector) * psShape.position;
         psShape.rotation = rotationVector;
+
+
 
         ps.Emit(emitParams, emitCount);
     }

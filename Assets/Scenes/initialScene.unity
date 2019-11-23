@@ -195,6 +195,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: f5ebf3db6a7c075479f32184c5f12d4b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  hitEffectPhysicalPrefab: {fileID: 3367128262587556306, guid: 3dbf1f79ca790ef40b450e4ff61e632e,
+    type: 3}
+  hitEffectFirePrefab: {fileID: 5854201910856549074, guid: 499c94e3d983f6a40950942ff7ebf353,
+    type: 3}
+  hitEffectColdPrefab: {fileID: 933972898877198006, guid: ae033f9a288912941b47eff7c578124a,
+    type: 3}
+  hitEffectLightningPrefab: {fileID: 9184549617576045000, guid: 2467546fc8a8bd441828a8a6d31452fd,
+    type: 3}
+  hitEffectEarthPrefab: {fileID: 2636639955477505148, guid: 3506054903699c7488d803c12bc46af0,
+    type: 3}
+  hitEffectDivinePrefab: {fileID: 4104226533289819255, guid: f48e9df2b9c0b01478a581545740dbe6,
+    type: 3}
+  hitEffectVoidPrefab: {fileID: 796646739786345627, guid: f01285e936101434a8fab319ba1d13f5,
+    type: 3}
 --- !u!4 &752846625
 Transform:
   m_ObjectHideFlags: 0
@@ -242,6 +256,7 @@ MonoBehaviour:
     type: 3}
   boxProjectilePrefab: {fileID: 596675810340079556, guid: ea27321de77f95e46a5132d00bb4b73b,
     type: 3}
+  aspectRatio: 0
   selectedTeamNum: 0
   isInBattle: 0
 --- !u!4 &1063661410

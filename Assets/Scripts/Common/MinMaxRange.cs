@@ -10,6 +10,8 @@ public class MinMaxRange
 
     public MinMaxRange()
     {
+        this.min = 0;
+        this.max = 0;
     }
     public MinMaxRange(int min, int max)
     {
@@ -21,6 +23,12 @@ public class MinMaxRange
     {
         this.min = min;
         this.max = max;
+    }
+
+    public void AddToBoth(int value)
+    {
+        this.min += value;
+        this.max += value;
     }
 
     public void Clear()

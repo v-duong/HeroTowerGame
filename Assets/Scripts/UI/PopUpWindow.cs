@@ -8,11 +8,12 @@ public class PopUpWindow : MonoBehaviour
     public GameObject textScrollView;
     public GameObject verticalScrollView;
     public GameObject gridScrollView;
-    public GameObject textInputParent;
     public GameObject popUpWindowMain;
     public TextMeshProUGUI textField;
     public Button confirmButton;
+    public Button cancelButton;
     public TextMeshProUGUI confirmButtonText;
+    public TextMeshProUGUI cancelButtonText;
     public GameObject verticalGroupParent;
     public GameObject gridGroupParent;
     public TMP_InputField textInput;
@@ -28,14 +29,33 @@ public class PopUpWindow : MonoBehaviour
         temporaryElements.Clear();
     }
 
-    public void SetButtonValues(string buttonString, UnityEngine.Events.UnityAction action)
+    public void SetButtonValues(string confirmButtonString, UnityEngine.Events.UnityAction confirmAction, string cancelButtonString, UnityEngine.Events.UnityAction cancelAction)
     {
-        confirmButtonText.text = buttonString;
-        confirmButton.onClick.RemoveAllListeners();
-        confirmButton.onClick.AddListener(action);
+        if (string.IsNullOrEmpty(confirmButtonString))
+        {
+            confirmButton.gameObject.SetActive(false);
+        }
+        else
+        {
+            confirmButton.gameObject.SetActive(true);
+            confirmButtonText.text = confirmButtonString;
+            confirmButton.onClick.RemoveAllListeners();
+            confirmButton.onClick.AddListener(confirmAction);
+        }
+
+        if (string.IsNullOrEmpty(cancelButtonString))
+            cancelButton.gameObject.SetActive(false);
+        else
+        {
+            cancelButton.gameObject.SetActive(true);
+            cancelButtonText.text = cancelButtonString;
+            cancelButton.onClick.RemoveAllListeners();
+            cancelButton.onClick.AddListener(cancelAction);
+        }
     }
 
-    public void OpenTextWindow(int width = 400, int height = 700)
+
+    public void OpenTextWindow(string text, int width = 400, int height = 700)
     {
         ((RectTransform)popUpWindowMain.transform).sizeDelta = new Vector2(width, height) ;
         UIManager.Instance.OpenWindow(this.gameObject, false);
@@ -46,6 +66,7 @@ public class PopUpWindow : MonoBehaviour
         isVertical = false;
         isGrid = false;
         ((RectTransform)textField.transform).anchoredPosition = Vector3.zero;
+        textField.text = text;
     }
 
     public void OpenVerticalWindow(int width = 400, int height = 700)

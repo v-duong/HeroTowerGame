@@ -39,7 +39,6 @@ public class BerserkEffect : ActorEffect
 
     public override void OnExpire()
     {
-        Debug.Log("BERSERKER EXPIRE");
     }
 
     public override void Update(float deltaTime)

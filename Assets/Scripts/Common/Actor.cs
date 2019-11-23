@@ -412,7 +412,7 @@ public abstract class Actor : MonoBehaviour
         Dictionary<ElementType, float> damageTaken = new Dictionary<ElementType, float>(damage);
 
         float damageTakenModifier = Data.DamageTakenModifier;
-        float damageReduction = 1f;
+        float blockDamageReduction = 1f;
 
         if (isHit)
         {
@@ -421,8 +421,8 @@ public abstract class Actor : MonoBehaviour
 
             if (DidTargetBlock(this))
             {
-                damageReduction *= 1f - Data.BlockProtection;
-                damageTakenModifier *= damageReduction;
+                blockDamageReduction *= 1f - Data.BlockProtection;
+                damageTakenModifier *= blockDamageReduction;
                 Data.OnHitData.ApplyTriggerEffects(TriggerType.ON_BLOCK, onHitData.SourceActor);
             }
 
@@ -432,6 +432,7 @@ public abstract class Actor : MonoBehaviour
 
         foreach (ElementType elementType in damage.Keys)
         {
+            bool isDamageTakenNonZero = false;
             if (elementType == ElementType.PHYSICAL && damage.ContainsKey(ElementType.PHYSICAL))
             {
                 float armorReductionRate = 1.0f;
@@ -444,17 +445,22 @@ public abstract class Actor : MonoBehaviour
                 //Debug.Log(Data.GetResistance(ElementType.PHYSICAL) + " " + onHitData.physicalNegation + " " + damage[ElementType.PHYSICAL]);
                 float physicalDamage = physicalReduction * damage[ElementType.PHYSICAL] * damageTakenModifier;
                 total += Math.Max(0, physicalDamage);
-                damageTaken[ElementType.PHYSICAL] = damage[ElementType.PHYSICAL] * damageReduction;
+                damageTaken[ElementType.PHYSICAL] = (damage[ElementType.PHYSICAL] * blockDamageReduction) - Data.ResolveRating;
+                isDamageTakenNonZero = physicalDamage > 0;
             }
             else
             {
                 if (damage.ContainsKey(elementType))
                 {
-                    float fireDamage = (1f - (Data.GetResistance(elementType) - onHitData.GetNegation(elementType)) / 100f) * damage[elementType] * damageTakenModifier;
-                    total += Math.Max(0, fireDamage);
-                    damageTaken[elementType] = damage[elementType] * damageReduction;
+                    float nonPhysicalDamage = (1f - (Data.GetResistance(elementType) - onHitData.GetNegation(elementType)) / 100f) * damage[elementType] * damageTakenModifier;
+                    total += Math.Max(0, nonPhysicalDamage);
+                    damageTaken[elementType] = (damage[elementType] * blockDamageReduction) - Data.ResolveRating;
+                    isDamageTakenNonZero = nonPhysicalDamage > 0;
                 }
             }
+
+            if (isHit && isDamageTakenNonZero)
+                ParticleManager.Instance.EmitOnHitEffect(elementType, transform.position);
         }
 
         float actualDamageTaken = total;
@@ -510,7 +516,7 @@ public abstract class Actor : MonoBehaviour
                     onHitData.ApplyTriggerEffects(TriggerType.ON_HIT_KILL, this);
             }
             else
-                Data.OnHitData.ApplyTriggerEffects(TriggerType.WHEN_HIT_BY, this);
+                Data.OnHitData.ApplyTriggerEffects(TriggerType.WHEN_HIT_BY, onHitData.SourceActor);
         }
 
         if (isHit)
@@ -667,6 +673,10 @@ public abstract class Actor : MonoBehaviour
 
         foreach (ElementType elementType in Enum.GetValues(typeof(ElementType)))
         {
+            if (!baseDamage.ContainsKey(elementType))
+            {
+                baseDamage[elementType] = new MinMaxRange();
+            }
             minDamage[(int)elementType] = baseDamage[elementType].min;
             maxDamage[(int)elementType] = baseDamage[elementType].max;
 

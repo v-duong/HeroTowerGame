@@ -406,6 +406,7 @@ public class HeroData : ActorData
 
     public void AddTriggeredEffect(TriggeredEffectBonusProperty triggeredEffect, TriggeredEffect effectInstance)
     {
+
         TriggeredEffects[triggeredEffect.triggerType].Add(effectInstance);
     }
 
@@ -649,10 +650,10 @@ public class HeroData : ActorData
     {
         /*
          * +1% Resolve per 5 Will
-         * +1% Debuff Damage per 10 Will
+         * +1% Debuff Damage per 8 Will
          */
         int resolveRatingMod = (int)Math.Round(Will / 5f, MidpointRounding.AwayFromZero);
-        int debuffDamageMod = (int)Math.Round(Will / 10f, MidpointRounding.AwayFromZero);
+        int debuffDamageMod = (int)Math.Round(Will / 8f, MidpointRounding.AwayFromZero);
 
         BonusType bonus1 = BonusType.GLOBAL_RESOLVE_RATING;
         BonusType bonus2 = BonusType.STATUS_EFFECT_DAMAGE;
@@ -707,12 +708,14 @@ public class HeroData : ActorData
         DodgeRating = Math.Max(GetMultiStatBonus(GroupTypes, BonusType.GLOBAL_DODGE_RATING).CalculateStat(BaseDodgeRating + DodgeFromEquip), 0);
         ResolveRating = Math.Max(GetMultiStatBonus(GroupTypes, BonusType.GLOBAL_RESOLVE_RATING).CalculateStat(BaseResolveRating + ResolveFromEquip), 0);
 
-        int statusThreshold = (int)(ResolveRating / 5f / 100f);
-        int statusResistance = (int)(ResolveRating / 25f);
+        // Every 15 points is 1% status threshold
+        int statusThreshold = (int)(ResolveRating / 15f / 100f);
+        // every 50 points is 1% status resistance
+        int statusResistance = (int)(ResolveRating / 50f);
 
+        AfflictedStatusThreshold = Math.Max(GetMultiStatBonus(GroupTypes, BonusType.AFFLICTED_STATUS_THRESHOLD).CalculateStat(1f + statusThreshold), 0.01f);
         AfflictedStatusDamageResistance = Math.Min(GetMultiStatBonus(GroupTypes, BonusType.AFFLICTED_STATUS_DAMAGE_RESISTANCE).CalculateStat(statusResistance), 90) / 100f;
         AfflictedStatusDamageResistance = 1f - AfflictedStatusDamageResistance;
-        AfflictedStatusThreshold = Math.Max(GetMultiStatBonus(GroupTypes, BonusType.AFFLICTED_STATUS_THRESHOLD).CalculateStat(1f + statusThreshold), 0.01f);
 
         if (hasShield)
         {

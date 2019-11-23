@@ -180,6 +180,7 @@ public class GameManager : MonoBehaviour
         StageManager.Instance.InitalizeStage();
         InputManager.Instance.ResetManager();
         ParticleManager.Instance.ClearParticleSystems();
+        ParticleManager.Instance.InitializeHitEffectInstances();
         isInBattle = true;
 
         UIManager.Instance.LoadingScreen.endLoadingScreen = true;

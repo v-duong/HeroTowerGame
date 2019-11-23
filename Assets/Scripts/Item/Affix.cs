@@ -77,8 +77,8 @@ public class Affix
             AffixBonusProperty mod = bonuses[i];
             if (mod.readAsFloat)
             {
-                int roll = UnityEngine.Random.Range((int)(mod.minValue * 10f), (int)(mod.maxValue * 10f + 1));
-                affixValues[i] = (float)Math.Round(roll / 10d, 1);
+                float roll = UnityEngine.Random.Range((int)Math.Round(mod.minValue * 10f, 0), (int)Math.Round(mod.maxValue * 10f, 0) + 1);
+                affixValues[i] = (float)Math.Round(roll, 1);
             }
             else
                 affixValues[i] = UnityEngine.Random.Range((int)mod.minValue, (int)mod.maxValue + 1);
@@ -185,7 +185,10 @@ public class Affix
         {
             TriggeredEffectBonusProperty triggeredEffect = Base.triggeredEffects[i];
 
-            s += LocalizationManager.Instance.GetLocalizationText_TriggeredEffect(triggeredEffect, effectValues[i]);
+            if (effectValues != null)
+                s += LocalizationManager.Instance.GetLocalizationText_TriggeredEffect(triggeredEffect, effectValues[i]);
+            else
+                s += LocalizationManager.Instance.GetLocalizationText_TriggeredEffect(triggeredEffect, triggeredEffect.effectMinValue, triggeredEffect.effectMaxValue);
 
             if (showRange && triggeredEffect.effectMinValue != triggeredEffect.effectMaxValue)
                 s = s.TrimEnd('\n') + "<nobr><color=" + Helpers.AFFIX_RANGE_COLOR + "> (" + triggeredEffect.effectMinValue + "-" + triggeredEffect.effectMaxValue + ")</color></nobr>\n";

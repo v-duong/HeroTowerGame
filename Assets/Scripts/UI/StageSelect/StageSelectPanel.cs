@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -96,7 +97,39 @@ public class StageSelectPanel : MonoBehaviour
     public void TeamConfirmOnClick()
     {
         if (isTeamSelected)
-            GameManager.Instance.MoveToBattle(selectedStage);
+        {
+            int heroesWithoutSkills = 0;
+
+            foreach (HeroData hero in GameManager.Instance.PlayerStats.heroTeams[GameManager.Instance.selectedTeamNum])
+            {
+                if (hero == null)
+                    continue;
+                for (int i = 0; i < 2; i++)
+                {
+                    if (hero.GetAbilityFromSlot(i) != null && hero.GetAbilityFromSlot(i).IsUsable)
+                    {
+                        break;
+                    }
+                    if (i == 1)
+                        heroesWithoutSkills++;
+                }
+            }
+
+            if (heroesWithoutSkills > 0)
+            {
+                PopUpWindow popUpWindow = UIManager.Instance.PopUpWindow;
+                popUpWindow.OpenTextWindow("One or more Heroes have no usable Abilities.\nContinue anyway?", 400, 200);
+                popUpWindow.textField.fontSize = 24;
+                popUpWindow.textField.paragraphSpacing = 0;
+                popUpWindow.textField.alignment = TextAlignmentOptions.Center;
+
+                popUpWindow.SetButtonValues("Confirm", delegate { UIManager.Instance.CloseCurrentWindow(); GameManager.Instance.MoveToBattle(selectedStage); }, "Cancel", delegate { UIManager.Instance.CloseCurrentWindow(); });
+            }
+            else
+            {
+                GameManager.Instance.MoveToBattle(selectedStage);
+            }
+        }
     }
 
     public int GetSelectedAct()

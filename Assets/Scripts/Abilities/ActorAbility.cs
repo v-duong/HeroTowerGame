@@ -1818,7 +1818,6 @@ public class ActorAbility
 
         emitParams.position = origin;
         float angle = Vector2.SignedAngle(Vector2.up, heading);
-        Debug.Log(angle);
         ParticleManager.Instance.EmitAbilityParticle_Rotated(abilityBase.idName, emitParams, AreaScaling, angle, AbilityOwner.transform);
 
         //Collider2D[] hits = Physics2D.OverlapAreaAll(origin + horizontal, origin - horizontal + (heading * AreaLength), targetMask);

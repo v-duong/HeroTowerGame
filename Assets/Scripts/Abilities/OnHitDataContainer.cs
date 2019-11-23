@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using UnityEngine;
 
 public class AbilityOnHitDataContainer : OnHitDataContainer
 {
@@ -77,10 +76,35 @@ public class OnHitDataContainer
 
     public virtual void ApplyTriggerEffects(TriggerType triggerType, Actor target)
     {
+        Dictionary<ElementType, MinMaxRange> retaliationToEnemy = new Dictionary<ElementType, MinMaxRange>();
+        Dictionary<ElementType, MinMaxRange> retaliationToSelf = new Dictionary<ElementType, MinMaxRange>();
         foreach (TriggeredEffect actorEffect in SourceActor.Data.TriggeredEffects[triggerType].ToArray())
         {
+            TriggeredEffectBonusProperty baseEffect = actorEffect.BaseEffect;
+            if (baseEffect.effectType == EffectType.RETALIATION_DAMAGE)
+            {
+                if (baseEffect.effectTargetType == AbilityTargetType.ENEMY)
+                {
+                    if (!retaliationToEnemy.ContainsKey(baseEffect.effectElement))
+                        retaliationToEnemy.Add(baseEffect.effectElement, new MinMaxRange());
+                    retaliationToEnemy[baseEffect.effectElement].AddToBoth((int)actorEffect.Value);
+                }
+                else if (baseEffect.effectTargetType == AbilityTargetType.SELF)
+                {
+                    if (!retaliationToSelf.ContainsKey(baseEffect.effectElement))
+                        retaliationToSelf.Add(baseEffect.effectElement, new MinMaxRange());
+                    retaliationToSelf[baseEffect.effectElement].AddToBoth((int)actorEffect.Value);
+                }
+                continue;
+            }
+
             actorEffect.OnTrigger(target, SourceActor);
         }
+        if (retaliationToEnemy.Count > 0)
+            SourceActor.StartCoroutine(InstantEffects.ApplyRetaliationDamageEffect(target, SourceActor, retaliationToEnemy));
+
+        if (retaliationToSelf.Count > 0)
+            SourceActor.StartCoroutine(InstantEffects.ApplyRetaliationDamageEffect(SourceActor, SourceActor, retaliationToSelf));
     }
 
     public bool DidEffectProc(EffectType effectType, int avoidance)

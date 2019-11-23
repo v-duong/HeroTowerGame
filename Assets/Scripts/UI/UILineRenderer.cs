@@ -45,7 +45,7 @@ public class UILineRenderer : MaskableGraphic
     public bool UseMargins;
     public Vector2 Margin;
     [SerializeField]
-    private List<(Vector2, Vector2)> _points = new List<(Vector2, Vector2)>();
+    private List<LinePoint> _points = new List<LinePoint>();
     public bool relativeSize;
     public bool localToParent;
 
@@ -99,7 +99,21 @@ public class UILineRenderer : MaskableGraphic
         }
     }
 
-    public List<(Vector2, Vector2)> Points
+    public class LinePoint
+    {
+        public Vector2 start;
+        public Vector2 end;
+        public Color color;
+
+        public LinePoint(Vector2 start, Vector2 end, Color color)
+        {
+            this.start = start;
+            this.end = end;
+            this.color = color;
+        }
+    }
+
+    public List<LinePoint> Points
     {
         get
         {
@@ -115,9 +129,20 @@ public class UILineRenderer : MaskableGraphic
         }
     }
 
-    public void AddPoints((Vector2, Vector2) item)
+    public void AddPoints(LinePoint item)
     {
         Points.Add(item);
+        SetAllDirty();
+    }
+
+    public void SetPointColor(LinePoint item, Color color)
+    {
+        Points.Find(x => x == item).color = color;
+        SetAllDirty();
+    }
+
+    public void SetDirty()
+    {
         SetAllDirty();
     }
 
@@ -154,8 +179,8 @@ public class UILineRenderer : MaskableGraphic
         {
             for (var i = 0; i < Points.Count; i++)
             {
-                var start = Points[i].Item1;
-                var end = Points[i].Item2;
+                var start = Points[i].start;
+                var end = Points[i].end;
                 if (localToParent)
                 {
                     start = new Vector3(start.x * sizeX, start.y * sizeY);
@@ -168,14 +193,14 @@ public class UILineRenderer : MaskableGraphic
                 }
                 if (LineCaps)
                 {
-                    segments.Add(CreateLineCap(start, end, SegmentType.Start));
+                    segments.Add(CreateLineCap(start, end, SegmentType.Start, Points[i].color));
                 }
 
-                segments.Add(CreateLineSegment(start, end, SegmentType.Middle));
+                segments.Add(CreateLineSegment(start, end, SegmentType.Middle, Points[i].color));
 
                 if (LineCaps)
                 {
-                    segments.Add(CreateLineCap(start, end, SegmentType.End));
+                    segments.Add(CreateLineCap(start, end, SegmentType.End, Points[i].color));
                 }
             }
         }
@@ -183,8 +208,8 @@ public class UILineRenderer : MaskableGraphic
         {
             for (var i = 0; i < Points.Count; i++)
             {
-                var start = Points[i].Item1;
-                var end = Points[i].Item2;
+                var start = Points[i].start;
+                var end = Points[i].end;
                 if (localToParent)
                 {
                     start = new Vector2(start.x * sizeX, start.y * sizeY);
@@ -198,14 +223,14 @@ public class UILineRenderer : MaskableGraphic
                 }
                 if (LineCaps && i == 1)
                 {
-                    segments.Add(CreateLineCap(start, end, SegmentType.Start));
+                    segments.Add(CreateLineCap(start, end, SegmentType.Start, Points[i].color));
                 }
 
-                segments.Add(CreateLineSegment(start, end, SegmentType.Middle));
+                segments.Add(CreateLineSegment(start, end, SegmentType.Middle, Points[i].color));
 
                 if (LineCaps && i == Points.Count - 1)
                 {
-                    segments.Add(CreateLineCap(start, end, SegmentType.End));
+                    segments.Add(CreateLineCap(start, end, SegmentType.End, Points[i].color));
                 }
             }
         }
@@ -268,24 +293,24 @@ public class UILineRenderer : MaskableGraphic
         }
     }
 
-    private UIVertex[] CreateLineCap(Vector2 start, Vector2 end, SegmentType type)
+    private UIVertex[] CreateLineCap(Vector2 start, Vector2 end, SegmentType type, Color vertColor)
     {
         if (type == SegmentType.Start)
         {
             var capStart = start - ((end - start).normalized * LineThickness / 2);
-            return CreateLineSegment(capStart, start, SegmentType.Start);
+            return CreateLineSegment(capStart, start, SegmentType.Start, vertColor);
         }
         else if (type == SegmentType.End)
         {
             var capEnd = end + ((end - start).normalized * LineThickness / 2);
-            return CreateLineSegment(end, capEnd, SegmentType.End);
+            return CreateLineSegment(end, capEnd, SegmentType.End, vertColor);
         }
 
         Debug.LogError("Bad SegmentType passed in to CreateLineCap. Must be SegmentType.Start or SegmentType.End");
         return null;
     }
 
-    private UIVertex[] CreateLineSegment(Vector2 start, Vector2 end, SegmentType type)
+    private UIVertex[] CreateLineSegment(Vector2 start, Vector2 end, SegmentType type, Color vertColor)
     {
         List<UIVertex> points = new List<UIVertex>();
 
@@ -300,16 +325,16 @@ public class UILineRenderer : MaskableGraphic
         var v2 = start + offset;
         var v3 = end + offset;
         var v4 = end - offset;
-        return SetVbo(new[] { v1, v2, v3, v4 }, uvs);
+        return SetVbo(new[] { v1, v2, v3, v4 }, uvs, vertColor);
     }
 
-    protected UIVertex[] SetVbo(Vector2[] vertices, Vector2[] uvs)
+    protected UIVertex[] SetVbo(Vector2[] vertices, Vector2[] uvs, Color vertColor)
     {
         UIVertex[] vbo = new UIVertex[4];
         for (int i = 0; i < vertices.Length; i++)
         {
             var vert = UIVertex.simpleVert;
-            vert.color = color;
+            vert.color = vertColor;
             vert.position = vertices[i];
             vert.uv0 = uvs[i];
             vbo[i] = vert;

@@ -7,6 +7,8 @@ public class CraftingButton : MonoBehaviour
     [SerializeField]
     private CraftingOptionType optionType;
 
+    private string costText;
+
     private enum CraftingOptionType
     {
         REROLL_AFFIX,
@@ -69,10 +71,12 @@ public class CraftingButton : MonoBehaviour
                     return;
             }
 
+            costText = cost.ToString("N0");
+
             if (cost != 0)
             {
                 GetComponent<Button>().interactable = cost <= itemFragments;
-                GetComponentInChildren<TextMeshProUGUI>().text += "\n" + cost.ToString("N0");
+                GetComponentInChildren<TextMeshProUGUI>().text += "\n" + costText;
             }
         }
     }
@@ -82,4 +86,47 @@ public class CraftingButton : MonoBehaviour
         GetComponent<Button>().interactable = false;
     }
 
+    public void CraftOnClick()
+    {
+        PopUpWindow popUpWindow = UIManager.Instance.PopUpWindow;
+        UnityEngine.Events.UnityAction confirmAction;
+        string text = "";
+
+        switch (optionType)
+        {
+            case CraftingOptionType.REROLL_AFFIX:
+                text = "Reroll All Affixes?";
+                confirmAction = delegate { UIManager.Instance.ItemCraftingPanel.RerollAffixOnClick(); UIManager.Instance.CloseCurrentWindow(); };
+                break;
+            case CraftingOptionType.REROLL_VALUES:
+                text = "Reroll Affix Values?";
+                confirmAction = delegate { UIManager.Instance.ItemCraftingPanel.RerollValuesOnClick(); UIManager.Instance.CloseCurrentWindow(); };
+                break;
+            case CraftingOptionType.ADD_AFFIX:
+                text = "Add a Random Affix?";
+                confirmAction = delegate { UIManager.Instance.ItemCraftingPanel.AddAffixOnClick(); UIManager.Instance.CloseCurrentWindow(); };
+                break;
+            case CraftingOptionType.REMOVE_AFFIX:
+                text = "Remove a Random Affix?";
+                confirmAction = delegate { UIManager.Instance.ItemCraftingPanel.RemoveAffixOnClick(); UIManager.Instance.CloseCurrentWindow(); };
+                break;
+            case CraftingOptionType.UPGRADE_RARITY:
+                text = "Upgrade Rarity and Add a Random Affix?";
+                confirmAction = delegate { UIManager.Instance.ItemCraftingPanel.UpgradeRarityOnClick(); UIManager.Instance.CloseCurrentWindow(); };
+                break;
+            case CraftingOptionType.TO_NORMAL:
+                text = "Clear All Affixes and Turn Item To Normal?";
+                confirmAction = delegate { UIManager.Instance.ItemCraftingPanel.ToNormalOnClick(); UIManager.Instance.CloseCurrentWindow(); };
+                break;
+            default:
+                return;
+        }
+
+        popUpWindow.OpenTextWindow(text, 400, 150);
+        popUpWindow.textField.fontSize = 27;
+        popUpWindow.textField.paragraphSpacing = 0;
+        popUpWindow.textField.alignment = TextAlignmentOptions.Center;
+
+        popUpWindow.SetButtonValues("Confirm", confirmAction, "Cancel", delegate { UIManager.Instance.CloseCurrentWindow(); });
+    }
 }

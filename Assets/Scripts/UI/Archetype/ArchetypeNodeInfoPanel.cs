@@ -152,7 +152,7 @@ public class ArchetypeNodeInfoPanel : MonoBehaviour
         uiNode.UpdateNode();
         if (archetypeData.IsNodeMaxLevel(node))
         {
-            foreach (ArchetypeUITreeNode uiTreeNode in uiNode.connectedNodes)
+            foreach (ArchetypeUITreeNode uiTreeNode in uiNode.connectedNodes.Keys)
             {
                 if (archetypeData.GetNodeLevel(uiTreeNode.node) == 0)
                     uiTreeNode.EnableNode();
@@ -166,7 +166,7 @@ public class ArchetypeNodeInfoPanel : MonoBehaviour
             return;
         if (archetypeData.IsNodeMaxLevel(node))
         {
-            foreach (ArchetypeUITreeNode uiTreeNode in uiNode.connectedNodes)
+            foreach (ArchetypeUITreeNode uiTreeNode in uiNode.connectedNodes.Keys)
             {
                 if (archetypeData.GetNodeLevel(uiTreeNode.node) == 0)
                     uiTreeNode.DisableNode();
@@ -181,11 +181,10 @@ public class ArchetypeNodeInfoPanel : MonoBehaviour
 
     private bool IsChildrenIndependent()
     {
-        foreach (ArchetypeUITreeNode uiTreeNode in uiNode.connectedNodes)
+        foreach (ArchetypeUITreeNode uiTreeNode in uiNode.connectedNodes.Keys)
         {
             if (archetypeData.GetNodeLevel(uiTreeNode.node) > 0 && !uiTreeNode.IsTherePathExcludingNode(uiNode, new System.Collections.Generic.List<ArchetypeUITreeNode>()))
             {
-                Debug.Log("DEPEND " + uiTreeNode.node.idName);
                 return false;
             }
         } 

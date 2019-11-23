@@ -37,6 +37,16 @@ public class MenuButton : UIKeyButton
         GameManager.Instance.PlayerStats.AddEquipmentToInventory(Equipment.CreateRandomUnique(100));
     }
 
+    public void AddAccessories()
+    {
+        Equipment equipment = Equipment.CreateRandomEquipment(100, GroupType.RING);
+        Equipment equipment2 = Equipment.CreateRandomEquipment(100, GroupType.NECKLACE);
+        Equipment equipment3 = Equipment.CreateRandomEquipment(100, GroupType.BELT);
+        GameManager.Instance.PlayerStats.AddEquipmentToInventory(equipment);
+        GameManager.Instance.PlayerStats.AddEquipmentToInventory(equipment2);
+        GameManager.Instance.PlayerStats.AddEquipmentToInventory(equipment3);
+    }
+
     public void AddHero()
     {
         ArchetypeItem a1 = ArchetypeItem.CreateRandomArchetypeItem(100);

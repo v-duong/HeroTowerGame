@@ -209,6 +209,6 @@ public class HeroDetailWindow : MonoBehaviour
             UIManager.Instance.CloseCurrentWindow();
             hero.Name = UIManager.Instance.PopUpWindow.textInput.text;
             UpdateWindow();
-        });
+        }, null, null);
     }
 }

@@ -5,12 +5,16 @@ using UnityEngine.UI;
 
 public class ArchetypeUITreeNode : MonoBehaviour
 {
+    public static readonly Color UNAVAILABLE_COLOR = Color.black;
+    public static readonly Color AVAILABLE_COLOR = new Color(0.6f, 0.6f, 0.6f);
+    public static readonly Color CONNECTED_COLOR = new Color(0f, 0.6f, 0f);
+
     private static readonly int yPositionOffset = 130;
     public ArchetypeSkillNode node;
     public TextMeshProUGUI nodeText;
     public TextMeshProUGUI levelText;
     public Button nodeButton;
-    public List<ArchetypeUITreeNode> connectedNodes = new List<ArchetypeUITreeNode>();
+    public Dictionary<ArchetypeUITreeNode, UILineRenderer.LinePoint> connectedNodes = new Dictionary<ArchetypeUITreeNode, UILineRenderer.LinePoint>();
     public HeroArchetypeData archetypeData;
     public bool isLevelable;
     private bool isPreviewMode = false;
@@ -34,14 +38,43 @@ public class ArchetypeUITreeNode : MonoBehaviour
         int level = archetypeData.GetNodeLevel(node);
         nodeText.text = node.idName;
         levelText.text = level + "/" + node.maxLevel;
-        if (level > 0)
+        if (level == node.maxLevel)
         {
             nodeButton.image.color = new Color(1f, 1f, 1f, 1);
+            foreach (var x in connectedNodes)
+            {
+                if (archetypeData.GetNodeLevel(x.Key.node) == 0)
+                    x.Value.color = AVAILABLE_COLOR;
+                else
+                    x.Value.color = CONNECTED_COLOR;
+            }
+        }
+        else if (level > 0)
+        {
+            nodeButton.image.color = new Color(1f, 1f, 1f, 1);
+            foreach (var x in connectedNodes)
+            {
+                if (archetypeData.GetNodeLevel(x.Key.node) > 0)
+                    x.Value.color = CONNECTED_COLOR;
+                else
+                    x.Value.color = UNAVAILABLE_COLOR;
+            }
         }
         else
         {
             nodeButton.image.color = new Color(0.8f, 0.8f, 0.8f, 1);
+
+            foreach (var x in connectedNodes)
+            {
+                if (archetypeData.GetNodeLevel(x.Key.node) == x.Key.node.maxLevel)
+                    x.Value.color = AVAILABLE_COLOR;
+                else
+                    x.Value.color = UNAVAILABLE_COLOR;
+            }
         }
+
+        UIManager.Instance.ArchetypeUITreeWindow.primaryTreeParent.SetAllDirty();
+        UIManager.Instance.ArchetypeUITreeWindow.secondaryTreeParent.SetAllDirty();
     }
 
     public void UpdateNodePreview()
@@ -91,7 +124,7 @@ public class ArchetypeUITreeNode : MonoBehaviour
             EnableNode();
             return;
         }
-        foreach (ArchetypeUITreeNode treeNode in connectedNodes)
+        foreach (ArchetypeUITreeNode treeNode in connectedNodes.Keys)
         {
             if (archetypeData.IsNodeMaxLevel(treeNode.node))
             {
@@ -119,9 +152,8 @@ public class ArchetypeUITreeNode : MonoBehaviour
         if (node.initialLevel > 0)
             return true;
 
-        foreach (ArchetypeUITreeNode connectedNode in connectedNodes)
+        foreach (ArchetypeUITreeNode connectedNode in connectedNodes.Keys)
         {
-            Debug.Log(connectedNode.node.idName);
             if (archetypeData.GetNodeLevel(node) > 0 && connectedNode.IsTherePathExcludingNode(uiNode, traversedNodes))
                 return true;
         }

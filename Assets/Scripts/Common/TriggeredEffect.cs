@@ -19,6 +19,11 @@ public class TriggeredEffect
         return Helpers.RollChance(BaseEffect.triggerChance);
     }
 
+    public void ModifyValue(float value)
+    {
+        Value += value;
+    }
+
     public void OnTrigger(Actor target, Actor source)
     {
         if (!RollTriggerChance())

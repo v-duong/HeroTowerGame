@@ -14,6 +14,7 @@ public class ItemCraftingPanel : MonoBehaviour
 
     [SerializeField]
     private ItemCraftingSlot itemSlot;
+
     [SerializeField]
     private TextMeshProUGUI innates;
 
@@ -33,6 +34,9 @@ public class ItemCraftingPanel : MonoBehaviour
     private TextMeshProUGUI rightInfo;
 
     [SerializeField]
+    private Image topPanelBackground;
+
+    [SerializeField]
     private TextMeshProUGUI playerFragmentsText;
 
     [SerializeField]
@@ -40,10 +44,6 @@ public class ItemCraftingPanel : MonoBehaviour
 
     [SerializeField]
     private List<UIKeyButton> craftingButtons;
-
-
-
-
 
     private void OnDisable()
     {
@@ -55,7 +55,6 @@ public class ItemCraftingPanel : MonoBehaviour
 
     private void OnEnable()
     {
-        
         UpdatePanels();
     }
 
@@ -80,45 +79,78 @@ public class ItemCraftingPanel : MonoBehaviour
     private void UpdatePanels()
     {
         itemSlot.text.text = "";
+        itemSlot.levelText.text = "";
+        //itemSlot.itemBaseText.text = "";
+        itemSlot.itemRequirementText.text = "";
         prefixes.text = "";
         suffixes.text = "";
         innates.text = "";
         leftInfo.text = "";
         rightInfo.text = "";
+        itemValue.text = "";
         playerFragmentsText.text = GameManager.Instance.PlayerStats.ItemFragments.ToString("N0") + " Frags";
         UpdateButtons();
 
         if (currentItem == null)
         {
             itemSlot.GetComponentInChildren<Image>().color = Helpers.ReturnRarityColor(RarityType.NORMAL);
+            topPanelBackground.color = Helpers.ReturnRarityColor(RarityType.NORMAL);
             return;
         }
 
-        itemSlot.text.text = currentItem.Name;
+        itemSlot.text.text = "<b><smallcaps>" + currentItem.Name + "</smallcaps></b>";
+        itemSlot.levelText.text = "ItemLevel<b><size=120%>" + currentItem.ItemLevel + "</size></b>";
         itemSlot.GetComponentInChildren<Image>().color = Helpers.ReturnRarityColor(currentItem.Rarity);
+        topPanelBackground.color = Helpers.ReturnRarityColor(currentItem.Rarity);
 
         if (currentItem.Rarity == RarityType.UNIQUE)
         {
-            prefixes.text = "Affixes\n";
+            prefixes.text = "<b>Affixes</b>\n";
         }
         else
         {
             int affixCap = currentItem.GetAffixCap();
-            prefixes.text = "Prefixes (" + currentItem.prefixes.Count + " / " + affixCap + ")\n";
+            prefixes.text = "<b>Prefixes</b> (" + currentItem.prefixes.Count + " / " + affixCap + ")\n";
 
-            suffixes.text = "Suffixes (" + currentItem.suffixes.Count + " / " + affixCap + ")\n";
+            suffixes.text = "<b>Suffixes</b> (" + currentItem.suffixes.Count + " / " + affixCap + ")\n";
         }
 
         if (currentItem is Equipment equip)
         {
             if (equip.innate.Count > 0)
             {
-                innates.text = "Innate\n";
+                innates.text = "<b>Innate</b>\n";
                 foreach (Affix a in equip.innate)
                 {
                     innates.text += "○" + Affix.BuildAffixString(a.Base, Helpers.AFFIX_STRING_SPACING, a, a.GetAffixValues(), a.GetEffectValues());
                 }
             }
+
+            string reqString = "";
+            if (equip.levelRequirement > 0)
+            {
+                reqString += "Lv" + equip.levelRequirement + ", ";
+            }
+            if (equip.strRequirement > 0)
+            {
+                reqString += "Str " + equip.strRequirement + ", ";
+            }
+            if (equip.intRequirement > 0)
+            {
+                reqString += "Int " + equip.intRequirement + ", ";
+            }
+            if (equip.agiRequirement > 0)
+            {
+                reqString += "Agi " + equip.agiRequirement + ", ";
+            }
+            if (equip.willRequirement > 0)
+            {
+                reqString += "Will " + equip.willRequirement + ", ";
+            }
+
+            //itemSlot.itemBaseText.text = equip.Base.idName;
+            itemSlot.text.text += "\n<i><size=80%>" + equip.Base.idName + "</size></i>";
+            itemSlot.itemRequirementText.text = "Requires " + reqString.Trim(',', ' ');
         }
 
         foreach (Affix a in currentItem.prefixes)
@@ -132,7 +164,7 @@ public class ItemCraftingPanel : MonoBehaviour
             suffixes.text += "○" + Affix.BuildAffixString(a.Base, Helpers.AFFIX_STRING_SPACING, a, a.GetAffixValues(), a.GetEffectValues(), showAffixDetails, showAffixDetails && currentItem.Rarity != RarityType.UNIQUE);
         }
 
-        itemValue.text = currentItem.GetItemValue() + " Fragments";
+        itemValue.text = "Item Value\n"+ currentItem.GetItemValue() + " Fragments";
 
         if (currentItem.GetItemType() == ItemType.WEAPON)
         {
@@ -145,7 +177,8 @@ public class ItemCraftingPanel : MonoBehaviour
         if (showAffixDetails)
         {
             showAffixDetailsButtonText.text = "Hide Affix Details";
-        } else
+        }
+        else
         {
             showAffixDetailsButtonText.text = "Show Affix Details";
         }
@@ -176,10 +209,23 @@ public class ItemCraftingPanel : MonoBehaviour
                 hasElemental = true;
                 dps = (range.min + range.max) / 2f * weaponItem.AttackSpeed;
                 elementalDps.Add(LocalizationManager.BuildElementalDamageString(dps.ToString("F2"), (ElementType)i));
-                elementalDamage.Add(LocalizationManager.BuildElementalDamageString(range.min + "-" + range.max, (ElementType)i));
+                elementalDamage.Add("<nobr>" + LocalizationManager.BuildElementalDamageString(range.min + "-" + range.max, (ElementType)i) + "</nobr>");
             }
         }
 
+        for (int i = (int)ElementType.DIVINE; i <= (int)ElementType.VOID; i++)
+        {
+            range = weaponItem.GetWeaponDamage((ElementType)i);
+            if (!range.IsZero())
+            {
+                hasPrimordial = true;
+                dps = (range.min + range.max) / 2f * weaponItem.AttackSpeed;
+                primDps.Add(LocalizationManager.BuildElementalDamageString(dps.ToString("F2"), (ElementType)i));
+                primDamage.Add("<nobr>" + LocalizationManager.BuildElementalDamageString(range.min + "-" + range.max, (ElementType)i) + "</nobr>");
+            }
+        }
+
+        /*
         range = weaponItem.GetWeaponDamage(ElementType.DIVINE);
         if (!range.IsZero())
         {
@@ -197,34 +243,35 @@ public class ItemCraftingPanel : MonoBehaviour
             primDps.Add(LocalizationManager.BuildElementalDamageString(dps.ToString("F2"), ElementType.VOID));
             primDamage.Add(LocalizationManager.BuildElementalDamageString(range.min + "-" + range.max, ElementType.VOID));
         }
+        */
 
         if (weaponItem.PhysicalDamage.min != 0 && weaponItem.PhysicalDamage.max != 0)
         {
             dps = (weaponItem.PhysicalDamage.min + weaponItem.PhysicalDamage.max) / 2f * weaponItem.AttackSpeed;
-            leftInfo.text += "Phys. DPS: " + dps.ToString("F2") + "\n";
-            physDamage = "Phys. Damage: " + weaponItem.PhysicalDamage.min + "-" + weaponItem.PhysicalDamage.max + "\n";
+            leftInfo.text += "PhysDPS: " + dps.ToString("F2") + "\n";
+            physDamage = "PhysDmg: " + weaponItem.PhysicalDamage.min + "-" + weaponItem.PhysicalDamage.max + "\n";
         }
         if (hasElemental)
         {
-            leftInfo.text += "Ele. DPS: " + string.Join(", ", elementalDps) + "\n";
+            leftInfo.text += "EleDPS: " + string.Join(", ", elementalDps) + "\n";
         }
         if (hasPrimordial)
         {
-            leftInfo.text += "Prim. DPS: " + string.Join(", ", primDps) + "\n";
+            leftInfo.text += "PrimDPS: " + string.Join(", ", primDps) + "\n";
         }
         leftInfo.text += "\n";
         leftInfo.text += physDamage;
         if (hasElemental)
         {
-            leftInfo.text += "Ele. Damage: " + string.Join(", ", elementalDamage) + "\n";
+            leftInfo.text += "EleDmg: " + string.Join(", ", elementalDamage) + "\n";
         }
         if (hasPrimordial)
         {
-            leftInfo.text += "Prim. Damage: " + string.Join(", ", primDamage) + "\n";
+            leftInfo.text += "PrimDmg: " + string.Join(", ", primDamage) + "\n";
         }
-        rightInfo.text += "Critical Chance: " + weaponItem.CriticalChance.ToString("F2") + "%\n";
-        rightInfo.text += "Attacks per Second: " + weaponItem.AttackSpeed.ToString("F2") + "\n";
-        rightInfo.text += "Range: " + weaponItem.WeaponRange.ToString("F2") + "\n";
+        rightInfo.text += "Critical Chance\n<b>" + weaponItem.CriticalChance.ToString("F2") + "%</b>\n";
+        rightInfo.text += "Attacks / s\n<b>" + weaponItem.AttackSpeed.ToString("F2") + "/s</b>\n";
+        rightInfo.text += "Range\n<b>" + weaponItem.WeaponRange.ToString("F2") + "</b>\n";
     }
 
     public void ShowAllPossibleAffixes()
@@ -232,11 +279,12 @@ public class ItemCraftingPanel : MonoBehaviour
         if (currentItem == null)
             return;
         PopUpWindow popUpWindow = UIManager.Instance.PopUpWindow;
-        popUpWindow.OpenTextWindow();
-        popUpWindow.SetButtonValues("Close", delegate { UIManager.Instance.CloseCurrentWindow(); });
+        popUpWindow.OpenTextWindow("");
+        popUpWindow.SetButtonValues(null, null, "Close", delegate { UIManager.Instance.CloseCurrentWindow(); });
         popUpWindow.textField.text = "";
         popUpWindow.textField.fontSize = 18;
         popUpWindow.textField.paragraphSpacing = 8;
+        popUpWindow.textField.alignment = TextAlignmentOptions.Left;
 
         WeightList<AffixBase> possibleAffixes;
         Dictionary<GroupType, float> weightModifiers = null;
@@ -246,11 +294,11 @@ public class ItemCraftingPanel : MonoBehaviour
             possibleAffixes = currentItem.GetAllPossiblePrefixes(weightModifiers);
             if (possibleAffixes.Count > 0)
             {
-                popUpWindow.textField.text += "Prefixes\n";
+                popUpWindow.textField.text += "<b>Prefixes</b>\n";
                 foreach (var affixBaseWeight in possibleAffixes)
                 {
                     float affixPercent = (float)affixBaseWeight.weight / possibleAffixes.Sum * 100f;
-                    popUpWindow.textField.text += affixPercent.ToString("F1") + "%" + Affix.BuildAffixString(affixBaseWeight.item, Helpers.AFFIX_STRING_SPACING+3);
+                    popUpWindow.textField.text += affixPercent.ToString("F1") + "%" + Affix.BuildAffixString(affixBaseWeight.item, Helpers.AFFIX_STRING_SPACING + 3);
                     popUpWindow.textField.text += "<line-height=0.2em>\n</line-height>";
                 }
                 popUpWindow.textField.text += "\n";
@@ -262,11 +310,11 @@ public class ItemCraftingPanel : MonoBehaviour
             possibleAffixes = currentItem.GetAllPossibleSuffixes(weightModifiers);
             if (possibleAffixes.Count > 0)
             {
-                popUpWindow.textField.text += "Suffixes\n";
+                popUpWindow.textField.text += "<b>Suffixes</b>\n";
                 foreach (var affixBaseWeight in possibleAffixes)
                 {
                     float affixPercent = (float)affixBaseWeight.weight / possibleAffixes.Sum * 100f;
-                    popUpWindow.textField.text += affixPercent.ToString("F1") + "%" + Affix.BuildAffixString(affixBaseWeight.item, Helpers.AFFIX_STRING_SPACING+3);
+                    popUpWindow.textField.text += affixPercent.ToString("F1") + "%" + Affix.BuildAffixString(affixBaseWeight.item, Helpers.AFFIX_STRING_SPACING + 3);
                     popUpWindow.textField.text += "<line-height=0.1em>\n</line-height>";
                 }
             }
@@ -312,9 +360,9 @@ public class ItemCraftingPanel : MonoBehaviour
     {
         if (currentItem == null)
             return;
+        GameManager.Instance.PlayerStats.ModifyItemFragments(-AffixedItem.GetRemoveAffixCost(currentItem));
         currentItem.RemoveRandomAffix();
         currentItem.RemoveAllAffixLocks();
-        GameManager.Instance.PlayerStats.ModifyItemFragments(-AffixedItem.GetRemoveAffixCost(currentItem));
         UpdatePanels();
     }
 
@@ -322,8 +370,8 @@ public class ItemCraftingPanel : MonoBehaviour
     {
         if (currentItem == null)
             return;
-        currentItem.UpgradeRarity();
         GameManager.Instance.PlayerStats.ModifyItemFragments(-AffixedItem.GetUpgradeCost(currentItem));
+        currentItem.UpgradeRarity();
         UpdatePanels();
     }
 
@@ -331,9 +379,9 @@ public class ItemCraftingPanel : MonoBehaviour
     {
         if (currentItem == null)
             return;
+        GameManager.Instance.PlayerStats.ModifyItemFragments(-AffixedItem.GetToNormalCost(currentItem));
         currentItem.SetRarityToNormal();
         currentItem.RemoveAllAffixLocks();
-        GameManager.Instance.PlayerStats.ModifyItemFragments(-AffixedItem.GetToNormalCost(currentItem));
         UpdatePanels();
     }
 
@@ -343,14 +391,15 @@ public class ItemCraftingPanel : MonoBehaviour
             return;
         PopUpWindow popUpWindow = UIManager.Instance.PopUpWindow;
         popUpWindow.OpenVerticalWindow();
-        popUpWindow.SetButtonValues("Cancel", delegate { UIManager.Instance.CloseCurrentWindow(); });
+
+        popUpWindow.SetButtonValues(null, null, "Cancel", delegate { UIManager.Instance.CloseCurrentWindow(); });
 
         foreach (Affix affix in currentItem.prefixes.Concat(currentItem.suffixes))
         {
             if (affix.IsLocked)
                 continue;
             Button button = Instantiate(UIManager.Instance.buttonPrefab);
-            button.GetComponentInChildren<TextMeshProUGUI>().fontSize = 16;
+            button.GetComponentInChildren<TextMeshProUGUI>().fontSize = 18;
             button.GetComponentInChildren<TextMeshProUGUI>().text = Affix.BuildAffixString(affix.Base, 0, null, affix.GetAffixValues(), affix.GetEffectValues());
             button.onClick.AddListener(delegate { LockAffixCallback(affix); });
             popUpWindow.AddObjectToViewport(button.gameObject);

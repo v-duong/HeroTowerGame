@@ -300,8 +300,8 @@ public abstract class AffixedItem : Item
     {
         if (Rarity == RarityType.UNIQUE)
             return;
-        prefixes = prefixes.OrderBy(x => x.Base.affixBonuses[0].bonusType).ToList();
-        suffixes = suffixes.OrderBy(x => x.Base.affixBonuses[0].bonusType).ToList();
+        prefixes = prefixes.OrderBy(x => x.Base.affixBonuses.Count > 0 ? (int)x.Base.affixBonuses[0].bonusType : int.MaxValue).ToList();
+        suffixes = suffixes.OrderBy(x => x.Base.affixBonuses.Count > 0 ? (int)x.Base.affixBonuses[0].bonusType : int.MaxValue).ToList();
     }
 
     public WeightList<AffixBase> GetAllPossiblePrefixes(Dictionary<GroupType, float> weightModifiers)
@@ -345,7 +345,7 @@ public abstract class AffixedItem : Item
                 return currentItem.ItemLevel * 15;
 
             case RarityType.EPIC:
-                return currentItem.ItemLevel * 30;
+                return currentItem.ItemLevel * 75;
 
             default:
                 return 0;
@@ -363,7 +363,7 @@ public abstract class AffixedItem : Item
                 return currentItem.ItemLevel * 25;
 
             case RarityType.EPIC:
-                return currentItem.ItemLevel * 50;
+                return currentItem.ItemLevel * 150;
 
             default:
                 return 0;
@@ -381,7 +381,7 @@ public abstract class AffixedItem : Item
                 return currentItem.ItemLevel * 15;
 
             case RarityType.EPIC:
-                return currentItem.ItemLevel * 20;
+                return currentItem.ItemLevel * 75;
 
             default:
                 return 0;
@@ -420,7 +420,7 @@ public abstract class AffixedItem : Item
                 return currentItem.ItemLevel * 8;
 
             case RarityType.RARE:
-                return currentItem.ItemLevel * 40;
+                return currentItem.ItemLevel * 500;
 
             default:
                 return 0;
@@ -441,7 +441,7 @@ public abstract class AffixedItem : Item
                 return currentItem.ItemLevel * 50;
 
             case RarityType.EPIC:
-                return currentItem.ItemLevel * 80;
+                return currentItem.ItemLevel * 300;
 
             case RarityType.UNIQUE:
                 return currentItem.ItemLevel * 20;

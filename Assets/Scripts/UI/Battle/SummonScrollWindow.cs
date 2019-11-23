@@ -36,13 +36,13 @@ public class SummonScrollWindow : MonoBehaviour
 
         if (isHidden)
         {
-            parentRect.anchoredPosition = new Vector2(0, -85);
-            infoRect.anchoredPosition = new Vector2(0, 15);
+            parentRect.anchoredPosition = new Vector2(0, -90);
+            infoRect.anchoredPosition = new Vector2(0, 25);
         }
         else
         {
             parentRect.anchoredPosition = new Vector2(0, 0);
-            infoRect.anchoredPosition = new Vector2(0, 100);
+            infoRect.anchoredPosition = new Vector2(0, 115);
         }
     }
 }

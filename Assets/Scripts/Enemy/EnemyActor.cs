@@ -86,7 +86,6 @@ public class EnemyActor : Actor
         }
         else
         {
-            Debug.Log("END PATH");
             switch (enemyRarity)
             {
                 case RarityType.NORMAL when isBoss:

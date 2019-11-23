@@ -78,6 +78,7 @@ public class Weapon : Equipment
 
         CriticalChance = CalculateStat(Base.criticalChance, localBonusTotals, BonusType.LOCAL_CRITICAL_CHANCE);
         AttackSpeed = CalculateStat(Base.attackSpeed, localBonusTotals, BonusType.LOCAL_ATTACK_SPEED);
+        WeaponRange = CalculateStat(Base.weaponRange, localBonusTotals, BonusType.LOCAL_WEAPON_RANGE);
 
         return true;
     }

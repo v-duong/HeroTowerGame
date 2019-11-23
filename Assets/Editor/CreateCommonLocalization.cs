@@ -87,10 +87,17 @@ public class CreateCommonLocalization
             foreach (string x in effectTypes)
             {
                 string localizationKey = "effectType." + x;
+                string bonusLocalizationKey = "effectType.bonusProp." + x;
+
                 if (!localization.ContainsKey(localizationKey))
                     localization.Add(localizationKey, "");
                 else
                     keys.Remove(localizationKey);
+
+                if (!localization.ContainsKey(bonusLocalizationKey))
+                    localization.Add(bonusLocalizationKey, "");
+                else
+                    keys.Remove(bonusLocalizationKey);
             }
 
             List<string> consumableTypes = new List<string>(Enum.GetNames(typeof(ConsumableType)));
@@ -121,6 +128,17 @@ public class CreateCommonLocalization
             foreach (string x in rarityTypes)
             {
                 string localizationKey = "rarityType." + x;
+                if (!localization.ContainsKey(localizationKey))
+                    localization.Add(localizationKey, "");
+                else
+                    keys.Remove(localizationKey);
+            }
+
+            List<string> targetTypes = new List<string>(Enum.GetNames(typeof(AbilityTargetType)));
+
+            foreach (string x in targetTypes)
+            {
+                string localizationKey = "targetType." + x;
                 if (!localization.ContainsKey(localizationKey))
                     localization.Add(localizationKey, "");
                 else
