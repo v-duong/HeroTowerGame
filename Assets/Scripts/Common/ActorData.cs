@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using UnityEngine;
 
 public abstract partial class ActorData
 {
@@ -198,7 +197,7 @@ public abstract partial class ActorData
     protected void ApplyHealthBonuses()
     {
         float percentage = CurrentHealth / MaximumHealth;
-        MaximumHealth = (int)Math.Max(GetMultiStatBonus(GroupTypes, BonusType.MAX_HEALTH).CalculateStat(BaseHealth), 1);
+        MaximumHealth = (int)Math.Max(Math.Round(GetMultiStatBonus(GroupTypes, BonusType.MAX_HEALTH).CalculateStat(BaseHealth), 0), 1);
         if (MaximumHealth > 1)
         {
             float convertedShieldPercent = Math.Min(GetMultiStatBonus(GroupTypes, BonusType.MAX_HEALTH_TO_SHIELD).CalculateStat(0), 95) / 100f;

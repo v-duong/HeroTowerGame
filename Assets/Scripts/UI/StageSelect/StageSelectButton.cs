@@ -39,10 +39,11 @@ public class StageSelectButton : MonoBehaviour
         if (isStageUnlocked)
         {
             if (clearCount == 0)
-                stageBackgroundColor.color = new Color(0.82f,0.41f,0.41f);
+                stageBackgroundColor.color = new Color(0.82f, 0.41f, 0.41f);
             else
                 stageBackgroundColor.color = new Color(0.24f, 0.73f, 0.44f);
-        } else
+        }
+        else
         {
             stageBackgroundColor.color = new Color(0.6f, 0.6f, 0.6f);
         }

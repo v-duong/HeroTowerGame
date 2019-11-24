@@ -14,19 +14,33 @@ public class XpStockPanel : MonoBehaviour
     private Button confirmButton;
 
     [SerializeField]
-    private TextMeshProUGUI currentStatText;
-
+    private Button plusOneButton;
     [SerializeField]
-    private TextMeshProUGUI newStatText;
-
-    [SerializeField]
-    private TextMeshProUGUI levelText;
-
-    [SerializeField]
-    private TextMeshProUGUI costText;
+    private Button minusOneButton;
 
     [SerializeField]
     private Slider levelSlider;
+
+    [SerializeField]
+    private XpStockStatLabel levelStatLine;
+
+    [SerializeField]
+    private XpStockStatLabel healthStatLine;
+
+    [SerializeField]
+    private XpStockStatLabel strStatLine;
+
+    [SerializeField]
+    private XpStockStatLabel intStatLine;
+
+    [SerializeField]
+    private XpStockStatLabel agiStatLine;
+
+    [SerializeField]
+    private XpStockStatLabel willStatLine;
+
+    [SerializeField]
+    private XpStockStatLabel stockLine;
 
     private int selectedLevel;
 
@@ -34,14 +48,20 @@ public class XpStockPanel : MonoBehaviour
     {
         selectedHero = null;
         heroSlot.GetComponentInChildren<TextMeshProUGUI>().text = "SELECT HERO";
-        currentStatText.text = "";
-        newStatText.text = "";
+        levelStatLine.ClearValues();
+        healthStatLine.ClearValues();
+        strStatLine.ClearValues();
+        intStatLine.ClearValues();
+        agiStatLine.ClearValues();
+        willStatLine.ClearValues();
         levelSlider.minValue = 2;
         selectedLevel = 2;
         levelSlider.interactable = false;
         confirmButton.interactable = false;
         OnSliderChange();
-        costText.text = "0" + " / " + GameManager.Instance.PlayerStats.ExpStock.ToString("N0");
+        float xpStock = GameManager.Instance.PlayerStats.ExpStock;
+        stockLine.SetValues(xpStock, 0, xpStock);
+        stockLine.SetNeutralColor();
     }
 
     public void OnHeroSlotClick()
@@ -68,9 +88,6 @@ public class XpStockPanel : MonoBehaviour
 
     public void UpdatePanels()
     {
-        currentStatText.text = "";
-        newStatText.text = "";
-        costText.text = "";
         if (selectedHero == null)
             return;
 
@@ -85,15 +102,7 @@ public class XpStockPanel : MonoBehaviour
             confirmButton.interactable = true;
         }
 
-        currentStatText.text += (int)selectedHero.BaseHealth + "\n";
-        currentStatText.text += (int)selectedHero.BaseSoulPoints + "\n";
-        currentStatText.text += (int)selectedHero.BaseStrength + "\n";
-        currentStatText.text += (int)selectedHero.BaseIntelligence + "\n";
-        currentStatText.text += (int)selectedHero.BaseAgility + "\n";
-        currentStatText.text += (int)selectedHero.BaseWill + "\n";
-
         int levelDifference = selectedLevel - selectedHero.Level;
-
         float newHealth = selectedHero.BaseHealth + selectedHero.PrimaryArchetype.HealthGrowth * levelDifference;
         float newSoulpoint = selectedHero.BaseSoulPoints + selectedHero.PrimaryArchetype.SoulPointGrowth * levelDifference;
         float newStrength = selectedHero.BaseStrength + selectedHero.PrimaryArchetype.StrengthGrowth * levelDifference;
@@ -111,40 +120,61 @@ public class XpStockPanel : MonoBehaviour
             newWill += selectedHero.SecondaryArchetype.WillGrowth / 2 * levelDifference;
         }
 
-        newStatText.text += (int)newHealth + "\n";
-        newStatText.text += (int)newSoulpoint + "\n";
-        newStatText.text += (int)newStrength + "\n";
-        newStatText.text += (int)newIntelligence + "\n";
-        newStatText.text += (int)newAgility + "\n";
-        newStatText.text += (int)newWill + "\n";
+        levelStatLine.SetValues(selectedHero.Level, levelDifference, selectedLevel);
+        healthStatLine.SetValues(selectedHero.BaseHealth, newHealth - selectedHero.BaseHealth, newHealth);
+        strStatLine.SetValues(selectedHero.BaseStrength, newStrength - selectedHero.BaseStrength, newStrength);
+        intStatLine.SetValues(selectedHero.BaseIntelligence, newIntelligence - selectedHero.BaseIntelligence, newIntelligence);
+        agiStatLine.SetValues(selectedHero.BaseAgility, newAgility - selectedHero.BaseAgility, newAgility);
+        willStatLine.SetValues(selectedHero.BaseWill, newWill - selectedHero.BaseWill, newWill);
 
-        int requiredExperience = Helpers.GetRequiredExperience(selectedLevel) - selectedHero.Experience;
+        heroSlot.GetComponentInChildren<TextMeshProUGUI>().text = selectedHero.Name + "\nCurrent Exp: " + selectedHero.Experience;
 
-        costText.text = requiredExperience.ToString("N0") + " / " + GameManager.Instance.PlayerStats.ExpStock.ToString("N0");
-
-        heroSlot.GetComponentInChildren<TextMeshProUGUI>().text = selectedHero.Name + "\nLv " + selectedHero.Level + "\n\n" + selectedHero.Experience;
+        int xpStock = GameManager.Instance.PlayerStats.ExpStock;
 
         for (int i = 0; i < 100 - selectedHero.Level; i++)
         {
             int reqExpForLevel = Helpers.GetRequiredExperience(selectedHero.Level + i);
-            if (reqExpForLevel - selectedHero.Experience > GameManager.Instance.PlayerStats.ExpStock)
+            if (reqExpForLevel - selectedHero.Experience > xpStock)
             {
                 levelSlider.maxValue = selectedHero.Level + i;
                 break;
             }
         }
 
-        if (requiredExperience > GameManager.Instance.PlayerStats.ExpStock || selectedHero.Level == 100)
+        int requiredExperience = Helpers.GetRequiredExperience(selectedLevel) - selectedHero.Experience;
+        stockLine.SetValues(xpStock, -requiredExperience, xpStock - requiredExperience);
+
+        if (requiredExperience > GameManager.Instance.PlayerStats.ExpStock)
+        {
             confirmButton.interactable = false;
+            stockLine.SetRedColor();
+        }
+        else if (selectedHero.Level == 100)
+        {
+            confirmButton.interactable = false;
+            stockLine.SetNeutralColor();
+        }
         else
+        {
             confirmButton.interactable = true;
+            stockLine.SetGreenColor();
+        }
     }
 
     public void OnSliderChange()
     {
-        levelText.text = "Lv " + levelSlider.value;
         selectedLevel = (int)levelSlider.value;
         UpdatePanels();
+    }
+
+    public void PlusOneButtonClick()
+    {
+        levelSlider.value += 1;
+    }
+
+    public void MinusOneButtonClick()
+    {
+        levelSlider.value -= 1;
     }
 
     public void OnConfirmClick()

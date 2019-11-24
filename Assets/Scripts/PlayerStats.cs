@@ -99,6 +99,8 @@ public class PlayerStats
                     heroTeams[hero.assignedTeam][i] = null;
             }
         }
+        if (heroTeams[selectedTeam][selectedSlot] != null)
+            heroTeams[selectedTeam][selectedSlot].assignedTeam = -1;
         heroTeams[selectedTeam][selectedSlot] = hero;
         hero.assignedTeam = selectedTeam;
     }

@@ -45,6 +45,15 @@ public class ItemCraftingPanel : MonoBehaviour
     [SerializeField]
     private List<UIKeyButton> craftingButtons;
 
+    [SerializeField]
+    private CraftingPanelAffixHeader innateHeader;
+
+    [SerializeField]
+    private CraftingPanelAffixHeader prefixHeader;
+
+    [SerializeField]
+    private CraftingPanelAffixHeader suffixHeader;
+
     private void OnDisable()
     {
         selectedOption = null;
@@ -88,6 +97,9 @@ public class ItemCraftingPanel : MonoBehaviour
         leftInfo.text = "";
         rightInfo.text = "";
         itemValue.text = "";
+        innateHeader.gameObject.SetActive(false);
+        prefixHeader.gameObject.SetActive(false);
+        suffixHeader.gameObject.SetActive(false);
         playerFragmentsText.text = GameManager.Instance.PlayerStats.ItemFragments.ToString("N0") + " Frags";
         UpdateButtons();
 
@@ -105,25 +117,35 @@ public class ItemCraftingPanel : MonoBehaviour
 
         if (currentItem.Rarity == RarityType.UNIQUE)
         {
-            prefixes.text = "<b>Affixes</b>\n";
+            prefixHeader.SetHeaderValues(0, 0, "Affixes", true);
+            prefixHeader.gameObject.SetActive(true);
+            suffixHeader.gameObject.SetActive(false);
         }
         else
         {
+            prefixHeader.gameObject.SetActive(true);
+            suffixHeader.gameObject.SetActive(true);
             int affixCap = currentItem.GetAffixCap();
-            prefixes.text = "<b>Prefixes</b> (" + currentItem.prefixes.Count + " / " + affixCap + ")\n";
-
-            suffixes.text = "<b>Suffixes</b> (" + currentItem.suffixes.Count + " / " + affixCap + ")\n";
+            //prefixes.text = "<b>Prefixes</b> (" + currentItem.prefixes.Count + " / " + affixCap + ")\n";
+            //suffixes.text = "<b>Suffixes</b> (" + currentItem.suffixes.Count + " / " + affixCap + ")\n";
+            prefixHeader.SetHeaderValues(currentItem.prefixes.Count, affixCap, "Prefixes");
+            suffixHeader.SetHeaderValues(currentItem.suffixes.Count, affixCap, "Suffixes");
         }
 
         if (currentItem is Equipment equip)
         {
             if (equip.innate.Count > 0)
             {
-                innates.text = "<b>Innate</b>\n";
+                innateHeader.gameObject.SetActive(true);
+                //innates.text = "<b>Innate</b>\n";
                 foreach (Affix a in equip.innate)
                 {
                     innates.text += "○" + Affix.BuildAffixString(a.Base, Helpers.AFFIX_STRING_SPACING, a, a.GetAffixValues(), a.GetEffectValues());
                 }
+            }
+            else
+            {
+                innateHeader.gameObject.SetActive(false);
             }
 
             string reqString = "";
@@ -149,7 +171,8 @@ public class ItemCraftingPanel : MonoBehaviour
             }
 
             //itemSlot.itemBaseText.text = equip.Base.idName;
-            itemSlot.text.text += "\n<i><size=80%>" + equip.Base.idName + "</size></i>";
+            if (equip.Rarity != RarityType.UNIQUE)
+                itemSlot.text.text += "\n<i><size=80%>" + equip.Base.idName + "</size></i>";
             itemSlot.itemRequirementText.text = "Requires " + reqString.Trim(',', ' ');
         }
 
@@ -164,7 +187,7 @@ public class ItemCraftingPanel : MonoBehaviour
             suffixes.text += "○" + Affix.BuildAffixString(a.Base, Helpers.AFFIX_STRING_SPACING, a, a.GetAffixValues(), a.GetEffectValues(), showAffixDetails, showAffixDetails && currentItem.Rarity != RarityType.UNIQUE);
         }
 
-        itemValue.text = "Item Value\n"+ currentItem.GetItemValue() + " Fragments";
+        itemValue.text = "Item Value\n" + currentItem.GetItemValue() + " Fragments";
 
         if (currentItem.GetItemType() == ItemType.WEAPON)
         {
