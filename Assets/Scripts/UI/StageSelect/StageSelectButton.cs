@@ -10,9 +10,7 @@ public class StageSelectButton : MonoBehaviour
     public TextMeshProUGUI levelText;
     public TextMeshProUGUI waveText;
     public Image stageBackgroundColor;
-    public Image lockImage;
     private StageInfoBase stageInfo;
-
 
     public void SetStageInfo(StageInfoBase stageInfoBase)
     {
@@ -40,8 +38,6 @@ public class StageSelectButton : MonoBehaviour
         button.interactable = isStageUnlocked;
         if (isStageUnlocked)
         {
-            lockImage.gameObject.SetActive(false);
-
             if (clearCount == 0)
                 stageBackgroundColor.color = new Color(0.82f, 0.41f, 0.41f);
             else

@@ -9,9 +9,6 @@ public class InventoryScrollWindow : MonoBehaviour
     [SerializeField]
     private InventorySlot SlotPrefab;
 
-    [SerializeField]
-    private Button toggleAffixesButton;
-
     public Button confirmButton;
     private Action<List<Item>> confirmOnClick = null;
 
@@ -21,29 +18,19 @@ public class InventoryScrollWindow : MonoBehaviour
     private List<Item> selectedItems = new List<Item>();
     public bool isMultiSelectMode = false;
     public bool showItemValues = false;
-    public bool showItemAffixes = false;
 
     private void Start()
     {
-        SetGridCellSize();
-    }
-
-    private void SetGridCellSize()
-    {
         GridLayoutGroup grid = GetComponent<GridLayoutGroup>();
-        float ySize = 350;
-        if (!showItemAffixes)
-            ySize = 155;
         if (GameManager.Instance.aspectRatio >= 1.85)
         {
-            grid.cellSize = new Vector2(210, ySize);
+            grid.cellSize = new Vector2(131, 250);
         }
         else
         {
-            grid.cellSize = new Vector2(230, ySize);
+            grid.cellSize = new Vector2(140, 250);
         }
     }
-
     private void OnEnable()
     {
         ((RectTransform)transform).anchoredPosition = Vector3.zero;
@@ -86,9 +73,6 @@ public class InventoryScrollWindow : MonoBehaviour
         if (resetCallback)
             currentCallback = null;
         ClearSlots();
-
-        toggleAffixesButton.gameObject.SetActive(true);
-
         InitializeInventorySlots(GameManager.Instance.PlayerStats.EquipmentInventory, currentCallback);
         UIManager.Instance.ItemCategoryPanel.SetEquipmentSelected();
         
@@ -101,11 +85,6 @@ public class InventoryScrollWindow : MonoBehaviour
         ClearSlots();
         if (addNullSlot)
             AddInventorySlot(null);
-
-        toggleAffixesButton.gameObject.SetActive(false);
-        showItemAffixes = false;
-        SetGridCellSize();
-
         InitializeInventorySlots(GameManager.Instance.PlayerStats.ArchetypeInventory, currentCallback);
         UIManager.Instance.ItemCategoryPanel.SetArchetypeSelected();
     }
@@ -117,11 +96,6 @@ public class InventoryScrollWindow : MonoBehaviour
         ClearSlots();
         if (addNullSlot)
             AddInventorySlot(null);
-
-        toggleAffixesButton.gameObject.SetActive(false);
-        showItemAffixes = false;
-        SetGridCellSize();
-
         InitializeInventorySlots(GameManager.Instance.PlayerStats.AbilityInventory, currentCallback);
         UIManager.Instance.ItemCategoryPanel.SetAbilitySelected();
     }
@@ -133,10 +107,6 @@ public class InventoryScrollWindow : MonoBehaviour
         ClearSlots();
         if (addNullSlot)
             AddInventorySlot(null);
-
-        toggleAffixesButton.gameObject.SetActive(false);
-        showItemAffixes = false;
-        SetGridCellSize();
 
         foreach (ArchetypeItem item in GameManager.Instance.PlayerStats.ArchetypeInventory)
         {
@@ -155,11 +125,31 @@ public class InventoryScrollWindow : MonoBehaviour
         if (addNullSlot)
             AddInventorySlot(null);
 
-        toggleAffixesButton.gameObject.SetActive(true);
-
         foreach (Equipment item in GameManager.Instance.PlayerStats.EquipmentInventory.Where(filter))
         {
             AddInventorySlot(item, currentCallback);
+        }
+        DeactivateSlotsInPool();
+    }
+
+    public void ShowEquipmentBySlotType(EquipSlotType type)
+    {
+        ClearSlots();
+        List<Equipment> e = GameManager.Instance.PlayerStats.EquipmentInventory.Where(x => x.Base.equipSlot == type && !x.IsEquipped).ToList();
+        foreach (Equipment equip in e)
+        {
+            AddInventorySlot(equip, currentCallback);
+        }
+        DeactivateSlotsInPool();
+    }
+
+    public void ShowEquipmentBySlotType(EquipSlotType[] types)
+    {
+        ClearSlots();
+        List<Equipment> e = GameManager.Instance.PlayerStats.EquipmentInventory.Where(x => types.Contains(x.Base.equipSlot) && !x.IsEquipped).ToList();
+        foreach (Equipment equip in e)
+        {
+            AddInventorySlot(equip, currentCallback);
         }
         DeactivateSlotsInPool();
     }
@@ -237,25 +227,6 @@ public class InventoryScrollWindow : MonoBehaviour
     public void ConfirmOnClick()
     {
         confirmOnClick?.Invoke(selectedItems);
-    }
-
-    public void ToggleAffixInfoOnClick()
-    {
-        showItemAffixes = !showItemAffixes;
-        SetGridCellSize();
-        foreach(var x in SlotsInUse)
-        {
-            x.UpdateSlot();
-        }
-    }
-
-    public void CheckHeroRequirements(HeroData hero)
-    {
-        foreach(InventorySlot inventorySlot in SlotsInUse)
-        {
-            if (inventorySlot.item is Equipment equip && !hero.CanEquipItem(equip))
-                inventorySlot.lockImage.gameObject.SetActive(true);
-        }
     }
 }
 

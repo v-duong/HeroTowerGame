@@ -15,6 +15,6 @@ public class InfoUI : MonoBehaviour
                 s += pair.Key + ": " + pair.Value + "\n";
             }
             */
-        //statsText.text = s;
+        statsText.text = s;
     }
 }

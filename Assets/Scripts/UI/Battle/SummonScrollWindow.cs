@@ -1,5 +1,4 @@
 ﻿using System.Collections.Generic;
-using TMPro;
 using UnityEngine;
 
 public class SummonScrollWindow : MonoBehaviour
@@ -9,9 +8,6 @@ public class SummonScrollWindow : MonoBehaviour
 
     [SerializeField]
     private GameObject panelParent;
-
-    [SerializeField]
-    private TextMeshProUGUI buttonText;
 
     private readonly List<SummonScrollSlot> summonSlots = new List<SummonScrollSlot>();
     private bool isHidden = false;
@@ -40,13 +36,11 @@ public class SummonScrollWindow : MonoBehaviour
 
         if (isHidden)
         {
-            buttonText.text = "Show Unit Panel";
             parentRect.anchoredPosition = new Vector2(0, -90);
             infoRect.anchoredPosition = new Vector2(0, 25);
         }
         else
         {
-            buttonText.text = "Hide Unit Panel";
             parentRect.anchoredPosition = new Vector2(0, 0);
             infoRect.anchoredPosition = new Vector2(0, 115);
         }

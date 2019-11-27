@@ -30,7 +30,6 @@ public class HeroEquipmentSlot : MonoBehaviour
         }
 
         ui.InvScrollContent.SetCallback(ItemSlotCallback);
-        ui.InvScrollContent.CheckHeroRequirements(hero);
     }
 
     public bool OffhandFilter(Equipment e)
