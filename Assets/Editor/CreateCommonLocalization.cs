@@ -145,6 +145,17 @@ public class CreateCommonLocalization
                     keys.Remove(localizationKey);
             }
 
+            List<string> primaryTargetings = new List<string>(Enum.GetNames(typeof(PrimaryTargetingType)));
+
+            foreach (string x in primaryTargetings)
+            {
+                string localizationKey = "primaryTargetingType." + x;
+                if (!localization.ContainsKey(localizationKey))
+                    localization.Add(localizationKey, "");
+                else
+                    keys.Remove(localizationKey);
+            }
+
             string filepath2 = "Assets/Resources/json/localization/UIKeys.txt";
             string uiKeysText = System.IO.File.ReadAllText(filepath2);
 

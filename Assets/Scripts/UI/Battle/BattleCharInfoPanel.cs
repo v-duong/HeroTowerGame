@@ -55,7 +55,7 @@ public class BattleCharInfoPanel : MonoBehaviour
             if (actor.GetActorType() == ActorType.ALLY)
             {
                 heroControls.SetActive(true);
-                targetText.text = actor.targetingPriority.ToString();
+                targetText.text = LocalizationManager.Instance.GetLocalizationText("primaryTargetingType." + actor.targetingPriority.ToString());
             }
             else
             {
@@ -66,10 +66,6 @@ public class BattleCharInfoPanel : MonoBehaviour
         }
     }
 
-    public void SetTimescale(float value)
-    {
-        GameManager.SetTimescale(value);
-    }
 
     public void MoveHero()
     {
@@ -95,6 +91,6 @@ public class BattleCharInfoPanel : MonoBehaviour
                 break;
         }
 
-        targetText.text = actor.targetingPriority.ToString();
+        targetText.text = LocalizationManager.Instance.GetLocalizationText("primaryTargetingType." + actor.targetingPriority.ToString());
     }
 }

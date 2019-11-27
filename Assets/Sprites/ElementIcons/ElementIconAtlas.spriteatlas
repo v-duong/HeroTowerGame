@@ -1,0 +1,63 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!687078895 &4343727234628468602
+SpriteAtlas:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: ElementIconAtlas
+  m_EditorData:
+    serializedVersion: 2
+    textureSettings:
+      serializedVersion: 2
+      anisoLevel: 1
+      compressionQuality: 50
+      maxTextureSize: 2048
+      textureCompression: 0
+      filterMode: 2
+      generateMipMaps: 0
+      readable: 0
+      crunchedCompression: 0
+      sRGB: 1
+    platformSettings: []
+    packingSettings:
+      serializedVersion: 2
+      padding: 4
+      blockOffset: 1
+      allowAlphaSplitting: 0
+      enableRotation: 1
+      enableTightPacking: 1
+    variantMultiplier: 1
+    packables:
+    - {fileID: 2800000, guid: e0d452d9f979e3645a25e4d961e9b0c0, type: 3}
+    - {fileID: 2800000, guid: 26858dfafe3b95142bc4d0803d33b937, type: 3}
+    - {fileID: 2800000, guid: bca456babc55026429f8e871a378193c, type: 3}
+    - {fileID: 2800000, guid: a98cc95870cdbb448a0407d885d22994, type: 3}
+    - {fileID: 2800000, guid: 6e6a6666cc316534d94d2c34aab9027f, type: 3}
+    - {fileID: 2800000, guid: 1d45026cedd5a6d448a9663c24e24016, type: 3}
+    - {fileID: 2800000, guid: 0c5ba9a24a7f3c640ac525ec88feb575, type: 3}
+    totalSpriteSurfaceArea: 458752
+    bindAsDefault: 1
+    storedHash:
+      serializedVersion: 2
+      Hash: d569e17cfc7725ac9669aa399138b913
+  m_MasterAtlas: {fileID: 0}
+  m_PackedSprites:
+  - {fileID: 21300000, guid: 0c5ba9a24a7f3c640ac525ec88feb575, type: 3}
+  - {fileID: 21300000, guid: 6e6a6666cc316534d94d2c34aab9027f, type: 3}
+  - {fileID: 21300000, guid: a98cc95870cdbb448a0407d885d22994, type: 3}
+  - {fileID: 21300000, guid: e0d452d9f979e3645a25e4d961e9b0c0, type: 3}
+  - {fileID: 21300000, guid: bca456babc55026429f8e871a378193c, type: 3}
+  - {fileID: 21300000, guid: 26858dfafe3b95142bc4d0803d33b937, type: 3}
+  - {fileID: 21300000, guid: 1d45026cedd5a6d448a9663c24e24016, type: 3}
+  m_PackedSpriteNamesToIndex:
+  - iconVoid
+  - IconLightning
+  - IconFire
+  - IconCold
+  - IconEarth
+  - IconDivine
+  - IconPhysical
+  m_Tag: ElementIconAtlas
+  m_IsVariant: 0

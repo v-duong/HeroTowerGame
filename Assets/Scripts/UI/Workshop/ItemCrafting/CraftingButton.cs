@@ -71,7 +71,7 @@ public class CraftingButton : MonoBehaviour
                     return;
             }
 
-            costText = cost.ToString("N0");
+            costText = cost.ToString("N0") + " <sprite=10>";
 
             if (cost != 0)
             {
@@ -98,26 +98,32 @@ public class CraftingButton : MonoBehaviour
                 text = "Reroll All Affixes?";
                 confirmAction = delegate { UIManager.Instance.ItemCraftingPanel.RerollAffixOnClick(); UIManager.Instance.CloseCurrentWindow(); };
                 break;
+
             case CraftingOptionType.REROLL_VALUES:
                 text = "Reroll Affix Values?";
                 confirmAction = delegate { UIManager.Instance.ItemCraftingPanel.RerollValuesOnClick(); UIManager.Instance.CloseCurrentWindow(); };
                 break;
+
             case CraftingOptionType.ADD_AFFIX:
                 text = "Add a Random Affix?";
                 confirmAction = delegate { UIManager.Instance.ItemCraftingPanel.AddAffixOnClick(); UIManager.Instance.CloseCurrentWindow(); };
                 break;
+
             case CraftingOptionType.REMOVE_AFFIX:
                 text = "Remove a Random Affix?";
                 confirmAction = delegate { UIManager.Instance.ItemCraftingPanel.RemoveAffixOnClick(); UIManager.Instance.CloseCurrentWindow(); };
                 break;
+
             case CraftingOptionType.UPGRADE_RARITY:
                 text = "Upgrade Rarity and Add a Random Affix?";
                 confirmAction = delegate { UIManager.Instance.ItemCraftingPanel.UpgradeRarityOnClick(); UIManager.Instance.CloseCurrentWindow(); };
                 break;
+
             case CraftingOptionType.TO_NORMAL:
                 text = "Clear All Affixes and Turn Item To Normal?";
                 confirmAction = delegate { UIManager.Instance.ItemCraftingPanel.ToNormalOnClick(); UIManager.Instance.CloseCurrentWindow(); };
                 break;
+
             default:
                 return;
         }
@@ -127,6 +133,6 @@ public class CraftingButton : MonoBehaviour
         popUpWindow.textField.paragraphSpacing = 0;
         popUpWindow.textField.alignment = TextAlignmentOptions.Center;
 
-        popUpWindow.SetButtonValues("Confirm", confirmAction, "Cancel", delegate { UIManager.Instance.CloseCurrentWindow(); });
+        popUpWindow.SetButtonValues("-" + costText, confirmAction, "Cancel", delegate { UIManager.Instance.CloseCurrentWindow(); });
     }
 }
