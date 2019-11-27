@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class BattlePlayerInfoPanel : MonoBehaviour
 {
@@ -9,7 +10,7 @@ public class BattlePlayerInfoPanel : MonoBehaviour
     public GameObject menuParent;
     public TextMeshProUGUI lifeText;
     public TextMeshProUGUI soulPointText;
-    public float timeLeftForNextWave = 0f;
+    public List<Button> timeControlButtons;
     private float oldTimescale = 1f;
 
     private void Start()
@@ -19,8 +20,8 @@ public class BattlePlayerInfoPanel : MonoBehaviour
 
     private void Update()
     {
-        lifeText.text = "Life: " + StageManager.Instance.BattleManager.playerHealth;
-        soulPointText.text = "SP: " + StageManager.Instance.BattleManager.playerSoulpoints;
+        lifeText.text = "<sprite=11> " + StageManager.Instance.BattleManager.playerHealth;
+        soulPointText.text = "<sprite=12> " + StageManager.Instance.BattleManager.playerSoulpoints;
     }
 
     public void InitializeNextWaveInfo(List<EnemyWaveItem> nextWave, List<EnemyWaveItem> waveAfter, float timeUntil, int waveNum, bool isStartWave = false)
@@ -37,6 +38,7 @@ public class BattlePlayerInfoPanel : MonoBehaviour
             nextWavePanel.startwaveButton.gameObject.SetActive(true);
             nextWavePanel.waveNumText.text = "Wave " + waveNum;
             nextWavePanel.timeUntilNext = timeUntil;
+            nextWavePanel.originalTime = timeUntil;
             nextWavePanel.timeText.text = timeUntil.ToString("N2");
             string nextWaveEnemyString = "";
 
@@ -56,7 +58,7 @@ public class BattlePlayerInfoPanel : MonoBehaviour
             waveAfterPanel.waveNumText.text = "";
             nextWavePanel.timeText.text = "";
             return;
-        } 
+        }
 
         if (waveAfter != null)
         {
@@ -95,7 +97,7 @@ public class BattlePlayerInfoPanel : MonoBehaviour
         menuParent.SetActive(false);
 #if UNITY_EDITOR
         StageManager.Instance.BattleManager.EndBattle(true);
-#else 
+#else
          StageManager.Instance.BattleManager.EndBattle(false);
 #endif
     }
@@ -108,5 +110,20 @@ public class BattlePlayerInfoPanel : MonoBehaviour
     public void RushWaveButton()
     {
         StageManager.Instance.BattleManager.RushNextWave();
+    }
+
+    public void SetTimescale(float value)
+    {
+        GameManager.SetTimescale(value);
+    }
+
+    public void SetButtonActiveColor(Button currentButton)
+    {
+        foreach (Button button in timeControlButtons)
+        {
+            button.targetGraphic.color = new Color(0.28f, 0.28f, 0.28f);
+        }
+        timeControlButtons.Find(x => x == currentButton).targetGraphic.color = new Color(0.75f, 0.75f, 0.75f);
+
     }
 }

@@ -93,26 +93,35 @@ public class LocalizationManager : MonoBehaviour
         switch (element)
         {
             case ElementType.FIRE:
-                return "<color=#e03131>" + s + "</color>";
+                s = "<color=#e03131>" + s + "</color>";
+                break;
 
             case ElementType.COLD:
-                return "<color=#33b7e8>" + s + "</color>";
+                s = "<color=#33b7e8>" + s + "</color>";
+                break;
 
             case ElementType.LIGHTNING:
-                return "<color=#9da800>" + s + "</color>";
+                s = "<color=#9da800>" + s + "</color>";
+                break;
 
             case ElementType.EARTH:
-                return "<color=#7c5916>" + s + "</color>";
+                s = "<color=#7c5916>" + s + "</color>";
+                break;
 
             case ElementType.DIVINE:
-                return "<color=#f29e02>" + s + "</color>";
+                s = "<color=#f29e02>" + s + "</color>";
+                break;
 
             case ElementType.VOID:
-                return "<color=#56407c>" + s + "</color>";
+                s = "<color=#56407c>" + s + "</color>";
+                break;
 
             default:
-                return s;
+                break;
         }
+
+        s = "<sprite=" + (int)element + ">" + s;
+        return s;
     }
 
     public string GetLocalizationText_AbilityBaseDamage(int level, AbilityBase ability)

@@ -100,11 +100,12 @@ public class ItemCraftingPanel : MonoBehaviour
         innateHeader.gameObject.SetActive(false);
         prefixHeader.gameObject.SetActive(false);
         suffixHeader.gameObject.SetActive(false);
-        playerFragmentsText.text = GameManager.Instance.PlayerStats.ItemFragments.ToString("N0") + " Frags";
+        playerFragmentsText.text = GameManager.Instance.PlayerStats.ItemFragments.ToString("N0") + " <sprite=10>";
         UpdateButtons();
 
         if (currentItem == null)
         {
+            itemSlot.text.text = "Select an Item";
             itemSlot.GetComponentInChildren<Image>().color = Helpers.ReturnRarityColor(RarityType.NORMAL);
             topPanelBackground.color = Helpers.ReturnRarityColor(RarityType.NORMAL);
             return;
@@ -187,7 +188,7 @@ public class ItemCraftingPanel : MonoBehaviour
             suffixes.text += "○" + Affix.BuildAffixString(a.Base, Helpers.AFFIX_STRING_SPACING, a, a.GetAffixValues(), a.GetEffectValues(), showAffixDetails, showAffixDetails && currentItem.Rarity != RarityType.UNIQUE);
         }
 
-        itemValue.text = "Item Value\n" + currentItem.GetItemValue() + " Fragments";
+        itemValue.text = "Item Value\n" + currentItem.GetItemValue() + " <sprite=10>";
 
         if (currentItem.GetItemType() == ItemType.WEAPON)
         {
