@@ -59,9 +59,9 @@ public class LocalizationManager : MonoBehaviour
         }
     }
 
-    public string GetLocalizationText_SlotType(string stringId)
+    public string GetLocalizationText(EquipSlotType equipSlot)
     {
-        return GetLocalizationText("slotType." + stringId);
+        return GetLocalizationText("slotType." + equipSlot.ToString());
     }
 
     public string[] GetLocalizationText_Ability(string stringId)
@@ -120,7 +120,7 @@ public class LocalizationManager : MonoBehaviour
                 break;
         }
 
-        s = "<sprite=" + (int)element + ">" + s;
+        s = "<sprite=" + (int)element + "> " + s;
         return s;
     }
 
@@ -134,7 +134,7 @@ public class LocalizationManager : MonoBehaviour
             foreach (KeyValuePair<ElementType, AbilityDamageBase> damage in ability.damageLevels)
             {
                 var d = damage.Value.damage[level];
-                s += string.Format(damageText, d.min, d.max, GetLocalizationText_Element(damage.Key)) + "\n";
+                s += string.Format(damageText, BuildElementalDamageString("<b>" + d.min + "~" + d.max + "</b>", damage.Key)) + "\n";
             }
         }
         else if (ability.abilityType == AbilityType.ATTACK)
@@ -142,6 +142,10 @@ public class LocalizationManager : MonoBehaviour
             damageText = GetLocalizationText("UI_DEAL_DAMAGE_WEAPON");
             float d = ability.weaponMultiplier + ability.weaponMultiplierScaling * level;
             s += string.Format(damageText, d) + "\n";
+        }
+        if (ability.hitCount > 1)
+        {
+            s += "Hits " + ability.hitCount + "x at " + ability.hitDamageModifier.ToString("P1") + " Damage";
         }
         return s;
     }
@@ -154,7 +158,7 @@ public class LocalizationManager : MonoBehaviour
         {
             if (damageData.Value.calculatedRange.IsZero())
                 continue;
-            s += string.Format(damageText, damageData.Value.calculatedRange.min, damageData.Value.calculatedRange.max, GetLocalizationText_Element(damageData.Key)) + "\n";
+            s += string.Format(damageText, BuildElementalDamageString( "<b>" + damageData.Value.calculatedRange.min + "~" + damageData.Value.calculatedRange.max + "</b>", damageData.Key)) + "\n";
         }
         return s;
     }
@@ -201,8 +205,9 @@ public class LocalizationManager : MonoBehaviour
         }
     }
 
-    public string GetLocalizationText_GroupType(string stringId)
+    public string GetLocalizationText(GroupType groupType)
     {
+        string stringId = groupType.ToString();
         if (commonLocalizationData.TryGetValue("groupType." + stringId, out string value))
         {
             if (value == "")
@@ -215,8 +220,9 @@ public class LocalizationManager : MonoBehaviour
         }
     }
 
-    public string GetLocalizationText_GroupTypeRestriction(string stringId)
+    public string GetLocalizationText_GroupTypeRestriction(GroupType groupType)
     {
+        string stringId = groupType.ToString();
         if (commonLocalizationData.TryGetValue("groupType." + stringId + ".restriction", out string value))
         {
             if (value == "")
@@ -225,7 +231,7 @@ public class LocalizationManager : MonoBehaviour
             if (value.Contains("{plural}"))
                 value = value.Replace("{plural}", GetLocalizationText_GroupTypePlural(stringId));
             else if (value.Contains("{single}"))
-                value = value.Replace("{single}", GetLocalizationText_GroupType(stringId));
+                value = value.Replace("{single}", GetLocalizationText(groupType));
 
             return value;
         }
@@ -293,18 +299,18 @@ public class LocalizationManager : MonoBehaviour
 
                 if (triggeredEffect.effectDuration > 0)
                 {
-                    effectString += " for " + triggeredEffect.effectDuration.ToString("N#.#") + "s";
+                    effectString += " for " + triggeredEffect.effectDuration.ToString("#.#") + "s";
                 }
                 break;
         }
 
         string restrictionString = "";
         if (triggeredEffect.restriction != GroupType.NO_GROUP)
-            restrictionString = GetLocalizationText_GroupTypeRestriction(triggeredEffect.restriction.ToString());
+            restrictionString = GetLocalizationText_GroupTypeRestriction(triggeredEffect.restriction);
 
         if (triggeredEffect.triggerChance < 1)
         {
-            s = triggeredEffect.triggerChance.ToString("P0") + " to " + s;
+            s = triggeredEffect.triggerChance.ToString("P0") + " Chance to " + s;
         }
 
         s = string.Format(s, restrictionString, effectString) + '\n';
@@ -318,12 +324,12 @@ public class LocalizationManager : MonoBehaviour
 
         if (restriction != GroupType.NO_GROUP)
         {
-            output = GetLocalizationText_GroupTypeRestriction(restriction.ToString()) + ", " + output;
+            output = GetLocalizationText_GroupTypeRestriction(restriction) + ", " + output;
         }
 
         if (type >= (BonusType)HeroArchetypeData.SpecialBonusStart)
         {
-            return output;
+            return output +"\n";
         }
 
         output += "<nobr>";
@@ -364,7 +370,7 @@ public class LocalizationManager : MonoBehaviour
 
         if (restriction != GroupType.NO_GROUP)
         {
-            output = GetLocalizationText_GroupTypeRestriction(restriction.ToString()) + ", " + output;
+            output = GetLocalizationText_GroupTypeRestriction(restriction) + ", " + output;
         }
 
         string valueString;
@@ -395,7 +401,33 @@ public class LocalizationManager : MonoBehaviour
         return output;
     }
 
-    private static string GetBonusTypeString(BonusType type)
+    public string GetRequirementText(Equipment equip)
+    {
+        string s = "Requires ";
+        if (equip.levelRequirement > 0)
+        {
+            s += "Lv" + equip.levelRequirement;
+        }
+        if (equip.strRequirement > 0)
+        {
+            s += ", " + equip.strRequirement + " Str";
+        }
+        if (equip.intRequirement > 0)
+        {
+            s += ", " + equip.intRequirement + " Int";
+        }
+        if (equip.agiRequirement > 0)
+        {
+            s += ", " + equip.agiRequirement + " Agi";
+        }
+        if (equip.willRequirement > 0)
+        {
+            s += ", " + equip.willRequirement + " Will";
+        }
+        return s.Trim(' ', ',');
+    }
+
+    public static string GetBonusTypeString(BonusType type)
     {
         if (commonLocalizationData.TryGetValue("bonusType." + type.ToString(), out string output))
         {

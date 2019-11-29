@@ -8,6 +8,8 @@ public class ArchetypeUITreeWindow : MonoBehaviour
     private static Vector3 LineOffsetY = Vector3.zero;
     private Vector3 primaryTreeStartingView = Vector3.zero;
     private Vector3 secondaryTreeStartingView = Vector3.zero;
+    public Sprite LargeNodeImage;
+
     public ArchetypeUITreeNode nodePrefab;
     public HeroData hero;
     public HeroArchetypeData[] archetypeData = new HeroArchetypeData[2];
@@ -30,10 +32,12 @@ public class ArchetypeUITreeWindow : MonoBehaviour
         foreach (ArchetypeUITreeNode node in primaryNodes.Values)
         {
             node.gameObject.SetActive(false);
+            Destroy(node.gameObject);
         }
         foreach (ArchetypeUITreeNode node in secondaryNodes.Values)
         {
             node.gameObject.SetActive(false);
+            Destroy(node.gameObject);
         }
 
         primaryNodes.Clear();
@@ -87,9 +91,9 @@ public class ArchetypeUITreeWindow : MonoBehaviour
         {
             uiNode.CheckSurroundingNodes();
             if (uiNode.node.id == 0)
-                homeNodePosition = (uiNode.transform as RectTransform).anchoredPosition - halfScreen;
+                homeNodePosition = (uiNode.transform as RectTransform).anchoredPosition;
         }
-        treeParent.rectTransform.sizeDelta = new Vector2(largestX * 230, largestY * 150);
+        treeParent.rectTransform.sizeDelta = new Vector2(largestX * 250, largestY * 160);
         return -homeNodePosition;
     }
 
@@ -111,7 +115,7 @@ public class ArchetypeUITreeWindow : MonoBehaviour
         {
             uiNode.CheckSurroundingNodes();
             if (uiNode.node.id == 0)
-                homeNodePosition = (uiNode.transform as RectTransform).anchoredPosition - halfScreen;
+                homeNodePosition = (uiNode.transform as RectTransform).anchoredPosition;
         }
         treeParent.rectTransform.sizeDelta = new Vector2(largestX * 230, largestY * 150);
         return -homeNodePosition;
@@ -250,6 +254,8 @@ public class ArchetypeUITreeWindow : MonoBehaviour
 
     public void SetTreeStartingView(int treeNum)
     {
+        primaryTreeParent.transform.localScale = Vector3.one;
+        secondaryTreeParent.transform.localScale = Vector3.one;
         (primaryTreeParent.transform as RectTransform).anchoredPosition = primaryTreeStartingView;
         (secondaryTreeParent.transform as RectTransform).anchoredPosition = secondaryTreeStartingView;
     }

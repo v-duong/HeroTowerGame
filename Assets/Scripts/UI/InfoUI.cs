@@ -7,7 +7,7 @@ public class InfoUI : MonoBehaviour
 
     private void Update()
     {
-        string s = "";
+        //string s = "";
         /*
         if (GameManager.Instance.PlayerStats.consumables != null)
             foreach (KeyValuePair<ConsumableType, int> pair in GameManager.Instance.PlayerStats.consumables)

@@ -36,6 +36,9 @@ public class HeroSlot : MonoBehaviour
         if (hero.GetAbilityFromSlot(0) != null)
         {
             ability1Text.text = hero.GetAbilityFromSlot(0).abilityBase.idName;
+
+            if (!hero.GetAbilityFromSlot(0).IsUsable)
+                ability1Text.text = "<color=#b00000>" + ability1Text.text + " (Unusable)</color>";
         } else
         {
             ability1Text.text = "";
@@ -44,6 +47,10 @@ public class HeroSlot : MonoBehaviour
         if (hero.GetAbilityFromSlot(1) != null)
         {
             ability2Text.text = hero.GetAbilityFromSlot(1).abilityBase.idName;
+
+
+            if (!hero.GetAbilityFromSlot(1).IsUsable)
+                ability2Text.text = "<color=#b00000>" + ability2Text.text + " (Unusable)</color>";
         } else
         {
             ability2Text.text = "";
@@ -93,8 +100,9 @@ public class HeroSlot : MonoBehaviour
             return;
         }
         HeroDetailWindow detailWindow = UIManager.Instance.HeroDetailWindow;
-        UIManager.Instance.OpenWindow(detailWindow.gameObject);
         HeroDetailWindow.hero = hero;
-        detailWindow.UpdateWindow();
+        UIManager.Instance.OpenWindow(detailWindow.gameObject);
+        detailWindow.SetCategorySelected(0);
+        detailWindow.SetArchetypeCategoryNames(hero.PrimaryArchetype.Base.idName, hero.SecondaryArchetype?.Base.idName);
     }
 }

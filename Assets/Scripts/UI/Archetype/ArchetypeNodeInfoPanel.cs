@@ -7,6 +7,8 @@ public class ArchetypeNodeInfoPanel : MonoBehaviour
     public HeroArchetypeData archetypeData;
     public ArchetypeSkillNode node;
     public TextMeshProUGUI infoText;
+    public TextMeshProUGUI nextInfoText;
+    public TextMeshProUGUI topApText;
     public ArchetypeUITreeNode uiNode;
     public Button levelButton;
     public Button delevelButton;
@@ -20,11 +22,13 @@ public class ArchetypeNodeInfoPanel : MonoBehaviour
         {
             levelButton.gameObject.SetActive(false);
             delevelButton.gameObject.SetActive(false);
+            topApText.text = "";
         }
         else
         {
             levelButton.gameObject.SetActive(true);
             delevelButton.gameObject.SetActive(true);
+            topApText.text = "AP: " + hero.ArchetypePoints;
         }
     }
 
@@ -38,6 +42,8 @@ public class ArchetypeNodeInfoPanel : MonoBehaviour
         levelButton.interactable = false;
         delevelButton.interactable = false;
         infoText.text = "";
+        nextInfoText.text = "";
+        topApText.text = "";
     }
 
     public void SetAndUpdatePanel(ArchetypeSkillNode node, HeroArchetypeData archetypeData, ArchetypeUITreeNode uiNode)
@@ -45,6 +51,7 @@ public class ArchetypeNodeInfoPanel : MonoBehaviour
         this.node = node;
         this.archetypeData = archetypeData;
         this.uiNode = uiNode;
+
         if (isPreviewMode)
         {
             UpdatePanel_Preview();
@@ -69,6 +76,9 @@ public class ArchetypeNodeInfoPanel : MonoBehaviour
             delevelButton.interactable = false;
 
         infoText.text = "";
+        nextInfoText.text = "";
+        topApText.text = "AP: " + hero.ArchetypePoints;
+        nextInfoText.gameObject.SetActive(false);
         if (node.type == NodeType.ABILITY)
         {
             string[] strings = LocalizationManager.Instance.GetLocalizationText_Ability(node.abilityId);
@@ -84,8 +94,9 @@ public class ArchetypeNodeInfoPanel : MonoBehaviour
                 infoText.text += node.GetBonusInfoString(1);
                 if (node.maxLevel > 1)
                 {
-                    infoText.text += "<b>Level " + (node.maxLevel) + ":</b>\n";
-                    infoText.text += node.GetBonusInfoString(node.maxLevel);
+                    nextInfoText.gameObject.SetActive(true);
+                    nextInfoText.text += "<b>Level " + (node.maxLevel) + ":</b>\n";
+                    nextInfoText.text += node.GetBonusInfoString(node.maxLevel);
                 }
                 return;
             }
@@ -96,8 +107,9 @@ public class ArchetypeNodeInfoPanel : MonoBehaviour
             }
             if (currentLevel != node.maxLevel)
             {
-                infoText.text += "<b>Next: Level " + (currentLevel + 1) + "</b>\n";
-                infoText.text += node.GetBonusInfoString(currentLevel + 1);
+                nextInfoText.gameObject.SetActive(true);
+                nextInfoText.text += "<b>Next: Level " + (currentLevel + 1) + "</b>\n";
+                nextInfoText.text += node.GetBonusInfoString(currentLevel + 1);
             }
         }
     }

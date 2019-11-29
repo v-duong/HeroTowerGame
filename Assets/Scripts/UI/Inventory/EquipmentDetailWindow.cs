@@ -6,21 +6,38 @@ using UnityEngine.UI;
 
 public class EquipmentDetailWindow : MonoBehaviour
 {
-
     [SerializeField]
     private TextMeshProUGUI nameText;
 
     [SerializeField]
-    private TextMeshProUGUI affixText;
+    private CraftingPanelAffixHeader innateHeader;
 
     [SerializeField]
-    private TextMeshProUGUI seperatorText;
+    private CraftingPanelAffixHeader prefixHeader;
 
     [SerializeField]
-    private TextMeshProUGUI infoText;
+    private CraftingPanelAffixHeader suffixHeader;
 
     [SerializeField]
-    public GameObject UpgradeButtonParent;
+    private RectTransform scrollParent;
+
+    [SerializeField]
+    private TextMeshProUGUI innateText;
+
+    [SerializeField]
+    private TextMeshProUGUI prefixText;
+
+    [SerializeField]
+    private TextMeshProUGUI suffixText;
+
+    [SerializeField]
+    private TextMeshProUGUI topLineText;
+
+    [SerializeField]
+    private TextMeshProUGUI statsText;
+
+    [SerializeField]
+    private TextMeshProUGUI damageText;
 
     [SerializeField]
     public GameObject EquipButtonParent;
@@ -36,26 +53,27 @@ public class EquipmentDetailWindow : MonoBehaviour
         GetComponentInChildren<Outline>().effectColor = Helpers.ReturnRarityColor(equip.Rarity);
         NameBackground.color = Helpers.ReturnRarityColor(equip.Rarity);
         nameText.text = equip.Name;
-        infoText.text = "";
-        infoText.text += LocalizationManager.Instance.GetLocalizationText("groupType." + equip.Base.group) + "\n";
-        infoText.text += "Requirements: Lv" + equip.levelRequirement;
-        if (equip.strRequirement > 0)
+        topLineText.text = "";
+        damageText.text = "";
+        statsText.text = "";
+
+        string groupTypeString = LocalizationManager.Instance.GetLocalizationText("groupType." + equip.Base.group);
+        string equipTypeString = LocalizationManager.Instance.GetLocalizationText("equipSlotType." + equip.Base.equipSlot);
+
+        if (equip.Rarity != RarityType.UNIQUE)
+            topLineText.text += equip.Base.idName + "\n";
+
+        if (groupTypeString.Equals(equipTypeString))
         {
-            infoText.text += ", " + equip.strRequirement + " Str";
+            topLineText.text += groupTypeString + "\n";
         }
-        if (equip.intRequirement > 0)
+        else
         {
-            infoText.text += ", " + equip.intRequirement + " Int";
+            topLineText.text += groupTypeString + " (" + equipTypeString + ")\n";
         }
-        if (equip.agiRequirement > 0)
-        {
-            infoText.text += ", " + equip.agiRequirement + " Agi";
-        }
-        if (equip.willRequirement > 0)
-        {
-            infoText.text += ", " + equip.willRequirement + " Will";
-        }
-        infoText.text += "\n\n";
+
+        topLineText.text += "Item Level " + equip.ItemLevel + "\n";
+        topLineText.text += LocalizationManager.Instance.GetRequirementText(equip);
 
         if (equip.GetItemType() == ItemType.ARMOR)
         {
@@ -66,48 +84,62 @@ public class EquipmentDetailWindow : MonoBehaviour
             UpdateWindowEquipment_Weapon((Weapon)equip);
         }
 
-        affixText.text = "";
+        innateText.text = "";
+        prefixText.text = "";
+        suffixText.text = "";
 
         if (equip.innate.Count > 0)
         {
-            affixText.text += "Innate\n";
+            innateHeader.gameObject.SetActive(true);
             foreach (Affix a in equip.innate)
             {
-                affixText.text += "○" + Affix.BuildAffixString(a.Base, Helpers.AFFIX_STRING_SPACING, a, a.GetAffixValues(), a.GetEffectValues());
+                innateText.text += "○" + Affix.BuildAffixString(a.Base, Helpers.AFFIX_STRING_SPACING, a, a.GetAffixValues(), a.GetEffectValues());
             }
-            affixText.text += "\n";
+        }
+        else
+        {
+            innateHeader.gameObject.SetActive(false);
         }
 
         if (equip.prefixes.Count > 0)
         {
+            prefixHeader.gameObject.SetActive(true);
             if (equip.Rarity == RarityType.UNIQUE)
-                affixText.text += "Affixes\n";
+                prefixHeader.headerText.text = "Affixes";
             else
-                affixText.text += "Prefix\n";
+                prefixHeader.headerText.text = "Prefixes";
             foreach (Affix a in equip.prefixes)
             {
-                affixText.text += "○" + Affix.BuildAffixString(a.Base, Helpers.AFFIX_STRING_SPACING, a, a.GetAffixValues(), a.GetEffectValues());
+                prefixText.text += "○" + Affix.BuildAffixString(a.Base, Helpers.AFFIX_STRING_SPACING, a, a.GetAffixValues(), a.GetEffectValues());
             }
         }
-
-        affixText.text += "\n";
+        else
+        {
+            prefixHeader.gameObject.SetActive(false);
+        }
 
         if (equip.suffixes.Count > 0)
         {
-            affixText.text += "Suffix\n";
+            suffixHeader.gameObject.SetActive(true);
             foreach (Affix a in equip.suffixes)
             {
-                affixText.text += "○" + Affix.BuildAffixString(a.Base, Helpers.AFFIX_STRING_SPACING, a, a.GetAffixValues(), a.GetEffectValues());
+                suffixText.text += "○" + Affix.BuildAffixString(a.Base, Helpers.AFFIX_STRING_SPACING, a, a.GetAffixValues(), a.GetEffectValues());
             }
+        }
+        else
+        {
+            suffixHeader.gameObject.SetActive(false);
         }
 
         if (hero != null)
         {
+            scrollParent.offsetMin = new Vector2(scrollParent.offsetMin.x, 45);
             EquipButtonParent.gameObject.SetActive(true);
             EquipButtonParent.GetComponentInChildren<Button>().interactable = hero.CanEquipItem(equip);
         }
         else
         {
+            scrollParent.offsetMin = new Vector2(scrollParent.offsetMin.x, 0);
             EquipButtonParent.gameObject.SetActive(false);
             EquipButtonParent.GetComponentInChildren<Button>().interactable = true;
         }
@@ -116,13 +148,13 @@ public class EquipmentDetailWindow : MonoBehaviour
     public void UpdateWindowEquipment_Armor(Armor armorItem)
     {
         if (armorItem.armor != 0)
-            infoText.text += "Armor: " + armorItem.armor + "\n";
+            damageText.text += "Armor: " + armorItem.armor + "\n";
         if (armorItem.shield != 0)
-            infoText.text += "Shield: " + armorItem.shield + "\n";
+            damageText.text += "Shield: " + armorItem.shield + "\n";
         if (armorItem.dodgeRating != 0)
-            infoText.text += "Dodge Rating: " + armorItem.dodgeRating + "\n";
+            damageText.text += "Dodge Rating: " + armorItem.dodgeRating + "\n";
         if (armorItem.resolveRating != 0)
-            infoText.text += "Resolve: " + armorItem.resolveRating + "\n";
+            damageText.text += "Resolve: " + armorItem.resolveRating + "\n";
     }
 
     public void UpdateWindowEquipment_Weapon(Weapon weaponItem)
@@ -130,11 +162,7 @@ public class EquipmentDetailWindow : MonoBehaviour
         bool hasElemental = false;
         bool hasPrimordial = false;
         List<string> elementalDamage = new List<string>();
-        List<string> elementalDps = new List<string>();
         List<string> primDamage = new List<string>();
-        List<string> primDps = new List<string>();
-        string physDPS;
-        string physDamage = "";
         MinMaxRange range;
         float dps;
 
@@ -145,57 +173,37 @@ public class EquipmentDetailWindow : MonoBehaviour
             {
                 hasElemental = true;
                 dps = (range.min + range.max) / 2f * weaponItem.AttackSpeed;
-                elementalDps.Add(LocalizationManager.BuildElementalDamageString(dps.ToString("F1"), (ElementType)i));
-                elementalDamage.Add(LocalizationManager.BuildElementalDamageString(range.min + "-" + range.max, (ElementType)i));
+                elementalDamage.Add("<b>" + LocalizationManager.BuildElementalDamageString(range.min + "-" + range.max + " (" + dps.ToString("N1") + ")", (ElementType)i) + "</b>");
             }
         }
 
-        range = weaponItem.GetWeaponDamage(ElementType.DIVINE);
-        if (!range.IsZero())
+        for (int i = (int)ElementType.DIVINE; i <= (int)ElementType.VOID; i++)
         {
-            hasPrimordial = true;
-            dps = (range.min + range.max) / 2f * weaponItem.AttackSpeed;
-            primDps.Add(LocalizationManager.BuildElementalDamageString(dps.ToString("F1"), ElementType.DIVINE));
-            primDamage.Add(LocalizationManager.BuildElementalDamageString(range.min + "-" + range.max, ElementType.DIVINE));
-        }
-
-        range = weaponItem.GetWeaponDamage(ElementType.VOID);
-        if (!range.IsZero())
-        {
-            hasPrimordial = true;
-            dps = (range.min + range.max) / 2f * weaponItem.AttackSpeed;
-            primDps.Add(LocalizationManager.BuildElementalDamageString(dps.ToString("F1"), ElementType.VOID));
-            primDamage.Add(LocalizationManager.BuildElementalDamageString(range.min + "-" + range.max, ElementType.VOID));
+            range = weaponItem.GetWeaponDamage((ElementType)i);
+            if (!range.IsZero())
+            {
+                hasPrimordial = true;
+                dps = (range.min + range.max) / 2f * weaponItem.AttackSpeed;
+                primDamage.Add("<b>" + LocalizationManager.BuildElementalDamageString(range.min + "-" + range.max + " (" + dps.ToString("N1") + ")", (ElementType)i) + "</b>");
+            }
         }
 
         if (weaponItem.PhysicalDamage.min != 0 && weaponItem.PhysicalDamage.max != 0)
         {
             dps = (weaponItem.PhysicalDamage.min + weaponItem.PhysicalDamage.max) / 2f * weaponItem.AttackSpeed;
-            infoText.text += "Phys. DPS: " + dps.ToString("F1") + "\n";
-            physDamage = "Phys. Damage: " + weaponItem.PhysicalDamage.min + "-" + weaponItem.PhysicalDamage.max + "\n";
+            damageText.text += "Physical Damage (DPS) \n<sprite=0><b> " + weaponItem.PhysicalDamage.min + "-" + weaponItem.PhysicalDamage.max + " (" + dps.ToString("N1") + ")</b>\n\n";
         }
         if (hasElemental)
         {
-            infoText.text += "Ele. DPS: " + String.Join(", ", elementalDps) + "\n";
+            damageText.text += "Elemental Damage (DPS) \n" + String.Join("\n", elementalDamage) + "\n\n";
         }
         if (hasPrimordial)
         {
-            infoText.text += "Prim. DPS: " + String.Join(", ", primDps) + "\n";
+            damageText.text += "Astral Damage (DPS) \n" + String.Join("\n", primDamage) + "\n\n";
         }
-        infoText.text += "\n";
-        infoText.text += physDamage;
-        if (hasElemental)
-        {
-            infoText.text += "Ele. Damage: " + String.Join(", ", elementalDamage) + "\n";
-        }
-        if (hasPrimordial)
-        {
-            infoText.text += "Prim. Damage: " + String.Join(", ", primDamage) + "\n";
-        }
-        infoText.text += "\n";
-        infoText.text += "Critical Chance: " + weaponItem.CriticalChance.ToString("F2") + "%\n";
-        infoText.text += "Attacks per Second: " + weaponItem.AttackSpeed.ToString("F2") + "\n";
-        infoText.text += "Range: " + weaponItem.WeaponRange.ToString("F2") + "\n";
+        statsText.text += "Critical Chance\n<b>" + weaponItem.CriticalChance.ToString("F2") + "%</b>\n";
+        statsText.text += "Attacks per Second\n<b>" + weaponItem.AttackSpeed.ToString("F2") + "/s</b>\n";
+        statsText.text += "Range\n<b>" + weaponItem.WeaponRange.ToString("F2") + "</b>";
     }
 
     public void OnEquipClick()

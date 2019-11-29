@@ -23,7 +23,22 @@ public class InventorySlot : MonoBehaviour
     public bool alreadySelected = false;
     public bool showItemValue = false;
 
-    public void UpdateSlot()
+    public void ClearSlot()
+    {
+        nameText.text = "Empty";
+        infoText1.text = "";
+        infoText2.text = "";
+        groupText.text = "";
+        slotText.text = "";
+        prefixText.text = "";
+        suffixText.text = "";
+        baseItemText.text = "";
+        equippedToText.text = "";
+        lockImage.gameObject.SetActive(false);
+        slotImage.color = Helpers.NORMAL_COLOR;
+    }
+
+    public void UpdateSlot(bool isHeroEquipSlot = false)
     {
         infoText1.text = "";
         infoText2.text = "";
@@ -46,8 +61,8 @@ public class InventorySlot : MonoBehaviour
         {
             case ItemType.ARMOR:
                 Armor armor = item as Armor;
-                groupText.text = LocalizationManager.Instance.GetLocalizationText_GroupType(armor.Base.group.ToString());
-                slotText.text = LocalizationManager.Instance.GetLocalizationText_SlotType(armor.Base.equipSlot.ToString());
+                groupText.text = LocalizationManager.Instance.GetLocalizationText(armor.Base.group);
+                slotText.text = LocalizationManager.Instance.GetLocalizationText(armor.Base.equipSlot);
                 infoText1.text += "AR: " + armor.armor + "\n";
                 infoText1.text += "MS: " + armor.shield;
                 infoText2.text += "DR: " + armor.dodgeRating + "\n";
@@ -56,7 +71,7 @@ public class InventorySlot : MonoBehaviour
 
             case ItemType.WEAPON:
                 Weapon weapon = item as Weapon;
-                groupText.text = LocalizationManager.Instance.GetLocalizationText_GroupType(weapon.Base.group.ToString());
+                groupText.text = LocalizationManager.Instance.GetLocalizationText(weapon.Base.group);
                 infoText1.text += "<sprite=0> DPS: " + weapon.GetPhysicalDPS().ToString("n1") + "\n";
                 infoText1.text += "<sprite=7> DPS: " + weapon.GetElementalDPS().ToString("n1") + "\n";
                 infoText1.text += "<sprite=8> DPS: " + weapon.GetPrimordialDPS().ToString("n1");
@@ -67,7 +82,25 @@ public class InventorySlot : MonoBehaviour
 
             case ItemType.ACCESSORY:
                 Accessory accessory = item as Accessory;
-                groupText.text = LocalizationManager.Instance.GetLocalizationText_GroupType(accessory.Base.group.ToString());
+                groupText.text = LocalizationManager.Instance.GetLocalizationText(accessory.Base.group);
+                if (!UIManager.Instance.InvScrollContent.showItemAffixes)
+                {
+                    if (accessory.prefixes.Count > 0)
+                    {
+                        foreach (var x in accessory.prefixes)
+                        {
+                            infoText1.text += "○ " + Affix.BuildAffixString(x.Base, 0, x, x.GetAffixValues(), x.GetEffectValues());
+                        }
+                    }
+
+                    if (accessory.suffixes.Count > 0)
+                    {
+                        foreach (var x in accessory.suffixes)
+                        {
+                            infoText2.text += "○ " + Affix.BuildAffixString(x.Base, 0, x, x.GetAffixValues(), x.GetEffectValues());
+                        }
+                    }
+                } 
                 break;
 
             default:
@@ -95,47 +128,58 @@ public class InventorySlot : MonoBehaviour
                 }
             }
             */
-            if (UIManager.Instance.InvScrollContent.showItemAffixes)
+            if (UIManager.Instance.InvScrollContent.showItemAffixes && !isHeroEquipSlot)
             {
-                affixParent.SetActive(true);
-
-                if (equip.prefixes.Count > 0)
-                {
-                    if (equip.Rarity == RarityType.UNIQUE)
-                    {
-                        prefixText.text += "<b>Affixes</b>\n";
-                        suffixText.gameObject.SetActive(false);
-                    }
-                    else
-                    {
-                        prefixText.text += "<b>Prefixes</b>\n";
-                    }
-                    foreach (var x in equip.prefixes)
-                    {
-                        prefixText.text += "○ " + Affix.BuildAffixString(x.Base, 0, x, x.GetAffixValues(), x.GetEffectValues());
-                    }
-                }
-
-                if (equip.suffixes.Count > 0)
-                {
-                    suffixText.gameObject.SetActive(true);
-                    suffixText.text += "<b>Suffixes</b>\n";
-                    foreach (var x in equip.suffixes)
-                    {
-                        suffixText.text += "○ " + Affix.BuildAffixString(x.Base, 0, x, x.GetAffixValues(), x.GetEffectValues());
-                    }
-                }
-            } else
+                ExpandItemSlot(equip);
+            }
+            else
             {
-                affixParent.SetActive(false);
+                DeflateItemSlot();
             }
         }
 
         if (showItemValue)
-            infoText1.text += "\n" + item.GetItemValue() + " Fragments";
+            baseItemText.text += " - " + item.GetItemValue() + " <sprite=10>";
 
         slotImage.color = Helpers.ReturnRarityColor(item.Rarity);
         //nameImage.color = Helpers.ReturnRarityColor(item.Rarity);
+    }
+
+    public void ExpandItemSlot(Equipment equip)
+    {
+        affixParent.SetActive(true);
+
+        if (equip.prefixes.Count > 0)
+        {
+            if (equip.Rarity == RarityType.UNIQUE)
+            {
+                prefixText.text += "<b>Affixes</b>\n";
+                suffixText.gameObject.SetActive(false);
+            }
+            else
+            {
+                prefixText.text += "<b>Prefixes</b>\n";
+            }
+            foreach (var x in equip.prefixes)
+            {
+                prefixText.text += "○ " + Affix.BuildAffixString(x.Base, 0, x, x.GetAffixValues(), x.GetEffectValues());
+            }
+        }
+
+        if (equip.suffixes.Count > 0)
+        {
+            suffixText.gameObject.SetActive(true);
+            suffixText.text += "<b>Suffixes</b>\n";
+            foreach (var x in equip.suffixes)
+            {
+                suffixText.text += "○ " + Affix.BuildAffixString(x.Base, 0, x, x.GetAffixValues(), x.GetEffectValues());
+            }
+        }
+    }
+
+    public void DeflateItemSlot()
+    {
+        affixParent.SetActive(false);
     }
 
     public void OnItemSlotClick()

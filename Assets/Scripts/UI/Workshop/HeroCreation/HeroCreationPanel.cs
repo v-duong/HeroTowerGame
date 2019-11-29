@@ -40,13 +40,18 @@ public class HeroCreationPanel : MonoBehaviour
             return;
         if (primaryArchetype.Base == secondaryArchetype?.Base)
             return;
-        HeroData hero = HeroData.CreateNewHero(HeroName, primaryArchetype.Base, secondaryArchetype.Base);
+        HeroData hero = HeroData.CreateNewHero(HeroName, primaryArchetype.Base, secondaryArchetype?.Base);
         PlayerStats player = GameManager.Instance.PlayerStats;
         player.AddHeroToList(hero);
         player.RemoveArchetypeFromInventory(primaryArchetype);
         primaryArchetype = null;
-        player.RemoveArchetypeFromInventory(secondaryArchetype);
-        secondaryArchetype = null;
+
+        if (secondaryArchetype != null)
+        {
+            player.RemoveArchetypeFromInventory(secondaryArchetype);
+            secondaryArchetype = null;
+        }
+
         HeroName = "";
         UpdatePanels();
     }

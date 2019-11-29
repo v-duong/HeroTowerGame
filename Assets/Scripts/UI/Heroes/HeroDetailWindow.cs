@@ -6,151 +6,82 @@ using UnityEngine.UI;
 public class HeroDetailWindow : MonoBehaviour
 {
     [SerializeField]
-    private TextMeshProUGUI nameText;
+    private HeroDetailMainPage detailMainPage;
 
     [SerializeField]
-    private TextMeshProUGUI infoText;
+    private HeroDetailEquipmentPage equipmentPage;
 
     [SerializeField]
     private ArchetypeUITreeWindow treeWindow;
 
     [SerializeField]
-    private ScrollRect abilityScrollRect;
-
-    [SerializeField]
-    private HeroAbilityScrollWindow abilityWindow;
+    private List<Button> categoryButtons;
 
     public static HeroData hero;
 
-    public List<HeroEquipmentSlot> equipSlots;
-    public HeroEquipmentSlot offHandSlot;
-    public Button lockButton;
+    public IUpdatablePanel currentPanel;
 
-    public void OnEnable()
+    public void UpdateCurrentPanel()
     {
-        if (hero != null)
-            UpdateWindow();
+        currentPanel.UpdateWindow();
     }
 
-    public void UpdateWindow()
+    public void SetCategorySelected(int index)
     {
-        nameText.text = hero.Name;
-
-        if (hero.IsLocked)
+        for (int j = 0; j < categoryButtons.Count; j++)
         {
-            lockButton.GetComponentInChildren<TextMeshProUGUI>().text = "Locked";
-        }
-        else
-        {
-            lockButton.GetComponentInChildren<TextMeshProUGUI>().text = "Unlocked";
-        }
-
-        infoText.text = "";
-        infoText.text += "Archetype: " + LocalizationManager.Instance.GetLocalizationText_ArchetypeName(hero.PrimaryArchetype.Base.idName);
-        if (hero.SecondaryArchetype != null)
-        {
-            infoText.text += "/" + LocalizationManager.Instance.GetLocalizationText_ArchetypeName(hero.SecondaryArchetype.Base.idName) + "\n";
-        }
-        else
-        {
-            infoText.text += "\n";
-        }
-        infoText.text += "Level: " + hero.Level + "\n";
-        infoText.text += "Experience: " + hero.Experience + "\n";
-        infoText.text += "AP: " + hero.ArchetypePoints + "\n\n";
-
-        infoText.text += "Health: " + hero.MaximumHealth + "\n";
-        infoText.text += "Shield: " + hero.MaximumManaShield + "\n";
-        infoText.text += "Soul Points: " + hero.MaximumSoulPoints + "\n\n";
-
-        infoText.text += "Strength: " + hero.Strength + "\n";
-        infoText.text += "Intelligence: " + hero.Intelligence + "\n";
-        infoText.text += "Agility: " + hero.Agility + "\n";
-        infoText.text += "Will: " + hero.Will + "\n\n";
-        infoText.text += "Armor: " + hero.Armor + "\n";
-        infoText.text += "Dodge Rating: " + hero.DodgeRating + "\n";
-        infoText.text += "Resolve: " + hero.ResolveRating + "\n\n";
-
-        if (hero.GetAbilityFromSlot(0) != null)
-        {
-            ActorAbility firstSlotAbility = hero.GetAbilityFromSlot(0);
-            infoText.text += "Ability 1: " + firstSlotAbility.abilityBase.idName + "\n";
-            infoText.text += GetAbilityDetailString(firstSlotAbility);
-        }
-        if (hero.GetAbilityFromSlot(1) != null)
-        {
-            ActorAbility secondSlotAbility = hero.GetAbilityFromSlot(1);
-            infoText.text += "Ability 2: " + secondSlotAbility.abilityBase.idName + "\n";
-            infoText.text += GetAbilityDetailString(secondSlotAbility);
-        }
-
-        foreach (HeroEquipmentSlot slot in equipSlots)
-        {
-            Equipment e = hero.GetEquipmentInSlot(slot.EquipSlot);
-            if (e == null)
+            if (j == index)
             {
-                slot.slotText.text = slot.EquipSlot.ToString();
+                categoryButtons[j].image.color = Helpers.SELECTION_COLOR;
             }
             else
             {
-                slot.slotText.text = e.Name;
-            }
-            if (slot.EquipSlot == EquipSlotType.WEAPON)
-            {
-                if (e is Weapon && hero.GetEquipmentGroupTypes(e).Contains(GroupType.TWO_HANDED_WEAPON) && !hero.HasSpecialBonus(BonusType.TWO_HANDED_WEAPONS_ARE_ONE_HANDED))
-                {
-                    offHandSlot.GetComponent<Button>().interactable = false;
-                }
-                else
-                {
-                    offHandSlot.GetComponent<Button>().interactable = true;
-                }
+                categoryButtons[j].image.color = Color.white;
             }
         }
+
+        switch (index)
+        {
+            case 0:
+                currentPanel = detailMainPage;
+                detailMainPage.gameObject.SetActive(true);
+                equipmentPage.gameObject.SetActive(false);
+                break;
+
+            case 1:
+                currentPanel = equipmentPage;
+                detailMainPage.gameObject.SetActive(false);
+                equipmentPage.gameObject.SetActive(true);
+                break;
+
+            default:
+                break;
+        }
+
+        UpdateCurrentPanel();
     }
 
-    private string GetAbilityDetailString(ActorAbility ability)
+    public void SetArchetypeCategoryNames(string primary, string secondary)
     {
-        string s = "";
-        if (ability.IsUsable)
+        categoryButtons[2].GetComponentInChildren<TextMeshProUGUI>().text = LocalizationManager.Instance.GetLocalizationText_ArchetypeName(primary) + " Tree";
+        if (!string.IsNullOrWhiteSpace(secondary))
         {
-            float dps;
-            if (ability.DualWielding && ability.AlternatesAttacks)
-                dps = (ability.GetApproxDPS(false) + ability.GetApproxDPS(true)) / 2f;
-            else
-                dps = ability.GetApproxDPS(false);
-
-            s += string.Format("Approx. DPS: {0:n1}\n", dps);
-
-            if (ability.abilityBase.abilityType != AbilityType.AURA && ability.abilityBase.abilityType != AbilityType.SELF_BUFF)
-            {
-                if (ability.abilityBase.abilityType == AbilityType.ATTACK)
-                    s += string.Format("Attack Rate: {0:F2}/s\n", 1f / ability.Cooldown);
-                else
-                    s += string.Format("Cast Rate: {0:F2}/s\n", 1f / ability.Cooldown);
-
-                s += string.Format("{0:F1}%, x{1:F2}\n", ability.MainCriticalChance, ability.MainCriticalDamage);
-                s += LocalizationManager.Instance.GetLocalizationText_AbilityCalculatedDamage(ability.mainDamageBase);
-                if (ability.DualWielding && ability.AlternatesAttacks)
-                {
-                    s += string.Format("{0:F1}%, x{1:F2}\n", ability.OffhandCriticalChance, ability.OffhandCriticalDamage);
-                    s += LocalizationManager.Instance.GetLocalizationText_AbilityCalculatedDamage(ability.offhandDamageBase);
-                }
-            }
+            categoryButtons[3].gameObject.SetActive(true);
+            categoryButtons[3].GetComponentInChildren<TextMeshProUGUI>().text = LocalizationManager.Instance.GetLocalizationText_ArchetypeName(secondary) + " Tree";
         }
         else
         {
-            s += "Ability unusable with current weapon type\n";
+            categoryButtons[3].gameObject.SetActive(false);
         }
-        return s;
     }
 
-    public void SetActiveToggle()
+    public void ItemEquip(Item item, EquipSlotType equipSlot)
     {
-        if (!gameObject.activeSelf)
-            gameObject.SetActive(true);
+        if (item == null)
+            hero.UnequipFromSlot(equipSlot);
         else
-            gameObject.SetActive(false);
+            hero.EquipToSlot(item as Equipment, equipSlot);
+        equipmentPage.UpdateWindow();
     }
 
     public void ClickPrimaryTree()
@@ -161,54 +92,5 @@ public class HeroDetailWindow : MonoBehaviour
     public void ClickSecondaryTree()
     {
         treeWindow.OpenArchetypeTree(hero, treeWindow.hero != hero, 1);
-    }
-
-    public void ClickAbilitySlot(int slot)
-    {
-        HeroAbilityScrollWindow.slot = slot;
-        UIManager.Instance.OpenWindow(abilityScrollRect.gameObject);
-    }
-
-    public void SetHeroLocked()
-    {
-        if (!hero.IsLocked)
-        {
-            hero.IsLocked = true;
-            lockButton.GetComponentInChildren<TextMeshProUGUI>().text = "Locked";
-        }
-        else
-        {
-            hero.IsLocked = false;
-            lockButton.GetComponentInChildren<TextMeshProUGUI>().text = "Unlocked";
-        }
-    }
-
-    public void DebugLevelUp()
-    {
-        if (hero != null)
-            hero.AddExperience(500020);
-        UpdateWindow();
-    }
-
-    public void ItemEquip(Item item, EquipSlotType equipSlot)
-    {
-        if (item == null)
-            hero.UnequipFromSlot(equipSlot);
-        else
-            hero.EquipToSlot(item as Equipment, equipSlot);
-        UpdateWindow();
-    }
-
-    public void OpenNameEdit()
-    {
-        UIManager.Instance.PopUpWindow.OpenTextInput(hero.Name);
-        UIManager.Instance.PopUpWindow.textInput.characterLimit = 20;
-        UIManager.Instance.PopUpWindow.textInput.contentType = TMP_InputField.ContentType.Alphanumeric;
-        UIManager.Instance.PopUpWindow.textInput.lineType = TMP_InputField.LineType.SingleLine;
-        UIManager.Instance.PopUpWindow.SetButtonValues("Confirm", delegate {
-            UIManager.Instance.CloseCurrentWindow();
-            hero.Name = UIManager.Instance.PopUpWindow.textInput.text;
-            UpdateWindow();
-        }, null, null);
     }
 }

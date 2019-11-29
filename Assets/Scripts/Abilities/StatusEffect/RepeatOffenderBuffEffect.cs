@@ -19,17 +19,20 @@ public class RepeatOffenderBuffEffect : ActorEffect
         this.duration = duration;
         effectCooldown = 0;
 
-        // 100% crit chance, 150 crit damage
+        // totals
+        // 100% crit chance, 125 crit damage
+        // 20% attack and cast speed
+        // +2.0 flat crit
         bonuses = new List<Tuple<BonusType, ModifyType, float>>
             {
-                new Tuple<BonusType, ModifyType, float>(BonusType.GLOBAL_CRITICAL_CHANCE, ModifyType.ADDITIVE, 5f + 0.3f * effectLevel),
-                new Tuple<BonusType, ModifyType, float>(BonusType.GLOBAL_CRITICAL_DAMAGE, ModifyType.FLAT_ADDITION, 10f + 0.4f * effectLevel),
+                new Tuple<BonusType, ModifyType, float>(BonusType.GLOBAL_CRITICAL_CHANCE, ModifyType.ADDITIVE, 20f),
+                new Tuple<BonusType, ModifyType, float>(BonusType.GLOBAL_CRITICAL_DAMAGE, ModifyType.FLAT_ADDITION, 25f),
             };
 
         if (target.Data.HasSpecialBonus(BonusType.REPEAT_OFFENDER_GIVES_ATTACK_SPEED))
         {
-            bonuses.Add(new Tuple<BonusType, ModifyType, float>(BonusType.GLOBAL_ATTACK_SPEED, ModifyType.ADDITIVE, 0f + 0.1f * effectLevel));
-            bonuses.Add(new Tuple<BonusType, ModifyType, float>(BonusType.CAST_SPEED, ModifyType.ADDITIVE, 0f + 0.1f * effectLevel));
+            bonuses.Add(new Tuple<BonusType, ModifyType, float>(BonusType.GLOBAL_ATTACK_SPEED, ModifyType.ADDITIVE, 4f));
+            bonuses.Add(new Tuple<BonusType, ModifyType, float>(BonusType.CAST_SPEED, ModifyType.ADDITIVE, 4f));
         }
 
         if (target.Data.HasSpecialBonus(BonusType.REPEAT_OFFENDER_GIVES_FLAT_CRIT))

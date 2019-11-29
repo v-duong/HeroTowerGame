@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using UnityEngine;
 
 public class BerserkEffect : ActorEffect
 {
@@ -13,7 +12,6 @@ public class BerserkEffect : ActorEffect
 
     public override bool StacksIncrementExistingEffect => true;
 
-
     public override GroupType StatusTag => GroupType.NO_GROUP;
 
     public BerserkEffect(Actor target, Actor source, float effectLevel, float duration) : base(target, source)
@@ -24,11 +22,16 @@ public class BerserkEffect : ActorEffect
         this.duration = duration;
         effectCooldown = 0;
 
+        // final berserker buff
+        // 1.75x global damage
+        // 1.35x attack speed
+        // 1.50x movement speed
+        // +20% damage taken
         bonuses = new List<Tuple<BonusType, ModifyType, float>>
             {
-                new Tuple<BonusType, ModifyType, float>(BonusType.GLOBAL_DAMAGE, ModifyType.MULTIPLY, 50f + 1f * effectLevel),
-                new Tuple<BonusType, ModifyType, float>(BonusType.GLOBAL_ATTACK_SPEED, ModifyType.MULTIPLY, 15f + 0.3f * effectLevel),
-                new Tuple<BonusType, ModifyType, float>(BonusType.MOVEMENT_SPEED, ModifyType.ADDITIVE, 25f + 0.5f * effectLevel),
+                new Tuple<BonusType, ModifyType, float>(BonusType.GLOBAL_DAMAGE, ModifyType.MULTIPLY, 75f),
+                new Tuple<BonusType, ModifyType, float>(BonusType.GLOBAL_ATTACK_SPEED, ModifyType.MULTIPLY, 35f),
+                new Tuple<BonusType, ModifyType, float>(BonusType.MOVEMENT_SPEED, ModifyType.ADDITIVE, 50f),
                 new Tuple<BonusType, ModifyType, float>(BonusType.DAMAGE_TAKEN, ModifyType.ADDITIVE, 20f)
             };
     }

@@ -68,9 +68,39 @@ public class TeamWindow : MonoBehaviour
         for (int i = 0; i < 5; i++)
         {
             HeroData hero = GameManager.Instance.PlayerStats.heroTeams[selectedTeam][i];
+            members[i].levelText.text = "";
+            members[i].ability1Text.text = "";
+            members[i].ability2Text.text = "";
             if (hero != null)
             {
                 members[i].heroNameText.text = hero.Name;
+                members[i].levelText.text = "Lv" + hero.Level;
+
+                if (hero.GetAbilityFromSlot(0) != null)
+                {
+                    members[i].ability1Text.text = hero.GetAbilityFromSlot(0).abilityBase.idName;
+
+                    if (!hero.GetAbilityFromSlot(0).IsUsable)
+                        members[i].ability1Text.text = "<color=#b00000>" + members[i].ability1Text.text + " (Unusable)</color>";
+                }
+                else
+                {
+                    members[i].ability1Text.text = "";
+                }
+
+                if (hero.GetAbilityFromSlot(1) != null)
+                {
+                    members[i].ability2Text.text = hero.GetAbilityFromSlot(1).abilityBase.idName;
+
+
+                    if (!hero.GetAbilityFromSlot(1).IsUsable)
+                        members[i].ability2Text.text = "<color=#b00000>" + members[i].ability2Text.text + " (Unusable)</color>";
+                }
+                else
+                {
+                    members[i].ability2Text.text = "";
+                }
+
             }
             else
             {

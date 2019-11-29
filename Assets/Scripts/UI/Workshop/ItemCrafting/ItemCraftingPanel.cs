@@ -149,32 +149,11 @@ public class ItemCraftingPanel : MonoBehaviour
                 innateHeader.gameObject.SetActive(false);
             }
 
-            string reqString = "";
-            if (equip.levelRequirement > 0)
-            {
-                reqString += "Lv" + equip.levelRequirement + ", ";
-            }
-            if (equip.strRequirement > 0)
-            {
-                reqString += "Str " + equip.strRequirement + ", ";
-            }
-            if (equip.intRequirement > 0)
-            {
-                reqString += "Int " + equip.intRequirement + ", ";
-            }
-            if (equip.agiRequirement > 0)
-            {
-                reqString += "Agi " + equip.agiRequirement + ", ";
-            }
-            if (equip.willRequirement > 0)
-            {
-                reqString += "Will " + equip.willRequirement + ", ";
-            }
 
             //itemSlot.itemBaseText.text = equip.Base.idName;
             if (equip.Rarity != RarityType.UNIQUE)
                 itemSlot.text.text += "\n<i><size=80%>" + equip.Base.idName + "</size></i>";
-            itemSlot.itemRequirementText.text = "Requires " + reqString.Trim(',', ' ');
+            itemSlot.itemRequirementText.text = LocalizationManager.Instance.GetRequirementText(equip);
         }
 
         foreach (Affix a in currentItem.prefixes)
@@ -249,49 +228,29 @@ public class ItemCraftingPanel : MonoBehaviour
             }
         }
 
-        /*
-        range = weaponItem.GetWeaponDamage(ElementType.DIVINE);
-        if (!range.IsZero())
-        {
-            hasPrimordial = true;
-            dps = (range.min + range.max) / 2f * weaponItem.AttackSpeed;
-            primDps.Add(LocalizationManager.BuildElementalDamageString(dps.ToString("F2"), ElementType.DIVINE));
-            primDamage.Add(LocalizationManager.BuildElementalDamageString(range.min + "-" + range.max, ElementType.DIVINE));
-        }
-
-        range = weaponItem.GetWeaponDamage(ElementType.VOID);
-        if (!range.IsZero())
-        {
-            hasPrimordial = true;
-            dps = (range.min + range.max) / 2f * weaponItem.AttackSpeed;
-            primDps.Add(LocalizationManager.BuildElementalDamageString(dps.ToString("F2"), ElementType.VOID));
-            primDamage.Add(LocalizationManager.BuildElementalDamageString(range.min + "-" + range.max, ElementType.VOID));
-        }
-        */
-
         if (weaponItem.PhysicalDamage.min != 0 && weaponItem.PhysicalDamage.max != 0)
         {
             dps = (weaponItem.PhysicalDamage.min + weaponItem.PhysicalDamage.max) / 2f * weaponItem.AttackSpeed;
-            leftInfo.text += "PhysDPS: " + dps.ToString("F2") + "\n";
-            physDamage = "PhysDmg: " + weaponItem.PhysicalDamage.min + "-" + weaponItem.PhysicalDamage.max + "\n";
+            leftInfo.text += "pDPS: " + dps.ToString("F2") + "\n";
+            physDamage = "pDmg: " + weaponItem.PhysicalDamage.min + "-" + weaponItem.PhysicalDamage.max + "\n";
         }
         if (hasElemental)
         {
-            leftInfo.text += "EleDPS: " + string.Join(", ", elementalDps) + "\n";
+            leftInfo.text += "eDPS: " + string.Join(", ", elementalDps) + "\n";
         }
         if (hasPrimordial)
         {
-            leftInfo.text += "PrimDPS: " + string.Join(", ", primDps) + "\n";
+            leftInfo.text += "aDPS: " + string.Join(", ", primDps) + "\n";
         }
         leftInfo.text += "\n";
         leftInfo.text += physDamage;
         if (hasElemental)
         {
-            leftInfo.text += "EleDmg: " + string.Join(", ", elementalDamage) + "\n";
+            leftInfo.text += "eDmg: " + string.Join(", ", elementalDamage) + "\n";
         }
         if (hasPrimordial)
         {
-            leftInfo.text += "PrimDmg: " + string.Join(", ", primDamage) + "\n";
+            leftInfo.text += "aDmg: " + string.Join(", ", primDamage) + "\n";
         }
         rightInfo.text += "Critical Chance\n<b>" + weaponItem.CriticalChance.ToString("F2") + "%</b>\n";
         rightInfo.text += "Attacks / s\n<b>" + weaponItem.AttackSpeed.ToString("F2") + "/s</b>\n";

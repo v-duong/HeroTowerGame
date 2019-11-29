@@ -153,7 +153,7 @@ public class Affix
 
                     if (bonusProp.restriction != GroupType.NO_GROUP)
                     {
-                        s += LocalizationManager.Instance.GetLocalizationText_GroupTypeRestriction(bonusProp.restriction.ToString()) + ", ";
+                        s += LocalizationManager.Instance.GetLocalizationText_GroupTypeRestriction(bonusProp.restriction) + ", ";
                     }
 
                     s += LocalizationManager.Instance.GetLocalizationText("bonusType." + bonusProp.bonusType.ToString().Replace("_MIN", "")) + " ";

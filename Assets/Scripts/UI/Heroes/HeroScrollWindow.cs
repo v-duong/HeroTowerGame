@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class HeroScrollWindow : MonoBehaviour
 {
@@ -11,6 +12,25 @@ public class HeroScrollWindow : MonoBehaviour
     private readonly List<HeroSlot> SlotsInUse = new List<HeroSlot>();
     private readonly Queue<HeroSlot> AvailableSlots = new Queue<HeroSlot>();
     public Func<HeroData, bool> filterPredicate = null;
+
+    private void Start()
+    {
+        SetGridCellSize();
+    }
+
+    private void SetGridCellSize()
+    {
+        GridLayoutGroup grid = GetComponent<GridLayoutGroup>();
+        float ySize = 150;
+        if (GameManager.Instance.aspectRatio >= 1.85)
+        {
+            grid.cellSize = new Vector2(200, ySize);
+        }
+        else
+        {
+            grid.cellSize = new Vector2(230, ySize);
+        }
+    }
 
     private void OnEnable()
     {

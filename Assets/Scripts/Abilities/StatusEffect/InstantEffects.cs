@@ -52,7 +52,7 @@ public static class InstantEffects
             explodeElement = ElementType.PHYSICAL;
             foreach (BleedEffect bleedEffect in listToExplode)
             {
-                explodeDamage += bleedEffect.damagePerSecond * bleedEffect.duration;
+                explodeDamage += bleedEffect.damagePerSecond * bleedEffect.duration * 0.5f;
                 bleedEffect.duration = 0;
                 target.RemoveStatusEffect(bleedEffect, true);
             }

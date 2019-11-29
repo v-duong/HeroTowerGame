@@ -7,6 +7,7 @@ public class HeroEquipmentSlot : MonoBehaviour
     [SerializeField]
     private EquipSlotType slot;
 
+    public InventorySlot slotBase;
     public TextMeshProUGUI slotText;
 
     public EquipSlotType EquipSlot => slot;
@@ -18,7 +19,7 @@ public class HeroEquipmentSlot : MonoBehaviour
         ui.OpenInventoryWindow(false, false, false);
         if (slot == EquipSlotType.RING_SLOT_1 || slot == EquipSlotType.RING_SLOT_2)
         {
-            ui.InvScrollContent.ShowEquipmentFiltered(x => x.IsEquipped == false && x.Base.equipSlot == EquipSlotType.RING, true, true);
+            ui.InvScrollContent.ShowEquipmentFiltered(x => (x.IsEquipped == false || x.equippedToHero == hero) && x.Base.equipSlot == EquipSlotType.RING, true, true);
         }
         else if (slot == EquipSlotType.OFF_HAND)
         {
@@ -26,7 +27,7 @@ public class HeroEquipmentSlot : MonoBehaviour
         }
         else
         {
-            ui.InvScrollContent.ShowEquipmentFiltered(x => x.IsEquipped == false && x.Base.equipSlot == slot, true, true);
+            ui.InvScrollContent.ShowEquipmentFiltered(x => (x.IsEquipped == false || x.equippedToHero == hero) && x.Base.equipSlot == slot, true, true);
         }
 
         ui.InvScrollContent.SetCallback(ItemSlotCallback);
@@ -82,6 +83,7 @@ public class HeroEquipmentSlot : MonoBehaviour
     {
         if (item is Equipment)
         {
+            //Close twice for equipment detail window and then inventory window
             UIManager.Instance.CloseCurrentWindow();
             UIManager.Instance.CloseCurrentWindow();
             UIManager.Instance.HeroDetailWindow.ItemEquip(item, slot);

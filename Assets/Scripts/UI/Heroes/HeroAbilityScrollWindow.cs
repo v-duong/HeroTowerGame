@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class HeroAbilityScrollWindow : MonoBehaviour
 {
@@ -12,6 +13,25 @@ public class HeroAbilityScrollWindow : MonoBehaviour
 
     [NonSerialized]
     public static int slot;
+
+    private void Start()
+    {
+        SetGridCellSize();
+    }
+
+    private void SetGridCellSize()
+    {
+        GridLayoutGroup grid = GetComponent<GridLayoutGroup>();
+        float ySize = 275;
+        if (GameManager.Instance.aspectRatio >= 1.85)
+        {
+            grid.cellSize = new Vector2(200, ySize);
+        }
+        else
+        {
+            grid.cellSize = new Vector2(230, ySize);
+        }
+    }
 
     public void OnEnable()
     {
@@ -29,30 +49,26 @@ public class HeroAbilityScrollWindow : MonoBehaviour
             AvailableSlots.Push(slot);
         }
         SlotsInUse.Clear();
-        AddAbilitySlot(null,null,null);
-
+        AddAbilitySlot(null, null, 0);
 
         foreach (var ability in hero.PrimaryArchetype.AvailableAbilityList)
         {
-            string str = LocalizationManager.Instance.GetLocalizationText_AbilityBaseDamage(hero.GetAbilityLevel(ability.abilityBase), ability.abilityBase);
-            AddAbilitySlot(ability.abilityBase, hero.PrimaryArchetype, str);
+            AddAbilitySlot(ability.abilityBase, hero.PrimaryArchetype, hero.GetAbilityLevel(ability.abilityBase));
         }
         if (hero.SecondaryArchetype != null)
         {
             foreach (var ability in hero.SecondaryArchetype.AvailableAbilityList)
             {
-                string str = LocalizationManager.Instance.GetLocalizationText_AbilityBaseDamage(hero.GetAbilityLevel(ability.abilityBase), ability.abilityBase);
-                AddAbilitySlot(ability.abilityBase, hero.SecondaryArchetype, str);
+                AddAbilitySlot(ability.abilityBase, hero.SecondaryArchetype, hero.GetAbilityLevel(ability.abilityBase));
             }
         }
-        foreach(AbilityCoreItem abilityItem in GameManager.Instance.PlayerStats.AbilityInventory)
+        foreach (AbilityCoreItem abilityItem in GameManager.Instance.PlayerStats.AbilityInventory)
         {
-            string str = LocalizationManager.Instance.GetLocalizationText_AbilityBaseDamage(hero.GetAbilityLevel(abilityItem.Base), abilityItem.Base);
-            AddAbilitySlot(abilityItem.Base, abilityItem, str);
+            AddAbilitySlot(abilityItem.Base, abilityItem, hero.GetAbilityLevel(abilityItem.Base));
         }
     }
 
-    public void AddAbilitySlot(AbilityBase ability, IAbilitySource abilitySource, string info)
+    public void AddAbilitySlot(AbilityBase ability, IAbilitySource abilitySource, int level)
     {
         HeroUIAbilitySlot slot;
         if (AvailableSlots.Count > 0)
@@ -66,15 +82,12 @@ public class HeroAbilityScrollWindow : MonoBehaviour
         slot.gameObject.SetActive(true);
         SlotsInUse.Push(slot);
 
-        slot.SetSlot(ability, abilitySource);
+        slot.SetSlot(ability, abilitySource, level);
 
         if (ability == null)
         {
-            slot.infoText.text = "REMOVE";
+            slot.infoText.text = "Remove Ability From Slot";
             return;
         }
-
-        slot.infoText.text = info;
-        
     }
 }

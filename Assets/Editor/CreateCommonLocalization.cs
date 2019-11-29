@@ -156,6 +156,39 @@ public class CreateCommonLocalization
                     keys.Remove(localizationKey);
             }
 
+            List<string> equipSlotTypes = new List<string>(Enum.GetNames(typeof(EquipSlotType)));
+
+            foreach (string x in equipSlotTypes)
+            {
+                string localizationKey = "equipSlotType." + x;
+                if (!localization.ContainsKey(localizationKey))
+                    localization.Add(localizationKey, "");
+                else
+                    keys.Remove(localizationKey);
+            }
+
+            List<string> abilityTypes = new List<string>(Enum.GetNames(typeof(AbilityType)));
+
+            foreach (string x in abilityTypes)
+            {
+                string localizationKey = "abilityType." + x;
+                if (!localization.ContainsKey(localizationKey))
+                    localization.Add(localizationKey, "");
+                else
+                    keys.Remove(localizationKey);
+            }
+
+            List<string> shotTypes = new List<string>(Enum.GetNames(typeof(AbilityShotType)));
+
+            foreach (string x in shotTypes)
+            {
+                string localizationKey = "abilityShotType." + x;
+                if (!localization.ContainsKey(localizationKey))
+                    localization.Add(localizationKey, "");
+                else
+                    keys.Remove(localizationKey);
+            }
+
             string filepath2 = "Assets/Resources/json/localization/UIKeys.txt";
             string uiKeysText = System.IO.File.ReadAllText(filepath2);
 
