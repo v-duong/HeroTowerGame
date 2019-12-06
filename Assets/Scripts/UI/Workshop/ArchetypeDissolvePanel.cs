@@ -9,10 +9,12 @@ public class ArchetypeDissolvePanel : MonoBehaviour
     private bool alreadyOpenedOnce = false;
     private bool hasHitConfirm = false;
     public TextMeshProUGUI textBox;
-    private List<Item> selectedArchetypes;
+    private List<Item> selectedArchetypes = new List<Item>();
 
     private void OnEnable()
     {
+        selectedArchetypes.Clear();
+        confirmButton.interactable = false;
         alreadyOpenedOnce = false;
         textBox.text = "None Selected";
     }
@@ -21,7 +23,7 @@ public class ArchetypeDissolvePanel : MonoBehaviour
     {
         if (!alreadyOpenedOnce || !hasHitConfirm)
         {
-            UIManager.Instance.InvScrollContent.ResetMultiSelectList();
+            UIManager.Instance.InvScrollContent.SetMultiSelectList(selectedArchetypes);
             alreadyOpenedOnce = true;
         }
 
@@ -41,7 +43,7 @@ public class ArchetypeDissolvePanel : MonoBehaviour
         {
             if (item is ArchetypeItem archetypeItem)
             {
-                fragmentCount += archetypeItem.GetItemValue() ;
+                fragmentCount += archetypeItem.GetItemValue();
             }
             else
             {
@@ -49,7 +51,8 @@ public class ArchetypeDissolvePanel : MonoBehaviour
             }
         }
 
-        selectedArchetypes = items;
+        selectedArchetypes.Clear();
+        selectedArchetypes.AddRange(items);
 
         if (selectedArchetypes.Count > 0)
             confirmButton.interactable = true;
@@ -74,7 +77,7 @@ public class ArchetypeDissolvePanel : MonoBehaviour
 
         textBox.text = "None Selected";
         GameManager.Instance.PlayerStats.ModifyArchetypeFragments(fragmentCount);
-        selectedArchetypes = null;
+        selectedArchetypes.Clear();
 
         confirmButton.interactable = false;
     }

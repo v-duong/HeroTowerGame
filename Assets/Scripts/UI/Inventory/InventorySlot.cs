@@ -8,6 +8,7 @@ public class InventorySlot : MonoBehaviour
     public Item item;
     public Image slotImage;
     public Image lockImage;
+    public Image selectedImage;
     public TextMeshProUGUI nameText;
     public TextMeshProUGUI infoText1;
     public TextMeshProUGUI infoText2;
@@ -202,9 +203,9 @@ public class InventorySlot : MonoBehaviour
             {
                 alreadySelected = !alreadySelected;
                 if (alreadySelected)
-                    slotImage.color = Color.green;
+                    selectedImage.gameObject.SetActive(true);
                 else
-                    slotImage.color = Helpers.ReturnRarityColor(item.Rarity);
+                    selectedImage.gameObject.SetActive(false);
             }
             onClickAction?.Invoke(item);
             return;

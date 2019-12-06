@@ -218,7 +218,7 @@ public class CreateCommonLocalization
         Text[] texts = Resources.FindObjectsOfTypeAll<Text>();
         TextMeshProUGUI[] textMeshPros = Resources.FindObjectsOfTypeAll<TextMeshProUGUI>();
         string filepath = "Assets/Resources/json/localization/UIKeys.txt";
-        string keys = "UI_DEAL_DAMAGE_FIXED,UI_DEAL_DAMAGE_WEAPON,";
+        string keys = "UI_DEAL_DAMAGE_FIXED,UI_DEAL_DAMAGE_WEAPON,UI_ADD_DAMAGE,";
 
         foreach (Text t in texts)
         {

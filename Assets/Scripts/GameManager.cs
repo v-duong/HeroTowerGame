@@ -54,6 +54,7 @@ public class GameManager : MonoBehaviour
             PlayerStats.AddEquipmentToInventory(equipment);
         }
         */
+        /*
         foreach (ArchetypeBase archetypeBase in ResourceManager.Instance.ArchetypeBasesList)
         {
             PlayerStats.AddArchetypeToInventory(ArchetypeItem.CreateArchetypeItem(archetypeBase, 100));
@@ -62,7 +63,7 @@ public class GameManager : MonoBehaviour
                 PlayerStats.AddAbilityToInventory(AbilityCoreItem.CreateAbilityItemFromArchetype(archetypeBase, ability));
             }
         }
-        
+        */
 
         Equipment startingSword = Equipment.CreateEquipmentFromBase(ResourceManager.Instance.GetEquipmentBase("OneHandedSword1"), 1);
         Equipment startingBow = Equipment.CreateEquipmentFromBase(ResourceManager.Instance.GetEquipmentBase("Bow1"), 1);

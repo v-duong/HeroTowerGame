@@ -5,6 +5,8 @@ using UnityEngine;
 
 public class BattleManager : MonoBehaviour
 {
+    private const int STARTING_LIFE = 25;
+
     private const int BASE_UNCOMMON_DROP_WEIGHT = 140;
     private const int BASE_RARE_DROP_WEIGHT = 50;
     private const int BASE_EPIC_DROP_WEIGHT = 6;
@@ -35,7 +37,7 @@ public class BattleManager : MonoBehaviour
 
     public int enemiesSpawned;
     public int selectedTeam;
-    public int playerHealth = 20;
+    public int playerHealth = STARTING_LIFE;
     public float playerSoulpoints = 10;
     public int stageLevel = 1;
     public int currentWave;
@@ -53,6 +55,7 @@ public class BattleManager : MonoBehaviour
     public bool startedSpawn = false;
     public bool finishedSpawn = false;
     public bool battleEnded = false;
+    private bool perfectBonus = false;
 
     public bool isSurvivalBattle = false;
     public int survivalLoopCount = 0;
@@ -62,7 +65,7 @@ public class BattleManager : MonoBehaviour
     {
         currentWave = 0;
         enemiesSpawned = 0;
-        playerHealth = 30;
+        playerHealth = STARTING_LIFE;
     }
 
     private void Update()
@@ -153,7 +156,15 @@ public class BattleManager : MonoBehaviour
         if (victory)
         {
             if (survivalLoopCount == 0)
+            {
                 GameManager.Instance.PlayerStats.AddToStageClearCount(stageInfo.idName);
+                if (playerHealth == STARTING_LIFE)
+                    perfectBonus = true;
+            }
+            else
+            {
+                perfectBonus = false;
+            }
 
             battleEndWindow.ShowVictoryWindow();
 
@@ -274,8 +285,7 @@ public class BattleManager : MonoBehaviour
             ArchetypeItem item = ArchetypeItem.CreateArchetypeItem(archetypeBase, stageLevel);
             gainedArchetypeItems.Add(item);
             i = 1;
-            
-        } 
+        }
 
         for (; i < archetypeDrops; i++)
         {
@@ -386,6 +396,8 @@ public class BattleManager : MonoBehaviour
     private void CalculateItemFragmentDrops(BattleEndWindow battleEndWindow)
     {
         double multiplier = System.Math.Pow(1.18f, survivalLoopCount);
+        if (perfectBonus)
+            multiplier *= 1.25f;
         int minDrop = (int)(stageInfo.consumableDropCountMin * multiplier);
         int maxDrop = (int)(stageInfo.consumableDropCountMax * multiplier);
         gainedFragmentsThisLoop = Random.Range(minDrop, maxDrop + 1);
@@ -394,8 +406,10 @@ public class BattleManager : MonoBehaviour
 
     private void CalculateExpGain(BattleEndWindow battleEndWindow)
     {
-        double multiplier = System.Math.Pow(1.15f, survivalLoopCount) - 1;
-        gainedExpThisLoop = (int)(stageInfo.baseExperience * (stageInfo.expMultiplier + multiplier));
+        double multiplier = System.Math.Pow(1.15f, survivalLoopCount);
+        if (perfectBonus)
+            multiplier *= 1.25f;
+        gainedExpThisLoop = (int)(stageInfo.baseExperience * ( multiplier));
         gainedExp += gainedExpThisLoop;
     }
 

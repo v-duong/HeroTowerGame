@@ -9,11 +9,13 @@ public class EquipmentDissolvePanel : MonoBehaviour
     private bool alreadyOpenedOnce = false;
     private bool hasHitConfirm = false;
     public TextMeshProUGUI textBox;
-    private List<Item> selectedEquipment;
+    private List<Item> selectedEquipment = new List<Item>();
 
     private void OnEnable()
     {
+        selectedEquipment.Clear();
         alreadyOpenedOnce = false;
+        confirmButton.interactable = false;
         textBox.text = "None Selected";
     }
 
@@ -21,7 +23,7 @@ public class EquipmentDissolvePanel : MonoBehaviour
     {
         if (!alreadyOpenedOnce || !hasHitConfirm)
         {
-            UIManager.Instance.InvScrollContent.ResetMultiSelectList();
+            UIManager.Instance.InvScrollContent.SetMultiSelectList(selectedEquipment);
             alreadyOpenedOnce = true;
         }
 
@@ -59,7 +61,8 @@ public class EquipmentDissolvePanel : MonoBehaviour
             }
         }
 
-        selectedEquipment = items;
+        selectedEquipment.Clear();
+        selectedEquipment.AddRange(items);
 
         if (selectedEquipment.Count > 0)
             confirmButton.interactable = true;
@@ -90,7 +93,7 @@ public class EquipmentDissolvePanel : MonoBehaviour
 
         textBox.text = "None Selected";
         GameManager.Instance.PlayerStats.ModifyItemFragments(fragmentCount);
-        selectedEquipment = null;
+        selectedEquipment.Clear();
 
         confirmButton.interactable = false;
     }

@@ -67,7 +67,6 @@ public class TMPLink : MonoBehaviour, IPointerClickHandler
         //Debug.Log("Click at POS: " + eventData.position + "  World POS: " + eventData.worldPosition);
 
         int linkIndex = TMP_TextUtilities.FindIntersectingLink(pTextMeshPro, Input.mousePosition, pCamera);
-        Debug.Log(linkIndex);
         if (linkIndex != -1)
         { // was a link clicked?
             TMP_LinkInfo linkInfo = pTextMeshPro.textInfo.linkInfo[linkIndex];

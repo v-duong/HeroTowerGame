@@ -52,7 +52,9 @@ public class HeroBonusDetailPage : MonoBehaviour, IUpdatablePanel
                         mainText.text += "○ " + LocalizationManager.Instance.GetLocalizationText_BonusType(bonusType, ModifyType.FLAT_ADDITION, statBonus.FlatModifier, groupType);
 
                     if (statBonus.MultiplyModifiers.Count != 0)
-                        mainText.text += "○ " + LocalizationManager.Instance.GetLocalizationText_BonusType(bonusType, ModifyType.MULTIPLY, statBonus.CurrentMultiplier, groupType);
+                    {
+                        mainText.text += "○ " + LocalizationManager.Instance.GetLocalizationText_BonusType(bonusType, ModifyType.MULTIPLY, (statBonus.CurrentMultiplier-1) * 100, groupType);
+                    }
                 }
 
                 mainText.text += "</margin>";

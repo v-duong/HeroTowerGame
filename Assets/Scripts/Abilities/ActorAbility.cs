@@ -434,7 +434,10 @@ public class ActorAbility
 
     private void UpdateAbilityBuffData(ActorData data, IEnumerable<GroupType> tags)
     {
-        auraBuffBonus.auraEffectMultiplier = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.AURA_EFFECT).CalculateStat(1f);
+        if (abilityBase.abilityType == AbilityType.AURA)
+            auraBuffBonus.auraEffectMultiplier = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.AURA_EFFECT).CalculateStat(1f);
+        else
+            auraBuffBonus.auraEffectMultiplier = 1f;
 
         if (abilityBase.abilityType == AbilityType.AURA || abilityBase.abilityType == AbilityType.SELF_BUFF)
         {
@@ -446,6 +449,7 @@ public class ActorAbility
                 if (effect.effectType == EffectType.BUFF || effect.effectType == EffectType.DEBUFF)
                 {
                     float buffValue = (effect.initialValue + effect.growthValue * abilityLevel) * auraBuffBonus.auraEffectMultiplier;
+                    Debug.Log(effect.initialValue + effect.growthValue * abilityLevel + " " + buffValue);
                     auraBuffBonus.cachedAuraBonuses.Add(new Tuple<BonusType, ModifyType, float>(effect.bonusType, effect.modifyType, buffValue));
                     auraBuffBonus.auraStrength += buffValue;
 
@@ -1913,6 +1917,39 @@ public class ActorAbility
         {
             currentShotCoroutine = AbilityOwner.StartCoroutine(FireProjectile(abilityCollider.transform.position, CurrentTarget));
         }
+    }
+
+    public string GetAuraBuffString()
+    {
+        string s = "";
+        int i = 0;
+        List<int> bonusesToSkip = new List<int>();
+
+        foreach (Tuple<BonusType, ModifyType, float> bonus in auraBuffBonus.cachedAuraBonuses)
+        {
+
+            if (bonusesToSkip.Contains(i))
+                continue;
+
+            string bonusString = bonus.Item1.ToString();
+            if (bonusString.Contains("DAMAGE_MIN") && bonus.Item2 == ModifyType.FLAT_ADDITION)
+            {
+                BonusType maxType = (BonusType)Enum.Parse(typeof(BonusType), bonusString.Replace("_MIN", "_MAX"));
+                int matchedIndex = auraBuffBonus.cachedAuraBonuses.FindIndex(x => x.Item1 == maxType);
+
+                if (matchedIndex > 0 && auraBuffBonus.cachedAuraBonuses[matchedIndex].Item2 == ModifyType.FLAT_ADDITION)
+                {
+                    bonusesToSkip.Add(matchedIndex);
+
+                    s += "○ " + LocalizationManager.Instance.GetLocalizationText("bonusType." + bonusString.Replace("_MIN", "")) + " ";
+                    s += "<nobr>+" + auraBuffBonus.cachedAuraBonuses[i].Item3 + "~" + auraBuffBonus.cachedAuraBonuses[matchedIndex].Item3 + "</nobr>\n";
+                }
+            }
+            else
+                s += "○ " + LocalizationManager.Instance.GetLocalizationText_BonusType(bonus.Item1, bonus.Item2, (float)Math.Round(bonus.Item3, 3), GroupType.NO_GROUP);
+            i++;
+        }
+        return s;
     }
 
     public float GetApproxDPS(bool getOffhand)

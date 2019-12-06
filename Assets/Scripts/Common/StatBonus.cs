@@ -55,6 +55,7 @@ public class StatBonus
             HasFixedModifier = true;
             FixedModifier = otherBonus.FixedModifier;
         }
+        UpdateCurrentMultiply();
     }
 
     public void AddBonus(ModifyType type, float value)

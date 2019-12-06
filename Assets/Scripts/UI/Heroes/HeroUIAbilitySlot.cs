@@ -25,7 +25,7 @@ public class HeroUIAbilitySlot : MonoBehaviour
 
     public TextMeshProUGUI infoText;
 
-    public void UpdateSlot()
+    public void ClearSlot()
     {
         nameText.text = "";
         sourceText.text = "";
@@ -33,7 +33,11 @@ public class HeroUIAbilitySlot : MonoBehaviour
         abilityText.text = "";
         targetText.text = "";
         infoText.text = "";
+    }
 
+    public void UpdateSlot()
+    {
+        ClearSlot();
         if (ability == null)
         {
             nameText.text = "Remove Ability";
@@ -42,7 +46,23 @@ public class HeroUIAbilitySlot : MonoBehaviour
 
         CommonUpdate();
 
-        sourceText.text = "From " + source.AbilitySourceType + " " + source.SourceName;
+        if (source != null)
+        {
+            sourceText.text = "From " + source.AbilitySourceType + " " + source.SourceName;
+
+            Tuple<HeroData, int> equippedInfo = source.GetEquippedHeroAndSlot(ability);
+            if (equippedInfo == null)
+                equippedText.text = "";
+            else if (equippedInfo.Item1 != null)
+            {
+                equippedText.text = "Currently Equipped to ";
+                if (HeroDetailWindow.hero != equippedInfo.Item1)
+                {
+                    equippedText.text += equippedInfo.Item1.Name + " ";
+                }
+                equippedText.text += "Slot " + (equippedInfo.Item2 + 1);
+            }
+        }
         string restrictionString = "Requires ";
         bool hasRestriction = false;
         foreach(GroupType groupType in ability.requiredRestrictions)
@@ -86,18 +106,7 @@ public class HeroUIAbilitySlot : MonoBehaviour
             infoText.text += LocalizationManager.Instance.GetLocalizationText_TriggeredEffect(x, x.effectMaxValue);
         }
 
-        Tuple<HeroData, int> equippedInfo = source.GetEquippedHeroAndSlot(ability);
-        if (equippedInfo == null)
-            equippedText.text = "";
-        else if (equippedInfo.Item1 != null)
-        {
-            equippedText.text = "Currently Equipped to ";
-            if (HeroDetailWindow.hero != equippedInfo.Item1)
-            {
-                equippedText.text += equippedInfo.Item1.Name + " ";
-            }
-            equippedText.text += "Slot " + (equippedInfo.Item2 + 1);
-        }
+
     }
 
     public void CommonUpdate()

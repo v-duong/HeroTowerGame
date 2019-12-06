@@ -844,6 +844,7 @@
 	"UI_ACT3": "World 3",
 	"UI_ACT4": "World 4",
 	"UI_ACT5": "World 5",
+	"UI_ADD_DAMAGE": "Adds {0} Damage",
 	"UI_ADDAFFIX": "Add Random Affix",
 	"UI_BATTLE": "Battle",
 	"UI_DEAL_DAMAGE_FIXED": "Deals {0} Damage",

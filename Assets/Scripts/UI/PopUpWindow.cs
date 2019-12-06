@@ -111,7 +111,7 @@ public class PopUpWindow : MonoBehaviour
 
     public void OpenHelpWindow(List<string> helpStrings)
     {
-        if (!isHelpWindowOpen)
+        if (!isHelpWindowOpen || !this.gameObject.activeSelf)
         {
             helpWindowStack.Clear();
             OpenTextWindow("");

@@ -144,7 +144,9 @@ public class HeroDetailMainPage : MonoBehaviour, IUpdatablePanel
         if (hero.GetAbilityFromSlot(1) != null)
         {
             ActorAbility secondSlotAbility = hero.GetAbilityFromSlot(1);
-            secondaryAbility.infoText.text = "2nd Slot Penalty\n<size=90%>x0.75 Ability Speed, x0.66 Damage</size>\n";
+            secondaryAbility.infoText.text = "";
+            if (secondSlotAbility.abilityBase.abilityType != AbilityType.AURA && secondSlotAbility.abilityBase.abilityType != AbilityType.SELF_BUFF)
+                secondaryAbility.infoText.text += "2nd Slot Penalty\n<size=90%>x0.75 Ability Speed, x0.66 Damage</size>\n";
             secondaryAbility.infoText.text += GetAbilityDetailString(secondSlotAbility, false);
             secondaryAbility.ability = secondSlotAbility.abilityBase;
             secondaryAbility.CommonUpdate();
@@ -165,6 +167,7 @@ public class HeroDetailMainPage : MonoBehaviour, IUpdatablePanel
         {
             if (ability.abilityBase.abilityType == AbilityType.AURA || ability.abilityBase.abilityType == AbilityType.SELF_BUFF)
             {
+                s += ability.GetAuraBuffString();
             }
             else
             {

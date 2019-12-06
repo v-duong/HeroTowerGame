@@ -16,6 +16,7 @@ public class HeroCreationPanel : MonoBehaviour
     public TextMeshProUGUI archetypeSlot1GrowthText;
     public TextMeshProUGUI archetypeSlot2GrowthText;
     public TextMeshProUGUI nameText;
+    public TextMeshProUGUI placeholderText;
     private int selectedSlot;
     public ArchetypeItem primaryArchetype;
     public ArchetypeItem secondaryArchetype;
@@ -152,6 +153,10 @@ public class HeroCreationPanel : MonoBehaviour
     public void UpdatePanels()
     {
         nameText.text = HeroName;
+        if (HeroName == "")
+            placeholderText.gameObject.SetActive(true);
+        else
+            placeholderText.gameObject.SetActive(false);
         archetypeSlot2.interactable = false;
         previewTreeButton1.interactable = false;
         previewTreeButton2.interactable = false;

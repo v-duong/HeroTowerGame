@@ -64,6 +64,12 @@ public class InventoryScrollWindow : MonoBehaviour
         selectedItems.Clear();
     }
 
+    public void SetMultiSelectList(List<Item> list)
+    {
+        selectedItems.Clear();
+        selectedItems.AddRange(list);
+    }
+
     private void InitializeInventorySlots<T>(IList<T> itemInventory, Action<Item> callback = null) where T : Item
     {
         foreach (Item item in itemInventory)
@@ -194,12 +200,14 @@ public class InventoryScrollWindow : MonoBehaviour
         else
             slot.onClickAction = callback;
 
+
         if (selectedItems.Contains(item))
         {
-            slot.slotImage.color = Color.green;
+            slot.selectedImage.gameObject.SetActive(true);
             slot.alreadySelected = true;
         } else
         {
+            slot.selectedImage.gameObject.SetActive(false);
             slot.alreadySelected = false;
         }
     }

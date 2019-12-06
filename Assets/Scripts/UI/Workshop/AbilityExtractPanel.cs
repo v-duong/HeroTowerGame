@@ -5,12 +5,14 @@ using UnityEngine.UI;
 
 public class AbilityExtractPanel : MonoBehaviour
 {
+    public HeroUIAbilitySlot abilitySlot;
     public ExtractableAbilitySlot slotPrefab;
     public Button archetypeSlot;
     public Button confirmButton;
     public GameObject scrollViewContent;
     private ArchetypeItem selectedArchetypeItem;
     private AbilityBase selectedAbilityBase;
+
     public List<ExtractableAbilitySlot> slotsInUse = new List<ExtractableAbilitySlot>();
     public Queue<ExtractableAbilitySlot> unusedSlots = new Queue<ExtractableAbilitySlot>();
 
@@ -25,6 +27,7 @@ public class AbilityExtractPanel : MonoBehaviour
         selectedArchetypeItem = null;
         selectedAbilityBase = null;
         confirmButton.interactable = false;
+        abilitySlot.ClearSlot();
         ClearSlotsInUse();
     }
 
@@ -49,14 +52,12 @@ public class AbilityExtractPanel : MonoBehaviour
     public void ArchetypeSlotOnClick_Callback(Item item)
     {
         UIManager.Instance.CloseCurrentWindow();
-        if (item != null && item.GetItemType() != ItemType.ARCHETYPE)
-        {
-            return;
-        }
-
+        abilitySlot.ClearSlot();
+        archetypeSlot.GetComponentInChildren<TextMeshProUGUI>().text = "SELECT ARCHETYPE";
+        confirmButton.interactable = false;
         ClearSlotsInUse();
 
-        if (item == null)
+        if (item == null || (item != null && item.GetItemType() != ItemType.ARCHETYPE))
         {
             selectedArchetypeItem = null;
             return;
@@ -68,7 +69,6 @@ public class AbilityExtractPanel : MonoBehaviour
         {
             AddExtractSlot(ability);
         }
-        confirmButton.interactable = true;
     }
 
     private ExtractableAbilitySlot AddExtractSlot(AbilityBase ability)
@@ -85,7 +85,7 @@ public class AbilityExtractPanel : MonoBehaviour
         }
         slot.transform.SetParent(scrollViewContent.transform, true);
         slot.GetComponent<Button>().onClick.RemoveAllListeners();
-            slot.textField.text = ability.idName;
+        slot.textField.text = ability.idName;
         slot.GetComponent<Button>().onClick.AddListener(delegate { ExtractableSlotOnClick(ability); });
         slotsInUse.Add(slot);
         return slot;
@@ -93,27 +93,22 @@ public class AbilityExtractPanel : MonoBehaviour
 
     public void ExtractableSlotOnClick(AbilityBase abilityBase)
     {
+        confirmButton.interactable = true;
         selectedAbilityBase = abilityBase;
+        abilitySlot.SetSlot(abilityBase, null, 0);
     }
 
     public void ConfirmButtonOnClick()
     {
-        if (selectedArchetypeItem == null)
+        if (selectedArchetypeItem == null || selectedAbilityBase == null)
             return;
         if (!GameManager.Instance.PlayerStats.ArchetypeInventory.Contains(selectedArchetypeItem))
             return;
-        if (selectedAbilityBase == null)
-        {
-            GameManager.Instance.PlayerStats.RemoveArchetypeFromInventory(selectedArchetypeItem);
-            GameManager.Instance.PlayerStats.ModifyArchetypeFragments(selectedArchetypeItem.GetItemValue());
-        }
-        else
-        {
-            AbilityCoreItem abilityStorageItem = AbilityCoreItem.CreateAbilityItemFromArchetype(selectedArchetypeItem, selectedAbilityBase);
-            if (abilityStorageItem == null)
-                return;
-            GameManager.Instance.PlayerStats.AddAbilityToInventory(abilityStorageItem);
-        }
+
+        AbilityCoreItem abilityStorageItem = AbilityCoreItem.CreateAbilityItemFromArchetype(selectedArchetypeItem, selectedAbilityBase);
+        if (abilityStorageItem == null)
+            return;
+        GameManager.Instance.PlayerStats.AddAbilityToInventory(abilityStorageItem);
 
         ResetPanel();
 

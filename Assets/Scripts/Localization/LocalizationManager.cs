@@ -154,23 +154,35 @@ public class LocalizationManager : MonoBehaviour
         string s = "";
         string weaponDamageText, baseDamageText;
 
-        if (ability.abilityType == AbilityType.ATTACK)
+        if (ability.abilityType == AbilityType.AURA || ability.abilityType == AbilityType.SELF_BUFF)
         {
-            weaponDamageText = GetLocalizationText("UI_DEAL_DAMAGE_WEAPON");
-            float d = ability.weaponMultiplier + ability.weaponMultiplierScaling * level;
-            s += string.Format(weaponDamageText, d) + "\n";
+            baseDamageText = GetLocalizationText("UI_ADD_DAMAGE");
+            foreach (KeyValuePair<ElementType, AbilityDamageBase> damage in ability.damageLevels)
+            {
+                var d = damage.Value.damage[level];
+                s += string.Format(baseDamageText, BuildElementalDamageString("<b>" + d.min + "~" + d.max + "</b>", damage.Key)) + "\n";
+            }
         }
-
-        baseDamageText = GetLocalizationText("UI_DEAL_DAMAGE_FIXED");
-        foreach (KeyValuePair<ElementType, AbilityDamageBase> damage in ability.damageLevels)
+        else
         {
-            var d = damage.Value.damage[level];
-            s += string.Format(baseDamageText, BuildElementalDamageString("<b>" + d.min + "~" + d.max + "</b>", damage.Key)) + "\n";
-        }
+            if (ability.abilityType == AbilityType.ATTACK)
+            {
+                weaponDamageText = GetLocalizationText("UI_DEAL_DAMAGE_WEAPON");
+                float d = ability.weaponMultiplier + ability.weaponMultiplierScaling * level;
+                s += string.Format(weaponDamageText, d) + "\n";
+            }
 
-        if (ability.hitCount > 1)
-        {
-            s += "Hits " + ability.hitCount + "x at " + ability.hitDamageModifier.ToString("P1") + " Damage";
+            baseDamageText = GetLocalizationText("UI_DEAL_DAMAGE_FIXED");
+            foreach (KeyValuePair<ElementType, AbilityDamageBase> damage in ability.damageLevels)
+            {
+                var d = damage.Value.damage[level];
+                s += string.Format(baseDamageText, BuildElementalDamageString("<b>" + d.min + "~" + d.max + "</b>", damage.Key)) + "\n";
+            }
+
+            if (ability.hitCount > 1)
+            {
+                s += "Hits " + ability.hitCount + "x at " + ability.hitDamageModifier.ToString("P1") + " Damage";
+            }
         }
         return s;
     }
@@ -376,7 +388,7 @@ public class LocalizationManager : MonoBehaviour
                 break;
 
             case ModifyType.MULTIPLY:
-                output += "x" + (1 + value / 100d).ToString(".00##");
+                output += "x" + (1 + value / 100d).ToString("0.00##");
                 break;
 
             case ModifyType.FIXED_TO:
