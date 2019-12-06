@@ -116,7 +116,7 @@ public class InventorySlot : MonoBehaviour
 
             if (item.Rarity > RarityType.UNCOMMON && item.Rarity != RarityType.UNIQUE)
             {
-                baseItemText.text += " " + equip.Base.idName;
+                baseItemText.text += " " + LocalizationManager.Instance.GetLocalizationText_Equipment( equip.Base.idName);
             }
             /*
             if (equip.innate.Count > 0)
@@ -139,7 +139,19 @@ public class InventorySlot : MonoBehaviour
         }
 
         if (showItemValue)
-            baseItemText.text += " - " + item.GetItemValue() + " <sprite=10>";
+        {
+            if (baseItemText.text != "")
+                baseItemText.text += " | ";
+            baseItemText.text += item.GetItemValue();
+
+            if (item is ArchetypeItem)
+            {
+                baseItemText.text += " <sprite=9>";
+            } else
+            {
+                baseItemText.text += " <sprite=10>";
+            }
+        }
 
         slotImage.color = Helpers.ReturnRarityColor(item.Rarity);
         //nameImage.color = Helpers.ReturnRarityColor(item.Rarity);

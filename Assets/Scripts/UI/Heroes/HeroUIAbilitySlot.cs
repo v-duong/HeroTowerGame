@@ -9,19 +9,19 @@ public class HeroUIAbilitySlot : MonoBehaviour
     public int abilityLevel;
 
     [SerializeField]
-    private TextMeshProUGUI nameText;
+    public TextMeshProUGUI nameText;
 
     [SerializeField]
-    private TextMeshProUGUI sourceText;
+    public TextMeshProUGUI sourceText;
 
     [SerializeField]
-    private TextMeshProUGUI equippedText;
+    public TextMeshProUGUI equippedText;
 
     [SerializeField]
-    private TextMeshProUGUI abilityText;
+    public TextMeshProUGUI abilityText;
 
     [SerializeField]
-    private TextMeshProUGUI targetText;
+    public TextMeshProUGUI targetText;
 
     public TextMeshProUGUI infoText;
 
@@ -32,6 +32,7 @@ public class HeroUIAbilitySlot : MonoBehaviour
         equippedText.text = "";
         abilityText.text = "";
         targetText.text = "";
+        infoText.text = "";
 
         if (ability == null)
         {
@@ -39,16 +40,27 @@ public class HeroUIAbilitySlot : MonoBehaviour
             return;
         }
 
-        nameText.text = LocalizationManager.Instance.GetLocalizationText_Ability(ability.idName)[0];
+        CommonUpdate();
+
         sourceText.text = "From " + source.AbilitySourceType + " " + source.SourceName;
-        abilityText.text = LocalizationManager.Instance.GetLocalizationText("abilityType." + ability.abilityType);
-
-        if (ability.abilityType != AbilityType.AURA && ability.abilityType != AbilityType.SELF_BUFF)
-            abilityText.text = LocalizationManager.Instance.GetLocalizationText("abilityShotType." + ability.abilityShotType) + " " + abilityText.text;
-
-        targetText.text = LocalizationManager.Instance.GetLocalizationText("targetType." + ability.targetType);
-
-        infoText.text = LocalizationManager.Instance.GetLocalizationText_AbilityBaseDamage(abilityLevel, ability) + "\n";
+        string restrictionString = "Requires ";
+        bool hasRestriction = false;
+        foreach(GroupType groupType in ability.requiredRestrictions)
+        {
+            hasRestriction = true;
+            restrictionString += LocalizationManager.Instance.GetLocalizationText(groupType) + " + ";
+        }
+        foreach (GroupType groupType in ability.singleRequireRestrictions)
+        {
+            hasRestriction = true;
+            restrictionString += LocalizationManager.Instance.GetLocalizationText(groupType) + " / ";
+        }
+        if (hasRestriction)
+        {
+            restrictionString = restrictionString.Trim(' ', '/', '+');
+            infoText.text = restrictionString + '\n';
+        }
+        infoText.text += LocalizationManager.Instance.GetLocalizationText_AbilityBaseDamage(abilityLevel, ability) + "\n";
 
         foreach (AbilityScalingBonusProperty bonusProperty in ability.bonusProperties)
         {
@@ -88,6 +100,17 @@ public class HeroUIAbilitySlot : MonoBehaviour
         }
     }
 
+    public void CommonUpdate()
+    {
+        nameText.text = LocalizationManager.Instance.GetLocalizationText_Ability(ability.idName)[0];
+        abilityText.text = LocalizationManager.Instance.GetLocalizationText("abilityType." + ability.abilityType);
+
+        if (ability.abilityType != AbilityType.AURA && ability.abilityType != AbilityType.SELF_BUFF)
+            abilityText.text = LocalizationManager.Instance.GetLocalizationText("abilityShotType." + ability.abilityShotType) + " " + abilityText.text;
+
+        targetText.text = LocalizationManager.Instance.GetLocalizationText("targetType." + ability.targetType);
+    }
+
     public void SetSlot(AbilityBase ability, IAbilitySource source, int level)
     {
         this.ability = ability;
@@ -109,8 +132,6 @@ public class HeroUIAbilitySlot : MonoBehaviour
         {
             hero.EquipAbility(ability, slot, source);
         }
-
-        UIManager.Instance.HeroDetailWindow.UpdateCurrentPanel();
 
         UIManager.Instance.CloseCurrentWindow();
     }

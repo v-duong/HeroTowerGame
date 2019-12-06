@@ -3,8 +3,8 @@
 public class PacifyEffect : ActorEffect
 {
     public const float BASE_DURATION = 3.0f;
-    public const int PACIFY_EFFECT_CAP = 40;
-    public const float BASE_PACIFY_EFFECT = -10F;
+    public const int PACIFY_EFFECT_CAP = 50;
+    public const float BASE_PACIFY_EFFECT = -20F;
     public const float BASE_PACIFY_THRESHOLD = 0.1F;
     protected int effectPower;
 

@@ -74,7 +74,7 @@ public abstract partial class ActorData
     public Dictionary<TriggerType, List<TriggeredEffect>> TriggeredEffects { get; protected set; }
 
     protected Dictionary<BonusType, StatBonusCollection> statBonuses;
-    protected Dictionary<BonusType, StatBonus> selfBuffBonuses;
+    //protected Dictionary<BonusType, StatBonus> selfBuffBonuses;
     protected Dictionary<BonusType, StatBonus> temporaryBonuses;
     protected Dictionary<BonusType, int> specialBonuses;
 

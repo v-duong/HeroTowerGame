@@ -21,6 +21,11 @@ public class HeroDetailEquipmentPage : MonoBehaviour, IUpdatablePanel
 
     private HeroData hero;
 
+    private void OnEnable()
+    {
+        UpdateWindow();
+    }
+
     public void UpdateWindow()
     {
         bool skipOffhandUpdate = false;

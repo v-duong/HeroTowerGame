@@ -10,7 +10,7 @@ public static class InstantEffects
     public static IEnumerator ApplyRetaliationDamageEffect(Actor target, Actor source, Dictionary<ElementType, MinMaxRange> damageDict)
     {
         yield return null;
-        target.ApplyDamage(source.ScaleSecondaryDamageValue(target, damageDict, RetaliationDamageTags), source.Data.OnHitData, true, false);
+        target.ApplyDamage(source.ScaleSecondaryDamageValue(target, damageDict, RetaliationDamageTags), source.Data.OnHitData, isHit: false, false);
     }
 
     public static IEnumerator ApplyExplosionEffect(Actor target, Actor source, EffectType explosionType, LayerMask mask, float effectPower, ElementType element)
@@ -29,7 +29,7 @@ public static class InstantEffects
                         { element, new MinMaxRange((int)(target.Data.MaximumHealth * (effectPower / 100f)),(int)(target.Data.MaximumHealth * (effectPower / 100f))) }
                     };
 
-            secondary.ApplyDamage(source.ScaleSecondaryDamageValue(secondary, damageDict, ExplosionTags), source.Data.OnHitData, true, true);
+            secondary.ApplyDamage(source.ScaleSecondaryDamageValue(secondary, damageDict, ExplosionTags), source.Data.OnHitData, isHit: true, true);
         }
     }
 
@@ -74,7 +74,7 @@ public static class InstantEffects
                         { explodeElement, new MinMaxRange((int)explodeDamage,(int)explodeDamage) }
                     };
 
-            aoeTarget.ApplyDamage(source.ScaleSecondaryDamageValue(aoeTarget, damageDict, ExplosionTags), source.Data.OnHitData, true, true, statusToExplode, restrictionFlags);
+            aoeTarget.ApplyDamage(source.ScaleSecondaryDamageValue(aoeTarget, damageDict, ExplosionTags), source.Data.OnHitData, isHit: true, true, statusToExplode, restrictionFlags);
         }
     }
 

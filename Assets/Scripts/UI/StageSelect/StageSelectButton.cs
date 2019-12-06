@@ -13,7 +13,6 @@ public class StageSelectButton : MonoBehaviour
     public Image lockImage;
     private StageInfoBase stageInfo;
 
-
     public void SetStageInfo(StageInfoBase stageInfoBase)
     {
         stageInfo = stageInfoBase;
@@ -31,10 +30,7 @@ public class StageSelectButton : MonoBehaviour
 
         bool isStageUnlocked = false;
 
-        if (stageInfo.requiredToUnlock == stageInfo.idName)
-            isStageUnlocked = true;
-        else
-            isStageUnlocked = GameManager.Instance.PlayerStats.IsStageUnlocked(stageInfo.requiredToUnlock);
+        isStageUnlocked = GameManager.Instance.PlayerStats.IsStageUnlocked(stageInfo.idName);
 
         Button button = GetComponent<Button>();
         button.interactable = isStageUnlocked;

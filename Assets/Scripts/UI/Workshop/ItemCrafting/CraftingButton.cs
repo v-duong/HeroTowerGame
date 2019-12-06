@@ -76,6 +76,8 @@ public class CraftingButton : MonoBehaviour
             if (cost != 0)
             {
                 GetComponent<Button>().interactable = cost <= itemFragments;
+                if (!GetComponent<Button>().interactable)
+                    costText = "<color=#aa0000>" + costText + "</color>";
                 GetComponentInChildren<TextMeshProUGUI>().text += "\n" + costText;
             }
         }

@@ -244,4 +244,9 @@ public class StatBonusCollection
 
         return returnBonus;
     }
+
+    public Dictionary<GroupType, StatBonus> GetAllStatBonus()
+    {
+        return statBonuses;
+    }
 }

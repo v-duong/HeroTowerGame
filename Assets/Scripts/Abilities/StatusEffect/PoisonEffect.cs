@@ -1,5 +1,6 @@
 ﻿public class PoisonEffect : ActorEffect
 {
+    public const int BASE_MAX_STACKS = 30;
     public const float BASE_DURATION = 3f;
     public const float BASE_DAMAGE_MULTIPLIER = 0.03f;
     protected float damagePerSecond;

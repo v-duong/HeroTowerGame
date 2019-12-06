@@ -141,7 +141,7 @@ public class ActorAbility
             StatBonus speedPenalty = new StatBonus();
             speedPenalty.AddBonus(ModifyType.MULTIPLY, -25);
             StatBonus damagePenalty = new StatBonus();
-            damagePenalty.AddBonus(ModifyType.MULTIPLY, -50);
+            damagePenalty.AddBonus(ModifyType.MULTIPLY, -33);
             abilityBonuses.Add(BonusType.GLOBAL_ABILITY_SPEED, speedPenalty);
             abilityBonuses.Add(BonusType.GLOBAL_DAMAGE, damagePenalty);
         }

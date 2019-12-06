@@ -1,6 +1,6 @@
 ﻿public class BurnEffect : ActorEffect
 {
-    public const float BASE_DURATION = 2.0f;
+    public const float BASE_DURATION = 3.0f;
     public const float BASE_DAMAGE_MULTIPLIER = 0.15f;
     protected float damagePerSecond;
 

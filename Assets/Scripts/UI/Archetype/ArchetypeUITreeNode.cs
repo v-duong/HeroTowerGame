@@ -73,9 +73,12 @@ public class ArchetypeUITreeNode : MonoBehaviour
 
         levelText.text = level + "/" + node.maxLevel;
 
-        for (int i = 0; i < level; i++)
+        for (int i = 0; i < node.maxLevel; i++)
         {
-            levelIcons[i].color = level == node.maxLevel ? MAX_LEVEL_COLOR : LEVEL_COLOR;
+            if (i < level)
+                levelIcons[i].color = level == node.maxLevel ? MAX_LEVEL_COLOR : LEVEL_COLOR;
+            else
+                levelIcons[i].color = new Color(0.25f, 0.25f, 0.25f);
         }
 
         if (level == node.maxLevel)

@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using UnityEngine;
 
 public class LocalizationManager : MonoBehaviour
@@ -13,6 +14,7 @@ public class LocalizationManager : MonoBehaviour
     private static Dictionary<string, string> equipmentLocalizationData = new Dictionary<string, string>();
     private static Dictionary<string, string> abilityLocalizationData = new Dictionary<string, string>();
     private static Dictionary<string, string> enemyLocalizationData = new Dictionary<string, string>();
+    private static Dictionary<string, string> helpLocalizationData = new Dictionary<string, string>();
     private static ItemGenLocalization itemGenLocalization;
 
     private void Awake()
@@ -41,8 +43,31 @@ public class LocalizationManager : MonoBehaviour
         path = "json/localization/enemy." + locale;
         enemyLocalizationData = JsonConvert.DeserializeObject<Dictionary<string, string>>(Resources.Load<TextAsset>(path).text);
 
+        path = "json/localization/help." + locale;
+        helpLocalizationData = JsonConvert.DeserializeObject<Dictionary<string, string>>(Resources.Load<TextAsset>(path).text);
+
         path = "json/localization/itemgen." + locale;
         itemGenLocalization = JsonConvert.DeserializeObject<ItemGenLocalization>(Resources.Load<TextAsset>(path).text);
+    }
+
+    public string GetLocalizationText_HelpString(string helpId)
+    {
+        if (helpLocalizationData.TryGetValue(helpId, out string value))
+        {
+            MatchCollection regexMatches = Regex.Matches(value, @"{([^}]*)}");
+            if (regexMatches.Count > 0)
+            {
+                foreach(Match y in regexMatches)
+                {
+                    if (y.Groups[1].Value == helpId)
+                        continue;
+                    value = value.Replace(y.Groups[0].Value, GetLocalizationText_HelpString(y.Groups[1].Value));
+                }
+            }
+            return value;
+        }
+        else
+            return "";
     }
 
     public string GetLocalizationText(string stringId)
@@ -127,22 +152,22 @@ public class LocalizationManager : MonoBehaviour
     public string GetLocalizationText_AbilityBaseDamage(int level, AbilityBase ability)
     {
         string s = "";
-        string damageText;
-        if (ability.abilityType == AbilityType.SPELL)
+        string weaponDamageText, baseDamageText;
+
+        if (ability.abilityType == AbilityType.ATTACK)
         {
-            damageText = GetLocalizationText("UI_DEAL_DAMAGE_FIXED");
-            foreach (KeyValuePair<ElementType, AbilityDamageBase> damage in ability.damageLevels)
-            {
-                var d = damage.Value.damage[level];
-                s += string.Format(damageText, BuildElementalDamageString("<b>" + d.min + "~" + d.max + "</b>", damage.Key)) + "\n";
-            }
-        }
-        else if (ability.abilityType == AbilityType.ATTACK)
-        {
-            damageText = GetLocalizationText("UI_DEAL_DAMAGE_WEAPON");
+            weaponDamageText = GetLocalizationText("UI_DEAL_DAMAGE_WEAPON");
             float d = ability.weaponMultiplier + ability.weaponMultiplierScaling * level;
-            s += string.Format(damageText, d) + "\n";
+            s += string.Format(weaponDamageText, d) + "\n";
         }
+
+        baseDamageText = GetLocalizationText("UI_DEAL_DAMAGE_FIXED");
+        foreach (KeyValuePair<ElementType, AbilityDamageBase> damage in ability.damageLevels)
+        {
+            var d = damage.Value.damage[level];
+            s += string.Format(baseDamageText, BuildElementalDamageString("<b>" + d.min + "~" + d.max + "</b>", damage.Key)) + "\n";
+        }
+
         if (ability.hitCount > 1)
         {
             s += "Hits " + ability.hitCount + "x at " + ability.hitDamageModifier.ToString("P1") + " Damage";
@@ -332,30 +357,30 @@ public class LocalizationManager : MonoBehaviour
             return output +"\n";
         }
 
-        output += "<nobr>";
+        output += " <nobr>";
 
         switch (modifyType)
         {
             case ModifyType.FLAT_ADDITION:
                 if (value > 0)
-                    output += " +" + value;
+                    output += "+" + value;
                 else
-                    output += " " + value;
+                    output +=  value;
                 break;
 
             case ModifyType.ADDITIVE:
                 if (value > 0)
-                    output += " +" + value + "%";
+                    output += "+" + value + "%";
                 else
-                    output += " " + value + "%";
+                    output += value + "%";
                 break;
 
             case ModifyType.MULTIPLY:
-                output += " x" + (1 + value / 100d).ToString(".00##");
+                output += "x" + (1 + value / 100d).ToString(".00##");
                 break;
 
             case ModifyType.FIXED_TO:
-                output += " is " + value;
+                output += "is " + value;
                 break;
         }
 

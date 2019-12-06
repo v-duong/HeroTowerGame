@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 public class PlayerStats
 {
-    public const float EXP_STOCK_RATE = 0.5f;
+    public const float EXP_STOCK_RATE = 1f;
     public const int HERO_TEAM_MAX_NUM = 5;
     public const int HERO_TEAM_MAX_HEROES = 5;
     public readonly static int maxEquipInventory = 250;
@@ -27,6 +27,8 @@ public class PlayerStats
     private List<AbilityCoreItem> abilityStorageInventory;
     private List<HeroData> heroList;
     public Dictionary<string, int> stageClearInfo;
+    public Dictionary<int, bool> worldUnlockInfo;
+    public int lastPlayedWorld;
 
     public IList<Equipment> EquipmentInventory
     {
@@ -64,6 +66,7 @@ public class PlayerStats
 
     public PlayerStats()
     {
+        lastPlayedWorld = 1;
         ItemFragments = 0;
         ArchetypeFragments = 0;
         ExpStock = 0;
@@ -75,13 +78,20 @@ public class PlayerStats
         equipmentInventory = new List<Equipment>();
         archetypeInventory = new List<ArchetypeItem>();
         abilityStorageInventory = new List<AbilityCoreItem>();
-        stageClearInfo = new Dictionary<string, int>();
+
         heroList = new List<HeroData>();
         heroTeams = new List<HeroData[]>();
         for (int i = 0; i < HERO_TEAM_MAX_NUM; i++)
         {
             heroTeams.Add(new HeroData[HERO_TEAM_MAX_HEROES]);
         }
+
+        stageClearInfo = new Dictionary<string, int>() { { "stage1-1", 0 } };
+
+        worldUnlockInfo = new Dictionary<int, bool>()
+        {
+            {1, true }
+        };
     }
 
     public Equipment GetEquipmentByGuid(Guid id)
@@ -225,11 +235,28 @@ public class PlayerStats
         if (!stageClearInfo.ContainsKey(stageId))
             stageClearInfo.Add(stageId, 0);
         stageClearInfo[stageId]++;
+
+        if (stageClearInfo[stageId] == 1)
+        {
+            StageInfoBase stage = ResourceManager.Instance.GetStageInfo(stageId);
+            StageInfoBase unlockedStage = ResourceManager.Instance.GetStageInfo(stage.requiredToUnlock);
+
+            if (!stageClearInfo.ContainsKey(stage.requiredToUnlock))
+                stageClearInfo.Add(stage.requiredToUnlock, 0);
+
+            if (unlockedStage.act != stage.act)
+            {
+                if (!worldUnlockInfo.ContainsKey(unlockedStage.act))
+                {
+                    worldUnlockInfo.Add(unlockedStage.act, true);
+                }
+            }
+        }
     }
 
     public bool IsStageUnlocked(string stageId)
     {
-        if (!stageClearInfo.ContainsKey(stageId) || stageClearInfo[stageId] == 0)
+        if (!stageClearInfo.ContainsKey(stageId))
             return false;
         else
             return true;
@@ -241,6 +268,14 @@ public class PlayerStats
             return 0;
         else
             return stageClearInfo[stageId];
+    }
+
+    public bool IsWorldUnlocked(int world)
+    {
+        if (!worldUnlockInfo.ContainsKey(world))
+            return false;
+        else
+            return worldUnlockInfo[world];
     }
 }
 

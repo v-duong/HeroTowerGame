@@ -33,16 +33,7 @@ public class BattleCharInfoPanel : MonoBehaviour
         {
             infoText.text += "\nShield: " + actor.Data.CurrentManaShield.ToString("F0") + "/" + actor.Data.MaximumManaShield;
         }
-
-        var a = actor.GetStatusEffect(EffectType.CHILL);
-        if (a != null)
-        {
-            statusText.text = "Chill " + a.GetSimpleEffectValue() + "%";
-        }
-        else
-        {
-            statusText.text = "";
-        }
+        statusText.text = "";
     }
 
     public void SetTarget(Actor actor)

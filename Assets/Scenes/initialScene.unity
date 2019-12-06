@@ -259,6 +259,7 @@ MonoBehaviour:
   aspectRatio: 0
   selectedTeamNum: 0
   isInBattle: 0
+  isInMainMenu: 0
 --- !u!4 &1063661410
 Transform:
   m_ObjectHideFlags: 0

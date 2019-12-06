@@ -7,6 +7,7 @@ public class StageSelectPanel : MonoBehaviour
 {
     public GameObject teamSelectParent;
     public List<TeamSelectionPanel> teamSelectionPanels;
+    public List<WorldSelectButton> worldButtons;
     public Button confirmButton;
 
     private int selectedAct = 1;
@@ -21,19 +22,47 @@ public class StageSelectPanel : MonoBehaviour
 
     private void OnEnable()
     {
-        selectedAct = 1;
-        selectedDifficulty = DifficultyType.NORMAL;
-        List<StageInfoBase> stages = ResourceManager.Instance.GetStagesByAct(selectedAct);
-        if (stages.Count != 0 && !populatedList)
+        selectedAct = GameManager.Instance.PlayerStats.lastPlayedWorld;
+        UpdateWorldButtons();
+        UpdateStageButtons();
+    }
+
+    private void UpdateWorldButtons()
+    {
+        foreach (WorldSelectButton worldSelectButton in worldButtons)
         {
-            foreach (StageInfoBase stageInfo in stages)
+            Button button = worldSelectButton.GetComponent<Button>();
+            if (worldSelectButton.worldNum == selectedAct)
             {
-                StageSelectButton button = Instantiate(stageSelectButtonPrefab, contentContainer.transform).GetComponent<StageSelectButton>();
-                button.SetStageInfo(stageInfo);
-                button.GetComponent<Button>().onClick.AddListener(delegate { StageButtonOnClick(stageInfo); });
+                button.image.color = Helpers.SELECTION_COLOR;
             }
-            populatedList = true;
+            else
+            {
+                button.image.color = Color.white;
+            }
+
+            button.interactable = GameManager.Instance.PlayerStats.IsWorldUnlocked(worldSelectButton.worldNum);
         }
+    }
+
+    private void UpdateStageButtons()
+    {
+        List<StageInfoBase> stages = ResourceManager.Instance.GetStagesByAct(selectedAct);
+
+        foreach (StageSelectButton existingButton in stageSelectButtonList)
+        {
+            Destroy(existingButton.gameObject);
+        }
+        stageSelectButtonList.Clear();
+
+        foreach (StageInfoBase stageInfo in stages)
+        {
+            StageSelectButton button = Instantiate(stageSelectButtonPrefab, contentContainer.transform).GetComponent<StageSelectButton>();
+            button.SetStageInfo(stageInfo);
+            button.GetComponent<Button>().onClick.AddListener(delegate { StageButtonOnClick(stageInfo); });
+            stageSelectButtonList.Add(button);
+        }
+        populatedList = true;
     }
 
     public void StageButtonOnClick(StageInfoBase stageInfo)
@@ -132,9 +161,19 @@ public class StageSelectPanel : MonoBehaviour
         }
     }
 
+
     public int GetSelectedAct()
     {
         return selectedAct;
+    }
+
+    public void SetSelectedAct(int num)
+    {
+        if (selectedAct == num)
+            return;
+        selectedAct = num;
+        UpdateStageButtons();
+        UpdateWorldButtons();
     }
 
     public DifficultyType GetSelectedDifficulty()

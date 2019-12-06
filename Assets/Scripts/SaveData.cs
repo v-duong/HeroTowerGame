@@ -19,9 +19,11 @@ public class SaveData
     private readonly List<ArchetypeItemSaveData> archetypeItemList = new List<ArchetypeItemSaveData>();
     private readonly Guid[][] heroTeamList = new Guid[PlayerStats.HERO_TEAM_MAX_NUM][];
     private Dictionary<string, int> stageClearInfo = new Dictionary<string, int>();
+    private Dictionary<int, bool> worldUnlockInfo = new Dictionary<int, bool>();
     public int expStock;
     public int itemFragments;
     public int archetypeFragments;
+    public int lastPlayedWorld;
 
     public void SaveAll()
     {
@@ -59,6 +61,7 @@ public class SaveData
         archetypeFragments = ps.ArchetypeFragments;
 
         stageClearInfo = ps.stageClearInfo;
+        lastPlayedWorld = ps.lastPlayedWorld;
 
         Array.Clear(heroTeamList, 0, PlayerStats.HERO_TEAM_MAX_NUM);
         for (int i = 0; i < PlayerStats.HERO_TEAM_MAX_NUM; i++)
@@ -84,6 +87,7 @@ public class SaveData
         ps.SetArchetypeFragments(archetypeFragments);
         ps.SetItemFragments(itemFragments);
         ps.stageClearInfo = stageClearInfo;
+        ps.lastPlayedWorld = lastPlayedWorld;
 
         if (heroTeamList != null)
 

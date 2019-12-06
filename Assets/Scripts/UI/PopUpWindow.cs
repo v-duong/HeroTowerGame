@@ -20,12 +20,15 @@ public class PopUpWindow : MonoBehaviour
 
     private bool isVertical = false;
     private bool isGrid = false;
+    private bool isHelpWindowOpen = false;
 
     public List<GameObject> temporaryElements = new List<GameObject>();
+    private Stack<List<string>> helpWindowStack = new Stack<List<string>>();
+    private List<string> currentHelpStrings;
 
     private void OnDisable()
     {
-        temporaryElements.ForEach(x=>Destroy(x.gameObject));
+        temporaryElements.ForEach(x => Destroy(x.gameObject));
         temporaryElements.Clear();
     }
 
@@ -54,10 +57,9 @@ public class PopUpWindow : MonoBehaviour
         }
     }
 
-
     public void OpenTextWindow(string text, int width = 400, int height = 700)
     {
-        ((RectTransform)popUpWindowMain.transform).sizeDelta = new Vector2(width, height) ;
+        ((RectTransform)popUpWindowMain.transform).sizeDelta = new Vector2(width, height);
         UIManager.Instance.OpenWindow(this.gameObject, false);
         textScrollView.SetActive(true);
         verticalScrollView.SetActive(false);
@@ -105,6 +107,52 @@ public class PopUpWindow : MonoBehaviour
         isGrid = false;
 
         textInput.text = defaultString;
+    }
+
+    public void OpenHelpWindow(List<string> helpStrings)
+    {
+        if (!isHelpWindowOpen)
+        {
+            helpWindowStack.Clear();
+            OpenTextWindow("");
+            SetButtonValues("Back", HelpWindowBack, "Close All", delegate { UIManager.Instance.CloseCurrentWindow(); isHelpWindowOpen = false; });
+            textField.fontSize = 20;
+            textField.paragraphSpacing = 50;
+            textField.lineSpacing = 0;
+            textField.alignment = TextAlignmentOptions.Left;
+            isHelpWindowOpen = true;
+            currentHelpStrings = null;
+        }        
+
+        if (currentHelpStrings != null)
+            helpWindowStack.Push(currentHelpStrings);
+        SetHelpTextField(helpStrings);
+    }
+
+    private void SetHelpTextField(List<string> helpStrings)
+    {
+        ((RectTransform)textField.transform).anchoredPosition = Vector3.zero;
+        textField.text = "";
+
+        foreach (string s in helpStrings)
+        {
+            textField.text += LocalizationManager.Instance.GetLocalizationText_HelpString(s);
+            textField.text += '\n';
+        }
+        currentHelpStrings = helpStrings;
+    }
+
+    private void HelpWindowBack()
+    {
+        if (helpWindowStack.Count == 0)
+        {
+            isHelpWindowOpen = false;
+            UIManager.Instance.CloseCurrentWindow();
+        }
+        else
+        {
+            SetHelpTextField(helpWindowStack.Pop());
+        }
     }
 
     public void AddObjectToViewport(GameObject gameObject)

@@ -72,7 +72,7 @@ public class EquipmentDissolvePanel : MonoBehaviour
             if (keyValue.Value != 0)
                 textBox.text += LocalizationManager.Instance.GetLocalizationText("rarityType." + keyValue.Key.ToString()) + " x" + keyValue.Value + "\n";
         }
-        textBox.text += "\n" + fragmentCount + " Fragments";
+        textBox.text += "\n" + fragmentCount + " <sprite=10>";
     }
 
     public void DissolveEquipmentConfirm()

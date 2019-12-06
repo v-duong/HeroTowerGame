@@ -477,7 +477,7 @@ public class ResourceManager : MonoBehaviour
         List<StageInfoBase> temp = DeserializeFromPath_Resources<List<StageInfoBase>>("json/stages/stages");
         foreach (StageInfoBase stage in temp)
         {
-            string name = "stage" + stage.act + "-" + stage.stage + stage.difficulty;
+            string name = "stage" + stage.act + "-" + stage.stage;
             stageList.Add(name, stage);
         }
     }

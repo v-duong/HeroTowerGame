@@ -5,7 +5,7 @@ public class ElectrocuteEffect : ActorEffect
 {
     public const float BASE_DURATION = 2.0f;
     private const float BASE_RADIUS = 2f;
-    public const float BASE_DAMAGE_MULTIPLIER = 0.04f;
+    public const float BASE_DAMAGE_MULTIPLIER = 0.05f;
     protected float damage;
     protected float timeElapsed;
 

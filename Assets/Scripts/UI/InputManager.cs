@@ -122,17 +122,17 @@ public class InputManager : MonoBehaviour
     // Update is called once per frame
     private void Update()
     {
-        if (!GameManager.Instance.isInBattle)
+        if (!GameManager.Instance.isInBattle && GameManager.Instance.isInMainMenu)
         {
             if (Input.GetKeyUp(KeyCode.Escape))
             {
                 UIManager.Instance.CloseCurrentWindow();
             }
 
-            if (UIManager.Instance.currentWindow.gameObject == UIManager.Instance.ArchetypeUITreeWindow.gameObject)
+            if (Input.mouseScrollDelta.y != 0
+            || (Input.touchCount == 2 && Input.GetTouch(0).phase == TouchPhase.Moved && Input.GetTouch(1).phase == TouchPhase.Moved))
             {
-                if (Input.mouseScrollDelta.y != 0
-                || (Input.touchCount == 2 && Input.GetTouch(0).phase == TouchPhase.Moved && Input.GetTouch(1).phase == TouchPhase.Moved))
+                if (UIManager.Instance.ArchetypeCanvas != null && (UIManager.Instance.currentWindow.gameObject == UIManager.Instance.ArchetypeUITreeWindow.gameObject))
                 {
                     float scrollValue;
 
@@ -149,16 +149,15 @@ public class InputManager : MonoBehaviour
 
                     RectTransform contentRect = UIManager.Instance.ArchetypeUITreeWindow.ScrollView.content;
                     float scaleValue = Mathf.Clamp(contentRect.transform.localScale.x + scrollValue, 0.4f, 3f);
-                    float scaleMultiplier = scaleValue/contentRect.transform.localScale.x ;
+                    float scaleMultiplier = scaleValue / contentRect.transform.localScale.x;
                     contentRect.transform.localScale = new Vector2(scaleValue, scaleValue);
                     contentRect.anchoredPosition = new Vector2(contentRect.anchoredPosition.x * scaleMultiplier, contentRect.anchoredPosition.y * scaleMultiplier);
                 }
             }
 
             return;
-
         }
-        else
+        else if (GameManager.Instance.isInBattle)
         {
             BattleInputUpdate();
         }

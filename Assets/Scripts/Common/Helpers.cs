@@ -14,6 +14,11 @@ public static class Helpers
     public static readonly Color NORMAL_COLOR = new Color(0.7f, 0.7f, 0.7f);
     public static readonly Color SELECTION_COLOR = new Color(0.2f, 0.9f, 0.82f);
 
+    public static readonly Color STR_ARCHETYPE_COLOR = new Color(1f,0.4f,0.4f);
+    public static readonly Color INT_ARCHETYPE_COLOR = new Color(0.23f, 0.7f, 1f);
+    public static readonly Color AGI_ARCHETYPE_COLOR = new Color(0.23f, 0.86f, 0.23f);
+    public static readonly Color WILL_ARCHETYPE_COLOR = new Color(0.96f, 0.9f, 0.26f);
+
     public static double SCALING_FACTOR = 1.042;
     public static double LEVEL_SCALING_FACTOR = 0.402;
     public static double ENEMY_SCALING = 1.012;

@@ -264,17 +264,23 @@ public class BattleManager : MonoBehaviour
     private void AddArchetypeDrops(BattleEndWindow battleEndWindow)
     {
         //Get Archetype
+        int archetypeDrops = 1 + survivalLoopCount / 3;
+        int i = 0;
         if (stageInfo.archetypeDropList.Count != 0)
         {
-            int archetypeDrops = 1 + survivalLoopCount / 3;
-            for (int i = 0; i < archetypeDrops; i++)
-            {
-                WeightList<string> weightList = Helpers.CreateWeightListFromWeightBases(stageInfo.archetypeDropList);
-                string baseId = weightList.ReturnWeightedRandom();
-                ArchetypeBase archetypeBase = ResourceManager.Instance.GetArchetypeBase(baseId);
-                ArchetypeItem item = ArchetypeItem.CreateArchetypeItem(archetypeBase, stageLevel);
-                gainedArchetypeItems.Add(item);
-            }
+            WeightList<string> stageDropList = Helpers.CreateWeightListFromWeightBases(stageInfo.archetypeDropList);
+            string baseId = stageDropList.ReturnWeightedRandom();
+            ArchetypeBase archetypeBase = ResourceManager.Instance.GetArchetypeBase(baseId);
+            ArchetypeItem item = ArchetypeItem.CreateArchetypeItem(archetypeBase, stageLevel);
+            gainedArchetypeItems.Add(item);
+            i = 1;
+            
+        } 
+
+        for (; i < archetypeDrops; i++)
+        {
+            ArchetypeItem item = ArchetypeItem.CreateArchetypeItem(ResourceManager.Instance.GetRandomArchetypeBase(stageLevel + survivalLoopCount), stageLevel + survivalLoopCount);
+            gainedArchetypeItems.Add(item);
         }
     }
 

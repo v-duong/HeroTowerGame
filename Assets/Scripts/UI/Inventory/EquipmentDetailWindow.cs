@@ -61,7 +61,7 @@ public class EquipmentDetailWindow : MonoBehaviour
         string equipTypeString = LocalizationManager.Instance.GetLocalizationText("equipSlotType." + equip.Base.equipSlot);
 
         if (equip.Rarity != RarityType.UNIQUE)
-            topLineText.text += equip.Base.idName + "\n";
+            topLineText.text += LocalizationManager.Instance.GetLocalizationText_Equipment(equip.Base.idName) + "\n";
 
         if (groupTypeString.Equals(equipTypeString))
         {

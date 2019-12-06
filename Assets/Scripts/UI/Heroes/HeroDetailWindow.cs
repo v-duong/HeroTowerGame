@@ -12,6 +12,12 @@ public class HeroDetailWindow : MonoBehaviour
     private HeroDetailEquipmentPage equipmentPage;
 
     [SerializeField]
+    private HeroBonusDetailPage bonusPage;
+
+    [SerializeField]
+    private HeroAbilityPage abilityPage;
+
+    [SerializeField]
     private ArchetypeUITreeWindow treeWindow;
 
     [SerializeField]
@@ -46,32 +52,39 @@ public class HeroDetailWindow : MonoBehaviour
                 currentPanel = detailMainPage;
                 detailMainPage.gameObject.SetActive(true);
                 equipmentPage.gameObject.SetActive(false);
+                bonusPage.gameObject.SetActive(false);
                 break;
 
             case 1:
                 currentPanel = equipmentPage;
                 detailMainPage.gameObject.SetActive(false);
                 equipmentPage.gameObject.SetActive(true);
+                bonusPage.gameObject.SetActive(false);
+                break;
+
+            case 2:
+                currentPanel = bonusPage;
+                detailMainPage.gameObject.SetActive(false);
+                equipmentPage.gameObject.SetActive(false);
+                bonusPage.gameObject.SetActive(true);
                 break;
 
             default:
                 break;
         }
-
-        UpdateCurrentPanel();
     }
 
     public void SetArchetypeCategoryNames(string primary, string secondary)
     {
-        categoryButtons[2].GetComponentInChildren<TextMeshProUGUI>().text = LocalizationManager.Instance.GetLocalizationText_ArchetypeName(primary) + " Tree";
+        categoryButtons[3].GetComponentInChildren<TextMeshProUGUI>().text = LocalizationManager.Instance.GetLocalizationText_ArchetypeName(primary) + " Tree";
         if (!string.IsNullOrWhiteSpace(secondary))
         {
-            categoryButtons[3].gameObject.SetActive(true);
-            categoryButtons[3].GetComponentInChildren<TextMeshProUGUI>().text = LocalizationManager.Instance.GetLocalizationText_ArchetypeName(secondary) + " Tree";
+            categoryButtons[4].gameObject.SetActive(true);
+            categoryButtons[4].GetComponentInChildren<TextMeshProUGUI>().text = LocalizationManager.Instance.GetLocalizationText_ArchetypeName(secondary) + " Tree";
         }
         else
         {
-            categoryButtons[3].gameObject.SetActive(false);
+            categoryButtons[4].gameObject.SetActive(false);
         }
     }
 

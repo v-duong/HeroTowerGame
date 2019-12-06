@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 
 public class HeroData : ActorData
@@ -15,6 +16,7 @@ public class HeroData : ActorData
     public int Will { get; private set; }
 
     public int ArchetypePoints { get; private set; }
+    public int RebirthBonus { get; private set; }
 
     //private Dictionary<BonusType, StatBonus> archetypeStatBonuses;
     private Dictionary<BonusType, StatBonus> attributeStatBonuses;
@@ -48,21 +50,11 @@ public class HeroData : ActorData
         UpdatesAreDeferred = true;
         PlayerStats ps = GameManager.Instance.PlayerStats;
 
-        equipList = new List<HeroEquipData>();
-        for (int i = 0; i < 12; i++)
-        {
-            equipList.Add(new HeroEquipData());
-        }
-
-        archetypeList = new HeroArchetypeData[2];
-        archetypeStatBonuses = new Dictionary<BonusType, StatBonusCollection>();
-        attributeStatBonuses = new Dictionary<BonusType, StatBonus>();
-        abilitySlotList = new List<AbilitySlot>() { new AbilitySlot(0), new AbilitySlot(1) };
+        Initialize(heroSaveData.name);
 
         Id = heroSaveData.id;
-        Name = heroSaveData.name;
         Level = heroSaveData.level;
-        ArchetypePoints = Level;
+        ArchetypePoints = (int)(Level * 1.2f);
         Experience = heroSaveData.experience;
 
         BaseHealth = heroSaveData.baseHealth;
@@ -71,12 +63,6 @@ public class HeroData : ActorData
         BaseIntelligence = heroSaveData.baseIntelligence;
         BaseAgility = heroSaveData.baseAgility;
         BaseWill = heroSaveData.baseWill;
-
-        BaseDodgeRating = 0;
-        BaseResolveRating = 0;
-        BaseAttackPhasing = 0;
-        BaseSpellPhasing = 0;
-        movementSpeed = 2.5f;
 
         archetypeList[0] = new HeroArchetypeData(heroSaveData.primaryArchetypeData, this);
 
@@ -181,6 +167,8 @@ public class HeroData : ActorData
             return;
         Level++;
         ArchetypePoints++;
+        if (Level % 5 == 0)
+            ArchetypePoints++;
         BaseHealth += PrimaryArchetype.HealthGrowth;
         BaseSoulPoints += PrimaryArchetype.SoulPointGrowth;
         BaseStrength += PrimaryArchetype.StrengthGrowth;
@@ -406,7 +394,6 @@ public class HeroData : ActorData
 
     public void AddTriggeredEffect(TriggeredEffectBonusProperty triggeredEffect, TriggeredEffect effectInstance)
     {
-
         TriggeredEffects[triggeredEffect.triggerType].Add(effectInstance);
     }
 
@@ -630,8 +617,8 @@ public class HeroData : ActorData
          * +1% Attack/Cast Speed per 20 Agi
          */
         int dodgeRatingMod = (int)Math.Round(Agility / 5f, MidpointRounding.AwayFromZero);
-        int attackSpeedMod = (int)Math.Round(Agility / 20f, MidpointRounding.AwayFromZero);
-        int castSpeedMod = (int)Math.Round(Agility / 20f, MidpointRounding.AwayFromZero);
+        int attackSpeedMod = (int)Math.Round(Agility / 15f, MidpointRounding.AwayFromZero);
+        int castSpeedMod = (int)Math.Round(Agility / 15f, MidpointRounding.AwayFromZero);
 
         if (!attributeStatBonuses.ContainsKey(BonusType.GLOBAL_DODGE_RATING))
             attributeStatBonuses.Add(BonusType.GLOBAL_DODGE_RATING, new StatBonus());
@@ -829,6 +816,11 @@ public class HeroData : ActorData
         return ElementData[element];
     }
 
+    public int GetUncapResistance(ElementType element)
+    {
+        return ElementData.GetUncapResistance(element);
+    }
+
     protected override HashSet<GroupType> GetGroupTypes()
     {
         return GetGroupTypes(true);
@@ -923,6 +915,7 @@ public class HeroData : ActorData
         }
     }
 
+    // this is mostly used for checking for element conversion bonuses
     public override HashSet<BonusType> BonusesIntersection(IEnumerable<BonusType> abilityBonuses, IEnumerable<BonusType> bonuses)
     {
         HashSet<BonusType> actorBonuses = new HashSet<BonusType>();
@@ -933,6 +926,41 @@ public class HeroData : ActorData
             actorBonuses.UnionWith(abilityBonuses);
         actorBonuses.IntersectWith(bonuses);
         return actorBonuses;
+    }
+
+    public Dictionary<BonusType, HeroBonusTotal> GetAllBonusTotals()
+    {
+        Dictionary<BonusType, HeroBonusTotal> totalDict = new Dictionary<BonusType, HeroBonusTotal>();
+        foreach (KeyValuePair<BonusType, StatBonusCollection> statBonusCollection in statBonuses.Concat(archetypeStatBonuses))
+        {
+            if (!totalDict.ContainsKey(statBonusCollection.Key))
+                totalDict.Add(statBonusCollection.Key, new HeroBonusTotal());
+
+            HeroBonusTotal heroBonusTotal = totalDict[statBonusCollection.Key];
+
+            foreach (KeyValuePair<GroupType, StatBonus> statBonus in statBonusCollection.Value.GetAllStatBonus())
+            {
+                if (!heroBonusTotal.sumByRestrictions.ContainsKey(statBonus.Key))
+                    heroBonusTotal.sumByRestrictions.Add(statBonus.Key, new StatBonus());
+
+                heroBonusTotal.sumByRestrictions[statBonus.Key].AddBonuses(statBonus.Value);
+            }
+        }
+
+        foreach (KeyValuePair<BonusType, StatBonus> statBonus in temporaryBonuses.Concat(attributeStatBonuses))
+        {
+            if (!totalDict.ContainsKey(statBonus.Key))
+                totalDict.Add(statBonus.Key, new HeroBonusTotal());
+
+            HeroBonusTotal heroBonusTotal = totalDict[statBonus.Key];
+
+            if (!heroBonusTotal.sumByRestrictions.ContainsKey(GroupType.NO_GROUP))
+                heroBonusTotal.sumByRestrictions.Add(GroupType.NO_GROUP, new StatBonus());
+
+            heroBonusTotal.sumByRestrictions[GroupType.NO_GROUP].AddBonuses(statBonus.Value);
+        }
+
+        return totalDict;
     }
 
     private class AbilitySlot
@@ -985,5 +1013,10 @@ public class HeroData : ActorData
         {
             isDisabled = false;
         }
+    }
+
+    public class HeroBonusTotal
+    {
+        public Dictionary<GroupType, StatBonus> sumByRestrictions = new Dictionary<GroupType, StatBonus>();
     }
 }

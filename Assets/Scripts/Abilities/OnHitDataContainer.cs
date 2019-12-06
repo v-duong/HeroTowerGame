@@ -144,7 +144,7 @@ public class OnHitDataContainer
         effectData[EffectType.CHILL].SetDuration(chillDuration.CalculateStat(ChillEffect.BASE_DURATION));
 
         StatBonus electrocuteChance = data.GetMultiStatBonus(abilityBonus, tags, BonusType.ELECTROCUTE_CHANCE, BonusType.STATUS_EFFECT_CHANCE, BonusType.ELEMENTAL_STATUS_EFFECT_CHANCE);
-        StatBonus electrocuteEffectiveness = data.GetMultiStatBonus(abilityBonus, tags, BonusType.ELECTROCUTE_EFFECTIVENESS, BonusType.STATUS_EFFECT_DAMAGE, BonusType.ELEMENTAL_STATUS_EFFECT_EFFECTIVENESS);
+        StatBonus electrocuteEffectiveness = data.GetMultiStatBonus(abilityBonus, tags, BonusType.ELECTROCUTE_EFFECTIVENESS, BonusType.STATUS_EFFECT_DAMAGE, BonusType.DAMAGE_OVER_TIME, BonusType.ELEMENTAL_STATUS_EFFECT_EFFECTIVENESS);
         StatBonus electrocuteDuration = data.GetMultiStatBonus(abilityBonus, tags, BonusType.ELECTROCUTE_DURATION, BonusType.STATUS_EFFECT_DURATION, BonusType.ELEMENTAL_STATUS_EFFECT_DURATION);
         float electrocuteSpeed = data.GetMultiStatBonus(abilityBonus, tags, BonusType.ELECTROCUTE_SPEED, BonusType.DAMAGE_OVER_TIME_SPEED).CalculateStat(100f) / 100f;
         effectData[EffectType.ELECTROCUTE].SetChance(electrocuteChance.CalculateStat(0f));
@@ -184,7 +184,7 @@ public class OnHitDataContainer
         effectData[EffectType.POISON].SetChance(poisonChance.CalculateStat(0f));
         effectData[EffectType.POISON].SetEffectiveness(poisonEffectiveness.CalculateStat(100f) / 100f * poisonSpeed);
         effectData[EffectType.POISON].SetDuration(poisonDuration.CalculateStat(PoisonEffect.BASE_DURATION) / poisonSpeed);
-        effectData[EffectType.POISON].SetMaxStacks(data.GetMultiStatBonus(abilityBonus, tags, BonusType.MAX_POISON_STACKS).CalculateStat(30));
+        effectData[EffectType.POISON].SetMaxStacks(data.GetMultiStatBonus(abilityBonus, tags, BonusType.MAX_POISON_STACKS).CalculateStat(PoisonEffect.BASE_MAX_STACKS));
         effectData[EffectType.POISON].SetResistance(1 - data.GetMultiStatBonus(abilityBonus, tags, BonusType.POISON_RESISTANCE).CalculateStat(0f) / 100f);
 
         this.vsBossDamage = data.GetMultiStatBonus(abilityBonus, tags, BonusType.DAMAGE_VS_BOSS).CalculateStat(1f);

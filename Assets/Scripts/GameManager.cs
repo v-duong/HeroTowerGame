@@ -18,7 +18,9 @@ public class GameManager : MonoBehaviour
     public float aspectRatio;
     public int selectedTeamNum;
     public bool isInBattle;
+    public bool isInMainMenu;
     public List<HeroData> inBattleHeroes = new List<HeroData>();
+
     private string currentSceneName = "";
 
     private WeightList<ConsumableType> consumableWeightList;
@@ -33,13 +35,15 @@ public class GameManager : MonoBehaviour
     {
         aspectRatio = (float)Screen.height / (float)Screen.width;
         QualitySettings.vSyncCount = 1;
-        isInBattle = false;
+        
+        
         currentSceneName = "mainMenu";
 
 #if !UNITY_EDITOR
         SceneManager.LoadScene("mainMenu", LoadSceneMode.Additive);
 #endif
-
+        isInBattle = false;
+        isInMainMenu = true;
         PlayerStats = new PlayerStats();
         /*
         for (int i = 0; i < 50; i++)
@@ -49,7 +53,7 @@ public class GameManager : MonoBehaviour
             equipment.RerollAffixesAtRarity();
             PlayerStats.AddEquipmentToInventory(equipment);
         }
-
+        */
         foreach (ArchetypeBase archetypeBase in ResourceManager.Instance.ArchetypeBasesList)
         {
             PlayerStats.AddArchetypeToInventory(ArchetypeItem.CreateArchetypeItem(archetypeBase, 100));
@@ -58,7 +62,7 @@ public class GameManager : MonoBehaviour
                 PlayerStats.AddAbilityToInventory(AbilityCoreItem.CreateAbilityItemFromArchetype(archetypeBase, ability));
             }
         }
-        */
+        
 
         Equipment startingSword = Equipment.CreateEquipmentFromBase(ResourceManager.Instance.GetEquipmentBase("OneHandedSword1"), 1);
         Equipment startingBow = Equipment.CreateEquipmentFromBase(ResourceManager.Instance.GetEquipmentBase("Bow1"), 1);
@@ -91,8 +95,6 @@ public class GameManager : MonoBehaviour
         PlayerStats.SetHeroToTeamSlot(startingSoldier, 0, 0);
         PlayerStats.SetHeroToTeamSlot(startingRanger, 0, 1);
         PlayerStats.SetHeroToTeamSlot(startingMage, 0, 2);
-
-        PlayerStats.ModifyItemFragments(50000000);
 
         /*
         float total1 = 0, total2 = 0, total3 = 0;
@@ -136,6 +138,8 @@ public class GameManager : MonoBehaviour
 
         SceneManager.UnloadSceneAsync(currentSceneName);
         SceneManager.LoadScene("mainMenu", LoadSceneMode.Additive);
+
+        isInMainMenu = true;
     }
 
     /// <summary>
@@ -152,6 +156,8 @@ public class GameManager : MonoBehaviour
 
         Camera.main.transform.position = new Vector3(0, 0, -10);
         SceneManager.UnloadSceneAsync("mainMenu");
+
+        isInMainMenu = false;
     }
 
     /// <summary>

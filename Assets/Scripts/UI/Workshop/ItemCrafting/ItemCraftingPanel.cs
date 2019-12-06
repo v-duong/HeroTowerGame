@@ -152,7 +152,7 @@ public class ItemCraftingPanel : MonoBehaviour
 
             //itemSlot.itemBaseText.text = equip.Base.idName;
             if (equip.Rarity != RarityType.UNIQUE)
-                itemSlot.text.text += "\n<i><size=80%>" + equip.Base.idName + "</size></i>";
+                itemSlot.text.text += "\n<i><size=80%>" + LocalizationManager.Instance.GetLocalizationText_Equipment(equip.Base.idName) + "</size></i>";
             itemSlot.itemRequirementText.text = LocalizationManager.Instance.GetRequirementText(equip);
         }
 
