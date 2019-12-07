@@ -24,7 +24,7 @@ public class LocalizationManager : MonoBehaviour
         LoadLocalization();
     }
 
-    private void LoadLocalization(string locale = "en-US")
+    private static void LoadLocalization(string locale = "en-US")
     {
         if (locale == null)
             locale = defaultLang;
@@ -294,6 +294,7 @@ public class LocalizationManager : MonoBehaviour
 
     private static string ParseBonusTypeFallback(string b)
     {
+        Debug.LogWarning(b + " NOT FOUND");
         b = b.Replace("_", " ");
         return b.ToLower();
     }
@@ -464,8 +465,11 @@ public class LocalizationManager : MonoBehaviour
         return s.Trim(' ', ',');
     }
 
-    public static string GetBonusTypeString(BonusType type)
+    public string GetBonusTypeString(BonusType type)
     {
+        if (commonLocalizationData.Count == 0)
+            LocalizationManager.LoadLocalization();
+
         if (commonLocalizationData.TryGetValue("bonusType." + type.ToString(), out string output))
         {
             if (output == "")

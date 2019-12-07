@@ -76,11 +76,11 @@ public class HeroDetailWindow : MonoBehaviour
 
     public void SetArchetypeCategoryNames(string primary, string secondary)
     {
-        categoryButtons[3].GetComponentInChildren<TextMeshProUGUI>().text = LocalizationManager.Instance.GetLocalizationText_ArchetypeName(primary) + " Tree";
+        categoryButtons[3].GetComponentInChildren<TextMeshProUGUI>().text = primary + " Tree";
         if (!string.IsNullOrWhiteSpace(secondary))
         {
             categoryButtons[4].gameObject.SetActive(true);
-            categoryButtons[4].GetComponentInChildren<TextMeshProUGUI>().text = LocalizationManager.Instance.GetLocalizationText_ArchetypeName(secondary) + " Tree";
+            categoryButtons[4].GetComponentInChildren<TextMeshProUGUI>().text = secondary + " Tree";
         }
         else
         {

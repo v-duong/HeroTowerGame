@@ -18,10 +18,14 @@ public class BattleManager : MonoBehaviour
 
     private const float REQUIRED_WAIT_TIME = 0.2f;
 
+    [SerializeField]
+    private SpawnWarning spawnWarningPrefab;
+
     public BattlePlayerInfoPanel battleInfo;
 
     private List<Spawner> spawnerList;
     private List<Goal> goalList;
+    private List<SpawnWarning> spawnWarnings = new List<SpawnWarning>();
     private int spawnCoroutinesRunning = 0;
     private Coroutine waveCoroutine;
     private StageInfoBase stageInfo;
@@ -91,6 +95,13 @@ public class BattleManager : MonoBehaviour
 
     public void Initialize()
     {
+        foreach (Spawner s in SpawnerList)
+        {
+            SpawnWarning spawnWarning = Instantiate(spawnWarningPrefab, StageManager.Instance.WorldCanvas.transform);
+            spawnWarning.transform.position = s.warningLocation.position;
+            spawnWarnings.Add(spawnWarning);
+        }
+
         battleInfo.InitializeNextWaveInfo(Waves[0].enemyList, null, 0, 1, true);
     }
 
@@ -409,7 +420,7 @@ public class BattleManager : MonoBehaviour
         double multiplier = System.Math.Pow(1.15f, survivalLoopCount);
         if (perfectBonus)
             multiplier *= 1.25f;
-        gainedExpThisLoop = (int)(stageInfo.baseExperience * ( multiplier));
+        gainedExpThisLoop = (int)(stageInfo.baseExperience * (multiplier));
         gainedExp += gainedExpThisLoop;
     }
 
@@ -432,6 +443,10 @@ public class BattleManager : MonoBehaviour
 
     private IEnumerator SpawnWaveCo()
     {
+        foreach (SpawnWarning s in spawnWarnings)
+        {
+            s.ResetSpawnWarning();
+        }
         int waveNumber = currentWave;
         EnemyWave waveToSpawn = Waves[waveNumber];
 
@@ -452,12 +467,22 @@ public class BattleManager : MonoBehaviour
             */
             List<EnemyWaveItem> waveAfter = null;
             if (waveNumber + 2 < Waves.Count)
+            {
                 waveAfter = Waves[waveNumber + 2].enemyList;
+            }
 
             battleInfo.InitializeNextWaveInfo(Waves[waveNumber + 1].enemyList, waveAfter, waveToSpawn.delayUntilNextWave, currentWave + 2);
 
             waveTimeElapsed = 0;
             currentWaveDelay = waveToSpawn.delayUntilNextWave;
+
+            foreach (EnemyWaveItem waveItem in waveToSpawn.enemyList)
+            {
+                float timeUntilEnemy = waveItem.startDelay + waveToSpawn.delayUntilNextWave;
+                SpawnWarning spawnWarning = spawnWarnings[waveItem.spawnerIndex];
+                if (timeUntilEnemy < spawnWarning.originalTime || spawnWarning.originalTime == 0)
+                    spawnWarning.SetTimeLeft(timeUntilEnemy);
+            }
 
             yield return new WaitForSeconds(waveToSpawn.delayUntilNextWave);
             currentWave++;

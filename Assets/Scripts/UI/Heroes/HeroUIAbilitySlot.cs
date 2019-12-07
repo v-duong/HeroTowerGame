@@ -111,7 +111,7 @@ public class HeroUIAbilitySlot : MonoBehaviour
 
     public void CommonUpdate()
     {
-        nameText.text = LocalizationManager.Instance.GetLocalizationText_Ability(ability.idName)[0];
+        nameText.text = ability.LocalizedName;
         abilityText.text = LocalizationManager.Instance.GetLocalizationText("abilityType." + ability.abilityType);
 
         if (ability.abilityType != AbilityType.AURA && ability.abilityType != AbilityType.SELF_BUFF)

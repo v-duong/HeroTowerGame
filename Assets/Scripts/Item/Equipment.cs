@@ -29,7 +29,7 @@ public abstract class Equipment : AffixedItem
     {
         Id = Guid.NewGuid();
         Base = e;
-        Name = LocalizationManager.Instance.GetLocalizationText_Equipment(e.idName);
+        Name = e.LocalizedName;
         costModifier = e.sellValue;
         strRequirement = e.strengthReq;
         intRequirement = e.intelligenceReq;
@@ -162,7 +162,7 @@ public abstract class Equipment : AffixedItem
         }
         else
         {
-            Name = LocalizationManager.Instance.GetLocalizationText_Equipment(Base.idName);
+            Name = Base.LocalizedName;
         }
     }
 

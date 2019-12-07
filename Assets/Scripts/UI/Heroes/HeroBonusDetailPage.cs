@@ -28,7 +28,7 @@ public class HeroBonusDetailPage : MonoBehaviour, IUpdatablePanel
             sortedGroupTypes.Sort();
 
             if (!sortedGroupTypes.Contains(GroupType.NO_GROUP))
-                mainText.text += "○ " + LocalizationManager.GetBonusTypeString(bonusType) + '\n';
+                mainText.text += "○ " + LocalizationManager.Instance.GetBonusTypeString(bonusType) + '\n';
 
             foreach (GroupType groupType in sortedGroupTypes)
             {

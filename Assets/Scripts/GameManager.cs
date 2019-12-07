@@ -35,8 +35,7 @@ public class GameManager : MonoBehaviour
     {
         aspectRatio = (float)Screen.height / (float)Screen.width;
         QualitySettings.vSyncCount = 1;
-        
-        
+
         currentSceneName = "mainMenu";
 
 #if !UNITY_EDITOR
@@ -54,16 +53,10 @@ public class GameManager : MonoBehaviour
             PlayerStats.AddEquipmentToInventory(equipment);
         }
         */
-        /*
-        foreach (ArchetypeBase archetypeBase in ResourceManager.Instance.ArchetypeBasesList)
-        {
-            PlayerStats.AddArchetypeToInventory(ArchetypeItem.CreateArchetypeItem(archetypeBase, 100));
-            foreach (var ability in archetypeBase.GetArchetypeAbilities(false))
-            {
-                PlayerStats.AddAbilityToInventory(AbilityCoreItem.CreateAbilityItemFromArchetype(archetypeBase, ability));
-            }
-        }
-        */
+
+#if UNITY_EDITOR
+        CheckForBonuses();
+#endif
 
         Equipment startingSword = Equipment.CreateEquipmentFromBase(ResourceManager.Instance.GetEquipmentBase("OneHandedSword1"), 1);
         Equipment startingBow = Equipment.CreateEquipmentFromBase(ResourceManager.Instance.GetEquipmentBase("Bow1"), 1);
@@ -113,6 +106,27 @@ public class GameManager : MonoBehaviour
         total3 /= 100;
         Debug.Log(total1.ToString("N1") + " " + total2.ToString("N1") + " " + total3.ToString("N1"));
         */
+    }
+
+    private void CheckForBonuses()
+    {
+        foreach (ArchetypeBase archetypeBase in ResourceManager.Instance.ArchetypeBasesList)
+        {
+            /*
+            PlayerStats.AddArchetypeToInventory(ArchetypeItem.CreateArchetypeItem(archetypeBase, 100));
+            foreach (var ability in archetypeBase.GetArchetypeAbilities(false))
+            {
+                PlayerStats.AddAbilityToInventory(AbilityCoreItem.CreateAbilityItemFromArchetype(archetypeBase, ability));
+            }
+            */
+            foreach (var x in archetypeBase.nodeList)
+            {
+                foreach (var y in x.bonuses)
+                {
+                    LocalizationManager.Instance.GetBonusTypeString(y.bonusType);
+                }
+            }
+        }
     }
 
     public ConsumableType GetRandomConsumable()

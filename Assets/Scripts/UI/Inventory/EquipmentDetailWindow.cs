@@ -61,7 +61,7 @@ public class EquipmentDetailWindow : MonoBehaviour
         string equipTypeString = LocalizationManager.Instance.GetLocalizationText("equipSlotType." + equip.Base.equipSlot);
 
         if (equip.Rarity != RarityType.UNIQUE)
-            topLineText.text += LocalizationManager.Instance.GetLocalizationText_Equipment(equip.Base.idName) + "\n";
+            topLineText.text += equip.Base.LocalizedName + "\n";
 
         if (groupTypeString.Equals(equipTypeString))
         {
@@ -155,6 +155,12 @@ public class EquipmentDetailWindow : MonoBehaviour
             damageText.text += "Dodge Rating: " + armorItem.dodgeRating + "\n";
         if (armorItem.resolveRating != 0)
             damageText.text += "Resolve: " + armorItem.resolveRating + "\n";
+
+        if (armorItem.GetGroupTypes().Contains(GroupType.SHIELD))
+        {
+            statsText.text += "Block Chance\n<b>" + armorItem.blockChance + "%</b>\n";
+            statsText.text += "Block Protection\n<b>" + armorItem.blockProtection + "%</b>";
+        }
     }
 
     public void UpdateWindowEquipment_Weapon(Weapon weaponItem)

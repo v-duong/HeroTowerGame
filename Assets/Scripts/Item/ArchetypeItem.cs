@@ -9,14 +9,14 @@ public class ArchetypeItem : Item
     {
         Id = Guid.NewGuid();
         Base = b;
-        Name = LocalizationManager.Instance.GetLocalizationText_ArchetypeName(b.idName);
+        Name = b.LocalizedName;
     }
 
     public ArchetypeItem(Guid id, string baseName)
     {
         Id = id;
         Base = ResourceManager.Instance.GetArchetypeBase(baseName);
-        Name = LocalizationManager.Instance.GetLocalizationText_ArchetypeName(Base.idName);
+        Name = Base.LocalizedName;
     }
 
 

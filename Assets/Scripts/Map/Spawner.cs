@@ -7,8 +7,9 @@ public class Spawner : MonoBehaviour
     public int spawnerIndex;
 
     private List<List<Vector3>> nodesToGoal;
-    public bool nodesAreOutdated;
 
+    public bool nodesAreOutdated;
+    public Transform warningLocation;
     // Use this for initialization
     private void Start()
     {

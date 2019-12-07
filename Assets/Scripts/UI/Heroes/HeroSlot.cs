@@ -26,10 +26,10 @@ public class HeroSlot : MonoBehaviour
         this.hero = hero;
         nameText.text = hero.Name;
 
-        archetypeText.text =  LocalizationManager.Instance.GetLocalizationText_ArchetypeName(hero.PrimaryArchetype.Base.idName);
+        archetypeText.text = hero.PrimaryArchetype.Base.LocalizedName;
         if (hero.SecondaryArchetype != null)
         {
-            archetypeText.text += " / " + LocalizationManager.Instance.GetLocalizationText_ArchetypeName(hero.SecondaryArchetype.Base.idName);
+            archetypeText.text += " / " + hero.SecondaryArchetype.Base.LocalizedName;
         }
 
 
@@ -103,6 +103,6 @@ public class HeroSlot : MonoBehaviour
         HeroDetailWindow.hero = hero;
         UIManager.Instance.OpenWindow(detailWindow.gameObject);
         detailWindow.SetCategorySelected(0);
-        detailWindow.SetArchetypeCategoryNames(hero.PrimaryArchetype.Base.idName, hero.SecondaryArchetype?.Base.idName);
+        detailWindow.SetArchetypeCategoryNames(hero.PrimaryArchetype.Base.LocalizedName, hero.SecondaryArchetype?.Base.LocalizedName);
     }
 }

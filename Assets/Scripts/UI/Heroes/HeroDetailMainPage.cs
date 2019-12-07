@@ -73,12 +73,12 @@ public class HeroDetailMainPage : MonoBehaviour, IUpdatablePanel
             lockButton.GetComponentInChildren<TextMeshProUGUI>().text = "Unlocked";
         }
 
-        primaryArchetypeHeader.GetComponentInChildren<TextMeshProUGUI>().text = LocalizationManager.Instance.GetLocalizationText_ArchetypeName(hero.PrimaryArchetype.Base.idName);
+        primaryArchetypeHeader.GetComponentInChildren<TextMeshProUGUI>().text =hero.PrimaryArchetype.Base.LocalizedName;
         primaryArchetypeHeader.color = GetArchetypeStatColor(hero.PrimaryArchetype.Base);
         if (hero.SecondaryArchetype != null)
         {
             secondaryArchetypeHeader.gameObject.SetActive(true);
-            secondaryArchetypeHeader.GetComponentInChildren<TextMeshProUGUI>().text = LocalizationManager.Instance.GetLocalizationText_ArchetypeName(hero.SecondaryArchetype.Base.idName);
+            secondaryArchetypeHeader.GetComponentInChildren<TextMeshProUGUI>().text = hero.SecondaryArchetype.Base.LocalizedName;
             secondaryArchetypeHeader.color = GetArchetypeStatColor(hero.SecondaryArchetype.Base);
         }
         else

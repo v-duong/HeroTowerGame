@@ -36,6 +36,8 @@ public class ArchetypeBase
     [JsonProperty]
     public readonly List<ArchetypeSkillNode> nodeList;
 
+    public string LocalizedName => LocalizationManager.Instance.GetLocalizationText_ArchetypeName(idName);
+
     public ArchetypeSkillNode GetNode(int nodeId)
     {
         return nodeList.Find(x => x.id == nodeId);

@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
 
 public class AbilityCoreItem : Item, IAbilitySource
 {
@@ -35,7 +32,7 @@ public class AbilityCoreItem : Item, IAbilitySource
         else
         {
             GameManager.Instance.PlayerStats.RemoveArchetypeFromInventory(archetypeItem);
-            string name = archetypeItem.Name + "'s " + LocalizationManager.Instance.GetLocalizationText_Ability(abilityBase.idName)[0];
+            string name = archetypeItem.Name + "'s " + abilityBase.LocalizedName;
             return new AbilityCoreItem(abilityBase, name);
         }
     }
@@ -43,7 +40,7 @@ public class AbilityCoreItem : Item, IAbilitySource
     public static AbilityCoreItem CreateAbilityItemFromArchetype(ArchetypeBase archetypeItem, AbilityBase abilityBase)
     {
         {
-            string name = LocalizationManager.Instance.GetLocalizationText_ArchetypeName(archetypeItem.idName) + "'s " + LocalizationManager.Instance.GetLocalizationText_Ability(abilityBase.idName)[0];
+            string name = archetypeItem.LocalizedName + "'s " + abilityBase.LocalizedName;
             return new AbilityCoreItem(abilityBase, name);
         }
     }

@@ -104,6 +104,9 @@ public class AbilityBase
     [JsonProperty]
     public float delayBetweenHits;
 
+    public string LocalizedName => LocalizationManager.Instance.GetLocalizationText_Ability(idName)[0];
+    public string[] LocalizationStrings => LocalizationManager.Instance.GetLocalizationText_Ability(idName);
+
     public MinMaxRange GetDamageAtLevel(ElementType e, int level)
     {
         if (damageLevels.TryGetValue(e, out AbilityDamageBase damageBase))

@@ -20,7 +20,7 @@ public class HeroArchetypeData : IAbilitySource
     public int AllocatedPoints { get; private set; }
 
     public AbilitySourceType AbilitySourceType => AbilitySourceType.ARCHETYPE;
-    public string SourceName => Base.idName;
+    public string SourceName => Base.LocalizedName;
 
     public Guid SourceId => Id;
 

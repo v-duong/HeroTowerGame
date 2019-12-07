@@ -68,6 +68,11 @@ public class InventorySlot : MonoBehaviour
                 infoText1.text += "MS: " + armor.shield;
                 infoText2.text += "DR: " + armor.dodgeRating + "\n";
                 infoText2.text += "RR: " + armor.resolveRating;
+                if (armor.GetGroupTypes().Contains(GroupType.SHIELD))
+                {
+                    infoText1.text += "\nBlock%: " + armor.blockChance +"%";
+                    infoText2.text += "\nBlockDmg: " + armor.blockProtection + "%";
+                }
                 break;
 
             case ItemType.WEAPON:
@@ -117,7 +122,7 @@ public class InventorySlot : MonoBehaviour
 
             if (item.Rarity > RarityType.UNCOMMON && item.Rarity != RarityType.UNIQUE)
             {
-                baseItemText.text += " " + LocalizationManager.Instance.GetLocalizationText_Equipment( equip.Base.idName);
+                baseItemText.text += " " + equip.Base.LocalizedName;
             }
             /*
             if (equip.innate.Count > 0)

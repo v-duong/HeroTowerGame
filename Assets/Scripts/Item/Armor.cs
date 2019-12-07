@@ -17,6 +17,8 @@ public class Armor : Equipment
         shield = e.shield;
         dodgeRating = e.dodgeRating;
         resolveRating = e.resolveRating;
+        blockChance = (int)e.criticalChance;
+        blockProtection = (int)e.attackSpeed;
     }
 
     public override ItemType GetItemType()

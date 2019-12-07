@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 public class BerserkEffect : ActorEffect
 {
-    public const float BASE_DURATION = 8.0f;
+    public const float BASE_DURATION = 12.0f;
     public const float BASE_COOLDOWN = 30f;
     public int effectLevel;
     public float effectCooldown;
@@ -62,13 +62,14 @@ public class BerserkEffect : ActorEffect
         }
 
         base.SetStacks(newStackValue);
+        duration = BASE_DURATION;
 
         if (Stacks == MaxStacks)
         {
             Stacks = 1;
             effectCooldown = BASE_COOLDOWN;
             duration = BASE_COOLDOWN;
-            target.AddStatusEffect(new StatBonusBuffEffect(target, Source, bonuses, 8f, "BERSERKER_BUFF", EffectType.BUFF));
+            target.AddStatusEffect(new StatBonusBuffEffect(target, Source, bonuses, 12f, "BERSERKER_BUFF", EffectType.BUFF));
         }
     }
 

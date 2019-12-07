@@ -63,7 +63,7 @@ public class ArchetypeUITreeNode : MonoBehaviour
         {
             foreach (NodeScalingBonusProperty nodeBonus in node.bonuses)
             {
-                nodeText.text += LocalizationManager.GetBonusTypeString(nodeBonus.bonusType) + "\n";
+                nodeText.text += LocalizationManager.Instance.GetBonusTypeString(nodeBonus.bonusType) + "\n";
             }
             foreach(TriggeredEffectBonusProperty nodeTrigger in node.triggeredEffects)
             {

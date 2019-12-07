@@ -51,6 +51,7 @@ public class EquipmentBase
     [JsonProperty]
     public readonly int spawnWeight;
 
+    public string LocalizedName => LocalizationManager.Instance.GetLocalizationText_Equipment(idName);
 }
 
 public class UniqueBase : EquipmentBase

@@ -152,7 +152,7 @@ public class ItemCraftingPanel : MonoBehaviour
 
             //itemSlot.itemBaseText.text = equip.Base.idName;
             if (equip.Rarity != RarityType.UNIQUE)
-                itemSlot.text.text += "\n<i><size=80%>" + LocalizationManager.Instance.GetLocalizationText_Equipment(equip.Base.idName) + "</size></i>";
+                itemSlot.text.text += "\n<i><size=80%>" + equip.Base.LocalizedName + "</size></i>";
             itemSlot.itemRequirementText.text = LocalizationManager.Instance.GetRequirementText(equip);
         }
 
@@ -172,6 +172,9 @@ public class ItemCraftingPanel : MonoBehaviour
         if (currentItem.GetItemType() == ItemType.WEAPON)
         {
             UpdateInfo_Weapon(currentItem as Weapon);
+        } else if (currentItem.GetItemType() == ItemType.ARMOR)
+        {
+            UpdateInfo_Armor(currentItem as Armor);
         }
     }
 
@@ -256,6 +259,28 @@ public class ItemCraftingPanel : MonoBehaviour
         rightInfo.text += "Attacks / s\n<b>" + weaponItem.AttackSpeed.ToString("F2") + "/s</b>\n";
         rightInfo.text += "Range\n<b>" + weaponItem.WeaponRange.ToString("F2") + "</b>\n";
     }
+
+    public void UpdateInfo_Armor(Armor armorItem)
+    {
+        if (armorItem.armor > 0)
+            leftInfo.text += "Armor: " + armorItem.armor +"\n";
+        if (armorItem.shield > 0)
+            leftInfo.text += "Mana Shield: " + armorItem.shield + "\n";
+        if (armorItem.dodgeRating > 0)
+            leftInfo.text += "Dodge Rating: " + armorItem.dodgeRating + "\n";
+        if (armorItem.resolveRating > 0)
+            leftInfo.text += "Resolve Rating: " + armorItem.resolveRating + "\n";
+
+        leftInfo.text = leftInfo.text.Trim('\n');
+
+        if (armorItem.GetGroupTypes().Contains(GroupType.SHIELD))
+        {
+            rightInfo.text += "Block Chance\n<b>" + armorItem.blockChance + "%</b>\n";
+            rightInfo.text += "Block Protection\n<b>" + armorItem.blockProtection + "%</b>";
+        }
+
+    }
+
 
     public void ShowAllPossibleAffixes()
     {
