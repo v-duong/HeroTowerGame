@@ -190,9 +190,7 @@ public class InputManager : MonoBehaviour
                 spawnLocation = Helpers.ReturnTilePosition(StageManager.Instance.HighlightMap.tilemap, spawnLocation, -3);
 
                 selectedHero.transform.position = spawnLocation;
-                selectedHero.gameObject.SetActive(true);
-                selectedHero.EnableHealthBar();
-                selectedHero.ClearMovement();
+                selectedHero.SummonHero();
                 StageManager.Instance.BattleManager.activeHeroes.Add(selectedHero);
                 IsSummoningMode = false;
                 onSummonCallback?.Invoke();

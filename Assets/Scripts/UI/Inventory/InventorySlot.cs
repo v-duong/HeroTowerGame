@@ -70,7 +70,7 @@ public class InventorySlot : MonoBehaviour
                 infoText2.text += "RR: " + armor.resolveRating;
                 if (armor.GetGroupTypes().Contains(GroupType.SHIELD))
                 {
-                    infoText1.text += "\nBlock%: " + armor.blockChance +"%";
+                    infoText1.text += "\nBlock%: " + armor.blockChance + "%";
                     infoText2.text += "\nBlockDmg: " + armor.blockProtection + "%";
                 }
                 break;
@@ -106,7 +106,7 @@ public class InventorySlot : MonoBehaviour
                             infoText2.text += "○ " + Affix.BuildAffixString(x.Base, 0, x, x.GetAffixValues(), x.GetEffectValues());
                         }
                     }
-                } 
+                }
                 break;
 
             default:
@@ -153,7 +153,8 @@ public class InventorySlot : MonoBehaviour
             if (item is ArchetypeItem)
             {
                 baseItemText.text += " <sprite=9>";
-            } else
+            }
+            else
             {
                 baseItemText.text += " <sprite=10>";
             }
@@ -207,10 +208,7 @@ public class InventorySlot : MonoBehaviour
             if (multiSelectMode)
             {
                 alreadySelected = !alreadySelected;
-                if (alreadySelected)
-                    selectedImage.gameObject.SetActive(true);
-                else
-                    selectedImage.gameObject.SetActive(false);
+                selectedImage.gameObject.SetActive(alreadySelected);
             }
             onClickAction?.Invoke(item);
             return;

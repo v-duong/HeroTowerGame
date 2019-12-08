@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -11,6 +12,9 @@ public class InventoryScrollWindow : MonoBehaviour
 
     [SerializeField]
     private Button toggleAffixesButton;
+
+    [SerializeField]
+    private Button selectFilterButton;
 
     public Button confirmButton;
     private Action<List<Item>> confirmOnClick = null;
@@ -47,6 +51,8 @@ public class InventoryScrollWindow : MonoBehaviour
     private void OnEnable()
     {
         ((RectTransform)transform).anchoredPosition = Vector3.zero;
+
+        selectFilterButton.gameObject.SetActive(isMultiSelectMode);
     }
 
     public InventorySlotPool InventorySlotPool
@@ -57,17 +63,6 @@ public class InventoryScrollWindow : MonoBehaviour
                 _inventorySlotPool = new InventorySlotPool(SlotPrefab, GameManager.Instance.PlayerStats.EquipmentInventory.Count);
             return _inventorySlotPool;
         }
-    }
-
-    public void ResetMultiSelectList()
-    {
-        selectedItems.Clear();
-    }
-
-    public void SetMultiSelectList(List<Item> list)
-    {
-        selectedItems.Clear();
-        selectedItems.AddRange(list);
     }
 
     private void InitializeInventorySlots<T>(IList<T> itemInventory, Action<Item> callback = null) where T : Item
@@ -97,7 +92,6 @@ public class InventoryScrollWindow : MonoBehaviour
 
         InitializeInventorySlots(GameManager.Instance.PlayerStats.EquipmentInventory, currentCallback);
         UIManager.Instance.ItemCategoryPanel.SetEquipmentSelected();
-        
     }
 
     public void ShowAllArchetypes(bool resetCallback = true, bool addNullSlot = false)
@@ -200,16 +194,9 @@ public class InventoryScrollWindow : MonoBehaviour
         else
             slot.onClickAction = callback;
 
-
-        if (selectedItems.Contains(item))
-        {
-            slot.selectedImage.gameObject.SetActive(true);
-            slot.alreadySelected = true;
-        } else
-        {
-            slot.selectedImage.gameObject.SetActive(false);
-            slot.alreadySelected = false;
-        }
+        bool slotIsSelected = selectedItems.Contains(item);
+        slot.selectedImage.gameObject.SetActive(slotIsSelected);
+        slot.alreadySelected = slotIsSelected;
     }
 
     public void ToggleItemMultiSelect(Item item)
@@ -218,6 +205,44 @@ public class InventoryScrollWindow : MonoBehaviour
             selectedItems.Add(item);
         else
             selectedItems.Remove(item);
+    }
+
+    public void FilterButtonOnClick()
+    {
+        UIManager.Instance.PopUpWindow.OpenTextInput("0");
+        UIManager.Instance.PopUpWindow.textInput.characterLimit = 3;
+        UIManager.Instance.PopUpWindow.textInput.contentType = TMP_InputField.ContentType.IntegerNumber;
+        UIManager.Instance.PopUpWindow.textInput.lineType = TMP_InputField.LineType.SingleLine;
+        UIManager.Instance.PopUpWindow.SetButtonValues("Confirm", delegate
+        {
+            UIManager.Instance.CloseCurrentWindow();
+            if (!string.IsNullOrWhiteSpace(UIManager.Instance.PopUpWindow.textInput.text))
+            {
+                int iLvl = int.Parse(UIManager.Instance.PopUpWindow.textInput.text);
+                foreach (InventorySlot inventorySlot in SlotsInUse)
+                {
+                    if (inventorySlot.alreadySelected || inventorySlot.item.ItemLevel >= iLvl)
+                        continue;
+                    else
+                    {
+                        selectedItems.Add(inventorySlot.item);
+                        inventorySlot.alreadySelected = true;
+                        inventorySlot.selectedImage.gameObject.SetActive(true);
+                    }
+                }
+            }
+        }, "Cancel", UIManager.Instance.CloseCurrentWindow);
+    }
+
+    public void ResetMultiSelectList()
+    {
+        selectedItems.Clear();
+    }
+
+    public void SetMultiSelectList(List<Item> list)
+    {
+        selectedItems.Clear();
+        selectedItems.AddRange(list);
     }
 
     public void RemoveEquipmentSlot(AffixedItem item)
@@ -251,7 +276,7 @@ public class InventoryScrollWindow : MonoBehaviour
     {
         showItemAffixes = !showItemAffixes;
         SetGridCellSize();
-        foreach(var x in SlotsInUse)
+        foreach (var x in SlotsInUse)
         {
             x.UpdateSlot();
         }
@@ -259,7 +284,7 @@ public class InventoryScrollWindow : MonoBehaviour
 
     public void CheckHeroRequirements(HeroData hero)
     {
-        foreach(InventorySlot inventorySlot in SlotsInUse)
+        foreach (InventorySlot inventorySlot in SlotsInUse)
         {
             if (inventorySlot.item is Equipment equip && !hero.CanEquipItem(equip))
                 inventorySlot.lockImage.gameObject.SetActive(true);

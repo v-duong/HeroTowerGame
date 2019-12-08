@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -41,6 +42,20 @@ public class HeroDetailEquipmentPage : MonoBehaviour, IUpdatablePanel
             if (e == null)
             {
                 slot.slotBase.ClearSlot();
+                int equippableCount = 0;
+                if (slot.EquipSlot == EquipSlotType.OFF_HAND)
+                {
+                    equippableCount = GameManager.Instance.PlayerStats.EquipmentInventory.Where(x => !x.IsEquipped && (x.Base.equipSlot == slot.EquipSlot || x.GetGroupTypes().Contains(GroupType.ONE_HANDED_WEAPON))).Count();
+                }
+                else if (slot.EquipSlot == EquipSlotType.RING_SLOT_1 || slot.EquipSlot == EquipSlotType.RING_SLOT_2)
+                {
+                    equippableCount = GameManager.Instance.PlayerStats.EquipmentInventory.Where(x => !x.IsEquipped && x.Base.equipSlot == EquipSlotType.RING).Count();
+                } else
+                {
+                    equippableCount = GameManager.Instance.PlayerStats.EquipmentInventory.Where(x => !x.IsEquipped && x.Base.equipSlot == slot.EquipSlot).Count();
+
+                }
+                slot.slotBase.groupText.text = equippableCount + " Equippable Items";
             }
             else
             {

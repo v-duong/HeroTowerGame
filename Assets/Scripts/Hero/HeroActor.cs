@@ -1,10 +1,16 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Tilemaps;
 
 public class HeroActor : Actor
 {
+    public const float BASE_RECALL_TIME = 3f;
     private List<Vector3> movementNodes;
+    private int deathCount;
+    public bool isBeingRecalled;
+    public Coroutine recallCoroutine;
+    public float RecallTimer { get; private set; }
 
     public new HeroData Data
     {
@@ -22,6 +28,9 @@ public class HeroActor : Actor
     {
         Data = data;
         NextMovementNode = 1;
+        deathCount = 0;
+        isBeingRecalled = false;
+        recallCoroutine = null;
         movementNodes = new List<Vector3>();
         targetingPriority = PrimaryTargetingType.FIRST;
         if (data.GetAbilityFromSlot(0) != null)
@@ -44,6 +53,12 @@ public class HeroActor : Actor
 
     protected override void Move()
     {
+        if (isBeingRecalled)
+        {
+            ClearMovement();
+            return;
+        }
+
         var dt = Time.deltaTime;
         if (movementNodes != null && NextMovementNode < movementNodes.Count)
         {
@@ -66,7 +81,7 @@ public class HeroActor : Actor
         }
         else
         {
-            isMoving = false;
+            IsMoving = false;
         }
     }
 
@@ -80,7 +95,7 @@ public class HeroActor : Actor
         {
             movementNodes.Clear();
             movementNodes.Add(destination);
-            isMoving = true;
+            IsMoving = true;
             NextMovementNode = 0;
         }
         else
@@ -93,7 +108,7 @@ public class HeroActor : Actor
             if (movementNodes != null)
             {
                 NextMovementNode = 1;
-                isMoving = true;
+                IsMoving = true;
             }
         }
     }
@@ -114,15 +129,74 @@ public class HeroActor : Actor
         }
     }
 
-    public override void Death()
+    private void ClearHeroTemporaryValues()
     {
-        Data.OnHitData.ApplyTriggerEffects(TriggerType.ON_DEATH, this);
         Data.ClearTemporaryBonuses(true);
         ClearStatusEffects(true);
         ClearMovement();
-        UIManager.Instance.SummonScrollWindow.SetHeroDead(this);
+    }
+
+    public override void Death()
+    {
+        Data.OnHitData.ApplyTriggerEffects(TriggerType.ON_DEATH, this);
+
+        ClearHeroTemporaryValues();
+        StopCurrentRecall();
+
+        UIManager.Instance.SummonScrollWindow.UnsummonHero(this, 10f + 5f * deathCount, true);
         StageManager.Instance.BattleManager.activeHeroes.Remove(this);
         DisableActor();
+
+        deathCount++;
+    }
+
+    public void StopCurrentRecall()
+    {
+        if (recallCoroutine != null)
+        {
+            StopCoroutine(recallCoroutine);
+            recallCoroutine = null;
+        }
+        isBeingRecalled = false;
+        RecallTimer = 0;
+    }
+
+    public void SummonHero()
+    {
+        ClearMovement();
+        EnableHealthBar();
+        gameObject.SetActive(true);
+    }
+
+    public void UnsummonHero()
+    {
+        ClearMovement();
+        StopCurrentRecall();
+        isBeingRecalled = true;
+        recallCoroutine = StartCoroutine(RecallCoroutine());
+    }
+
+    public IEnumerator RecallCoroutine()
+    {
+        while (RecallTimer < BASE_RECALL_TIME)
+        {
+            if (!StageManager.Instance.BattleManager.startedSpawn)
+                RecallTimer += BASE_RECALL_TIME;
+            RecallTimer += Time.deltaTime;
+            yield return null;
+        }
+        isBeingRecalled = false;
+        RecallTimer = 0;
+        ClearHeroTemporaryValues();
+
+        if (!StageManager.Instance.BattleManager.startedSpawn)
+            UIManager.Instance.SummonScrollWindow.UnsummonHero(this, 0.25f, false);
+        else
+            UIManager.Instance.SummonScrollWindow.UnsummonHero(this, 2f, false);
+
+        StageManager.Instance.BattleManager.activeHeroes.Remove(this);
+        DisableActor();
+        recallCoroutine = null;
     }
 
     public override ActorType GetActorType()

@@ -98,6 +98,7 @@ public class BattleManager : MonoBehaviour
         foreach (Spawner s in SpawnerList)
         {
             SpawnWarning spawnWarning = Instantiate(spawnWarningPrefab, StageManager.Instance.WorldCanvas.transform);
+
             spawnWarning.transform.position = s.warningLocation.position;
             spawnWarnings.Add(spawnWarning);
         }
@@ -308,7 +309,7 @@ public class BattleManager : MonoBehaviour
     private void AddEquipmentDrops(BattleEndWindow battleEndWindow)
     {
         //Get Equipment
-        int additionalDrops = (int)(survivalLoopCount / 4);
+        int additionalDrops = (int)(survivalLoopCount / 8);
         float rarityBoost = 1 + (0.25f * survivalLoopCount);
         float stageEpicBoost = 1 + (0.25f * survivalLoopCount * 4);
         float affixLevelSkew = 1.1f + (survivalLoopCount * 0.15f);
@@ -476,12 +477,18 @@ public class BattleManager : MonoBehaviour
             waveTimeElapsed = 0;
             currentWaveDelay = waveToSpawn.delayUntilNextWave;
 
-            foreach (EnemyWaveItem waveItem in waveToSpawn.enemyList)
+            foreach (EnemyWaveItem waveItem in Waves[waveNumber+1].enemyList)
             {
                 float timeUntilEnemy = waveItem.startDelay + waveToSpawn.delayUntilNextWave;
                 SpawnWarning spawnWarning = spawnWarnings[waveItem.spawnerIndex];
-                if (timeUntilEnemy < spawnWarning.originalTime || spawnWarning.originalTime == 0)
-                    spawnWarning.SetTimeLeft(timeUntilEnemy);
+
+                spawnWarning.AddTimeInfo(new SpawnWarning.TimeInfo(timeUntilEnemy, currentWave + 1));
+
+            }
+
+            foreach (SpawnWarning s in spawnWarnings)
+            {
+                s.StartWarning();
             }
 
             yield return new WaitForSeconds(waveToSpawn.delayUntilNextWave);
@@ -501,6 +508,9 @@ public class BattleManager : MonoBehaviour
     private IEnumerator SpawnEnemyList(EnemyWaveItem enemyWaveItem, float delayBetween)
     {
         spawnCoroutinesRunning++;
+
+        if (enemyWaveItem.startDelay > 0)
+        spawnWarnings[enemyWaveItem.spawnerIndex].AddTimeInfo(new SpawnWarning.TimeInfo(enemyWaveItem.startDelay, currentWave));
 
         yield return new WaitForSeconds(enemyWaveItem.startDelay);
 
@@ -545,7 +555,7 @@ public class BattleManager : MonoBehaviour
             EnemyActor enemy = EnemyPool.GetEnemy(spawner.transform);
 
             enemy.ParentSpawner = spawner;
-            Vector3 positionOffset = new Vector3(Random.Range(-0.5f, 0.5f), Random.Range(-0.5f, 0.5f), 0);
+            Vector3 positionOffset = new Vector3(Random.Range(-0.4f, 0.4f), Random.Range(-0.4f, 0.4f), 0);
             //Vector3 positionOffset = new Vector3(-0.5f, -0.5f, 0);
             enemy.positionOffset = positionOffset;
             enemy.rotatedOffset = positionOffset;

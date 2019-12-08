@@ -1330,6 +1330,9 @@ public class ActorAbility
         attackWithMainHand = true;
         while (true)
         {
+            if (AbilityOwner is HeroActor hero && hero.isBeingRecalled)
+                yield return null;
+
             if (AbilityOwner.attackLocks > 0)
                 yield return null;
 

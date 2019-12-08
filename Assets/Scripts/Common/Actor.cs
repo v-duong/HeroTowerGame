@@ -15,7 +15,7 @@ public abstract class Actor : MonoBehaviour
     protected UIHealthBar healthBar;
     protected List<ActorAbility> instancedAbilitiesList = new List<ActorAbility>();
     public int NextMovementNode { get; protected set; }
-    protected bool isMoving;
+    public bool IsMoving { get; protected set; }
     public bool isBoss = false;
     public int attackLocks = 0;
     public HashSet<GroupType> actorTags = new HashSet<GroupType>();
@@ -79,7 +79,7 @@ public abstract class Actor : MonoBehaviour
 
         if (!gameObject.activeSelf)
             return;
-        if (isMoving)
+        if (IsMoving)
         {
             Move();
         }
@@ -285,10 +285,11 @@ public abstract class Actor : MonoBehaviour
         else
             Data.CurrentHealth -= mod;
 
-        healthBar.UpdateHealthBar(Data.MaximumHealth, Data.CurrentHealth, Data.MaximumManaShield, Data.CurrentManaShield, true);
+        if (healthBar != null)
+            healthBar.UpdateHealthBar(Data.MaximumHealth, Data.CurrentHealth, Data.MaximumManaShield, Data.CurrentManaShield, true);
     }
 
-    public float ModifyCurrentShield(float mod, bool interruptRecharge)
+    public float ModifyCurrentShield(float mod, bool willModInterruptRecharge)
     {
         float remainingDamage;
 
@@ -303,7 +304,7 @@ public abstract class Actor : MonoBehaviour
             Data.CurrentManaShield = Data.MaximumManaShield;
             remainingDamage = 0;
         }
-        else if (mod > Data.CurrentManaShield )
+        else if (mod > Data.CurrentManaShield)
         {
             remainingDamage = mod - Data.CurrentManaShield;
             Data.CurrentManaShield = 0;
@@ -314,12 +315,13 @@ public abstract class Actor : MonoBehaviour
             remainingDamage = 0;
         }
 
-        if (mod > 0 && interruptRecharge && !Data.RechargeCannotBeStopped)
+        if (mod > 0 && willModInterruptRecharge && !Data.RechargeCannotBeStopped)
         {
             Data.CurrentShieldDelay = Math.Max(BASE_SHIELD_RESTORE_DELAY * Data.ShieldRestoreDelayModifier, 1f);
         }
 
-        healthBar.UpdateHealthBar(Data.MaximumHealth, Data.CurrentHealth, Data.MaximumManaShield, Data.CurrentManaShield, true);
+        if (healthBar != null)
+            healthBar.UpdateHealthBar(Data.MaximumHealth, Data.CurrentHealth, Data.MaximumManaShield, Data.CurrentManaShield, true);
 
         return remainingDamage;
     }
@@ -377,7 +379,7 @@ public abstract class Actor : MonoBehaviour
         }
         else if (target.Data.SpellParryChance > 0 && abilityType == AbilityType.SPELL)
         {
-            if (target.Data.SpellParryChance == 100 || UnityEngine.Random.Range(0, 100) < target.Data.SpellParryChance )
+            if (target.Data.SpellParryChance == 100 || UnityEngine.Random.Range(0, 100) < target.Data.SpellParryChance)
                 return true;
         }
 
@@ -521,7 +523,7 @@ public abstract class Actor : MonoBehaviour
 
         if (isHit)
         {
-            FloatingDamageText damageText  = Instantiate(ResourceManager.Instance.DamageTextPrefab, StageManager.Instance.WorldCanvas.transform);
+            FloatingDamageText damageText = Instantiate(ResourceManager.Instance.DamageTextPrefab, StageManager.Instance.WorldCanvas.transform);
             damageText.transform.position = this.transform.position;
             damageText.SetDamageText(actualDamageTaken);
 

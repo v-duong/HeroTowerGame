@@ -13,6 +13,12 @@ public class SummonScrollSlot : MonoBehaviour
     [SerializeField]
     private Slider respawnTimer;
 
+    [SerializeField]
+    private Image recallBar;
+
+    [SerializeField]
+    private Image recallFill;
+
 
 
     public HeroActor actor;
@@ -32,7 +38,7 @@ public class SummonScrollSlot : MonoBehaviour
 
     private void Update()
     {
-        if (heroDead)
+        if (currentRespawnTime > 0)
         {
             currentRespawnTime -= Time.deltaTime;
 
@@ -41,10 +47,28 @@ public class SummonScrollSlot : MonoBehaviour
             if (currentRespawnTime <= 0f)
             {
                 respawnTimer.gameObject.SetActive(false);
-                heroDead = false;
                 image.color = Color.white;
-                actor.Data.ResetHealthShieldValues();
+                if (heroDead)
+                {
+                    heroDead = false;
+                    actor.Data.ResetHealthShieldValues();
+                }
             }
+        }
+
+        if (!heroSummoned)
+        {
+            actor.ModifyCurrentHealth(actor.Data.MaximumHealth * -0.05f * Time.deltaTime);
+            actor.ModifyCurrentShield(actor.Data.MaximumManaShield * -0.05f * Time.deltaTime, false);
+        }
+
+        if (actor.isBeingRecalled)
+        {
+            recallBar.gameObject.SetActive(true);
+            recallFill.fillAmount = actor.RecallTimer / HeroActor.BASE_RECALL_TIME;
+        } else
+        {
+            recallBar.gameObject.SetActive(false);
         }
 
         healthBar.UpdateHealthBar(actor.Data.MaximumHealth, actor.Data.CurrentHealth, actor.Data.MaximumManaShield, actor.Data.CurrentManaShield, false);
@@ -66,12 +90,12 @@ public class SummonScrollSlot : MonoBehaviour
         image.color = new Color(0.85f, 0.85f, 0.85f);
     }
 
-    public void OnHeroDeath()
+    public void OnHeroDeath(float respawnTime, bool isDead)
     {
         heroSummoned = false;
-        heroDead = true;
-        maxRespawnTime = 5f;
-        currentRespawnTime = 5f;
+        heroDead = isDead;
+        maxRespawnTime = respawnTime;
+        currentRespawnTime = respawnTime;
         respawnTimer.gameObject.SetActive(true);
         respawnTimer.value = 1f;
     }

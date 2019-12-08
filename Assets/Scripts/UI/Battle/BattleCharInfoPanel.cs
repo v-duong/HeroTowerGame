@@ -1,5 +1,6 @@
 ﻿using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class BattleCharInfoPanel : MonoBehaviour
 {
@@ -13,9 +14,13 @@ public class BattleCharInfoPanel : MonoBehaviour
     public TextMeshProUGUI targetText;
     public TextMeshProUGUI statusText;
 
+    public Button unsummonButton;
+    public Button movementButton;
+    private bool confirmUnsummon = false;
+
     public void Update()
     {
-        if (actor == null || actor.Data.IsDead)
+        if (actor == null || actor.Data.IsDead || !actor.isActiveAndEnabled)
         {
             this.gameObject.SetActive(false);
             targetName = null;
@@ -34,6 +39,23 @@ public class BattleCharInfoPanel : MonoBehaviour
             infoText.text += "\nShield: " + actor.Data.CurrentManaShield.ToString("F0") + "/" + actor.Data.MaximumManaShield;
         }
         statusText.text = "";
+
+        if (actor is HeroActor hero)
+        {
+            if (hero.isBeingRecalled)
+            {
+                movementButton.interactable = false;
+            }
+            else
+            {
+                movementButton.interactable = true;
+            }
+
+            if (hero.IsMoving)
+                unsummonButton.interactable = false;
+            else
+                unsummonButton.interactable = true;
+        }
     }
 
     public void SetTarget(Actor actor)
@@ -47,6 +69,8 @@ public class BattleCharInfoPanel : MonoBehaviour
             {
                 heroControls.SetActive(true);
                 targetText.text = LocalizationManager.Instance.GetLocalizationText("primaryTargetingType." + actor.targetingPriority.ToString());
+                confirmUnsummon = false;
+                SetUnsummonButtonText();
             }
             else
             {
@@ -55,8 +79,52 @@ public class BattleCharInfoPanel : MonoBehaviour
 
             targetName = LocalizationManager.Instance.GetLocalizationText_Enemy(actor.Data.Name, ".name");
         }
+        else
+        {
+            this.gameObject.SetActive(false);
+        }
     }
 
+    private void SetUnsummonButtonText()
+    {
+        if (actor is HeroActor hero && hero.isBeingRecalled)
+        {
+            unsummonButton.GetComponentInChildren<TextMeshProUGUI>().text = "<b>Cancel Recall?</b>";
+        }
+        else if (confirmUnsummon)
+        {
+            unsummonButton.GetComponentInChildren<TextMeshProUGUI>().text = "<b>Confirm Recall?</b>";
+        }
+        else
+        {
+            unsummonButton.GetComponentInChildren<TextMeshProUGUI>().text = "Recall Hero";
+        }
+    }
+
+    public void UnsummonHero()
+    {
+        InputManager.Instance.selectedHero = null;
+        InputManager.Instance.IsMovementMode = false;
+        InputManager.Instance.SetTileHighlight(false);
+        if (actor is HeroActor hero)
+        {
+            if (hero.isBeingRecalled)
+            {
+                hero.StopCurrentRecall();
+            }
+            else if (!confirmUnsummon)
+            {
+                confirmUnsummon = true;
+            }
+            else
+            {
+                hero.UnsummonHero();
+                confirmUnsummon = false;
+            }
+
+            SetUnsummonButtonText();
+        }
+    }
 
     public void MoveHero()
     {

@@ -33,7 +33,7 @@ public class EnemyActor : Actor
     public EnemyActor()
     {
         positionOffset = Vector3.zero;
-        isMoving = true;
+        IsMoving = true;
         Data = new EnemyData();
         Data.CurrentHealth = Data.MaximumHealth;
         mobAffixes = new List<Affix>();
@@ -118,13 +118,13 @@ public class EnemyActor : Actor
                 {
                     if (ability.targetList.FindAll(x => Vector3.Distance(transform.position, x.transform.position) <= ability.TargetRange).Count > 0)
                     {
-                        isMoving = false;
+                        IsMoving = false;
                         return;
                     }
                 }
             }
 
-            isMoving = true;
+            IsMoving = true;
         }
     }
 

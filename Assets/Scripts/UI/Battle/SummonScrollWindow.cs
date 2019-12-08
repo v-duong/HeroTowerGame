@@ -23,14 +23,16 @@ public class SummonScrollWindow : MonoBehaviour
         summonSlots.Add(slot);
     }
 
-    public void SetHeroDead(HeroActor actor)
+    public void UnsummonHero(HeroActor actor, float respawnTime, bool isDead)
     {
         var slot = summonSlots.Find(x => x.actor == actor);
         if (slot != null)
         {
-            slot.OnHeroDeath();
+            slot.OnHeroDeath(respawnTime, isDead);
         }
     }
+
+
 
     public void HideToggle()
     {

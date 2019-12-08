@@ -61,6 +61,7 @@ public class SaveData
         archetypeFragments = ps.ArchetypeFragments;
 
         stageClearInfo = ps.stageClearInfo;
+        worldUnlockInfo = ps.worldUnlockInfo;
         lastPlayedWorld = ps.lastPlayedWorld;
 
         Array.Clear(heroTeamList, 0, PlayerStats.HERO_TEAM_MAX_NUM);
@@ -87,6 +88,7 @@ public class SaveData
         ps.SetArchetypeFragments(archetypeFragments);
         ps.SetItemFragments(itemFragments);
         ps.stageClearInfo = stageClearInfo;
+        ps.worldUnlockInfo = worldUnlockInfo;
         ps.lastPlayedWorld = lastPlayedWorld;
 
         if (heroTeamList != null)
