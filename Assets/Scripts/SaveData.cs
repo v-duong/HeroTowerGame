@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine;
 
 [Serializable]
 public class SaveData
@@ -27,10 +26,10 @@ public class SaveData
 
     public void SaveAll()
     {
-        SaveEquipmentData();
-        SaveAbilityCoreData();
-        SaveArchetypeItemData();
-        SaveHeroData();
+        SaveAllEquipmentData();
+        SaveAllAbilityCoreData();
+        SaveAllArchetypeItemData();
+        SaveAllHeroData();
         SavePlayerData();
     }
 
@@ -92,37 +91,50 @@ public class SaveData
         ps.lastPlayedWorld = lastPlayedWorld;
 
         if (heroTeamList != null)
-
-        for (int i = 0; i < PlayerStats.HERO_TEAM_MAX_NUM; i++)
         {
-            if (heroTeamList[i] != null)
+            for (int i = 0; i < PlayerStats.HERO_TEAM_MAX_NUM; i++)
             {
-                for (int j = 0; j < PlayerStats.HERO_TEAM_MAX_HEROES; j++)
+                if (heroTeamList[i] != null)
                 {
-                    List<HeroData> heroes = ps.HeroList.ToList();
-                    if (heroTeamList[i][j] != Guid.Empty)
+                    for (int j = 0; j < PlayerStats.HERO_TEAM_MAX_HEROES; j++)
                     {
-                        HeroData hero = heroes.Find(x => x.Id == heroTeamList[i][j]);
-                        if (hero != null)
+                        List<HeroData> heroes = ps.HeroList.ToList();
+                        if (heroTeamList[i][j] != Guid.Empty)
                         {
-                            ps.heroTeams[i][j] = hero;
-                            hero.assignedTeam = i;
-                            continue;
+                            HeroData hero = heroes.Find(x => x.Id == heroTeamList[i][j]);
+                            if (hero != null)
+                            {
+                                ps.heroTeams[i][j] = hero;
+                                hero.assignedTeam = i;
+                                continue;
+                            }
                         }
+                        ps.heroTeams[i][j] = null;
                     }
-                    ps.heroTeams[i][j] = null;
                 }
             }
         }
     }
 
-    public void SaveAbilityCoreData()
+    public void SaveAllAbilityCoreData()
     {
         abilityCoreList.Clear();
         foreach (AbilityCoreItem abilityCore in GameManager.Instance.PlayerStats.AbilityInventory)
         {
-            abilityCoreList.Add(new AbilityCoreSaveData(abilityCore.Id, abilityCore.Base.idName, abilityCore.Name));
+            SaveAbilityCoreData(abilityCore);
         }
+    }
+
+    public void SaveAbilityCoreData(AbilityCoreItem abilityCore)
+    {
+        abilityCoreList.Add(new AbilityCoreSaveData(abilityCore.Id, abilityCore.Base.idName, abilityCore.Name));
+    }
+
+    public void RemoveAbilityCoreData(AbilityCoreItem abilityCore)
+    {
+        AbilityCoreSaveData saveData = abilityCoreList.Find(x => x.id == abilityCore.Id);
+        if (saveData != null)
+            abilityCoreList.Remove(saveData);
     }
 
     public void LoadAbilityCoreData()
@@ -137,13 +149,25 @@ public class SaveData
         }
     }
 
-    public void SaveArchetypeItemData()
+    public void SaveAllArchetypeItemData()
     {
         archetypeItemList.Clear();
         foreach (ArchetypeItem archetypeItem in GameManager.Instance.PlayerStats.ArchetypeInventory)
         {
-            archetypeItemList.Add(new ArchetypeItemSaveData(archetypeItem.Id, archetypeItem.Base.idName));
+            SaveArchetypeItemData(archetypeItem);
         }
+    }
+
+    public void SaveArchetypeItemData(ArchetypeItem archetypeItem)
+    {
+        archetypeItemList.Add(new ArchetypeItemSaveData(archetypeItem.Id, archetypeItem.Base.idName));
+    }
+
+    public void RemoveArchetypeItemData(ArchetypeItem archetypeItem)
+    {
+        ArchetypeItemSaveData saveData = archetypeItemList.Find(x => x.id == archetypeItem.Id);
+        if (saveData != null)
+            archetypeItemList.Remove(saveData);
     }
 
     public void LoadArchetypeItemData()
@@ -155,48 +179,70 @@ public class SaveData
         }
     }
 
-    public void SaveEquipmentData()
+    public void SaveAllEquipmentData()
     {
+        equipDict.Clear();
+        equipList.Clear();
         foreach (Equipment equipItem in GameManager.Instance.PlayerStats.EquipmentInventory)
         {
-            EquipSaveData equipData;
-            if (!equipDict.ContainsKey(equipItem.Id))
-            {
-                equipData = new EquipSaveData
-                {
-                    id = equipItem.Id,
-                    baseId = equipItem.Base.idName,
-                    ilvl = (byte)equipItem.ItemLevel
-                };
-                equipDict[equipItem.Id] = equipData;
-                equipList.Add(equipData);
-            }
-            else
-                equipData = equipDict[equipItem.Id];
+            SaveEquipmentData(equipItem);
+        }
+    }
 
-            equipData.name = equipItem.Name;
-            equipData.rarity = equipItem.Rarity;
-            if (equipItem.Rarity == RarityType.UNIQUE)
+    public void SaveEquipmentData(Equipment equipItem)
+    {
+        EquipSaveData equipData;
+        if (!equipDict.ContainsKey(equipItem.Id))
+        {
+            equipData = new EquipSaveData
             {
-                UniqueBase uniqueBase = equipItem.Base as UniqueBase;
-                equipData.uniqueVersion = (byte)uniqueBase.uniqueVersion;
-            }
-            equipData.prefixes.Clear();
-            foreach (Affix affix in equipItem.prefixes)
-            {
-                equipData.prefixes.Add(new AffixSaveData(affix.Base.idName, affix.GetAffixValues(), affix.GetEffectValues(), affix.IsCrafted, affix.IsLocked));
-            }
+                id = equipItem.Id,
+                baseId = equipItem.Base.idName,
+                ilvl = (byte)equipItem.ItemLevel
+            };
+            equipDict[equipItem.Id] = equipData;
+            equipList.Add(equipData);
+        }
+        else
+            equipData = equipDict[equipItem.Id];
 
-            equipData.suffixes.Clear();
-            foreach (Affix affix in equipItem.suffixes)
-            {
-                equipData.suffixes.Add(new AffixSaveData(affix.Base.idName, affix.GetAffixValues(), affix.GetEffectValues(), affix.IsCrafted, affix.IsLocked));
-            }
+        equipData.name = equipItem.Name;
+        equipData.rarity = equipItem.Rarity;
+        if (equipItem.Rarity == RarityType.UNIQUE)
+        {
+            UniqueBase uniqueBase = equipItem.Base as UniqueBase;
+            equipData.uniqueVersion = (byte)uniqueBase.uniqueVersion;
+        }
+        equipData.prefixes.Clear();
+        foreach (Affix affix in equipItem.prefixes)
+        {
+            equipData.prefixes.Add(new AffixSaveData(affix.Base.idName, affix.GetAffixValues(), affix.GetEffectValues(), affix.IsCrafted, affix.IsLocked));
+        }
+
+        equipData.suffixes.Clear();
+        foreach (Affix affix in equipItem.suffixes)
+        {
+            equipData.suffixes.Add(new AffixSaveData(affix.Base.idName, affix.GetAffixValues(), affix.GetEffectValues(), affix.IsCrafted, affix.IsLocked));
+        }
+    }
+
+    public void RemoveEquipmentData(Equipment equipment)
+    {
+        if (equipDict.ContainsKey(equipment.Id))
+        {
+            EquipSaveData temp = equipDict[equipment.Id];
+            equipDict.Remove(equipment.Id);
+            equipList.Remove(temp);
         }
     }
 
     public void LoadEquipmentData()
     {
+        if (equipDict == null)
+            equipDict = new Dictionary<Guid, EquipSaveData>();
+        else
+            equipDict.Clear();
+
         GameManager.Instance.PlayerStats.ClearEquipmentInventory();
         foreach (EquipSaveData equipData in equipList)
         {
@@ -228,6 +274,8 @@ public class SaveData
                 LoadEquipmentAffixes(equipData, equipment);
 
             equipment.UpdateItemStats();
+
+            equipDict.Add(equipData.id, equipData);
         }
     }
 
@@ -247,114 +295,134 @@ public class SaveData
         }
     }
 
-    public void SaveHeroData()
+    public void SaveAllHeroData()
     {
+        heroDict.Clear();
+        heroList.Clear();
         foreach (HeroData hero in GameManager.Instance.PlayerStats.HeroList)
         {
-            HeroSaveData heroSaveData;
-            if (!heroDict.ContainsKey(hero.Id))
+            SaveHeroData(hero);
+        }
+    }
+
+    public void RemoveHeroData(HeroData hero)
+    {
+        if (heroDict.ContainsKey(hero.Id))
+        {
+            HeroSaveData temp = heroDict[hero.Id];
+            heroDict.Remove(hero.Id);
+            heroList.Remove(temp);
+        }
+    }
+
+    public void SaveHeroData(HeroData hero)
+    {
+        HeroSaveData heroSaveData;
+        if (!heroDict.ContainsKey(hero.Id))
+        {
+            heroSaveData = new HeroSaveData
             {
-                heroSaveData = new HeroSaveData
-                {
-                    id = hero.Id
-                };
-                heroDict[hero.Id] = heroSaveData;
-                heroList.Add(heroSaveData);
-            }
-            else
-                heroSaveData = heroDict[hero.Id];
+                id = hero.Id
+            };
+            heroDict[hero.Id] = heroSaveData;
+            heroList.Add(heroSaveData);
+        }
+        else
+            heroSaveData = heroDict[hero.Id];
 
-            heroSaveData.name = hero.Name;
-            heroSaveData.level = hero.Level;
-            heroSaveData.experience = hero.Experience;
-            heroSaveData.baseHealth = hero.BaseHealth;
-            heroSaveData.baseSoulPoints = hero.BaseSoulPoints;
-            heroSaveData.baseStrength = hero.BaseStrength;
-            heroSaveData.baseIntelligence = hero.BaseIntelligence;
-            heroSaveData.baseAgility = hero.BaseAgility;
-            heroSaveData.baseWill = hero.BaseWill;
+        heroSaveData.name = hero.Name;
+        heroSaveData.level = hero.Level;
+        heroSaveData.experience = hero.Experience;
+        heroSaveData.baseHealth = hero.BaseHealth;
+        heroSaveData.baseSoulPoints = hero.BaseSoulPoints;
+        heroSaveData.baseStrength = hero.BaseStrength;
+        heroSaveData.baseIntelligence = hero.BaseIntelligence;
+        heroSaveData.baseAgility = hero.BaseAgility;
+        heroSaveData.baseWill = hero.BaseWill;
 
-            foreach (EquipSlotType equipSlot in Enum.GetValues(typeof(EquipSlotType)))
+        foreach (EquipSlotType equipSlot in Enum.GetValues(typeof(EquipSlotType)))
+        {
+            if (equipSlot == EquipSlotType.RING)
+                continue;
+
+            if (hero.GetEquipmentInSlot(equipSlot) != null)
             {
-                if (equipSlot == EquipSlotType.RING)
-                    continue;
-
-                if (hero.GetEquipmentInSlot(equipSlot) != null)
-                {
-                    heroSaveData.equipList[(int)equipSlot] = hero.GetEquipmentInSlot(equipSlot).Id;
-                }
-                else
-                {
-                    heroSaveData.equipList[(int)equipSlot] = Guid.Empty;
-                }
-            }
-
-            if (hero.PrimaryArchetype != null)
-            {
-                HeroArchetypeData archetypeData = hero.PrimaryArchetype;
-                HeroArchetypeSaveData archetypeSaveData = new HeroArchetypeSaveData()
-                {
-                    id = archetypeData.Id,
-                    archetypeId = archetypeData.Base.idName
-                };
-                archetypeSaveData.nodeLevelData = new List<HeroArchetypeSaveData.NodeLevelSaveData>();
-                foreach (KeyValuePair<int, int> pair in archetypeData.NodeLevels)
-                {
-                    archetypeSaveData.nodeLevelData.Add(new HeroArchetypeSaveData.NodeLevelSaveData(pair.Key, pair.Value));
-                }
-                heroSaveData.primaryArchetypeData = archetypeSaveData;
-            }
-
-            if (hero.SecondaryArchetype != null)
-            {
-                HeroArchetypeData archetypeData = hero.SecondaryArchetype;
-                HeroArchetypeSaveData archetypeSaveData = new HeroArchetypeSaveData()
-                {
-                    id = archetypeData.Id,
-                    archetypeId = archetypeData.Base.idName
-                };
-                archetypeSaveData.nodeLevelData = new List<HeroArchetypeSaveData.NodeLevelSaveData>();
-                foreach (KeyValuePair<int, int> pair in archetypeData.NodeLevels)
-                {
-                    archetypeSaveData.nodeLevelData.Add(new HeroArchetypeSaveData.NodeLevelSaveData(pair.Key, pair.Value));
-                }
-                heroSaveData.secondaryArchetypeData = archetypeSaveData;
-            }
-
-            if (hero.GetAbilityFromSlot(0) != null)
-            {
-                if (heroSaveData.firstAbilitySlot == null)
-                    heroSaveData.firstAbilitySlot = new HeroSaveData.HeroAbilitySlotSaveData();
-                hero.SaveAbilitySlotData(0, heroSaveData.firstAbilitySlot);
+                heroSaveData.equipList[(int)equipSlot] = hero.GetEquipmentInSlot(equipSlot).Id;
             }
             else
             {
-                heroSaveData.firstAbilitySlot = null;
+                heroSaveData.equipList[(int)equipSlot] = Guid.Empty;
             }
+        }
 
-            if (hero.GetAbilityFromSlot(1) != null)
+        if (hero.PrimaryArchetype != null)
+        {
+            HeroArchetypeData archetypeData = hero.PrimaryArchetype;
+            HeroArchetypeSaveData archetypeSaveData = new HeroArchetypeSaveData()
             {
-                if (heroSaveData.secondAbilitySlot == null)
-                    heroSaveData.secondAbilitySlot = new HeroSaveData.HeroAbilitySlotSaveData();
-                hero.SaveAbilitySlotData(1, heroSaveData.secondAbilitySlot);
-            }
-            else
+                id = archetypeData.Id,
+                archetypeId = archetypeData.Base.idName
+            };
+            archetypeSaveData.nodeLevelData = new List<HeroArchetypeSaveData.NodeLevelSaveData>();
+            foreach (KeyValuePair<int, int> pair in archetypeData.NodeLevels)
             {
-                heroSaveData.secondAbilitySlot = null;
+                archetypeSaveData.nodeLevelData.Add(new HeroArchetypeSaveData.NodeLevelSaveData(pair.Key, pair.Value));
             }
+            heroSaveData.primaryArchetypeData = archetypeSaveData;
+        }
+
+        if (hero.SecondaryArchetype != null)
+        {
+            HeroArchetypeData archetypeData = hero.SecondaryArchetype;
+            HeroArchetypeSaveData archetypeSaveData = new HeroArchetypeSaveData()
+            {
+                id = archetypeData.Id,
+                archetypeId = archetypeData.Base.idName
+            };
+            archetypeSaveData.nodeLevelData = new List<HeroArchetypeSaveData.NodeLevelSaveData>();
+            foreach (KeyValuePair<int, int> pair in archetypeData.NodeLevels)
+            {
+                archetypeSaveData.nodeLevelData.Add(new HeroArchetypeSaveData.NodeLevelSaveData(pair.Key, pair.Value));
+            }
+            heroSaveData.secondaryArchetypeData = archetypeSaveData;
+        }
+
+        if (hero.GetAbilityFromSlot(0) != null)
+        {
+            if (heroSaveData.firstAbilitySlot == null)
+                heroSaveData.firstAbilitySlot = new HeroSaveData.HeroAbilitySlotSaveData();
+            hero.SaveAbilitySlotData(0, heroSaveData.firstAbilitySlot);
+        }
+        else
+        {
+            heroSaveData.firstAbilitySlot = null;
+        }
+
+        if (hero.GetAbilityFromSlot(1) != null)
+        {
+            if (heroSaveData.secondAbilitySlot == null)
+                heroSaveData.secondAbilitySlot = new HeroSaveData.HeroAbilitySlotSaveData();
+            hero.SaveAbilitySlotData(1, heroSaveData.secondAbilitySlot);
+        }
+        else
+        {
+            heroSaveData.secondAbilitySlot = null;
         }
     }
 
     public void LoadHeroData()
     {
         GameManager.Instance.PlayerStats.ClearHeroList();
+
         if (heroDict == null)
             heroDict = new Dictionary<Guid, HeroSaveData>();
         else
             heroDict.Clear();
+
         foreach (HeroSaveData heroSaveData in heroList)
         {
             GameManager.Instance.PlayerStats.AddHeroToList(new HeroData(heroSaveData));
+            heroDict.Add(heroSaveData.id, heroSaveData);
         }
     }
 

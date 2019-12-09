@@ -57,6 +57,7 @@ public class ResourceManager : MonoBehaviour
     public TargetingCircle TargetingCirclePrefab => targetingCirclePrefab;
 
     private AssetBundle jsonBundle;
+    private AssetBundle particles;
 
     public MaterialPropertyBlock normalMaterialBlock;
     public MaterialPropertyBlock uncommonMaterialBlock;
@@ -345,11 +346,14 @@ public class ResourceManager : MonoBehaviour
 
     public AbilityParticleSystem GetAbilityParticleSystem(string abilityId)
     {
-        GameObject targetPrefab = Resources.Load("Prefabs/ParticleSystems/" + abilityId, typeof(GameObject)) as GameObject;
+        
+        GameObject targetPrefab = particles.LoadAsset(abilityId) as GameObject;
         if (targetPrefab == null)
             return null;
 
         GameObject abs = Instantiate(targetPrefab);
+
+ 
 
         return abs.GetComponent<AbilityParticleSystem>();
     }
@@ -386,6 +390,17 @@ public class ResourceManager : MonoBehaviour
             if (!loadedSpriteAtlases.ContainsKey(atlas.name))
                 Resources.UnloadAsset(atlas);
         }
+
+        spriteBundle.Unload(false);
+    }
+
+    public void LoadAtlasByName(string name)
+    {
+        var spriteBundle = AssetBundle.LoadFromFile(Path.Combine(Application.streamingAssetsPath, "abilitysprites"));
+        SpriteAtlas atlas = spriteBundle.LoadAsset<SpriteAtlas>(name);
+
+        if (!loadedSpriteAtlases.ContainsKey(atlas.name))
+            loadedSpriteAtlases.Add(atlas.name, atlas);
 
         spriteBundle.Unload(false);
     }
@@ -542,16 +557,23 @@ public class ResourceManager : MonoBehaviour
 
     private void RequestAtlas(string name, System.Action<SpriteAtlas> callback)
     {
-        if (loadedSpriteAtlases.ContainsKey(name))
+        Debug.Log("name: " + name);
+        if (loadedSpriteAtlases == null)
+            loadedSpriteAtlases = new Dictionary<string, SpriteAtlas>();
+
+        if (!loadedSpriteAtlases.ContainsKey(name))
         {
-            SpriteAtlas atlas = loadedSpriteAtlases[name];
-            callback(atlas);
+            LoadAtlasByName(name);
         }
+
+        SpriteAtlas atlas = loadedSpriteAtlases[name];
+        callback(atlas);
     }
 
     private void Initialize()
     {
         //jsonBundle = AssetBundle.LoadFromFile(Path.Combine(Application.streamingAssetsPath,"jsonfiles"));
+        particles = AssetBundle.LoadFromFile(Path.Combine(Application.streamingAssetsPath, "particlesystems"));
         SpriteAtlasManager.atlasRequested += RequestAtlas;
         LoadAbilities();
         LoadEquipment();

@@ -28,6 +28,12 @@ public class TeamWindow : MonoBehaviour
         UpdateTeamSlots();
     }
 
+    private void OnDisable()
+    {
+        SaveManager.CurrentSave.SavePlayerData();
+        SaveManager.Save();
+    }
+
     public void OnClickTeamNumber(int teamNum)
     {
         if (selectedTeam == teamNum)

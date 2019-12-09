@@ -43,7 +43,7 @@ public class GameManager : MonoBehaviour
 #endif
         isInBattle = false;
         isInMainMenu = true;
-        PlayerStats = new PlayerStats();
+
         /*
         for (int i = 0; i < 50; i++)
         {
@@ -58,6 +58,36 @@ public class GameManager : MonoBehaviour
         CheckForBonuses();
 #endif
 
+        PlayerStats = new PlayerStats();
+        if (!SaveManager.Load())
+        {
+            AddStartingData();
+            SaveManager.SaveAll();
+        }
+    }
+
+    public void InitializePlayerStats()
+    {
+        PlayerStats = new PlayerStats();
+        AddStartingData();
+        SaveManager.SaveAll();
+        StartCoroutine(ReloadMainMenu());
+
+    }
+    
+    private IEnumerator ReloadMainMenu()
+    {
+        AsyncOperation asyncOperation = SceneManager.UnloadSceneAsync("mainMenu");
+        while (!asyncOperation.isDone)
+        {
+            yield return null;
+        }
+        SceneManager.LoadScene("mainMenu", LoadSceneMode.Additive);
+    }
+
+
+    private void AddStartingData()
+    {
         Equipment startingSword = Equipment.CreateEquipmentFromBase(ResourceManager.Instance.GetEquipmentBase("OneHandedSword1"), 1);
         Equipment startingBow = Equipment.CreateEquipmentFromBase(ResourceManager.Instance.GetEquipmentBase("Bow1"), 1);
         Equipment startingWand = Equipment.CreateEquipmentFromBase(ResourceManager.Instance.GetEquipmentBase("Wand1"), 1);
@@ -89,23 +119,6 @@ public class GameManager : MonoBehaviour
         PlayerStats.SetHeroToTeamSlot(startingSoldier, 0, 0);
         PlayerStats.SetHeroToTeamSlot(startingRanger, 0, 1);
         PlayerStats.SetHeroToTeamSlot(startingMage, 0, 2);
-
-        /*
-        float total1 = 0, total2 = 0, total3 = 0;
-        for (int i = 0; i < 100; i++)
-        {
-            Equipment e1 = Equipment.CreateRandomEquipment(100, null, RarityType.RARE);
-            Equipment e2 = Equipment.CreateRandomEquipment(50, null, RarityType.RARE);
-            Equipment e3 = Equipment.CreateRandomEquipment(1, null, RarityType.RARE);
-            total1 += e1.GetItemValue();
-            total2 += e2.GetItemValue();
-            total3 += e3.GetItemValue();
-        }
-        total1 /= 100;
-        total2 /= 100;
-        total3 /= 100;
-        Debug.Log(total1.ToString("N1") + " " + total2.ToString("N1") + " " + total3.ToString("N1"));
-        */
     }
 
     private void CheckForBonuses()
@@ -134,8 +147,6 @@ public class GameManager : MonoBehaviour
         if (consumableWeightList == null)
         {
             consumableWeightList = new WeightList<ConsumableType>();
-            consumableWeightList.Add(ConsumableType.LOW_TIER_UPGRADER, 2000);
-            consumableWeightList.Add(ConsumableType.RARE_TO_EPIC, 30);
             consumableWeightList.Add(ConsumableType.AFFIX_REROLLER, 3000);
             consumableWeightList.Add(ConsumableType.AFFIX_CRAFTER, 900);
         }
@@ -151,6 +162,7 @@ public class GameManager : MonoBehaviour
     {
         isInBattle = false;
 
+        SaveManager.SaveAll();
         SceneManager.UnloadSceneAsync(currentSceneName);
         SceneManager.LoadScene("mainMenu", LoadSceneMode.Additive);
 
@@ -164,6 +176,7 @@ public class GameManager : MonoBehaviour
     public void MoveToBattle(StageInfoBase stageInfoBase)
     {
         SetTimescale(1);
+        SaveManager.SaveAll();
         SceneManager.LoadScene("loadingScene", LoadSceneMode.Additive);
         currentSceneName = "stage" + stageInfoBase.sceneAct + '-' + stageInfoBase.sceneStage;
 

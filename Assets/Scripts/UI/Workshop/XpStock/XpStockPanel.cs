@@ -186,6 +186,11 @@ public class XpStockPanel : MonoBehaviour
             return;
         GameManager.Instance.PlayerStats.ModifyExpStock(-requiredExperience);
         selectedHero.AddExperience(requiredExperience);
+
+        SaveManager.CurrentSave.SaveHeroData(selectedHero);
+        SaveManager.CurrentSave.SavePlayerData();
+        SaveManager.Save();
+
         UpdateSliderValues();
         UpdatePanels();
     }

@@ -22,7 +22,15 @@ public class ParticleManager : MonoBehaviour
         DontDestroyOnLoad(this.gameObject);
     }
 
-    public float EmitAbilityParticle(string abilityId, ParticleSystem.EmitParams emitParams, float scaling)
+    public bool DoesAbilityEmitOnSelf(string abilityId)
+    {
+        AbilityParticleSystem abilityPs = GetParticleSystem(abilityId);
+        if (abilityPs == null)
+            return false;
+        return abilityPs.extraEmitOnSelf;
+    }
+
+    public float EmitAbilityParticle(string abilityId, ParticleSystem.EmitParams emitParams, float scaling, Transform parent)
     {
         AbilityParticleSystem abilityPs = GetParticleSystem(abilityId);
         if (abilityPs == null)

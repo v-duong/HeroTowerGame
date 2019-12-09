@@ -16,7 +16,7 @@ public class EnemyPool : QueueObjectPool<EnemyActor>
         ret.attackLocks = 0;
         ret.actorTags.Clear();
         ret.ClearStatusEffects(false);
-        ret.Data.ClearData();
+        ret.InitData();
         ret.transform.position = inherit.transform.position;
         ret.mobAffixes.Clear();
         return ret;

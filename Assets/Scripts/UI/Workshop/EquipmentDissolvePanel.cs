@@ -8,6 +8,7 @@ public class EquipmentDissolvePanel : MonoBehaviour
     public Button confirmButton;
     private bool alreadyOpenedOnce = false;
     private bool hasHitConfirm = false;
+    public TextMeshProUGUI buttonText;
     public TextMeshProUGUI textBox;
     private List<Item> selectedEquipment = new List<Item>();
 
@@ -16,7 +17,8 @@ public class EquipmentDissolvePanel : MonoBehaviour
         selectedEquipment.Clear();
         alreadyOpenedOnce = false;
         confirmButton.interactable = false;
-        textBox.text = "None Selected";
+        buttonText.text = "Select Equipment";
+        textBox.text = "";
     }
 
     public void EquipSelectOnClick()
@@ -69,13 +71,16 @@ public class EquipmentDissolvePanel : MonoBehaviour
         else
             confirmButton.interactable = false;
 
-        textBox.text = items.Count + " Equipment Selected: \n";
+        buttonText.text = items.Count + " Equipment Selected";
+        buttonText.text += "\n+" + fragmentCount + " <sprite=10>";
+
+        textBox.text = "";
         foreach (var keyValue in rarityCount)
         {
             if (keyValue.Value != 0)
                 textBox.text += LocalizationManager.Instance.GetLocalizationText("rarityType." + keyValue.Key.ToString()) + " x" + keyValue.Value + "\n";
         }
-        textBox.text += "\n" + fragmentCount + " <sprite=10>";
+        
     }
 
     public void DissolveEquipmentConfirm()
@@ -91,9 +96,12 @@ public class EquipmentDissolvePanel : MonoBehaviour
             GameManager.Instance.PlayerStats.RemoveEquipmentFromInventory(item);
         }
 
-        textBox.text = "None Selected";
+        buttonText.text = "Select Equipment";
+        textBox.text = "";
         GameManager.Instance.PlayerStats.ModifyItemFragments(fragmentCount);
         selectedEquipment.Clear();
+
+        SaveManager.Save();
 
         confirmButton.interactable = false;
     }

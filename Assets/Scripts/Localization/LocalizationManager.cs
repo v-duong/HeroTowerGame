@@ -12,6 +12,7 @@ public class LocalizationManager : MonoBehaviour
     private static Dictionary<string, string> commonLocalizationData = new Dictionary<string, string>();
     private static Dictionary<string, string> archetypeLocalizationData = new Dictionary<string, string>();
     private static Dictionary<string, string> equipmentLocalizationData = new Dictionary<string, string>();
+    private static Dictionary<string, string> uniqueLocalizationData = new Dictionary<string, string>();
     private static Dictionary<string, string> abilityLocalizationData = new Dictionary<string, string>();
     private static Dictionary<string, string> enemyLocalizationData = new Dictionary<string, string>();
     private static Dictionary<string, string> helpLocalizationData = new Dictionary<string, string>();
@@ -39,6 +40,9 @@ public class LocalizationManager : MonoBehaviour
 
         path = "json/localization/equipment." + locale;
         equipmentLocalizationData = JsonConvert.DeserializeObject<Dictionary<string, string>>(Resources.Load<TextAsset>(path).text);
+
+        path = "json/localization/unique." + locale;
+        uniqueLocalizationData = JsonConvert.DeserializeObject<Dictionary<string, string>>(Resources.Load<TextAsset>(path).text);
 
         path = "json/localization/enemy." + locale;
         enemyLocalizationData = JsonConvert.DeserializeObject<Dictionary<string, string>>(Resources.Load<TextAsset>(path).text);
@@ -200,8 +204,9 @@ public class LocalizationManager : MonoBehaviour
         return s;
     }
 
-    public string GetLocalizationText_Equipment(string stringId)
+    public string GetLocalizationText(EquipmentBase equipment)
     {
+        string stringId = equipment.idName;
         if (equipmentLocalizationData.TryGetValue("equipment." + stringId, out string value))
         {
             if (value == "")
@@ -212,6 +217,30 @@ public class LocalizationManager : MonoBehaviour
         {
             return stringId;
         }
+    }
+
+    public string[] GetLocalizationText(UniqueBase unique)
+    {
+        string stringId = unique.idName;
+        string[] output = new string[2];
+        if (uniqueLocalizationData.TryGetValue("unique." + stringId, out string value))
+        {
+            if (value == "")
+                output[0] = stringId;
+            else
+                output[0] = value;
+        }
+        else
+        {
+            output[0] = stringId;
+        }
+
+        if (uniqueLocalizationData.TryGetValue("unique." + stringId +".text", out string desc))
+        {
+                output[1] = desc;
+        }
+
+        return output;
     }
 
     public string GetLocalizationText_ArchetypeName(string stringId)

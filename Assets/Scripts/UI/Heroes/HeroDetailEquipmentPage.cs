@@ -45,7 +45,7 @@ public class HeroDetailEquipmentPage : MonoBehaviour, IUpdatablePanel
                 int equippableCount = 0;
                 if (slot.EquipSlot == EquipSlotType.OFF_HAND)
                 {
-                    equippableCount = GameManager.Instance.PlayerStats.EquipmentInventory.Where(x => !x.IsEquipped && (x.Base.equipSlot == slot.EquipSlot || x.GetGroupTypes().Contains(GroupType.ONE_HANDED_WEAPON))).Count();
+                    equippableCount = GameManager.Instance.PlayerStats.EquipmentInventory.Where(x => HeroEquipmentSlot.OffhandFilter(x)).Count();
                 }
                 else if (slot.EquipSlot == EquipSlotType.RING_SLOT_1 || slot.EquipSlot == EquipSlotType.RING_SLOT_2)
                 {

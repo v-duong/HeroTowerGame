@@ -27,6 +27,12 @@ public class ArchetypeUITreeWindow : MonoBehaviour
         LineOffsetY.y = r.rect.height / 2;
     }
 
+    private void OnDisable()
+    {
+        SaveManager.CurrentSave.SaveHeroData(hero);
+        SaveManager.Save();
+    }
+
     public void ResetTreeView()
     {
         foreach (ArchetypeUITreeNode node in primaryNodes.Values)

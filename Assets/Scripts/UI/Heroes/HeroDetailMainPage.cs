@@ -295,7 +295,7 @@ public class HeroDetailMainPage : MonoBehaviour, IUpdatablePanel
     public void ClickAbilitySlot(int slot)
     {
         HeroAbilityScrollWindow.slot = slot;
-        UIManager.Instance.OpenWindow(abilityScrollRect.gameObject);
+        UIManager.Instance.OpenWindow(abilityScrollRect.gameObject, false);
     }
 
     public void SetHeroLocked()

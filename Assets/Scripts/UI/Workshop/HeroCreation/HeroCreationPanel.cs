@@ -53,6 +53,8 @@ public class HeroCreationPanel : MonoBehaviour
             secondaryArchetype = null;
         }
 
+        SaveManager.Save();
+
         HeroName = "";
         UpdatePanels();
     }

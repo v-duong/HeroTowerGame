@@ -27,6 +27,14 @@ public class HeroDetailWindow : MonoBehaviour
 
     public IUpdatablePanel currentPanel;
 
+    public void OnDisable()
+    {
+        if (hero != null)
+        {
+            SaveManager.CurrentSave.SaveHeroData(hero);
+            SaveManager.Save();
+        }
+    }
     public void UpdateCurrentPanel()
     {
         currentPanel.UpdateWindow();

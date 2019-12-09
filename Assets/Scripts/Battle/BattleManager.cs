@@ -247,14 +247,14 @@ public class BattleManager : MonoBehaviour
             Dictionary<string, int> equipmentCount = new Dictionary<string, int>();
             foreach (Equipment equipment in gainedEquipment)
             {
-                if (!equipmentCount.ContainsKey(equipment.Base.idName))
-                    equipmentCount.Add(equipment.Base.idName, 0);
-                equipmentCount[equipment.Base.idName]++;
+                if (!equipmentCount.ContainsKey(equipment.Base.LocalizedName))
+                    equipmentCount.Add(equipment.Base.LocalizedName, 0);
+                equipmentCount[equipment.Base.LocalizedName]++;
             }
 
             foreach (KeyValuePair<string, int> equipEntry in equipmentCount)
             {
-                gainEquipString += "<indent=10%>" + LocalizationManager.Instance.GetLocalizationText_Equipment(equipEntry.Key) + " x" + equipEntry.Value + "</indent>\n";
+                gainEquipString += "<indent=10%>" + equipEntry.Key + " x" + equipEntry.Value + "</indent>\n";
             }
 
             battleEndWindow.AddToBodyText(gainEquipString);
@@ -523,11 +523,11 @@ public class BattleManager : MonoBehaviour
             int totalWaveCount = survivalLoopCount * Waves.Count + (currentWave + 1);
 
             StatBonus healthBonus = new StatBonus();
-            healthBonus.AddBonus(ModifyType.MULTIPLY, 25 * survivalLoopCount);
+            healthBonus.AddBonus(ModifyType.MULTIPLY, 10 * survivalLoopCount);
             bonuses.Add(BonusType.MAX_HEALTH, healthBonus);
 
             StatBonus damageBonus = new StatBonus();
-            damageBonus.AddBonus(ModifyType.MULTIPLY, 15 * survivalLoopCount);
+            damageBonus.AddBonus(ModifyType.MULTIPLY, 10 * survivalLoopCount);
             bonuses.Add(BonusType.GLOBAL_DAMAGE, damageBonus);
         }
 
@@ -570,7 +570,7 @@ public class BattleManager : MonoBehaviour
             //Set bonuses from wave
             enemy.Data.SetMobBonuses(bonuses);
 
-            enemy.Init();
+            enemy.Init(enemyWaveItem.goalIndex);
 
             currentEnemyList.Add(enemy);
             enemiesSpawned++;

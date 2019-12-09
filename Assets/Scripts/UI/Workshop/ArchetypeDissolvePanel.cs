@@ -9,6 +9,7 @@ public class ArchetypeDissolvePanel : MonoBehaviour
     private bool alreadyOpenedOnce = false;
     private bool hasHitConfirm = false;
     public TextMeshProUGUI textBox;
+    public TextMeshProUGUI buttonText;
     private List<Item> selectedArchetypes = new List<Item>();
 
     private void OnEnable()
@@ -16,7 +17,8 @@ public class ArchetypeDissolvePanel : MonoBehaviour
         selectedArchetypes.Clear();
         confirmButton.interactable = false;
         alreadyOpenedOnce = false;
-        textBox.text = "None Selected";
+        buttonText.text = "Select Archetypes";
+        textBox.text = "";
     }
 
     public void ArchetypeSelectOnClick()
@@ -59,7 +61,7 @@ public class ArchetypeDissolvePanel : MonoBehaviour
         else
             confirmButton.interactable = false;
 
-        textBox.text = items.Count + " Archetypes Selected\n" + fragmentCount + " Fragments";
+        buttonText.text = items.Count + " Archetypes Selected\n+" + fragmentCount + " <sprite=9>";
     }
 
     public void DissolveArchetypeConfirm()
@@ -75,9 +77,12 @@ public class ArchetypeDissolvePanel : MonoBehaviour
             GameManager.Instance.PlayerStats.RemoveArchetypeFromInventory(item);
         }
 
-        textBox.text = "None Selected";
+        buttonText.text = "Select Equipment";
+        textBox.text = "";
         GameManager.Instance.PlayerStats.ModifyArchetypeFragments(fragmentCount);
         selectedArchetypes.Clear();
+
+        SaveManager.Save();
 
         confirmButton.interactable = false;
     }

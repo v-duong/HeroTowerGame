@@ -1,10 +1,7 @@
-﻿using TMPro;
-using UnityEngine;
-using UnityEngine.UI;
+﻿using UnityEngine;
 
 public class MenuButton : UIKeyButton
 {
-
     public void OnClickInvToggle()
     {
         UIManager.Instance.OpenInventoryWindow(true, true);
@@ -28,6 +25,11 @@ public class MenuButton : UIKeyButton
     public void OnClickStageSelect()
     {
         UIManager.Instance.OpenStageSelectWindow();
+    }
+
+    public void OnClickSettings()
+    {
+        UIManager.Instance.PopUpWindow.OpenSettingsWindow();
     }
 
     public void AddItem()
@@ -65,16 +67,13 @@ public class MenuButton : UIKeyButton
         UIManager.Instance.CloseCurrentWindow();
     }
 
-
-
     public void LoadData()
     {
-        SaveManager.Instance.Load();
+        SaveManager.Load();
     }
 
     public void SaveData()
     {
-        SaveManager.Instance.Save();
+        SaveManager.SaveAll();
     }
-
 }

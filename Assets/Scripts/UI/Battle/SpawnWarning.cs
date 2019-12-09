@@ -35,7 +35,7 @@ public class SpawnWarning : MonoBehaviour
             else
             {
                 warningImage.color = yellowColor;
-                waveText.text = "Next";
+                waveText.text = "Wave " + currentTimeInfo.waveNum;
             }
 
             timeLeft -= Time.deltaTime;

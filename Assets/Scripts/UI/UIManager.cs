@@ -330,6 +330,9 @@ public class UIManager : MonoBehaviour
         {
             currentWindow = previousWindows.Pop();
             currentWindow.SetActive(true);
+        } else
+        {
+            currentWindow = null;
         }
     }
 

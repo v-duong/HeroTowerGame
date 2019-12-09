@@ -34,7 +34,7 @@ public class HeroEquipmentSlot : MonoBehaviour
         ui.InvScrollContent.CheckHeroRequirements(hero);
     }
 
-    public bool OffhandFilter(Equipment e)
+    public static bool OffhandFilter(Equipment e)
     {
         if (e.IsEquipped)
             return false;

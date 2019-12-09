@@ -335,63 +335,52 @@ public class ItemCraftingPanel : MonoBehaviour
         UpdatePanels();
     }
 
-    public void RerollAffixOnClick()
+    public void ModifyItem(CraftingButton.CraftingOptionType optionType)
     {
         if (currentItem == null)
             return;
-        currentItem.RerollAffixesAtRarity();
-        currentItem.RemoveAllAffixLocks();
-        GameManager.Instance.PlayerStats.ModifyItemFragments(-AffixedItem.GetRerollAffixCost(currentItem));
+        switch (optionType)
+        {
+            case CraftingButton.CraftingOptionType.REROLL_AFFIX:
+                currentItem.RerollAffixesAtRarity();
+                currentItem.RemoveAllAffixLocks();
+                GameManager.Instance.PlayerStats.ModifyItemFragments(-AffixedItem.GetRerollAffixCost(currentItem));
+                break;
+            case CraftingButton.CraftingOptionType.REROLL_VALUES:
+                currentItem.RerollValues();
+                currentItem.RemoveAllAffixLocks();
+                GameManager.Instance.PlayerStats.ModifyItemFragments(-AffixedItem.GetRerollValuesCost(currentItem));
+                break;
+            case CraftingButton.CraftingOptionType.ADD_AFFIX:
+                currentItem.AddRandomAffix();
+                GameManager.Instance.PlayerStats.ModifyItemFragments(-AffixedItem.GetAddAffixCost(currentItem));
+                break;
+            case CraftingButton.CraftingOptionType.REMOVE_AFFIX:
+                GameManager.Instance.PlayerStats.ModifyItemFragments(-AffixedItem.GetRemoveAffixCost(currentItem));
+                currentItem.RemoveRandomAffix();
+                currentItem.RemoveAllAffixLocks();
+                break;
+            case CraftingButton.CraftingOptionType.UPGRADE_RARITY:
+                GameManager.Instance.PlayerStats.ModifyItemFragments(-AffixedItem.GetUpgradeCost(currentItem));
+                currentItem.UpgradeRarity();
+                break;
+            case CraftingButton.CraftingOptionType.TO_NORMAL:
+                GameManager.Instance.PlayerStats.ModifyItemFragments(-AffixedItem.GetToNormalCost(currentItem));
+                currentItem.SetRarityToNormal();
+                currentItem.RemoveAllAffixLocks();
+                break;
+            case CraftingButton.CraftingOptionType.LOCK_AFFIX:
+                LockAffixOnClick();
+                return;
+        }
+
+        SaveManager.CurrentSave.SavePlayerData();
+        SaveManager.CurrentSave.SaveEquipmentData(currentItem as Equipment);
+        SaveManager.Save();
+
         UpdatePanels();
     }
 
-    public void RerollValuesOnClick()
-    {
-        if (currentItem == null)
-            return;
-        currentItem.RerollValues();
-        currentItem.RemoveAllAffixLocks();
-        GameManager.Instance.PlayerStats.ModifyItemFragments(-AffixedItem.GetRerollValuesCost(currentItem));
-        UpdatePanels();
-    }
-
-    public void AddAffixOnClick()
-    {
-        if (currentItem == null)
-            return;
-        currentItem.AddRandomAffix();
-        GameManager.Instance.PlayerStats.ModifyItemFragments(-AffixedItem.GetAddAffixCost(currentItem));
-        UpdatePanels();
-    }
-
-    public void RemoveAffixOnClick()
-    {
-        if (currentItem == null)
-            return;
-        GameManager.Instance.PlayerStats.ModifyItemFragments(-AffixedItem.GetRemoveAffixCost(currentItem));
-        currentItem.RemoveRandomAffix();
-        currentItem.RemoveAllAffixLocks();
-        UpdatePanels();
-    }
-
-    public void UpgradeRarityOnClick()
-    {
-        if (currentItem == null)
-            return;
-        GameManager.Instance.PlayerStats.ModifyItemFragments(-AffixedItem.GetUpgradeCost(currentItem));
-        currentItem.UpgradeRarity();
-        UpdatePanels();
-    }
-
-    public void ToNormalOnClick()
-    {
-        if (currentItem == null)
-            return;
-        GameManager.Instance.PlayerStats.ModifyItemFragments(-AffixedItem.GetToNormalCost(currentItem));
-        currentItem.SetRarityToNormal();
-        currentItem.RemoveAllAffixLocks();
-        UpdatePanels();
-    }
 
     public void LockAffixOnClick()
     {
@@ -420,6 +409,11 @@ public class ItemCraftingPanel : MonoBehaviour
         currentItem.RemoveAllAffixLocks();
         affix.SetAffixLock(true);
         GameManager.Instance.PlayerStats.ModifyItemFragments(-AffixedItem.GetLockCost(currentItem));
+
+        SaveManager.CurrentSave.SavePlayerData();
+        SaveManager.CurrentSave.SaveEquipmentData(currentItem as Equipment);
+        SaveManager.Save();
+
         UpdatePanels();
     }
 

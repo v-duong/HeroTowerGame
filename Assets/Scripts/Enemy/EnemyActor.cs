@@ -34,15 +34,21 @@ public class EnemyActor : Actor
     {
         positionOffset = Vector3.zero;
         IsMoving = true;
-        Data = new EnemyData();
-        Data.CurrentHealth = Data.MaximumHealth;
+        InitData();
         mobAffixes = new List<Affix>();
         previousHeading = Vector3.up;
     }
 
-    // Use this for initialization
-    public void Init()
+    public void InitData()
     {
+        Data = new EnemyData();
+        Data.CurrentHealth = Data.MaximumHealth;
+    }
+
+    // Use this for initialization
+    public void Init(int goalIndex)
+    {
+        indexOfGoal = goalIndex;
         NextMovementNode = 1;
         Data.CurrentHealth = Data.MaximumHealth;
         Data.CurrentManaShield = Data.MaximumManaShield;

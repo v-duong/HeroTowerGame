@@ -2,6 +2,7 @@
 
 public class AbilityParticleSystem : MonoBehaviour
 {
+    public bool extraEmitOnSelf;
     public int emitCount;
     public ParticleSystem ps;
     private ParticleSystem.MainModule psMain;

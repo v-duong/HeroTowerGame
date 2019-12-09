@@ -128,6 +128,7 @@ public class StageSelectPanel : MonoBehaviour
         if (isTeamSelected)
         {
             int heroesWithoutSkills = 0;
+            GameManager.Instance.PlayerStats.lastPlayedWorld = selectedAct;
 
             foreach (HeroData hero in GameManager.Instance.PlayerStats.heroTeams[GameManager.Instance.selectedTeamNum])
             {

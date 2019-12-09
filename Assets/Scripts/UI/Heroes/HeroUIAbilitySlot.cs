@@ -142,6 +142,8 @@ public class HeroUIAbilitySlot : MonoBehaviour
             hero.EquipAbility(ability, slot, source);
         }
 
+        UIManager.Instance.HeroDetailWindow.UpdateCurrentPanel();
+
         UIManager.Instance.CloseCurrentWindow();
     }
 }

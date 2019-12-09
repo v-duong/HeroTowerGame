@@ -5,6 +5,8 @@ using UnityEngine.UI;
 
 public class PopUpWindow : MonoBehaviour
 {
+    public List<GameObject> views;
+    public SettingsWindow settingsWindow;
     public GameObject textScrollView;
     public GameObject verticalScrollView;
     public GameObject gridScrollView;
@@ -30,6 +32,12 @@ public class PopUpWindow : MonoBehaviour
     {
         temporaryElements.ForEach(x => Destroy(x.gameObject));
         temporaryElements.Clear();
+    }
+
+    private void DisableAllViews()
+    {
+        foreach (GameObject x in views)
+            x.SetActive(false);
     }
 
     public void SetButtonValues(string confirmButtonString, UnityEngine.Events.UnityAction confirmAction, string cancelButtonString, UnityEngine.Events.UnityAction cancelAction)
@@ -61,10 +69,11 @@ public class PopUpWindow : MonoBehaviour
     {
         ((RectTransform)popUpWindowMain.transform).sizeDelta = new Vector2(width, height);
         UIManager.Instance.OpenWindow(this.gameObject, false);
+
+        DisableAllViews();
         textScrollView.SetActive(true);
-        verticalScrollView.SetActive(false);
-        gridScrollView.SetActive(false);
-        textInput.gameObject.SetActive(false);
+        
+
         isVertical = false;
         isGrid = false;
         ((RectTransform)textField.transform).anchoredPosition = Vector3.zero;
@@ -75,10 +84,10 @@ public class PopUpWindow : MonoBehaviour
     {
         ((RectTransform)popUpWindowMain.transform).sizeDelta = new Vector2(width, height);
         UIManager.Instance.OpenWindow(this.gameObject, false);
-        textScrollView.SetActive(false);
+
+        DisableAllViews();
         verticalScrollView.SetActive(true);
-        gridScrollView.SetActive(false);
-        textInput.gameObject.SetActive(false);
+
         isVertical = true;
         isGrid = false;
     }
@@ -87,10 +96,10 @@ public class PopUpWindow : MonoBehaviour
     {
         ((RectTransform)popUpWindowMain.transform).sizeDelta = new Vector2(width, height);
         UIManager.Instance.OpenWindow(this.gameObject, false);
-        textScrollView.SetActive(false);
-        verticalScrollView.SetActive(false);
+
+        DisableAllViews();
         gridScrollView.SetActive(true);
-        textInput.gameObject.SetActive(false);
+
         isVertical = false;
         isGrid = true;
     }
@@ -99,14 +108,26 @@ public class PopUpWindow : MonoBehaviour
     {
         ((RectTransform)popUpWindowMain.transform).sizeDelta = new Vector2(width, height);
         UIManager.Instance.OpenWindow(this.gameObject, false);
-        textScrollView.SetActive(false);
-        verticalScrollView.SetActive(false);
-        gridScrollView.SetActive(false);
+
+        DisableAllViews();
         textInput.gameObject.SetActive(true);
+
         isVertical = false;
         isGrid = false;
 
         textInput.text = defaultString;
+    }
+
+    public void OpenSettingsWindow()
+    {
+        ((RectTransform)popUpWindowMain.transform).sizeDelta = new Vector2(400, 700);
+
+        UIManager.Instance.OpenWindow(this.gameObject, false);
+
+        DisableAllViews();
+        settingsWindow.gameObject.SetActive(true);
+
+        SetButtonValues(null,null,"Close", UIManager.Instance.CloseCurrentWindow);
     }
 
     public void OpenHelpWindow(List<string> helpStrings)

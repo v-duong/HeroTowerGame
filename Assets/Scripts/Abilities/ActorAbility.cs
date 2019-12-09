@@ -449,7 +449,6 @@ public class ActorAbility
                 if (effect.effectType == EffectType.BUFF || effect.effectType == EffectType.DEBUFF)
                 {
                     float buffValue = (effect.initialValue + effect.growthValue * abilityLevel) * auraBuffBonus.auraEffectMultiplier;
-                    Debug.Log(effect.initialValue + effect.growthValue * abilityLevel + " " + buffValue);
                     auraBuffBonus.cachedAuraBonuses.Add(new Tuple<BonusType, ModifyType, float>(effect.bonusType, effect.modifyType, buffValue));
                     auraBuffBonus.auraStrength += buffValue;
 
@@ -1478,7 +1477,7 @@ public class ActorAbility
             emitParams.position = origin;
         }
 
-        ParticleManager.Instance.EmitAbilityParticle(abilityBase.idName, emitParams, AreaScaling);
+        ParticleManager.Instance.EmitAbilityParticle(abilityBase.idName, emitParams, AreaScaling, AbilityOwner.transform);
 
         foreach (Collider2D hit in hits)
         {
@@ -1496,8 +1495,16 @@ public class ActorAbility
 
         yield return new WaitForSeconds(HitscanDelay);
 
+        
+        
+        if (ParticleManager.Instance.DoesAbilityEmitOnSelf(abilityBase.idName))
+        {
+            emitParams.position = AbilityOwner.transform.position;
+            ParticleManager.Instance.EmitAbilityParticle(abilityBase.idName, emitParams, 1, AbilityOwner.transform);
+        }
+
         emitParams.position = target.transform.position;
-        ParticleManager.Instance.EmitAbilityParticle(abilityBase.idName, emitParams, 1);
+        ParticleManager.Instance.EmitAbilityParticle(abilityBase.idName, emitParams, 1, AbilityOwner.transform);
         ApplyDamageToActor(target, true);
 
         List<Actor> hitList;
@@ -1528,7 +1535,7 @@ public class ActorAbility
                 ApplyDamageToActor(actor, true);
 
                 emitParams.position = actor.transform.position;
-                ParticleManager.Instance.EmitAbilityParticle(abilityBase.idName, emitParams, 1);
+                ParticleManager.Instance.EmitAbilityParticle(abilityBase.idName, emitParams, 1, AbilityOwner.transform);
 
                 lastHitTarget = actor;
                 hitList.Add(actor);
@@ -1572,7 +1579,7 @@ public class ActorAbility
 
         yield return new WaitForSeconds(HitscanDelay / 2);
 
-        ParticleManager.Instance.EmitAbilityParticle(abilityBase.idName, emitParams, 1);
+        ParticleManager.Instance.EmitAbilityParticle(abilityBase.idName, emitParams, 1, AbilityOwner.transform);
         ApplyDamageToActor(target, true);
         hitList.Add(target);
 

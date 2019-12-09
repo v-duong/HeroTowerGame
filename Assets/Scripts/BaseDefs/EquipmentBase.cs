@@ -51,7 +51,7 @@ public class EquipmentBase
     [JsonProperty]
     public readonly int spawnWeight;
 
-    public string LocalizedName => LocalizationManager.Instance.GetLocalizationText_Equipment(idName);
+    public virtual string LocalizedName => LocalizationManager.Instance.GetLocalizationText(this);
 }
 
 public class UniqueBase : EquipmentBase
@@ -64,6 +64,8 @@ public class UniqueBase : EquipmentBase
     public readonly int randomAffixesToSpawn;
     [JsonProperty]
     public readonly int uniqueVersion;
+
+    public override string LocalizedName => LocalizationManager.Instance.GetLocalizationText(this)[0];
 }
 
 public enum EquipSlotType

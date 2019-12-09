@@ -110,6 +110,9 @@ public class AbilityExtractPanel : MonoBehaviour
             return;
         GameManager.Instance.PlayerStats.AddAbilityToInventory(abilityStorageItem);
 
+        SaveManager.CurrentSave.SavePlayerData();
+        SaveManager.Save();
+
         ResetPanel();
 
         confirmButton.interactable = false;

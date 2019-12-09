@@ -120,6 +120,7 @@ public class PlayerStats
         if (equipmentInventory.Contains(newEquipment))
             return false;
         equipmentInventory.Add(newEquipment);
+        SaveManager.CurrentSave.SaveEquipmentData(newEquipment);
         return true;
     }
 
@@ -128,6 +129,7 @@ public class PlayerStats
         if (archetypeInventory.Contains(newArchetype))
             return false;
         archetypeInventory.Add(newArchetype);
+        SaveManager.CurrentSave.SaveArchetypeItemData(newArchetype);
         return true;
     }
 
@@ -136,6 +138,7 @@ public class PlayerStats
         if (abilityStorageInventory.Contains(newAbility))
             return false;
         abilityStorageInventory.Add(newAbility);
+        SaveManager.CurrentSave.SaveAbilityCoreData(newAbility);
         return true;
     }
 
@@ -144,30 +147,35 @@ public class PlayerStats
         if (heroList.Contains(hero))
             return false;
         heroList.Add(hero);
+        SaveManager.CurrentSave.SaveHeroData(hero);
         return true;
     }
 
     public bool RemoveEquipmentFromInventory(Equipment equip)
     {
         equipmentInventory.Remove(equip);
+        SaveManager.CurrentSave.RemoveEquipmentData(equip);
         return true;
     }
 
     public bool RemoveArchetypeFromInventory(ArchetypeItem archetype)
     {
         archetypeInventory.Remove(archetype);
+        SaveManager.CurrentSave.RemoveArchetypeItemData(archetype);
         return true;
     }
 
     public bool RemoveAbilityFromInventory(AbilityCoreItem newAbility)
     {
         abilityStorageInventory.Remove(newAbility);
+        SaveManager.CurrentSave.RemoveAbilityCoreData(newAbility);
         return true;
     }
 
     public bool RemoveHeroFromList(HeroData hero)
     {
         heroList.Remove(hero);
+        SaveManager.CurrentSave.RemoveHeroData(hero);
         return true;
     }
 
@@ -178,6 +186,8 @@ public class PlayerStats
             ExpStock = 0;
         if (ExpStock > maxExpStock)
             ExpStock = maxExpStock;
+
+        SaveManager.CurrentSave.SavePlayerData();
     }
 
     public void ModifyItemFragments(int value)
@@ -187,6 +197,8 @@ public class PlayerStats
             ItemFragments = 0;
         if (ItemFragments > maxItemFragments)
             ItemFragments = maxItemFragments;
+
+        SaveManager.CurrentSave.SavePlayerData();
     }
 
     public void SetItemFragments(int value)
@@ -202,6 +214,8 @@ public class PlayerStats
             ArchetypeFragments = 0;
         if (ArchetypeFragments > maxArchetypeFragments)
             ArchetypeFragments = maxArchetypeFragments;
+
+        SaveManager.CurrentSave.SavePlayerData();
     }
 
     public void SetArchetypeFragments(int value)
@@ -252,6 +266,8 @@ public class PlayerStats
                 }
             }
         }
+
+        SaveManager.CurrentSave.SavePlayerData();
     }
 
     public bool IsStageUnlocked(string stageId)
@@ -281,8 +297,6 @@ public class PlayerStats
 
 public enum ConsumableType
 {
-    LOW_TIER_UPGRADER,
-    RARE_TO_EPIC,
     AFFIX_REROLLER,
     AFFIX_CRAFTER
 }
