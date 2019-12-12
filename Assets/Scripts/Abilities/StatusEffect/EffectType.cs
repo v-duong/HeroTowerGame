@@ -44,4 +44,5 @@ public enum EffectApplicationFlags
     CANNOT_PACIFY = 0b100000,
     CANNOT_RADIATION = 0b1000000,
     CANNOT_POISON = 0b10000000,
+    IS_RETALIATION = 0b100000000,
 }

@@ -34,6 +34,9 @@ public class ArchetypeBase
     public readonly int spawnWeight;
 
     [JsonProperty]
+    public readonly string soulAbilityId;
+
+    [JsonProperty]
     public readonly List<ArchetypeSkillNode> nodeList;
 
     public string LocalizedName => LocalizationManager.Instance.GetLocalizationText_ArchetypeName(idName);
@@ -56,5 +59,10 @@ public class ArchetypeBase
             }
         }
         return ret;
+    }
+
+    public AbilityBase GetSoulAbility()
+    {
+        return ResourceManager.Instance.GetAbilityBase(soulAbilityId);
     }
 }

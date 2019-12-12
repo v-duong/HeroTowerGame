@@ -40,6 +40,10 @@ public class ActorAbility
     public bool AlternatesAttacks { get; private set; }
     public bool DualWielding { get; private set; }
     public EffectType BuffType { get; private set; }
+    public float soulCooldown;
+    public float currentSoulCooldownTimer;
+    public float soulCost;
+
     private AuraBuffBonusContainer auraBuffBonus;
 
     public int targetLayer;
@@ -100,6 +104,10 @@ public class ActorAbility
         TargetRange = abilityBase.targetRange;
         targetLayer = layer;
         attackWithMainHand = true;
+
+        soulCooldown = abilityBase.cooldownTime;
+        soulCost = abilityBase.soulCost;
+
         if (abilityBase.abilityType == AbilityType.ATTACK)
             AlternatesAttacks = !abilityBase.useBothWeaponsForDual;
         else
@@ -512,10 +520,12 @@ public class ActorAbility
 
     protected void UpdateShotParameters(ActorData data, IEnumerable<GroupType> tags)
     {
+        // Attack AoE
         if (abilityBase.abilityType == AbilityType.ATTACK && abilityBase.useWeaponRangeForAOE)
         {
             if (data is HeroData hero)
             {
+                //Get Weapon, use unarmed (1f) otherwise
                 if (hero.GetEquipmentInSlot(EquipSlotType.WEAPON) is Weapon weapon)
                     AreaRadius = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.AREA_RADIUS, BonusType.MELEE_ATTACK_RANGE).CalculateStat(weapon.WeaponRange);
                 else
@@ -526,8 +536,10 @@ public class ActorAbility
                 AreaRadius = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.AREA_RADIUS, BonusType.MELEE_ATTACK_RANGE).CalculateStat(TargetRange);
             }
         }
-        else
+        else  // Spell AoE
+        {
             AreaRadius = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.AREA_RADIUS).CalculateStat(abilityBase.areaRadius);
+        }
 
         AreaLength = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.AREA_RADIUS).CalculateStat(abilityBase.areaLength);
         AreaScaling = AreaRadius / abilityBase.areaRadius;
@@ -596,6 +608,11 @@ public class ActorAbility
             StatBonus speedBonus = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.CAST_SPEED, BonusType.GLOBAL_ABILITY_SPEED);
             StatBonus rangeBonus = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.SPELL_RANGE);
 
+            if (abilityBase.abilityShotType == AbilityShotType.NOVA_AOE)
+            {
+                data.GetMultiStatBonus(rangeBonus, abilityBonuses, tags, BonusType.AREA_RADIUS);
+            }
+
             MainCriticalChance = critBonus.CalculateStat(abilityBase.baseCritical);
             MainCriticalDamage = 1f + (critDamageBonus.CalculateStat(50) / 100f);
             Cooldown = 1f / speedBonus.CalculateStat(abilityBase.attacksPerSec);
@@ -610,6 +627,9 @@ public class ActorAbility
                 data.GetMultiStatBonus(rangeBonus, abilityBonuses, tags, BonusType.MELEE_ATTACK_RANGE);
             if (abilityBase.GetGroupTypes().Contains(GroupType.RANGED_ATTACK))
                 data.GetMultiStatBonus(rangeBonus, abilityBonuses, tags, BonusType.RANGED_ATTACK_RANGE);
+
+            if (abilityBase.useWeaponRangeForAOE && abilityBase.useWeaponRangeForTargeting)
+                data.GetMultiStatBonus(rangeBonus, abilityBonuses, tags, BonusType.AREA_RADIUS);
 
             if (data.GetEquipmentInSlot(EquipSlotType.WEAPON) is Weapon weapon)
             {

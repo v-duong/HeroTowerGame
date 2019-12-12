@@ -5,42 +5,42 @@ using UnityEngine.UI;
 public class XpStockPanel : MonoBehaviour
 {
     [SerializeField]
-    private HeroData selectedHero;
+    private HeroData selectedHero = null;
 
     [SerializeField]
-    private Button heroSlot;
+    private Button heroSlot = null;
 
     [SerializeField]
-    private Button confirmButton;
+    private Button confirmButton = null;
 
     [SerializeField]
-    private Button plusOneButton;
+    private Button plusOneButton = null;
     [SerializeField]
-    private Button minusOneButton;
+    private Button minusOneButton = null;
 
     [SerializeField]
-    private Slider levelSlider;
+    private Slider levelSlider = null;
 
     [SerializeField]
-    private XpStockStatLabel levelStatLine;
+    private XpStockStatLabel levelStatLine = null;
 
     [SerializeField]
-    private XpStockStatLabel healthStatLine;
+    private XpStockStatLabel healthStatLine = null;
 
     [SerializeField]
-    private XpStockStatLabel strStatLine;
+    private XpStockStatLabel strStatLine = null;
 
     [SerializeField]
-    private XpStockStatLabel intStatLine;
+    private XpStockStatLabel intStatLine = null;
 
     [SerializeField]
-    private XpStockStatLabel agiStatLine;
+    private XpStockStatLabel agiStatLine = null;
 
     [SerializeField]
-    private XpStockStatLabel willStatLine;
+    private XpStockStatLabel willStatLine = null;
 
     [SerializeField]
-    private XpStockStatLabel stockLine;
+    private XpStockStatLabel stockLine = null;
 
     private int selectedLevel;
 

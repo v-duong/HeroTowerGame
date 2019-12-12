@@ -27,6 +27,7 @@ public abstract partial class ActorData
     public float BaseSoulPoints { get; protected set; }
     public int MaximumSoulPoints { get; set; }
     public float CurrentSoulPoints { get; set; }
+    public float SoulRegenRate { get; set; }
 
     public int BaseManaShield { get; protected set; }
     public int MaximumManaShield { get; protected set; }
@@ -215,6 +216,8 @@ public abstract partial class ActorData
         float percentage = CurrentSoulPoints / MaximumSoulPoints;
         MaximumSoulPoints = (int)Math.Max(GetMultiStatBonus(GroupTypes, BonusType.MAX_SOULPOINTS).CalculateStat(BaseSoulPoints), 0);
         CurrentSoulPoints = MaximumSoulPoints * percentage;
+        float percentSoulRegen = GetMultiStatBonus(GroupTypes, BonusType.PERCENT_SOULPOINT_REGEN).CalculateStat(3f) / 100f;
+        SoulRegenRate = GetMultiStatBonus(GroupTypes, BonusType.SOULPOINT_REGEN).CalculateStat(percentSoulRegen * MaximumSoulPoints);
     }
 
     protected void ApplyResistanceBonuses()

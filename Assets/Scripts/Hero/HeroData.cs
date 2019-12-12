@@ -18,6 +18,8 @@ public class HeroData : ActorData
     public int ArchetypePoints { get; private set; }
     public int RebirthBonus { get; private set; }
 
+    public int killCount;
+
     //private Dictionary<BonusType, StatBonus> archetypeStatBonuses;
     private Dictionary<BonusType, StatBonus> attributeStatBonuses;
 
@@ -56,6 +58,7 @@ public class HeroData : ActorData
         Level = heroSaveData.level;
         ArchetypePoints = (int)(Level * 1.2f);
         Experience = heroSaveData.experience;
+        killCount = heroSaveData.killCount;
 
         BaseHealth = heroSaveData.baseHealth;
         BaseSoulPoints = heroSaveData.baseSoulPoints;
@@ -63,6 +66,7 @@ public class HeroData : ActorData
         BaseIntelligence = heroSaveData.baseIntelligence;
         BaseAgility = heroSaveData.baseAgility;
         BaseWill = heroSaveData.baseWill;
+        
 
         archetypeList[0] = new HeroArchetypeData(heroSaveData.primaryArchetypeData, this);
 
@@ -92,6 +96,12 @@ public class HeroData : ActorData
         {
             var slotData = heroSaveData.secondAbilitySlot;
             FindAndEquipAbility(slotData.abilityId, slotData.sourceId, slotData.sourceType, 1);
+        }
+
+        if (heroSaveData.soulAbilitySlot != null)
+        {
+            var slotData = heroSaveData.soulAbilitySlot;
+            FindAndEquipAbility(slotData.abilityId, slotData.sourceId, slotData.sourceType, 2);
         }
 
         UpdatesAreDeferred = false;
@@ -148,7 +158,7 @@ public class HeroData : ActorData
         //archetypeStatBonuses = new Dictionary<BonusType, StatBonus>();
         archetypeStatBonuses = new Dictionary<BonusType, StatBonusCollection>();
         attributeStatBonuses = new Dictionary<BonusType, StatBonus>();
-        abilitySlotList = new List<AbilitySlot>() { new AbilitySlot(0), new AbilitySlot(1) };
+        abilitySlotList = new List<AbilitySlot>() { new AbilitySlot(0), new AbilitySlot(1), new AbilitySlot(2) };
     }
 
     public static HeroData CreateNewHero(string name, ArchetypeBase primaryArchetype, ArchetypeBase subArchetype = null)

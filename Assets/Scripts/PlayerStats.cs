@@ -142,7 +142,7 @@ public class PlayerStats
         return true;
     }
 
-    public bool AddHeroToList(HeroData hero)
+    public bool AddHeroToList(HeroData hero, bool saveData = true)
     {
         if (heroList.Contains(hero))
             return false;
@@ -250,7 +250,7 @@ public class PlayerStats
             stageClearInfo.Add(stageId, 0);
         stageClearInfo[stageId]++;
 
-        if (stageClearInfo[stageId] == 1)
+        if (stageClearInfo[stageId] > 0)
         {
             StageInfoBase stage = ResourceManager.Instance.GetStageInfo(stageId);
             StageInfoBase unlockedStage = ResourceManager.Instance.GetStageInfo(stage.requiredToUnlock);
@@ -260,7 +260,7 @@ public class PlayerStats
 
             if (unlockedStage.act != stage.act)
             {
-                if (!worldUnlockInfo.ContainsKey(unlockedStage.act))
+                if (!worldUnlockInfo.ContainsKey(unlockedStage.act) || !worldUnlockInfo[unlockedStage.act])
                 {
                     worldUnlockInfo.Add(unlockedStage.act, true);
                 }

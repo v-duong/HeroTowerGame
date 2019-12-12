@@ -69,6 +69,8 @@ public class AbilityExtractPanel : MonoBehaviour
         {
             AddExtractSlot(ability);
         }
+
+        AddExtractSlot(selectedArchetypeItem.Base.GetSoulAbility());
     }
 
     private ExtractableAbilitySlot AddExtractSlot(AbilityBase ability)

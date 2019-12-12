@@ -13,6 +13,8 @@ public class BattleCharInfoPanel : MonoBehaviour
     public TextMeshProUGUI infoText;
     public TextMeshProUGUI targetText;
     public TextMeshProUGUI statusText;
+    public Button soulAbilityButton;
+    public Image soulAbilityImageFill;
 
     public Button unsummonButton;
     public Button movementButton;
@@ -55,6 +57,16 @@ public class BattleCharInfoPanel : MonoBehaviour
                 unsummonButton.interactable = false;
             else
                 unsummonButton.interactable = true;
+
+            ActorAbility soulAbility = hero.GetSoulAbility();
+
+            if (soulAbility != null)
+            {
+                if (soulAbility.currentSoulCooldownTimer > 0)
+                    soulAbilityImageFill.fillAmount = soulAbility.currentSoulCooldownTimer / soulAbility.soulCooldown;
+                else
+                    soulAbilityImageFill.fillAmount = 0;
+            }
         }
     }
 
@@ -71,6 +83,8 @@ public class BattleCharInfoPanel : MonoBehaviour
                 targetText.text = LocalizationManager.Instance.GetLocalizationText("primaryTargetingType." + actor.targetingPriority.ToString());
                 confirmUnsummon = false;
                 SetUnsummonButtonText();
+                if (actor is HeroActor hero)
+                    soulAbilityButton.GetComponentInChildren<TextMeshProUGUI>().text = hero.GetSoulAbility().abilityBase.LocalizedName;
             }
             else
             {
@@ -151,5 +165,18 @@ public class BattleCharInfoPanel : MonoBehaviour
         }
 
         targetText.text = LocalizationManager.Instance.GetLocalizationText("primaryTargetingType." + actor.targetingPriority.ToString());
+    }
+
+    public void SoulAbilityOnClick()
+    {
+        if (actor is HeroActor hero)
+        {
+            ActorAbility soulAbility = hero.GetSoulAbility();
+
+            if (soulAbility != null && soulAbility.currentSoulCooldownTimer <= 0 && hero.Data.CurrentSoulPoints >= soulAbility.soulCost)
+            {
+                soulAbility.currentSoulCooldownTimer = soulAbility.soulCooldown;
+            }
+        }
     }
 }

@@ -100,6 +100,7 @@ public class BattleManager : MonoBehaviour
             SpawnWarning spawnWarning = Instantiate(spawnWarningPrefab, StageManager.Instance.WorldCanvas.transform);
 
             spawnWarning.transform.position = s.warningLocation.position;
+            spawnWarning.gameObject.SetActive(false);
             spawnWarnings.Add(spawnWarning);
         }
 

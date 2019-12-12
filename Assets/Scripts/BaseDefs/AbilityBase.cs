@@ -62,6 +62,14 @@ public class AbilityBase
     public readonly float weaponMultiplierScaling;
 
     [JsonProperty]
+    public readonly bool isSoulAbility;
+    [JsonProperty]
+    public readonly float soulCost;
+
+    [JsonProperty]
+    public readonly float cooldownTime;
+
+    [JsonProperty]
     public readonly Dictionary<ElementType, AbilityDamageBase> damageLevels;
 
     [JsonProperty]

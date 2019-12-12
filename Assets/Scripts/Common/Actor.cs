@@ -408,6 +408,9 @@ public abstract class Actor : MonoBehaviour
     {
         float total = 0;
 
+        if (Data.IsDead)
+            return;
+
         if (Data.IsDead && isHit)
             return;
 
@@ -512,6 +515,9 @@ public abstract class Actor : MonoBehaviour
         {
             if (Data.IsDead)
             {
+                if (onHitData.SourceActor is HeroActor hero)
+                    hero.Data.killCount++;
+
                 onHitData.ApplyTriggerEffects(TriggerType.ON_KILL, this);
 
                 if (isHit)
@@ -521,12 +527,19 @@ public abstract class Actor : MonoBehaviour
                 Data.OnHitData.ApplyTriggerEffects(TriggerType.WHEN_HIT_BY, onHitData.SourceActor);
         }
 
-        if (isHit)
+        if (isHit || sourceType == EffectType.RETALIATION_DAMAGE)
         {
             FloatingDamageText damageText = Instantiate(ResourceManager.Instance.DamageTextPrefab, StageManager.Instance.WorldCanvas.transform);
             damageText.transform.position = this.transform.position;
-            damageText.SetDamageText(actualDamageTaken);
 
+            if (sourceType == EffectType.RETALIATION_DAMAGE)
+                damageText.SetDamageText(actualDamageTaken, Color.gray);
+            else
+                damageText.SetDamageText(actualDamageTaken, Color.white);
+        }
+
+        if (isHit)
+        {
             ApplyAfterHitEffects(damageTaken, onHitData, restrictionFlags);
         }
     }

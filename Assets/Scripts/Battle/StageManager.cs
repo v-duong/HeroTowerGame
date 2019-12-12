@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using System.Linq;
+using UnityEngine;
 using UnityEngine.Tilemaps;
 
 public class StageManager : MonoBehaviour
@@ -8,23 +10,27 @@ public class StageManager : MonoBehaviour
     public Bounds stageBounds;
 
     private BattleManager _battleManager;
-    private Tilemap _pathTilemap;
+    private List<Tilemap> _pathTilemaps = new List<Tilemap>();
     private Tilemap _displayMap;
     private GameObject _worldCanvas;
     private HighlightMap _highlightMap;
     private Tilemap _obstacleMap;
 
-    public Tilemap PathTilemap
+    public List<Tilemap> PathTilemap
     {
         get
         {
-            if (_pathTilemap == null)
+            if (_pathTilemaps.Count ==0 || (_pathTilemaps.Count > 0 && _pathTilemaps[0] == null))
             {
-                _pathTilemap = GameObject.FindGameObjectWithTag("PathMap").GetComponent<Tilemap>();
+                _pathTilemaps.Clear();
+                GameObject.FindGameObjectsWithTag("PathMap").ToList().ForEach(x => _pathTilemaps.Add(x.GetComponent<Tilemap>()));
+                if (_pathTilemaps.Count == 0)
+                    _pathTilemaps.Add(GameObject.FindGameObjectWithTag("DisplayMap").GetComponent<Tilemap>());
             }
-            return _pathTilemap;
+            return _pathTilemaps;
         }
     }
+
     public Tilemap ObstacleMap
     {
         get

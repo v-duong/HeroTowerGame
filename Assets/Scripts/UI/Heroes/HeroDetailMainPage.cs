@@ -19,6 +19,9 @@ public class HeroDetailMainPage : MonoBehaviour, IUpdatablePanel
     private TextMeshProUGUI apText;
 
     [SerializeField]
+    private TextMeshProUGUI killText;
+
+    [SerializeField]
     private Image primaryArchetypeHeader;
 
     [SerializeField]
@@ -28,13 +31,19 @@ public class HeroDetailMainPage : MonoBehaviour, IUpdatablePanel
     private Image xpBarFill;
 
     [SerializeField]
-    private ScrollRect abilityScrollRect;
-
-    [SerializeField]
-    private HeroAbilityScrollWindow abilityWindow;
-
-    [SerializeField]
     private HeroStatBox healthBox;
+
+    [SerializeField]
+    private HeroStatBox healthRegenBox;
+
+    [SerializeField]
+    private HeroStatBox soulBox;
+
+    [SerializeField]
+    private HeroStatBox soulRegenBox;
+
+    [SerializeField]
+    private HeroStatBox shieldRegenBox;
 
     [SerializeField]
     private List<HeroStatBox> attributeBoxes;
@@ -44,12 +53,6 @@ public class HeroDetailMainPage : MonoBehaviour, IUpdatablePanel
 
     [SerializeField]
     private List<HeroStatBox> resistanceBoxes;
-
-    [SerializeField]
-    private HeroUIAbilitySlot primaryAbility;
-
-    [SerializeField]
-    private HeroUIAbilitySlot secondaryAbility;
 
     private HeroData hero;
     public Button lockButton;
@@ -101,9 +104,13 @@ public class HeroDetailMainPage : MonoBehaviour, IUpdatablePanel
         }
         apText.text = "AP <b>" + hero.ArchetypePoints + "</b>";
 
-        healthBox.statText.text = hero.MaximumHealth.ToString("N0");
+        killText.text = "Kills <b>" + hero.killCount.ToString("N0") + "</b>";
 
-        //infoText.text += "Soul Points: " + hero.MaximumSoulPoints + "\n\n";
+        healthBox.statText.text = hero.MaximumHealth.ToString("N0");
+        healthRegenBox.statText.text = hero.HealthRegenRate.ToString("N1") + "/s";
+
+        soulBox.statText.text = hero.MaximumSoulPoints.ToString("N0");
+        soulRegenBox.statText.text = hero.SoulRegenRate.ToString("N1") + "/s";
 
         attributeBoxes[0].statText.text = hero.Strength.ToString("N0");
         attributeBoxes[1].statText.text = hero.Intelligence.ToString("N0");
@@ -127,86 +134,9 @@ public class HeroDetailMainPage : MonoBehaviour, IUpdatablePanel
             }
         }
 
-        if (hero.GetAbilityFromSlot(0) != null)
-        {
-            ActorAbility firstSlotAbility = hero.GetAbilityFromSlot(0);
-            primaryAbility.infoText.text = GetAbilityDetailString(firstSlotAbility, false);
-            primaryAbility.ability = firstSlotAbility.abilityBase;
-            primaryAbility.CommonUpdate();
-        }
-        else
-        {
-            primaryAbility.nameText.text = "No Ability";
-            primaryAbility.infoText.text = "";
-            primaryAbility.targetText.text = "";
-            primaryAbility.abilityText.text = "";
-        }
-        if (hero.GetAbilityFromSlot(1) != null)
-        {
-            ActorAbility secondSlotAbility = hero.GetAbilityFromSlot(1);
-            secondaryAbility.infoText.text = "";
-            if (secondSlotAbility.abilityBase.abilityType != AbilityType.AURA && secondSlotAbility.abilityBase.abilityType != AbilityType.SELF_BUFF)
-                secondaryAbility.infoText.text += "2nd Slot Penalty\n<size=90%>x0.75 Ability Speed, x0.66 Damage</size>\n";
-            secondaryAbility.infoText.text += GetAbilityDetailString(secondSlotAbility, false);
-            secondaryAbility.ability = secondSlotAbility.abilityBase;
-            secondaryAbility.CommonUpdate();
-        }
-        else
-        {
-            secondaryAbility.nameText.text = "No Ability";
-            secondaryAbility.infoText.text = "";
-            secondaryAbility.targetText.text = "";
-            secondaryAbility.abilityText.text = "";
-        }
     }
 
-    private string GetAbilityDetailString(ActorAbility ability, bool shortForm)
-    {
-        string s = "";
-        if (ability.IsUsable)
-        {
-            if (ability.abilityBase.abilityType == AbilityType.AURA || ability.abilityBase.abilityType == AbilityType.SELF_BUFF)
-            {
-                s += ability.GetAuraBuffString();
-            }
-            else
-            {
-                float dps;
-                if (ability.DualWielding && ability.AlternatesAttacks)
-                    dps = (ability.GetApproxDPS(false) + ability.GetApproxDPS(true)) / 2f;
-                else
-                    dps = ability.GetApproxDPS(false);
-
-                s += string.Format("Approx. DPS: <b>{0:n1}</b>\n", dps);
-
-                if (ability.abilityBase.abilityType != AbilityType.AURA && ability.abilityBase.abilityType != AbilityType.SELF_BUFF)
-                {
-                    if (ability.abilityBase.abilityType == AbilityType.ATTACK)
-                        s += string.Format("Attack Rate: <b>{0:F2}/s</b>\n", 1f / ability.Cooldown);
-                    else
-                        s += string.Format("Cast Rate: <b>{0:F2}/s</b>\n", 1f / ability.Cooldown);
-
-                    if (!shortForm)
-                    {
-                        if (ability.abilityBase.abilityType == AbilityType.ATTACK)
-                            s += "Main Hand\n";
-                        s += string.Format("Crit. Chance: <b>{0:F1}%</b>\nCrit. Damage: <b>x{1:F2}</b>\n", ability.MainCriticalChance, ability.MainCriticalDamage);
-                        s += LocalizationManager.Instance.GetLocalizationText_AbilityCalculatedDamage(ability.mainDamageBase);
-                        if (ability.DualWielding && ability.AlternatesAttacks)
-                        {
-                            s += string.Format("Off Hand\nCrit. Chance: <b>{0:F1}%</b>\nCrit. Damage: <b>x{1:F2}</b>\n", ability.OffhandCriticalChance, ability.OffhandCriticalDamage);
-                            s += LocalizationManager.Instance.GetLocalizationText_AbilityCalculatedDamage(ability.offhandDamageBase);
-                        }
-                    }
-                }
-            }
-        }
-        else
-        {
-            s += "Ability unusable with current weapon type\n";
-        }
-        return s;
-    }
+    
 
     public Color GetArchetypeStatColor(ArchetypeBase archetype)
     {
@@ -292,11 +222,7 @@ public class HeroDetailMainPage : MonoBehaviour, IUpdatablePanel
         }, null, null);
     }
 
-    public void ClickAbilitySlot(int slot)
-    {
-        HeroAbilityScrollWindow.slot = slot;
-        UIManager.Instance.OpenWindow(abilityScrollRect.gameObject, false);
-    }
+
 
     public void SetHeroLocked()
     {

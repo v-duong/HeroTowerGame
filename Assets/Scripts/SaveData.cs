@@ -339,6 +339,7 @@ public class SaveData
         heroSaveData.baseIntelligence = hero.BaseIntelligence;
         heroSaveData.baseAgility = hero.BaseAgility;
         heroSaveData.baseWill = hero.BaseWill;
+        heroSaveData.killCount = hero.killCount;
 
         foreach (EquipSlotType equipSlot in Enum.GetValues(typeof(EquipSlotType)))
         {
@@ -408,6 +409,17 @@ public class SaveData
         {
             heroSaveData.secondAbilitySlot = null;
         }
+
+        if (hero.GetAbilityFromSlot(2) != null)
+        {
+            if (heroSaveData.soulAbilitySlot == null)
+                heroSaveData.soulAbilitySlot = new HeroSaveData.HeroAbilitySlotSaveData();
+            hero.SaveAbilitySlotData(2, heroSaveData.soulAbilitySlot);
+        }
+        else
+        {
+            heroSaveData.soulAbilitySlot = null;
+        }
     }
 
     public void LoadHeroData()
@@ -421,7 +433,7 @@ public class SaveData
 
         foreach (HeroSaveData heroSaveData in heroList)
         {
-            GameManager.Instance.PlayerStats.AddHeroToList(new HeroData(heroSaveData));
+            GameManager.Instance.PlayerStats.AddHeroToList(new HeroData(heroSaveData), false);
             heroDict.Add(heroSaveData.id, heroSaveData);
         }
     }
@@ -439,6 +451,7 @@ public class SaveData
         public float baseIntelligence;
         public float baseAgility;
         public float baseWill;
+        public int killCount;
 
         public Guid[] equipList = new Guid[10];
 
@@ -447,6 +460,7 @@ public class SaveData
 
         public HeroAbilitySlotSaveData firstAbilitySlot;
         public HeroAbilitySlotSaveData secondAbilitySlot;
+        public HeroAbilitySlotSaveData soulAbilitySlot;
 
         [Serializable]
         public class HeroAbilitySlotSaveData

@@ -17,7 +17,7 @@ public class FloatingDamageText : MonoBehaviour
         if (durationLeft <= 0)
             Destroy(this.gameObject);
 
-        text.color = new Color(1, 1, 1, durationLeft / (TEXT_DURATION / 2));
+        text.color = new Color(text.color.r, text.color.g, text.color.b, durationLeft / (TEXT_DURATION / 2));
         text.outlineColor = new Color(0, 0, 0, durationLeft / (TEXT_DURATION / 2));
 
         Vector3 pos = transform.position;
@@ -26,8 +26,9 @@ public class FloatingDamageText : MonoBehaviour
         transform.position = pos;
     }
 
-    public void SetDamageText(float damage)
+    public void SetDamageText(float damage, Color color)
     {
         text.text = damage.ToString("N0");
+        text.color = color;
     }
 }

@@ -61,6 +61,7 @@ public class HeroDetailWindow : MonoBehaviour
                 detailMainPage.gameObject.SetActive(true);
                 equipmentPage.gameObject.SetActive(false);
                 bonusPage.gameObject.SetActive(false);
+                abilityPage.gameObject.SetActive(false);
                 break;
 
             case 1:
@@ -68,13 +69,22 @@ public class HeroDetailWindow : MonoBehaviour
                 detailMainPage.gameObject.SetActive(false);
                 equipmentPage.gameObject.SetActive(true);
                 bonusPage.gameObject.SetActive(false);
+                abilityPage.gameObject.SetActive(false);
                 break;
 
             case 2:
+                currentPanel = abilityPage;
+                detailMainPage.gameObject.SetActive(false);
+                equipmentPage.gameObject.SetActive(false);
+                bonusPage.gameObject.SetActive(false);
+                abilityPage.gameObject.SetActive(true);
+                break;
+            case 3:
                 currentPanel = bonusPage;
                 detailMainPage.gameObject.SetActive(false);
                 equipmentPage.gameObject.SetActive(false);
                 bonusPage.gameObject.SetActive(true);
+                abilityPage.gameObject.SetActive(false);
                 break;
 
             default:
@@ -84,16 +94,6 @@ public class HeroDetailWindow : MonoBehaviour
 
     public void SetArchetypeCategoryNames(string primary, string secondary)
     {
-        categoryButtons[3].GetComponentInChildren<TextMeshProUGUI>().text = primary + " Tree";
-        if (!string.IsNullOrWhiteSpace(secondary))
-        {
-            categoryButtons[4].gameObject.SetActive(true);
-            categoryButtons[4].GetComponentInChildren<TextMeshProUGUI>().text = secondary + " Tree";
-        }
-        else
-        {
-            categoryButtons[4].gameObject.SetActive(false);
-        }
     }
 
     public void ItemEquip(Item item, EquipSlotType equipSlot)

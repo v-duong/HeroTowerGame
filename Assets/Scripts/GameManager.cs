@@ -217,6 +217,8 @@ public class GameManager : MonoBehaviour
         ParticleManager.Instance.InitializeHitEffectInstances();
         isInBattle = true;
 
+        yield return null;
+
         UIManager.Instance.LoadingScreen.endLoadingScreen = true;
     }
 
@@ -270,8 +272,10 @@ public class GameManager : MonoBehaviour
             inBattleHeroes.Add(data);
         }
 
+        /*
         foreach (AbilityBase abilityBase in abilitiesInUse)
             Debug.Log(abilityBase.idName);
+            */
 
         ResourceManager.Instance.LoadSpritesToBeUsed(abilitiesInUse);
     }

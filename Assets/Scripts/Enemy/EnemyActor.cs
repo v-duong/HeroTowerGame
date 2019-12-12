@@ -11,6 +11,8 @@ public class EnemyActor : Actor
 
     private bool skippedAngleChange = false;
     private Vector3 previousHeading;
+    private List<Vector3> currentPath;
+
 
     [SerializeField]
     public int spawnerOriginIndex;
@@ -27,6 +29,14 @@ public class EnemyActor : Actor
         private set
         {
             base.Data = value;
+        }
+    }
+
+    public List<Vector3> CurrentPath {
+        get {
+            if (currentPath == null)
+                currentPath = ParentSpawner.GetNodesToGoal(indexOfGoal);
+            return currentPath;
         }
     }
 
@@ -48,6 +58,7 @@ public class EnemyActor : Actor
     // Use this for initialization
     public void Init(int goalIndex)
     {
+        currentPath = null;
         indexOfGoal = goalIndex;
         NextMovementNode = 1;
         Data.CurrentHealth = Data.MaximumHealth;
@@ -60,11 +71,10 @@ public class EnemyActor : Actor
     protected override void Move()
     {
         var dt = Time.deltaTime;
-        var nodes = ParentSpawner.GetNodesToGoal(indexOfGoal);
-        if (nodes != null && NextMovementNode < nodes.Count)
+        if (CurrentPath != null && NextMovementNode < CurrentPath.Count)
         {
-            //float dist = Vector3.Distance(nodes[nextMovementNode], this.transform.position);
-            Vector3 destination = nodes[NextMovementNode] + rotatedOffset;
+            //float dist = Vector3.Distance(currentPath[nextMovementNode], this.transform.position);
+            Vector3 destination = CurrentPath[NextMovementNode] + rotatedOffset;
 
             transform.position = Vector3.MoveTowards(transform.position, destination, Data.movementSpeed * dt * actorTimeScale);
 
@@ -76,11 +86,11 @@ public class EnemyActor : Actor
                 CalculateRotatedOffset();
             }
 
-            if (NextMovementNode < nodes.Count)
+            if (NextMovementNode < CurrentPath.Count)
             {
-                distanceToNextNode = Vector3.SqrMagnitude(nodes[NextMovementNode] - transform.position);
+                distanceToNextNode = Vector3.SqrMagnitude(CurrentPath[NextMovementNode] - transform.position);
 
-                Vector3 nextDestination = nodes[NextMovementNode] + rotatedOffset;
+                Vector3 nextDestination = CurrentPath[NextMovementNode] + rotatedOffset;
 
                 float xDiff = nextDestination.x - transform.position.x;
 
@@ -122,7 +132,8 @@ public class EnemyActor : Actor
             {
                 if ((ability.abilityBase.abilityType == AbilityType.ATTACK || ability.abilityBase.abilityType == AbilityType.SPELL) && ability.targetList.Count > 0)
                 {
-                    if (ability.targetList.FindAll(x => Vector3.Distance(transform.position, x.transform.position) <= ability.TargetRange).Count > 0)
+                    float adjustedRange = ability.TargetRange * this.transform.localScale.x;
+                    if (ability.targetList.FindAll(x => Vector2.Distance(transform.position, x.transform.position) <= adjustedRange).Count > 0)
                     {
                         IsMoving = false;
                         return;
@@ -136,13 +147,12 @@ public class EnemyActor : Actor
 
     public void CalculateRotatedOffset()
     {
-        var nodes = ParentSpawner.GetNodesToGoal(indexOfGoal);
         Vector3 nextPos, heading;
         float angle;
-        if (NextMovementNode + 1 < nodes.Count)
+        if (NextMovementNode + 1 < CurrentPath.Count)
         {
-            nextPos = nodes[NextMovementNode + 1];
-            heading = nextPos - nodes[NextMovementNode];
+            nextPos = CurrentPath[NextMovementNode + 1];
+            heading = nextPos - CurrentPath[NextMovementNode];
             angle = Vector3.SignedAngle(previousHeading, heading.normalized, Vector3.forward);
             if (angle > 0 && !skippedAngleChange && positionOffset.x * positionOffset.y > 0 || angle < 0 && !skippedAngleChange && positionOffset.x * positionOffset.y < 0)
             {
@@ -263,13 +273,12 @@ public class EnemyActor : Actor
 
     public Vector3? GetMovementNode(int lookahead)
     {
-        var nodes = ParentSpawner.GetNodesToGoal(indexOfGoal);
         int index = NextMovementNode + lookahead;
-        if (index > nodes.Count - 1)
+        if (index > CurrentPath.Count - 1)
         {
             return null;
         }
-        return nodes[index];
+        return CurrentPath[index];
     }
 
     public override void Death()

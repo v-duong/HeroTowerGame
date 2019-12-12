@@ -25,6 +25,9 @@ public class ElectrocuteEffect : ActorEffect
 
     public override void OnExpire()
     {
+        if (timeElapsed == 0)
+            return;
+
         Collider2D[] hits;
 
         //HashSet<GroupType> tags = new HashSet<GroupType>(Source.Data.GroupTypes);

@@ -14,6 +14,8 @@ public class HeroAbilityScrollWindow : MonoBehaviour
     [NonSerialized]
     public static int slot;
 
+    public bool onlySoulAbilities = false;
+
     private void Start()
     {
         SetGridCellSize();
@@ -41,6 +43,11 @@ public class HeroAbilityScrollWindow : MonoBehaviour
 
     public void InitializeAbilitySlots()
     {
+        if (slot >= 2)
+            onlySoulAbilities = true;
+        else
+            onlySoulAbilities = false;
+
         HeroData hero = HeroDetailWindow.hero;
 
         foreach (HeroUIAbilitySlot slot in SlotsInUse)
@@ -53,18 +60,21 @@ public class HeroAbilityScrollWindow : MonoBehaviour
 
         foreach (var ability in hero.PrimaryArchetype.AvailableAbilityList)
         {
-            AddAbilitySlot(ability.abilityBase, hero.PrimaryArchetype, hero.GetAbilityLevel(ability.abilityBase));
+            if (ability.abilityBase.isSoulAbility == onlySoulAbilities)
+                AddAbilitySlot(ability.abilityBase, hero.PrimaryArchetype, hero.GetAbilityLevel(ability.abilityBase));
         }
         if (hero.SecondaryArchetype != null)
         {
             foreach (var ability in hero.SecondaryArchetype.AvailableAbilityList)
             {
-                AddAbilitySlot(ability.abilityBase, hero.SecondaryArchetype, hero.GetAbilityLevel(ability.abilityBase));
+                if (ability.abilityBase.isSoulAbility == onlySoulAbilities)
+                    AddAbilitySlot(ability.abilityBase, hero.SecondaryArchetype, hero.GetAbilityLevel(ability.abilityBase));
             }
         }
         foreach (AbilityCoreItem abilityItem in GameManager.Instance.PlayerStats.AbilityInventory)
         {
-            AddAbilitySlot(abilityItem.Base, abilityItem, hero.GetAbilityLevel(abilityItem.Base));
+            if (abilityItem.Base.isSoulAbility == onlySoulAbilities)
+                AddAbilitySlot(abilityItem.Base, abilityItem, hero.GetAbilityLevel(abilityItem.Base));
         }
     }
 

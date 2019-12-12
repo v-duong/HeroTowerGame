@@ -141,36 +141,39 @@ public static class Helpers
 
     public static void GetGlobalAndFlatDamageTypes(ElementType element, ICollection<GroupType> tags, HashSet<BonusType> min, HashSet<BonusType> max, HashSet<BonusType> multi)
     {
-        switch (element)
+        if (!tags.Contains(GroupType.RETALIATION))
         {
-            case ElementType.PHYSICAL:
-                min.Add(BonusType.GLOBAL_PHYSICAL_DAMAGE_MIN);
-                max.Add(BonusType.GLOBAL_PHYSICAL_DAMAGE_MAX);
-                break;
-            case ElementType.FIRE:
-                min.Add(BonusType.GLOBAL_FIRE_DAMAGE_MIN);
-                max.Add(BonusType.GLOBAL_FIRE_DAMAGE_MAX);
-                break;
-            case ElementType.COLD:
-                min.Add(BonusType.GLOBAL_COLD_DAMAGE_MIN);
-                max.Add(BonusType.GLOBAL_COLD_DAMAGE_MAX);
-                break;
-            case ElementType.LIGHTNING:
-                min.Add(BonusType.GLOBAL_LIGHTNING_DAMAGE_MIN);
-                max.Add(BonusType.GLOBAL_LIGHTNING_DAMAGE_MAX);
-                break;
-            case ElementType.EARTH:
-                min.Add(BonusType.GLOBAL_EARTH_DAMAGE_MIN);
-                max.Add(BonusType.GLOBAL_EARTH_DAMAGE_MAX);
-                break;
-            case ElementType.DIVINE:
-                min.Add(BonusType.GLOBAL_DIVINE_DAMAGE_MIN);
-                max.Add(BonusType.GLOBAL_DIVINE_DAMAGE_MAX);
-                break;
-            case ElementType.VOID:
-                min.Add(BonusType.GLOBAL_VOID_DAMAGE_MIN);
-                max.Add(BonusType.GLOBAL_VOID_DAMAGE_MAX);
-                break;
+            switch (element)
+            {
+                case ElementType.PHYSICAL:
+                    min.Add(BonusType.GLOBAL_PHYSICAL_DAMAGE_MIN);
+                    max.Add(BonusType.GLOBAL_PHYSICAL_DAMAGE_MAX);
+                    break;
+                case ElementType.FIRE:
+                    min.Add(BonusType.GLOBAL_FIRE_DAMAGE_MIN);
+                    max.Add(BonusType.GLOBAL_FIRE_DAMAGE_MAX);
+                    break;
+                case ElementType.COLD:
+                    min.Add(BonusType.GLOBAL_COLD_DAMAGE_MIN);
+                    max.Add(BonusType.GLOBAL_COLD_DAMAGE_MAX);
+                    break;
+                case ElementType.LIGHTNING:
+                    min.Add(BonusType.GLOBAL_LIGHTNING_DAMAGE_MIN);
+                    max.Add(BonusType.GLOBAL_LIGHTNING_DAMAGE_MAX);
+                    break;
+                case ElementType.EARTH:
+                    min.Add(BonusType.GLOBAL_EARTH_DAMAGE_MIN);
+                    max.Add(BonusType.GLOBAL_EARTH_DAMAGE_MAX);
+                    break;
+                case ElementType.DIVINE:
+                    min.Add(BonusType.GLOBAL_DIVINE_DAMAGE_MIN);
+                    max.Add(BonusType.GLOBAL_DIVINE_DAMAGE_MAX);
+                    break;
+                case ElementType.VOID:
+                    min.Add(BonusType.GLOBAL_VOID_DAMAGE_MIN);
+                    max.Add(BonusType.GLOBAL_VOID_DAMAGE_MAX);
+                    break;
+            }
         }
 
         multi.Add(BonusType.GLOBAL_DAMAGE);

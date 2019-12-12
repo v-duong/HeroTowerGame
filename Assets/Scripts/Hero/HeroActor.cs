@@ -11,6 +11,7 @@ public class HeroActor : Actor
     public bool isBeingRecalled;
     public Coroutine recallCoroutine;
     public float RecallTimer { get; private set; }
+    protected List<ActorAbility> soulAbilities = new List<ActorAbility>();
 
     public new HeroData Data
     {
@@ -24,6 +25,16 @@ public class HeroActor : Actor
         }
     }
 
+    protected override void Update()
+    {
+        foreach(ActorAbility soulAbility in soulAbilities)
+        {
+            if (soulAbility.currentSoulCooldownTimer > 0)
+                soulAbility.currentSoulCooldownTimer -= Time.deltaTime;
+        }
+        base.Update();
+    }
+
     public void Initialize(HeroData data)
     {
         Data = data;
@@ -33,6 +44,7 @@ public class HeroActor : Actor
         recallCoroutine = null;
         movementNodes = new List<Vector3>();
         targetingPriority = PrimaryTargetingType.FIRST;
+
         if (data.GetAbilityFromSlot(0) != null)
         {
             ActorAbility firstAbility = data.GetAbilityFromSlot(0);
@@ -43,6 +55,20 @@ public class HeroActor : Actor
             ActorAbility secondAbility = data.GetAbilityFromSlot(1);
             AddAbilityToList(secondAbility);
         }
+        if (data.GetAbilityFromSlot(2) != null)
+        {
+            ActorAbility soulAbility = data.GetAbilityFromSlot(2);
+            if (soulAbility.abilityBase.isSoulAbility)
+            {
+                soulAbility.SetAbilityOwner(this);
+                soulAbilities.Add(soulAbility);
+            }
+        }
+    }
+
+    public ActorAbility GetSoulAbility()
+    {
+        return Data.GetAbilityFromSlot(2);
     }
 
     public void ClearMovement()

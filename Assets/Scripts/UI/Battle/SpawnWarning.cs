@@ -35,7 +35,7 @@ public class SpawnWarning : MonoBehaviour
             else
             {
                 warningImage.color = yellowColor;
-                waveText.text = "Wave " + currentTimeInfo.waveNum;
+                waveText.text = "Wave " + (currentTimeInfo.waveNum+1);
             }
 
             timeLeft -= Time.deltaTime;
@@ -71,6 +71,7 @@ public class SpawnWarning : MonoBehaviour
     public void StartWarning()
     {
         timeQueue = timeQueue.OrderBy(x => x.overallTime).ToList();
+        if (timeQueue.Count > 0)
         this.gameObject.SetActive(true);
     }
 

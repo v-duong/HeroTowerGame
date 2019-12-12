@@ -103,6 +103,5 @@ public class HeroSlot : MonoBehaviour
         HeroDetailWindow.hero = hero;
         UIManager.Instance.OpenWindow(detailWindow.gameObject);
         detailWindow.SetCategorySelected(0);
-        detailWindow.SetArchetypeCategoryNames(hero.PrimaryArchetype.Base.LocalizedName, hero.SecondaryArchetype?.Base.LocalizedName);
     }
 }

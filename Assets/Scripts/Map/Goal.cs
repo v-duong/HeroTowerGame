@@ -8,6 +8,6 @@ public class Goal : MonoBehaviour
     // Use this for initialization
     private void Start()
     {
-        transform.position = Helpers.ReturnTilePosition(StageManager.Instance.PathTilemap, transform.position, -3);
+        transform.position = Helpers.ReturnTilePosition(StageManager.Instance.PathTilemap[0], transform.position, -3);
     }
 }

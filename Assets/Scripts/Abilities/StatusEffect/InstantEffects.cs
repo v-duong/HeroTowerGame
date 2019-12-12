@@ -10,7 +10,14 @@ public static class InstantEffects
     public static IEnumerator ApplyRetaliationDamageEffect(Actor target, Actor source, Dictionary<ElementType, MinMaxRange> damageDict)
     {
         yield return null;
-        target.ApplyDamage(source.ScaleSecondaryDamageValue(target, damageDict, RetaliationDamageTags), source.Data.OnHitData, isHit: false, false);
+        string s = "";
+        foreach(var x in damageDict)
+        {
+            if (x.Value.min  > 0 || x.Value.max > 0)
+            s += x.Key + " " + x.Value.min + "~" + x.Value.max +", ";
+        }
+        Debug.Log(s);
+        target.ApplyDamage(source.ScaleSecondaryDamageValue(target, damageDict, RetaliationDamageTags), source.Data.OnHitData, isHit: false, false, EffectType.RETALIATION_DAMAGE);
     }
 
     public static IEnumerator ApplyExplosionEffect(Actor target, Actor source, EffectType explosionType, LayerMask mask, float effectPower, ElementType element)

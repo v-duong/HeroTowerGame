@@ -81,6 +81,7 @@ public class ArchetypeDissolvePanel : MonoBehaviour
         textBox.text = "";
         GameManager.Instance.PlayerStats.ModifyArchetypeFragments(fragmentCount);
         selectedArchetypes.Clear();
+        UIManager.Instance.InvScrollContent.ResetMultiSelectList();
 
         SaveManager.Save();
 

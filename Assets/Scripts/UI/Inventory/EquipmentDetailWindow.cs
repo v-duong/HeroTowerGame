@@ -7,40 +7,40 @@ using UnityEngine.UI;
 public class EquipmentDetailWindow : MonoBehaviour
 {
     [SerializeField]
-    private TextMeshProUGUI nameText;
+    private TextMeshProUGUI nameText = null;
 
     [SerializeField]
-    private CraftingPanelAffixHeader innateHeader;
+    private CraftingPanelAffixHeader innateHeader = null;
 
     [SerializeField]
-    private CraftingPanelAffixHeader prefixHeader;
+    private CraftingPanelAffixHeader prefixHeader = null;
 
     [SerializeField]
-    private CraftingPanelAffixHeader suffixHeader;
+    private CraftingPanelAffixHeader suffixHeader = null;
 
     [SerializeField]
-    private RectTransform scrollParent;
+    private RectTransform scrollParent = null;
 
     [SerializeField]
-    private TextMeshProUGUI innateText;
+    private TextMeshProUGUI innateText = null;
 
     [SerializeField]
-    private TextMeshProUGUI prefixText;
+    private TextMeshProUGUI prefixText = null;
 
     [SerializeField]
-    private TextMeshProUGUI suffixText;
+    private TextMeshProUGUI suffixText = null;
 
     [SerializeField]
-    private TextMeshProUGUI topLineText;
+    private TextMeshProUGUI topLineText = null;
 
     [SerializeField]
-    private TextMeshProUGUI statsText;
+    private TextMeshProUGUI statsText = null;
 
     [SerializeField]
-    private TextMeshProUGUI damageText;
+    private TextMeshProUGUI damageText = null;
 
     [SerializeField]
-    public GameObject EquipButtonParent;
+    public GameObject EquipButtonParent = null;
 
     public Equipment equip;
 

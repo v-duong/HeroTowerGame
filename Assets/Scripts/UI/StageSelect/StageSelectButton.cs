@@ -1,4 +1,7 @@
-﻿using TMPro;
+﻿using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -17,7 +20,7 @@ public class StageSelectButton : MonoBehaviour
     {
         stageInfo = stageInfoBase;
         stageNum = stageInfoBase.stage;
-        nameText.text = "Stage " + stageInfo.stage;
+        nameText.text = "Stage "+ stageInfo.act + "-" + stageInfo.stage;
         levelText.text = "Lv. " + stageInfo.monsterLevel;
         waveText.text = "Waves: " + stageInfo.enemyWaves.Count;
         int clearCount = GameManager.Instance.PlayerStats.GetStageClearCount(stageInfo.idName);
@@ -46,6 +49,31 @@ public class StageSelectButton : MonoBehaviour
         else
         {
             stageBackgroundColor.color = new Color(0.6f, 0.6f, 0.6f);
+        }
+    }
+
+    public void OnClickItemButton()
+    {
+        if (stageInfo == null)
+            return;
+
+        PopUpWindow popUpWindow = UIManager.Instance.PopUpWindow;
+        popUpWindow.OpenTextWindow("");
+        popUpWindow.SetButtonValues(null, null, "Close", delegate { UIManager.Instance.CloseCurrentWindow(); });
+        popUpWindow.textField.text = "";
+        popUpWindow.textField.fontSize = 18;
+        popUpWindow.textField.paragraphSpacing = 8;
+        popUpWindow.textField.alignment = TextAlignmentOptions.Left;
+
+        int sum = 0;
+
+        stageInfo.archetypeDropList.ForEach(x => sum += x.weight);
+
+        popUpWindow.textField.text += "<b>Archetype Drops</b>\n";
+        foreach (WeightBase archetypeDrop in stageInfo.archetypeDropList.OrderBy(x => x.weight).ToList())
+        {
+            string name = LocalizationManager.Instance.GetLocalizationText_ArchetypeName(archetypeDrop.idName);
+            popUpWindow.textField.text += ((float)archetypeDrop.weight/sum).ToString("p1") + "<indent=6em>" + name +"</indent>\n";
         }
     }
 }

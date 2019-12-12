@@ -63,6 +63,12 @@ public class HeroArchetypeData : IAbilitySource
         WillGrowth = Base.willGrowth;
         AllocatedPoints = 0;
         nodeLevels = new Dictionary<int, int>();
+
+        AbilityBase soulAbilityBase = Base.GetSoulAbility();
+        if (soulAbilityBase != null)
+            AvailableAbilityList.Add(soulAbilityBase);
+
+
         InitializeNodeLevels();
     }
 

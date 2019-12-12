@@ -24,6 +24,8 @@ public class InputManager : MonoBehaviour
 
     private Queue<TargetingCircle> targetingCirclesAvailable = new Queue<TargetingCircle>();
     private List<TargetingCircle> targetingCirclesInUse = new List<TargetingCircle>();
+    private TargetingCircle activeAbilityTargeting;
+
 
     public void SetSummoning(HeroActor actor, Action summonCallback)
     {
@@ -48,6 +50,12 @@ public class InputManager : MonoBehaviour
             TargetingCircle circle = Instantiate(ResourceManager.Instance.TargetingCirclePrefab);
             circle.gameObject.SetActive(false);
             targetingCirclesAvailable.Enqueue(circle);
+        }
+
+        if (activeAbilityTargeting == null)
+        {
+            activeAbilityTargeting = Instantiate(ResourceManager.Instance.TargetingCirclePrefab);
+            activeAbilityTargeting.gameObject.SetActive(false);
         }
     }
 
@@ -113,7 +121,7 @@ public class InputManager : MonoBehaviour
 
         var correctedPosition = Helpers.ReturnTilePosition(highlightTilemap, position, -3);
 
-        if (StageManager.Instance.BattleManager.activeHeroes.FindAll(x => x.transform.position == correctedPosition).Count > 0)
+        if (StageManager.Instance.BattleManager.activeHeroes.FindAll(x => Vector2.Distance(x.transform.position ,correctedPosition) < 0.2f).Count > 0)
             return false;
 
         return true;
@@ -218,6 +226,7 @@ public class InputManager : MonoBehaviour
         }
         else
         {
+
             if (Input.GetMouseButtonDown(0))
             {
                 OnMouseDownHandler();

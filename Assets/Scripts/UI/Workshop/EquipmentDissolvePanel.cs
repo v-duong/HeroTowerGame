@@ -100,6 +100,7 @@ public class EquipmentDissolvePanel : MonoBehaviour
         textBox.text = "";
         GameManager.Instance.PlayerStats.ModifyItemFragments(fragmentCount);
         selectedEquipment.Clear();
+        UIManager.Instance.InvScrollContent.ResetMultiSelectList();
 
         SaveManager.Save();
 
