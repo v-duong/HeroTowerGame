@@ -8,7 +8,7 @@ public class BerserkEffect : ActorEffect
     public int effectLevel;
     public float effectCooldown;
 
-    private List<Tuple<BonusType, ModifyType, float>> bonuses;
+    private List<TempEffectBonusContainer.StatusBonus> bonuses;
 
     public override bool StacksIncrementExistingEffect => true;
 
@@ -27,12 +27,12 @@ public class BerserkEffect : ActorEffect
         // 1.35x attack speed
         // 1.50x movement speed
         // +20% damage taken
-        bonuses = new List<Tuple<BonusType, ModifyType, float>>
+        bonuses = new List<TempEffectBonusContainer.StatusBonus>
             {
-                new Tuple<BonusType, ModifyType, float>(BonusType.GLOBAL_DAMAGE, ModifyType.MULTIPLY, 75f),
-                new Tuple<BonusType, ModifyType, float>(BonusType.GLOBAL_ATTACK_SPEED, ModifyType.MULTIPLY, 35f),
-                new Tuple<BonusType, ModifyType, float>(BonusType.MOVEMENT_SPEED, ModifyType.ADDITIVE, 50f),
-                new Tuple<BonusType, ModifyType, float>(BonusType.DAMAGE_TAKEN, ModifyType.ADDITIVE, 20f)
+                new TempEffectBonusContainer.StatusBonus(BonusType.GLOBAL_DAMAGE, ModifyType.MULTIPLY, 75f, 12f),
+                new TempEffectBonusContainer.StatusBonus(BonusType.GLOBAL_ATTACK_SPEED, ModifyType.MULTIPLY, 35f, 12f),
+                new TempEffectBonusContainer.StatusBonus(BonusType.MOVEMENT_SPEED, ModifyType.ADDITIVE, 50f, 12f),
+                new TempEffectBonusContainer.StatusBonus(BonusType.DAMAGE_TAKEN, ModifyType.ADDITIVE, 20f, 12f)
             };
     }
 

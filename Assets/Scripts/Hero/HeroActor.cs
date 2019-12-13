@@ -62,6 +62,7 @@ public class HeroActor : Actor
             {
                 soulAbility.SetAbilityOwner(this);
                 soulAbilities.Add(soulAbility);
+                soulAbility.currentSoulCooldownTimer = 0;
             }
         }
     }
@@ -141,7 +142,7 @@ public class HeroActor : Actor
 
     private void OnEnable()
     {
-        foreach (var x in instancedAbilitiesList)
+        foreach (ActorAbility x in instancedAbilitiesList)
         {
             x.StartFiring(this);
         }
@@ -149,7 +150,7 @@ public class HeroActor : Actor
 
     private void OnDisable()
     {
-        foreach (var x in instancedAbilitiesList)
+        foreach (ActorAbility x in instancedAbilitiesList)
         {
             x.StopFiring(this);
         }

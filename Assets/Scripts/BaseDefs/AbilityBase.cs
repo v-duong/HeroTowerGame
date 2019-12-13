@@ -70,6 +70,12 @@ public class AbilityBase
     public readonly float cooldownTime;
 
     [JsonProperty]
+    public readonly float soulAbilityDuration;
+
+    [JsonProperty]
+    public readonly bool useAreaAroundTarget;
+
+    [JsonProperty]
     public readonly Dictionary<ElementType, AbilityDamageBase> damageLevels;
 
     [JsonProperty]
@@ -167,6 +173,7 @@ public enum AbilityType
     SPELL,
     AURA,
     SELF_BUFF,
+    AREA_BUFF,
     NON_ABILITY
 }
 

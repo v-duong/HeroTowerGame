@@ -16,7 +16,6 @@ public static class InstantEffects
             if (x.Value.min  > 0 || x.Value.max > 0)
             s += x.Key + " " + x.Value.min + "~" + x.Value.max +", ";
         }
-        Debug.Log(s);
         target.ApplyDamage(source.ScaleSecondaryDamageValue(target, damageDict, RetaliationDamageTags), source.Data.OnHitData, isHit: false, false, EffectType.RETALIATION_DAMAGE);
     }
 

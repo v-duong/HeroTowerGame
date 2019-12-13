@@ -402,19 +402,6 @@ public class HeroData : ActorData
         }
     }
 
-    public void AddTriggeredEffect(TriggeredEffectBonusProperty triggeredEffect, TriggeredEffect effectInstance)
-    {
-        TriggeredEffects[triggeredEffect.triggerType].Add(effectInstance);
-    }
-
-    public void RemoveTriggeredEffect(TriggeredEffectBonusProperty triggeredEffect)
-    {
-        TriggeredEffect t;
-
-        t = TriggeredEffects[triggeredEffect.triggerType].Find(x => x.BaseEffect == triggeredEffect);
-        TriggeredEffects[triggeredEffect.triggerType].Remove(t);
-    }
-
     private void RemoveEquipmentBonuses(List<Affix> affixes)
     {
         foreach (Affix affix in affixes)

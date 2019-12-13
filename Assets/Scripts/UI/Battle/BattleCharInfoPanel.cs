@@ -1,4 +1,5 @@
-﻿using TMPro;
+﻿using System.Linq;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -15,6 +16,7 @@ public class BattleCharInfoPanel : MonoBehaviour
     public TextMeshProUGUI statusText;
     public Button soulAbilityButton;
     public Image soulAbilityImageFill;
+    public SoulAbilityPanel SoulAbilityPanel;
 
     public Button unsummonButton;
     public Button movementButton;
@@ -28,6 +30,7 @@ public class BattleCharInfoPanel : MonoBehaviour
             targetName = null;
             actor = null;
             infoText.text = "";
+            SoulAbilityPanel.UpdateTarget(null);
             return;
         }
         infoText.text = "Lv" + actor.Data.Level + " " + targetName + "\n";
@@ -44,6 +47,8 @@ public class BattleCharInfoPanel : MonoBehaviour
 
         if (actor is HeroActor hero)
         {
+            infoText.text += "\nSP: " + actor.Data.CurrentSoulPoints.ToString("F0") + "/" + actor.Data.MaximumSoulPoints;
+
             if (hero.isBeingRecalled)
             {
                 movementButton.interactable = false;
@@ -62,10 +67,21 @@ public class BattleCharInfoPanel : MonoBehaviour
 
             if (soulAbility != null)
             {
+                soulAbilityButton.interactable = true;
                 if (soulAbility.currentSoulCooldownTimer > 0)
+                {
+                    soulAbilityButton.interactable = false;
                     soulAbilityImageFill.fillAmount = soulAbility.currentSoulCooldownTimer / soulAbility.soulCooldown;
+                }
                 else
+                {
                     soulAbilityImageFill.fillAmount = 0;
+                }
+
+                if (hero.Data.CurrentSoulPoints < soulAbility.soulCost)
+                {
+                    soulAbilityButton.interactable = false;
+                }
             }
         }
     }
@@ -75,6 +91,7 @@ public class BattleCharInfoPanel : MonoBehaviour
         this.actor = actor;
         if (actor != null)
         {
+            SoulAbilityPanel.UpdateTarget(actor);
             this.gameObject.SetActive(true);
 
             if (actor.GetActorType() == ActorType.ALLY)
@@ -84,7 +101,18 @@ public class BattleCharInfoPanel : MonoBehaviour
                 confirmUnsummon = false;
                 SetUnsummonButtonText();
                 if (actor is HeroActor hero)
-                    soulAbilityButton.GetComponentInChildren<TextMeshProUGUI>().text = hero.GetSoulAbility().abilityBase.LocalizedName;
+                {
+                    var soulAbility = hero.GetSoulAbility();
+                    if (soulAbility != null && soulAbility.IsUsable)
+                    {
+                        soulAbilityButton.gameObject.SetActive(true);
+                        soulAbilityButton.GetComponentInChildren<TextMeshProUGUI>().text = soulAbility.abilityBase.LocalizedName + "  -" + soulAbility.soulCost + " SP";
+                    }
+                    else
+                    {
+                        soulAbilityButton.gameObject.SetActive(false);
+                    }
+                }
             }
             else
             {
@@ -95,6 +123,7 @@ public class BattleCharInfoPanel : MonoBehaviour
         }
         else
         {
+            SoulAbilityPanel.UpdateTarget(null);
             this.gameObject.SetActive(false);
         }
     }
@@ -175,7 +204,36 @@ public class BattleCharInfoPanel : MonoBehaviour
 
             if (soulAbility != null && soulAbility.currentSoulCooldownTimer <= 0 && hero.Data.CurrentSoulPoints >= soulAbility.soulCost)
             {
-                soulAbility.currentSoulCooldownTimer = soulAbility.soulCooldown;
+                switch (soulAbility.abilityBase.targetType)
+                {
+                    case AbilityTargetType.ALL:
+                        soulAbility.FireSoulAbility(hero, hero.transform.position, StageManager.Instance.BattleManager.activeHeroes.Cast<Actor>().ToList());
+                        return;
+
+                    case AbilityTargetType.SELF:
+                        soulAbility.FireSoulAbility(hero, hero.transform.position);
+                        return;
+
+                    default:
+                        break;
+                }
+
+                switch (soulAbility.abilityBase.abilityShotType)
+                {
+                    case AbilityShotType.HITSCAN_MULTI:
+                        soulAbility.FireSoulAbility(hero, hero.transform.position);
+                        return;
+
+                    case AbilityShotType.NOVA_AOE:
+                        soulAbility.FireSoulAbility(hero, hero.transform.position);
+                        return;
+
+                    case AbilityShotType.PROJECTILE_NOVA:
+                        soulAbility.FireSoulAbility(hero, hero.transform.position);
+                        return;
+                }
+
+                SoulAbilityPanel.ActivatePanel(soulAbility);
             }
         }
     }

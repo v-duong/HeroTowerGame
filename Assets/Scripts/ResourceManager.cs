@@ -346,14 +346,13 @@ public class ResourceManager : MonoBehaviour
 
     public AbilityParticleSystem GetAbilityParticleSystem(string abilityId)
     {
-        
+        if (string.IsNullOrEmpty(abilityId))
+            return null;
         GameObject targetPrefab = particles.LoadAsset(abilityId) as GameObject;
         if (targetPrefab == null)
             return null;
 
         GameObject abs = Instantiate(targetPrefab);
-
- 
 
         return abs.GetComponent<AbilityParticleSystem>();
     }

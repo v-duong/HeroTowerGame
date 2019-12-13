@@ -161,3 +161,13 @@ public abstract class ActorEffect
         return (ActorEffect)MemberwiseClone();
     }
 }
+
+public abstract class SourcedActorBuffEffect : ActorEffect
+{
+    public string BuffName;
+    public float BuffPower;
+
+    public SourcedActorBuffEffect(Actor target, Actor source) : base(target, source)
+    {
+    }
+}

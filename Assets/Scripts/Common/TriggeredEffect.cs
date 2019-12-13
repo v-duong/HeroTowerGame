@@ -82,16 +82,16 @@ public class TriggeredEffect
 
     public void ApplyBuffEffect(Actor target, Actor source, string buffName)
     {
-        List<StatBonusBuffEffect> buffs = target.GetBuffStatusEffect(buffName);
+        List<SourcedActorBuffEffect> buffs = target.GetBuffStatusEffect(buffName);
 
         if (buffs.Count > 0)
         {
             return;
         }
 
-        List<Tuple<BonusType, ModifyType, float>> bonuses = new List<Tuple<BonusType, ModifyType, float>>
+        List<TempEffectBonusContainer.StatusBonus> bonuses = new List<TempEffectBonusContainer.StatusBonus>
             {
-                new Tuple<BonusType, ModifyType, float>(BaseEffect.statBonusType, BaseEffect.statModifyType, Value)
+                new TempEffectBonusContainer.StatusBonus(BaseEffect.statBonusType, BaseEffect.statModifyType, Value, BaseEffect.effectDuration)
             };
 
         target.AddStatusEffect(new StatBonusBuffEffect(target, source, bonuses, BaseEffect.effectDuration, buffName, BaseEffect.effectType));

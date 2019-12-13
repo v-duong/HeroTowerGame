@@ -1,53 +1,57 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using System.Collections.Generic;
 
-public class StatBonusBuffEffect : ActorEffect
+public class StatBonusBuffEffect : SourcedActorBuffEffect
 {
-    public float BuffPower { get; protected set; }
-    public string BuffName { get; protected set; }
-
     public GroupType buffType;
 
     public override GroupType StatusTag => buffType;
 
-    protected List<Tuple<BonusType, ModifyType, float>> bonus;
+    protected List<TempEffectBonusContainer.StatusBonus> bonus;
 
-    public StatBonusBuffEffect(Actor target, Actor source, List<Tuple<BonusType,ModifyType,float>> bonuses, float duration, string buffName, EffectType effectType) : base(target, source)
+    public StatBonusBuffEffect(Actor target, Actor source, List<TempEffectBonusContainer.StatusBonus> bonuses, float duration, string buffName, EffectType effectType) : base(target, source)
     {
         this.effectType = effectType;
         this.duration = duration;
         BuffName = buffName;
         bonus = bonuses;
         BuffPower = 0;
-        foreach (Tuple<BonusType, ModifyType, float> tuple in bonus)
+        foreach (var tuple in bonus)
         {
-            BuffPower += tuple.Item3;
+            BuffPower += tuple.effectValue;
         }
+    }
+
+    public StatBonusBuffEffect(Actor target, Actor source, TempEffectBonusContainer.StatusBonus bonus, float duration, string buffName, EffectType effectType) : base(target, source)
+    {
+        this.effectType = effectType;
+        this.duration = duration;
+        BuffName = buffName;
+        this.bonus = new List<TempEffectBonusContainer.StatusBonus>
+        {
+            bonus
+        };
+        BuffPower = bonus.effectValue;
     }
 
     public override void OnApply()
     {
-        foreach (Tuple<BonusType, ModifyType, float> tuple in bonus)
+        foreach (var tuple in bonus)
         {
-            target.Data.AddTemporaryBonus(tuple.Item3, tuple.Item1, tuple.Item2, true);
+            target.Data.AddTemporaryBonus(tuple.effectValue, tuple.bonusType, tuple.modifyType, true);
         }
     }
 
     public override void OnExpire()
     {
-        foreach (Tuple<BonusType, ModifyType, float> tuple in bonus)
+        foreach (var tuple in bonus)
         {
-            target.Data.RemoveTemporaryBonus(tuple.Item3, tuple.Item1, tuple.Item2, true);
+            target.Data.RemoveTemporaryBonus(tuple.effectValue, tuple.bonusType, tuple.modifyType, true);
         }
-
     }
 
     public override void Update(float deltaTime)
     {
         DurationUpdate(deltaTime);
-
     }
 
     public override float GetEffectValue()

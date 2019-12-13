@@ -59,7 +59,10 @@ public class HeroAbilityPage : MonoBehaviour, IUpdatablePanel
                     dps = (buttonAbility.GetApproxDPS(false) + buttonAbility.GetApproxDPS(true)) / 2f;
                 else
                     dps = buttonAbility.GetApproxDPS(false);
-                button.infoText.text = buttonAbility.abilityBase.LocalizedName + "\nAppox. DPS: " + dps.ToString("N1");
+
+                button.infoText.text = buttonAbility.abilityBase.LocalizedName;
+                if (buttonAbility.abilityBase.abilityType < AbilityType.AURA && !buttonAbility.abilityBase.isSoulAbility)
+                    button.infoText.text += "\nDPS: " + dps.ToString("N1");
             }
             else
             {
@@ -68,7 +71,7 @@ public class HeroAbilityPage : MonoBehaviour, IUpdatablePanel
         }
 
         abilitySlot.nameText.text = "No Ability";
-        abilitySlot.infoText.text = "";
+        abilitySlot.infoText.text = "Click to select an ability";
         abilitySlot.targetText.text = "";
         abilitySlot.abilityText.text = "";
         mainText.text = "";
@@ -104,6 +107,16 @@ public class HeroAbilityPage : MonoBehaviour, IUpdatablePanel
             abilitySlot.ability = ability.abilityBase;
             abilitySlot.CommonUpdate();
             abilitySlot.infoText.text = GetAbilityDetailString(ability, false);
+
+            if (ability.abilityBase.abilityType != AbilityType.AURA && ability.abilityBase.abilityType != AbilityType.SELF_BUFF && ability.abilityBase.abilityType != AbilityType.AREA_BUFF)
+            {
+                mainText.text = GetMainHandText(ability);
+
+                if (ability.DualWielding && ability.AlternatesAttacks)
+                {
+                    offText.text = GetOffHandText(ability);
+                }
+            }
         }
     }
 

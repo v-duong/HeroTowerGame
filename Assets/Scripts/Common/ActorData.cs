@@ -216,7 +216,7 @@ public abstract partial class ActorData
         float percentage = CurrentSoulPoints / MaximumSoulPoints;
         MaximumSoulPoints = (int)Math.Max(GetMultiStatBonus(GroupTypes, BonusType.MAX_SOULPOINTS).CalculateStat(BaseSoulPoints), 0);
         CurrentSoulPoints = MaximumSoulPoints * percentage;
-        float percentSoulRegen = GetMultiStatBonus(GroupTypes, BonusType.PERCENT_SOULPOINT_REGEN).CalculateStat(3f) / 100f;
+        float percentSoulRegen = GetMultiStatBonus(GroupTypes, BonusType.PERCENT_SOULPOINT_REGEN).CalculateStat(2f) / 100f;
         SoulRegenRate = GetMultiStatBonus(GroupTypes, BonusType.SOULPOINT_REGEN).CalculateStat(percentSoulRegen * MaximumSoulPoints);
     }
 
@@ -317,5 +317,18 @@ public abstract partial class ActorData
             return (int)((Level - 1) / 2d);
         else
             return 50;
+    }
+
+    public void AddTriggeredEffect(TriggeredEffectBonusProperty triggeredEffect, TriggeredEffect effectInstance)
+    {
+        TriggeredEffects[triggeredEffect.triggerType].Add(effectInstance);
+    }
+
+    public void RemoveTriggeredEffect(TriggeredEffectBonusProperty triggeredEffect)
+    {
+        TriggeredEffect t;
+
+        t = TriggeredEffects[triggeredEffect.triggerType].Find(x => x.BaseEffect == triggeredEffect);
+        TriggeredEffects[triggeredEffect.triggerType].Remove(t);
     }
 }

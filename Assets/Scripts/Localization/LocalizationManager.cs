@@ -88,6 +88,21 @@ public class LocalizationManager : MonoBehaviour
         }
     }
 
+    public string GetLocalizationText(AbilityTargetType targetType)
+    {
+        string stringId = "targetType." + targetType.ToString();
+        if (commonLocalizationData.TryGetValue(stringId, out string value))
+        {
+            if (value == "")
+                return stringId;
+            return value;
+        }
+        else
+        {
+            return stringId;
+        }
+    }
+
     public string GetLocalizationText(EquipSlotType equipSlot)
     {
         return GetLocalizationText("slotType." + equipSlot.ToString());
@@ -352,7 +367,7 @@ public class LocalizationManager : MonoBehaviour
 
             default:
                 effectString = GetLocalizationText("effectType.bonusProp." + triggeredEffect.effectType);
-                effectString = effectString.Replace("{TARGET}", GetLocalizationText("targetType." + triggeredEffect.effectTargetType.ToString()));
+                effectString = effectString.Replace("{TARGET}", GetLocalizationText(triggeredEffect.effectTargetType));
                 effectString = effectString.Replace("{VALUE}", valueString);
 
                 if (triggeredEffect.effectType != EffectType.BUFF && triggeredEffect.effectType != EffectType.DEBUFF)

@@ -11,7 +11,8 @@ public abstract class Actor : MonoBehaviour
     public ActorData Data { get; protected set; }
     public float actorTimeScale = 1f;
     private readonly List<ActorEffect> statusEffects = new List<ActorEffect>();
-    private readonly List<StatBonusBuffEffect> buffEffects = new List<StatBonusBuffEffect>();
+    private readonly List<SourcedActorBuffEffect> buffEffects = new List<SourcedActorBuffEffect>();
+    private readonly List<TemporaryTriggerEffectBuff> temporaryTriggerEffectBuffs = new List<TemporaryTriggerEffectBuff>();
     protected UIHealthBar healthBar;
     protected List<ActorAbility> instancedAbilitiesList = new List<ActorAbility>();
     public int NextMovementNode { get; protected set; }
@@ -128,9 +129,15 @@ public abstract class Actor : MonoBehaviour
     {
         if (statusEffect.effectType == EffectType.BUFF || statusEffect.effectType == EffectType.DEBUFF)
         {
-            buffEffects.Add((StatBonusBuffEffect)statusEffect);
-            statusEffect.OnApply();
-            Data.UpdateActorData();
+            if (statusEffect is SourcedActorBuffEffect namedEffect)
+            {
+                buffEffects.Add(namedEffect);
+                statusEffect.OnApply();
+                Data.UpdateActorData();
+            } else
+            {
+                Debug.Log("Should not have buff type.");
+            }
         }
         else
         {
@@ -234,9 +241,9 @@ public abstract class Actor : MonoBehaviour
         buffEffects.Clear();
     }
 
-    public List<StatBonusBuffEffect> GetBuffStatusEffect(string statusName)
+    public List<SourcedActorBuffEffect> GetBuffStatusEffect(string statusName)
     {
-        List<StatBonusBuffEffect> buffs = buffEffects.FindAll(x => x.BuffName.Equals(statusName));
+        List<SourcedActorBuffEffect> buffs = buffEffects.FindAll(x => x.BuffName.Equals(statusName));
         return buffs;
     }
 
@@ -275,6 +282,8 @@ public abstract class Actor : MonoBehaviour
         return instancedAbilitiesList.AsReadOnly();
     }
 
+
+
     public void ModifyCurrentHealth(float mod)
     {
         if (mod == 0)
@@ -287,6 +296,17 @@ public abstract class Actor : MonoBehaviour
 
         if (healthBar != null)
             healthBar.UpdateHealthBar(Data.MaximumHealth, Data.CurrentHealth, Data.MaximumManaShield, Data.CurrentManaShield, true);
+    }
+
+    public void ModifyCurrentSoulpoints(float mod)
+    {
+        if (mod == 0)
+            return;
+
+        if (Data.CurrentSoulPoints - mod > Data.MaximumSoulPoints)
+            Data.CurrentSoulPoints = Data.MaximumSoulPoints;
+        else
+            Data.CurrentSoulPoints -= mod;
     }
 
     public float ModifyCurrentShield(float mod, bool willModInterruptRecharge)
@@ -344,6 +364,7 @@ public abstract class Actor : MonoBehaviour
             ModifyCurrentShield(shieldModifier * Time.deltaTime, false);
         }
         ModifyCurrentHealth(-Data.HealthRegenRate * Time.deltaTime);
+        ModifyCurrentSoulpoints(-Data.SoulRegenRate * Time.deltaTime);
     }
 
     public static bool DidTargetBlock(Actor target)
@@ -523,7 +544,7 @@ public abstract class Actor : MonoBehaviour
                 if (isHit)
                     onHitData.ApplyTriggerEffects(TriggerType.ON_HIT_KILL, this);
             }
-            else
+            else if (isHit)
                 Data.OnHitData.ApplyTriggerEffects(TriggerType.WHEN_HIT_BY, onHitData.SourceActor);
         }
 
@@ -638,7 +659,7 @@ public abstract class Actor : MonoBehaviour
 
     public void DisableActor()
     {
-        foreach (var x in instancedAbilitiesList)
+        foreach (ActorAbility x in instancedAbilitiesList)
         {
             x.StopFiring(this);
         }

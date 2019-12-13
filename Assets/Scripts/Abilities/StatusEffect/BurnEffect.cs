@@ -25,7 +25,7 @@
     public override void Update(float deltaTime)
     {
         float tick = DurationUpdate(deltaTime);
-        target.ApplySingleElementDamage(ElementType.FIRE, damagePerSecond * tick, Source.Data.OnHitData, false, true);
+        target.ApplySingleElementDamage(ElementType.FIRE, damagePerSecond * tick, Source.Data.OnHitData, isHit: false, isFromSecondaryEffect: true);
     }
 
     public override float GetEffectValue()
