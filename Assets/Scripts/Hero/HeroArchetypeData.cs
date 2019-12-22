@@ -216,7 +216,12 @@ public class HeroArchetypeData : IAbilitySource
             return false;
 
         if (node.type == NodeType.ABILITY)
+        {
+            var ability = AvailableAbilityList.GetAbility(node.GetAbility());
+            if (ability.equippedHero != null)
+                hero.UnequipAbility(ability.equippedSlot);
             AvailableAbilityList.Remove(node.GetAbility());
+        }
 
         foreach (var bonus in node.bonuses)
         {
@@ -343,6 +348,12 @@ public class HeroArchetypeData : IAbilitySource
         public void Add(AbilityBase a)
         {
             leveledAbilities.Add(new ArchetypeLeveledAbility(a));
+        }
+
+        public ArchetypeLeveledAbility GetAbility(AbilityBase a)
+        {
+            ArchetypeLeveledAbility target = leveledAbilities.Find(x => x.abilityBase == a);
+            return target;
         }
 
         public void Remove(AbilityBase a)

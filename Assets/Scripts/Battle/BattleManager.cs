@@ -454,7 +454,8 @@ public class BattleManager : MonoBehaviour
 
         for (int i = 0; i < waveToSpawn.enemyList.Count; i++)
         {
-            StartCoroutine(SpawnEnemyList(waveToSpawn.enemyList[i], waveToSpawn.delayBetweenSpawns));
+            float delayBetweenSpawns = waveToSpawn.enemyList[i].delayBetweenOverride > 0 ? waveToSpawn.enemyList[i].delayBetweenOverride : waveToSpawn.delayBetweenSpawns;
+            StartCoroutine(SpawnEnemyList(waveToSpawn.enemyList[i], delayBetweenSpawns));
         }
 
         if (waveNumber + 1 < Waves.Count)
@@ -478,13 +479,12 @@ public class BattleManager : MonoBehaviour
             waveTimeElapsed = 0;
             currentWaveDelay = waveToSpawn.delayUntilNextWave;
 
-            foreach (EnemyWaveItem waveItem in Waves[waveNumber+1].enemyList)
+            foreach (EnemyWaveItem waveItem in Waves[waveNumber + 1].enemyList)
             {
                 float timeUntilEnemy = waveItem.startDelay + waveToSpawn.delayUntilNextWave;
                 SpawnWarning spawnWarning = spawnWarnings[waveItem.spawnerIndex];
 
                 spawnWarning.AddTimeInfo(new SpawnWarning.TimeInfo(timeUntilEnemy, currentWave + 1));
-
             }
 
             foreach (SpawnWarning s in spawnWarnings)
@@ -511,12 +511,12 @@ public class BattleManager : MonoBehaviour
         spawnCoroutinesRunning++;
 
         if (enemyWaveItem.startDelay > 0)
-        spawnWarnings[enemyWaveItem.spawnerIndex].AddTimeInfo(new SpawnWarning.TimeInfo(enemyWaveItem.startDelay, currentWave));
+            spawnWarnings[enemyWaveItem.spawnerIndex].AddTimeInfo(new SpawnWarning.TimeInfo(enemyWaveItem.startDelay, currentWave));
 
         yield return new WaitForSeconds(enemyWaveItem.startDelay);
 
         Dictionary<BonusType, StatBonus> bonuses = new Dictionary<BonusType, StatBonus>();
-        EnemyBase enemyBase = ResourceManager.Instance.GetEnemyBase(enemyWaveItem.enemyName);
+        
         RarityType rarity = enemyWaveItem.enemyRarity;
 
         if (isSurvivalBattle)
@@ -551,34 +551,46 @@ public class BattleManager : MonoBehaviour
 
         for (int j = 0; j < enemyWaveItem.enemyCount; j++)
         {
-            Spawner spawner = SpawnerList[enemyWaveItem.spawnerIndex];
-
-            EnemyActor enemy = EnemyPool.GetEnemy(spawner.transform);
-
-            enemy.ParentSpawner = spawner;
-            Vector3 positionOffset = new Vector3(Random.Range(-0.4f, 0.4f), Random.Range(-0.4f, 0.4f), 0);
-            //Vector3 positionOffset = new Vector3(-0.5f, -0.5f, 0);
-            enemy.positionOffset = positionOffset;
-            enemy.rotatedOffset = positionOffset;
-
-            if (enemyBase.isBoss || enemyWaveItem.isBossOverride)
-                enemy.isBoss = true;
-            else
-                enemy.isBoss = false;
-
-            enemy.SetBase(enemyBase, rarity, stageInfo.monsterLevel + survivalLoopCount);
-
-            //Set bonuses from wave
-            enemy.Data.SetMobBonuses(bonuses);
-
-            enemy.Init(enemyWaveItem.goalIndex);
-
-            currentEnemyList.Add(enemy);
-            enemiesSpawned++;
+            SpawnEnemy(enemyWaveItem, bonuses, rarity);
             yield return new WaitForSeconds(delayBetween);
         }
         spawnCoroutinesRunning--;
         yield break;
+    }
+
+    private void SpawnEnemy(EnemyWaveItem enemyWaveItem, Dictionary<BonusType, StatBonus> bonuses, RarityType rarity)
+    {
+        EnemyBase enemyBase = ResourceManager.Instance.GetEnemyBase(enemyWaveItem.enemyName);
+        Spawner spawner = SpawnerList[enemyWaveItem.spawnerIndex];
+
+        EnemyActor enemy = EnemyPool.GetEnemy(spawner.transform);
+
+        enemy.ParentSpawner = spawner;
+        Vector3 positionOffset = new Vector3(Random.Range(-0.4f, 0.4f), Random.Range(-0.4f, 0.4f), 0);
+        //Vector3 positionOffset = new Vector3(-0.5f, -0.5f, 0);
+        enemy.positionOffset = positionOffset;
+        enemy.rotatedOffset = positionOffset;
+
+        if (enemyBase.isBoss || enemyWaveItem.isBossOverride)
+            enemy.isBoss = true;
+        else
+            enemy.isBoss = false;
+
+        enemy.SetBase(enemyBase, rarity, stageInfo.monsterLevel + survivalLoopCount);
+
+        Sprite enemySprite = ResourceManager.Instance.GetEnemySprite(enemyBase.idName);
+        if (enemySprite != null)
+        {
+            enemy.GetComponent<SpriteRenderer>().sprite = enemySprite;
+        }
+
+        //Set bonuses from wave
+        enemy.Data.SetMobBonuses(bonuses);
+
+        enemy.Init(enemyWaveItem.goalIndex);
+
+        currentEnemyList.Add(enemy);
+        enemiesSpawned++;
     }
 
     public List<Goal> GoalList

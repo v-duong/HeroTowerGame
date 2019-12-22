@@ -69,7 +69,7 @@ public class EnemyData : ActorData
             ability.UpdateAbilityStats(this);
         }
 
-        movementSpeed = GetMultiStatBonus(GroupTypes, BonusType.MOVEMENT_SPEED).CalculateStat(BaseEnemyData.movementSpeed);
+        movementSpeed = Math.Max(GetMultiStatBonus(GroupTypes, BonusType.MOVEMENT_SPEED).CalculateStat(BaseEnemyData.movementSpeed), 0.0f);
 
         Armor = Math.Max(GetMultiStatBonus(GroupTypes, BonusType.GLOBAL_ARMOR).CalculateStat(BaseArmor), 0);
         DodgeRating = Math.Max(GetMultiStatBonus(GroupTypes, BonusType.GLOBAL_DODGE_RATING).CalculateStat(BaseDodgeRating), 0);

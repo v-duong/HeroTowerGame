@@ -72,9 +72,8 @@ public class GameManager : MonoBehaviour
         AddStartingData();
         SaveManager.SaveAll();
         StartCoroutine(ReloadMainMenu());
-
     }
-    
+
     private IEnumerator ReloadMainMenu()
     {
         AsyncOperation asyncOperation = SceneManager.UnloadSceneAsync("mainMenu");
@@ -84,7 +83,6 @@ public class GameManager : MonoBehaviour
         }
         SceneManager.LoadScene("mainMenu", LoadSceneMode.Additive);
     }
-
 
     private void AddStartingData()
     {
@@ -163,8 +161,10 @@ public class GameManager : MonoBehaviour
         isInBattle = false;
 
         SaveManager.SaveAll();
+
         SceneManager.UnloadSceneAsync(currentSceneName);
         SceneManager.LoadScene("mainMenu", LoadSceneMode.Additive);
+        Resources.UnloadUnusedAssets();
 
         isInMainMenu = true;
     }
@@ -206,7 +206,7 @@ public class GameManager : MonoBehaviour
         Scene scene = SceneManager.GetSceneByName(sceneName);
         SceneManager.SetActiveScene(scene);
 
-        SetUpBattleScene(scene);
+        SetUpBattleScene(scene, stageInfoBase);
 
         StageManager.Instance.BattleManager.selectedTeam = selectedTeamNum;
         StageManager.Instance.BattleManager.SetStageBase(stageInfoBase);
@@ -227,13 +227,14 @@ public class GameManager : MonoBehaviour
     /// </summary>
     /// <param name="sceneToMergeTo"></param>
     /// <returns></returns>
-    private void SetUpBattleScene(Scene sceneToMergeTo)
+    private void SetUpBattleScene(Scene sceneToMergeTo, StageInfoBase stageInfoBase)
     {
         Scene scene = SceneManager.GetSceneByName("battleUI");
         SceneManager.MergeScenes(scene, sceneToMergeTo);
         SummonScrollWindow summonScroll = UIManager.Instance.SummonScrollWindow;
 
         HashSet<AbilityBase> abilitiesInUse = new HashSet<AbilityBase>();
+        HashSet<EnemyBase> enemiesInUse = new HashSet<EnemyBase>();
         inBattleHeroes.Clear();
 
         foreach (HeroData data in PlayerStats.heroTeams[selectedTeamNum])
@@ -272,12 +273,26 @@ public class GameManager : MonoBehaviour
             inBattleHeroes.Add(data);
         }
 
+        foreach (EnemyWave enemyWave in stageInfoBase.enemyWaves)
+        {
+            foreach (EnemyWaveItem enemyWaveItem in enemyWave.enemyList)
+            {
+                EnemyBase enemyBase = ResourceManager.Instance.GetEnemyBase(enemyWaveItem.enemyName);
+                enemiesInUse.Add(enemyBase);
+                foreach (EnemyBase.EnemyAbilityBase ability in enemyBase.abilitiesList)
+                {
+                    abilitiesInUse.Add(ResourceManager.Instance.GetAbilityBase(ability.abilityName));
+                }
+            }
+        }
+
         /*
         foreach (AbilityBase abilityBase in abilitiesInUse)
             Debug.Log(abilityBase.idName);
             */
 
-        ResourceManager.Instance.LoadSpritesToBeUsed(abilitiesInUse);
+        ResourceManager.Instance.LoadAbilitySpritesToBeUsed(abilitiesInUse);
+        ResourceManager.Instance.LoadEnemySpritesToBeUsed(enemiesInUse);
     }
 
     public static void SetTimescale(float value)

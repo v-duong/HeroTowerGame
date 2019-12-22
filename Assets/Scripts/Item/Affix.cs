@@ -197,7 +197,7 @@ public class Affix
         if (instancedAffix != null)
         {
             if (instancedAffix.IsLocked)
-                s = "<color=#A9942C>" + s + "</color>";
+                s = "<color=#A9942C>" + s.TrimEnd('\n') + "</color>\n";
         }
 
         if (indent != 0)

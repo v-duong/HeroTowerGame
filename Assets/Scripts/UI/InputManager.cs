@@ -24,7 +24,6 @@ public class InputManager : MonoBehaviour
 
     private Queue<TargetingCircle> targetingCirclesAvailable = new Queue<TargetingCircle>();
     private List<TargetingCircle> targetingCirclesInUse = new List<TargetingCircle>();
-    private TargetingCircle activeAbilityTargeting;
 
 
     public void SetSummoning(HeroActor actor, Action summonCallback)
@@ -52,11 +51,7 @@ public class InputManager : MonoBehaviour
             targetingCirclesAvailable.Enqueue(circle);
         }
 
-        if (activeAbilityTargeting == null)
-        {
-            activeAbilityTargeting = Instantiate(ResourceManager.Instance.TargetingCirclePrefab);
-            activeAbilityTargeting.gameObject.SetActive(false);
-        }
+
     }
 
     public void SetCameraBounds()

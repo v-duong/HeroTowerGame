@@ -40,7 +40,8 @@ public class ResourceManager : MonoBehaviour
     private Dictionary<string, EnemyBase> enemyList;
     private Dictionary<string, StageInfoBase> stageList;
 
-    private Dictionary<string, Sprite> currentSpriteList;
+    private Dictionary<string, Sprite> abilitySpriteList;
+    private Dictionary<string, Sprite> enemySpriteList;
     private Dictionary<string, SpriteAtlas> loadedSpriteAtlases;
 
     public List<ArchetypeBase> ArchetypeBasesList => archetypeList.Values.ToList();
@@ -357,9 +358,47 @@ public class ResourceManager : MonoBehaviour
         return abs.GetComponent<AbilityParticleSystem>();
     }
 
-    public void LoadSpritesToBeUsed(HashSet<AbilityBase> abilityBases)
+    public void LoadEnemySpritesToBeUsed(HashSet<EnemyBase> enemyBases)
     {
-        currentSpriteList = new Dictionary<string, Sprite>();
+        enemySpriteList = new Dictionary<string, Sprite>();
+        loadedSpriteAtlases = new Dictionary<string, SpriteAtlas>();
+        if (enemyBases.Count == 0)
+            return;
+        var spriteBundle = AssetBundle.LoadFromFile(Path.Combine(Application.streamingAssetsPath, "enemies"));
+        SpriteAtlas[] atlases = spriteBundle.LoadAllAssets<SpriteAtlas>();
+        foreach (EnemyBase enemyBase in enemyBases)
+        {
+            foreach (SpriteAtlas atlas in atlases)
+            {
+                Sprite sprite = atlas.GetSprite(enemyBase.idName.ToLower());
+
+                if (sprite == null && !string.IsNullOrEmpty(enemyBase.spriteName))
+                {
+                    sprite = atlas.GetSprite(enemyBase.spriteName.ToLower());
+                }
+
+                if (sprite != null)
+                {
+                    enemySpriteList.Add(enemyBase.idName, sprite);
+                    if (!loadedSpriteAtlases.ContainsKey(atlas.name))
+                        loadedSpriteAtlases.Add(atlas.name, atlas);
+                    break;
+                }
+            }
+        }
+
+        foreach (SpriteAtlas atlas in atlases)
+        {
+            if (!loadedSpriteAtlases.ContainsKey(atlas.name))
+                Resources.UnloadAsset(atlas);
+        }
+
+        spriteBundle.Unload(false);
+    }
+
+    public void LoadAbilitySpritesToBeUsed(HashSet<AbilityBase> abilityBases)
+    {
+        abilitySpriteList = new Dictionary<string, Sprite>();
         loadedSpriteAtlases = new Dictionary<string, SpriteAtlas>();
         if (abilityBases.Count == 0)
             return;
@@ -377,7 +416,7 @@ public class ResourceManager : MonoBehaviour
 
                 if (sprite != null)
                 {
-                    currentSpriteList.Add(abilityBase.idName, sprite);
+                    abilitySpriteList.Add(abilityBase.idName, sprite);
                     if (!loadedSpriteAtlases.ContainsKey(atlas.name))
                         loadedSpriteAtlases.Add(atlas.name, atlas);
                     break;
@@ -398,15 +437,20 @@ public class ResourceManager : MonoBehaviour
         var spriteBundle = AssetBundle.LoadFromFile(Path.Combine(Application.streamingAssetsPath, "abilitysprites"));
         SpriteAtlas atlas = spriteBundle.LoadAsset<SpriteAtlas>(name);
 
-        if (!loadedSpriteAtlases.ContainsKey(atlas.name))
-            loadedSpriteAtlases.Add(atlas.name, atlas);
-
         spriteBundle.Unload(false);
     }
 
-    public Sprite GetSprite(string abilityName)
+    public Sprite GetAbilitySprite(string abilityName)
     {
-        if (currentSpriteList.TryGetValue(abilityName, out Sprite ret))
+        if (abilitySpriteList.TryGetValue(abilityName, out Sprite ret))
+            return ret;
+        else
+            return null;
+    }
+
+    public Sprite GetEnemySprite(string enemyName)
+    {
+        if (enemySpriteList.TryGetValue(enemyName, out Sprite ret))
             return ret;
         else
             return null;

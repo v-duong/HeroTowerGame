@@ -134,7 +134,8 @@ public abstract class Actor : MonoBehaviour
                 buffEffects.Add(namedEffect);
                 statusEffect.OnApply();
                 Data.UpdateActorData();
-            } else
+            }
+            else
             {
                 Debug.Log("Should not have buff type.");
             }
@@ -281,8 +282,6 @@ public abstract class Actor : MonoBehaviour
     {
         return instancedAbilitiesList.AsReadOnly();
     }
-
-
 
     public void ModifyCurrentHealth(float mod)
     {
@@ -466,12 +465,12 @@ public abstract class Actor : MonoBehaviour
                 {
                     armorReductionRate = 1.0f - (Data.Armor / (Data.Armor + damage[ElementType.PHYSICAL]));
                 }
-                float resistanceReductionRate = 1.0f - ((Data.GetResistance(ElementType.PHYSICAL) - onHitData.GetNegation(ElementType.PHYSICAL)) / 100f);
-                float physicalReduction = armorReductionRate * resistanceReductionRate;
+                float resistanceReductionRate = 1.0f - (Data.GetResistance(ElementType.PHYSICAL) / 100f);
+                float physicalReduction = (armorReductionRate * resistanceReductionRate) + (onHitData.GetNegation(ElementType.PHYSICAL) / 100f);
                 //Debug.Log(Data.GetResistance(ElementType.PHYSICAL) + " " + onHitData.physicalNegation + " " + damage[ElementType.PHYSICAL]);
                 float physicalDamage = physicalReduction * damage[ElementType.PHYSICAL] * damageTakenModifier;
                 total += Math.Max(0, physicalDamage);
-                damageTaken[ElementType.PHYSICAL] = (damage[ElementType.PHYSICAL] * blockDamageReduction) - Data.ResolveRating;
+                damageTaken[ElementType.PHYSICAL] = (damage[ElementType.PHYSICAL] * blockDamageReduction);
                 isDamageTakenNonZero = physicalDamage > 0;
             }
             else
@@ -480,7 +479,7 @@ public abstract class Actor : MonoBehaviour
                 {
                     float nonPhysicalDamage = (1f - (Data.GetResistance(elementType) - onHitData.GetNegation(elementType)) / 100f) * damage[elementType] * damageTakenModifier;
                     total += Math.Max(0, nonPhysicalDamage);
-                    damageTaken[elementType] = (damage[elementType] * blockDamageReduction) - Data.ResolveRating;
+                    damageTaken[elementType] = (damage[elementType] * blockDamageReduction);
                     isDamageTakenNonZero = nonPhysicalDamage > 0;
                 }
             }

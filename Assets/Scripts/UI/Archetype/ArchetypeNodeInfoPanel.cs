@@ -181,7 +181,20 @@ public class ArchetypeNodeInfoPanel : MonoBehaviour
             foreach (ArchetypeUITreeNode uiTreeNode in uiNode.connectedNodes.Keys)
             {
                 if (archetypeData.GetNodeLevel(uiTreeNode.node) == 0)
-                    uiTreeNode.DisableNode();
+                {
+                    bool hasAnotherConnection = false;
+                    foreach (ArchetypeUITreeNode connectedNode in uiTreeNode.connectedNodes.Keys)
+                    {
+                        if (connectedNode != uiNode && archetypeData.GetNodeLevel(connectedNode.node) >= connectedNode.node.maxLevel)
+                        {
+                            hasAnotherConnection = true;
+                            break;
+                        }
+                    }
+
+                    if (!hasAnotherConnection)
+                        uiTreeNode.DisableNode();
+                }
             }
         }
 
@@ -199,7 +212,7 @@ public class ArchetypeNodeInfoPanel : MonoBehaviour
             {
                 return false;
             }
-        } 
+        }
         return true;
     }
 }

@@ -57,6 +57,8 @@ public class LinkedActorAbility : ActorAbility
 
     public void Fire(Vector3 origin, Actor target)
     {
+        if (!AbilityOwner.isActiveAndEnabled)
+            return;
         switch (abilityBase.abilityShotType)
         {
             case AbilityShotType.PROJECTILE_NOVA:

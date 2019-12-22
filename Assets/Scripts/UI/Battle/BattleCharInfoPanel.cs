@@ -198,6 +198,8 @@ public class BattleCharInfoPanel : MonoBehaviour
 
     public void SoulAbilityOnClick()
     {
+        SoulAbilityPanel.gameObject.SetActive(false);
+
         if (actor is HeroActor hero)
         {
             ActorAbility soulAbility = hero.GetSoulAbility();

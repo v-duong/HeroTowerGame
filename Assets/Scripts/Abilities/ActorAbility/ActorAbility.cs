@@ -1283,7 +1283,7 @@ public partial class ActorAbility
             pooledProjectile.particles.Play();
         }
 
-        pooledProjectile.GetComponent<SpriteRenderer>().sprite = ResourceManager.Instance.GetSprite(abilityBase.idName);
+        pooledProjectile.GetComponent<SpriteRenderer>().sprite = ResourceManager.Instance.GetAbilitySprite(abilityBase.idName);
     }
 
     protected void FireMovingAoe(Vector3 origin, Vector3 target)

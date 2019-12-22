@@ -73,6 +73,8 @@ public class EnemyWaveItem
     [JsonProperty]
     public readonly float startDelay;
     [JsonProperty]
+    public readonly float delayBetweenOverride;
+    [JsonProperty]
     public readonly int enemyCount;
     [JsonProperty]
     public readonly int spawnerIndex; // which spawn point to spawn from

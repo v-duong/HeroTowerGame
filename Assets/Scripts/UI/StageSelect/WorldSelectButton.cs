@@ -7,7 +7,5 @@ public class WorldSelectButton : MonoBehaviour
     public void ButtonOnClick()
     {
         UIManager.Instance.StageSelectPanel.SetSelectedAct(worldNum);
-
-
     }
 }
