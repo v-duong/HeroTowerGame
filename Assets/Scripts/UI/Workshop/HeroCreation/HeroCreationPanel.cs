@@ -17,6 +17,8 @@ public class HeroCreationPanel : MonoBehaviour
     public TextMeshProUGUI archetypeSlot2GrowthText;
     public TextMeshProUGUI nameText;
     public TextMeshProUGUI placeholderText;
+    public Image sprite;
+    public int currentSpriteIndex;
     private int selectedSlot;
     public ArchetypeItem primaryArchetype;
     public ArchetypeItem secondaryArchetype;
@@ -32,6 +34,8 @@ public class HeroCreationPanel : MonoBehaviour
         HeroName = "";
         primaryArchetype = null;
         secondaryArchetype = null;
+        sprite.sprite = ResourceManager.Instance.GetHeroSprites()[0];
+        currentSpriteIndex = 0;
         UpdatePanels();
     }
 
@@ -46,6 +50,8 @@ public class HeroCreationPanel : MonoBehaviour
         player.AddHeroToList(hero);
         player.RemoveArchetypeFromInventory(primaryArchetype);
         primaryArchetype = null;
+
+        hero.spriteName = ResourceManager.Instance.GetHeroSprites()[currentSpriteIndex].name.Replace("(Clone)", "");
 
         if (secondaryArchetype != null)
         {
@@ -150,6 +156,24 @@ public class HeroCreationPanel : MonoBehaviour
             HeroName = UIManager.Instance.PopUpWindow.textInput.text;
             UpdatePanels();
         }, null, null);
+    }
+
+    public void OnClickSpriteLeft()
+    {
+        currentSpriteIndex -= 1;
+        if (currentSpriteIndex < 0)
+            currentSpriteIndex = ResourceManager.Instance.GetHeroSprites().Length - 1;
+        sprite.sprite = ResourceManager.Instance.GetHeroSprites()[currentSpriteIndex];
+    }
+
+    public void OnClickSpriteRight()
+    {
+        currentSpriteIndex += 1;
+        if (currentSpriteIndex >= ResourceManager.Instance.GetHeroSprites().Length - 1)
+        {
+            currentSpriteIndex = 0;
+        }
+        sprite.sprite = ResourceManager.Instance.GetHeroSprites()[currentSpriteIndex];
     }
 
     public void UpdatePanels()

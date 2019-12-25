@@ -18,6 +18,8 @@ public class HeroData : ActorData
     public int ArchetypePoints { get; private set; }
     public int RebirthBonus { get; private set; }
 
+    public string spriteName;
+
     public int killCount;
 
     //private Dictionary<BonusType, StatBonus> archetypeStatBonuses;
@@ -59,6 +61,7 @@ public class HeroData : ActorData
         ArchetypePoints = (int)(Level * 1.2f);
         Experience = heroSaveData.experience;
         killCount = heroSaveData.killCount;
+        spriteName = heroSaveData.spriteName;
 
         BaseHealth = heroSaveData.baseHealth;
         BaseSoulPoints = heroSaveData.baseSoulPoints;
@@ -115,6 +118,7 @@ public class HeroData : ActorData
         HeroActor hero = actor.AddComponent<HeroActor>();
         CurrentActor = hero;
         OnHitData.SourceActor = hero;
+        hero.GetComponent<SpriteRenderer>().sprite = ResourceManager.Instance.GetHeroSprite(spriteName);
         hero.Initialize(this);
     }
 

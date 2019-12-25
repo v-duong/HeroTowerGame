@@ -7,7 +7,7 @@ public class UIKeyButton : MonoBehaviour
     public string localizedString;
     public bool initialized = false;
 
-    private void Start()
+    private void Awake()
     {
         if (!initialized)
             Initialize();

@@ -312,6 +312,8 @@ MonoBehaviour:
     type: 3}
   targetingCirclePrefab: {fileID: 9012056664430877953, guid: d7f40d835dce5824e98c341878bce51a,
     type: 3}
+  heroesSpriteAtlas: {fileID: 4343727234628468602, guid: 05767b7fb19d7df43b9a17b91d5328f9,
+    type: 2}
 --- !u!4 &1360361551
 Transform:
   m_ObjectHideFlags: 0

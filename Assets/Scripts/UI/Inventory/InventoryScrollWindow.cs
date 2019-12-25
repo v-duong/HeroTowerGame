@@ -16,6 +16,9 @@ public class InventoryScrollWindow : MonoBehaviour
     [SerializeField]
     private Button selectFilterButton;
 
+    [SerializeField]
+    private Button toggleEquippedButton;
+
     public Button confirmButton;
     private Action<List<Item>> confirmOnClick = null;
 
@@ -26,6 +29,7 @@ public class InventoryScrollWindow : MonoBehaviour
     public bool isMultiSelectMode = false;
     public bool showItemValues = false;
     public bool showItemAffixes = false;
+    public bool hideEquipped = false;
 
     private void Start()
     {
@@ -38,7 +42,11 @@ public class InventoryScrollWindow : MonoBehaviour
         float ySize = 350;
         if (!showItemAffixes)
             ySize = 155;
-        if (GameManager.Instance.aspectRatio >= 1.85)
+        if (GameManager.Instance.aspectRatio >= 1.92)
+        {
+            grid.cellSize = new Vector2(180, ySize);
+        }
+        else if (GameManager.Instance.aspectRatio >= 1.85)
         {
             grid.cellSize = new Vector2(210, ySize);
         }
@@ -53,6 +61,8 @@ public class InventoryScrollWindow : MonoBehaviour
         ((RectTransform)transform).anchoredPosition = Vector3.zero;
 
         selectFilterButton.gameObject.SetActive(isMultiSelectMode);
+        toggleEquippedButton.gameObject.SetActive(!isMultiSelectMode);
+        SetHideEquippedToggle(false);
     }
 
     public InventorySlotPool InventorySlotPool
@@ -156,7 +166,6 @@ public class InventoryScrollWindow : MonoBehaviour
             AddInventorySlot(null);
 
         toggleAffixesButton.gameObject.SetActive(true);
-
         foreach (Equipment item in GameManager.Instance.PlayerStats.EquipmentInventory.Where(filter))
         {
             AddInventorySlot(item, currentCallback);
@@ -168,7 +177,10 @@ public class InventoryScrollWindow : MonoBehaviour
     {
         foreach (InventorySlot i in SlotsInUse)
         {
-            InventorySlotPool.ReturnToPoolWhileActive(i);
+            i.multiSelectMode = false;
+            i.showItemValue = false;
+            i.alreadySelected = false;
+            InventorySlotPool.ReturnToPool(i);
         }
         SlotsInUse.Clear();
     }
@@ -205,6 +217,39 @@ public class InventoryScrollWindow : MonoBehaviour
             selectedItems.Add(item);
         else
             selectedItems.Remove(item);
+    }
+
+    public void SetHideEquippedToggle(bool value)
+    {
+        hideEquipped = value;
+
+        if (hideEquipped)
+        {
+            toggleEquippedButton.GetComponentInChildren<TextMeshProUGUI>().text = "Show Equipped";
+        }
+        else
+        {
+            toggleEquippedButton.GetComponentInChildren<TextMeshProUGUI>().text = "Hide Equipped";
+        }
+    }
+
+    public void ToggleEquippedOnClick()
+    {
+        SetHideEquippedToggle(!hideEquipped);
+
+        foreach(InventorySlot slot in SlotsInUse)
+        {
+            if (slot.item is Equipment e)
+            {
+                if (hideEquipped && e.IsEquipped)
+                {
+                    slot.gameObject.SetActive(false);
+                } else
+                {
+                    slot.gameObject.SetActive(true);
+                }
+            }
+        }
     }
 
     public void FilterButtonOnClick()

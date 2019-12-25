@@ -1,0 +1,90 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!687078895 &4343727234628468602
+SpriteAtlas:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: heroes
+  m_EditorData:
+    serializedVersion: 2
+    textureSettings:
+      serializedVersion: 2
+      anisoLevel: 1
+      compressionQuality: 50
+      maxTextureSize: 2048
+      textureCompression: 0
+      filterMode: 0
+      generateMipMaps: 0
+      readable: 0
+      crunchedCompression: 0
+      sRGB: 1
+    platformSettings:
+    - serializedVersion: 3
+      m_BuildTarget: Standalone
+      m_MaxTextureSize: 2048
+      m_ResizeAlgorithm: 0
+      m_TextureFormat: 4
+      m_TextureCompression: 1
+      m_CompressionQuality: 50
+      m_CrunchedCompression: 0
+      m_AllowsAlphaSplitting: 0
+      m_Overridden: 1
+      m_AndroidETC2FallbackOverride: 0
+      m_ForceMaximumCompressionQuality_BC6H_BC7: 0
+    - serializedVersion: 3
+      m_BuildTarget: Android
+      m_MaxTextureSize: 2048
+      m_ResizeAlgorithm: 0
+      m_TextureFormat: 4
+      m_TextureCompression: 1
+      m_CompressionQuality: 50
+      m_CrunchedCompression: 0
+      m_AllowsAlphaSplitting: 0
+      m_Overridden: 1
+      m_AndroidETC2FallbackOverride: 0
+      m_ForceMaximumCompressionQuality_BC6H_BC7: 0
+    packingSettings:
+      serializedVersion: 2
+      padding: 4
+      blockOffset: 1
+      allowAlphaSplitting: 0
+      enableRotation: 1
+      enableTightPacking: 1
+    variantMultiplier: 1
+    packables:
+    - {fileID: 21300000, guid: 42ebc8f386890314d9a50946cfb00214, type: 3}
+    - {fileID: 21300000, guid: 8ceb1adf89e68bc419b852e2847d149b, type: 3}
+    - {fileID: 2800000, guid: d33dc995a7b9bf2458f5e487ba18f9f0, type: 3}
+    - {fileID: 21300000, guid: a67b23e2e5f9cdc4185a0465a66bbb7f, type: 3}
+    - {fileID: 21300000, guid: 38b168ffe9bad1143a633010b86a4bac, type: 3}
+    - {fileID: 21300000, guid: 3952e61ee57e3ac4382d35c56f7a1d46, type: 3}
+    - {fileID: 21300000, guid: 67345429f91308a4c87420121e642b8f, type: 3}
+    - {fileID: 21300000, guid: 77e4b4544ea494e4083e9791cd46b571, type: 3}
+    totalSpriteSurfaceArea: 8192
+    bindAsDefault: 1
+    storedHash:
+      serializedVersion: 2
+      Hash: c1c46be1f538dc39ed8738018db078c2
+  m_MasterAtlas: {fileID: 0}
+  m_PackedSprites:
+  - {fileID: 21300000, guid: a67b23e2e5f9cdc4185a0465a66bbb7f, type: 3}
+  - {fileID: 21300000, guid: 42ebc8f386890314d9a50946cfb00214, type: 3}
+  - {fileID: 21300000, guid: 77e4b4544ea494e4083e9791cd46b571, type: 3}
+  - {fileID: 21300000, guid: d33dc995a7b9bf2458f5e487ba18f9f0, type: 3}
+  - {fileID: 21300000, guid: 67345429f91308a4c87420121e642b8f, type: 3}
+  - {fileID: 21300000, guid: 3952e61ee57e3ac4382d35c56f7a1d46, type: 3}
+  - {fileID: 21300000, guid: 8ceb1adf89e68bc419b852e2847d149b, type: 3}
+  - {fileID: 21300000, guid: 38b168ffe9bad1143a633010b86a4bac, type: 3}
+  m_PackedSpriteNamesToIndex:
+  - hero4
+  - hero2
+  - hero8
+  - hero3
+  - hero7
+  - hero6
+  - hero1
+  - hero5
+  m_Tag: heroes
+  m_IsVariant: 0

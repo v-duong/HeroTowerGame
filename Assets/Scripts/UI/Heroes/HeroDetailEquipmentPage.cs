@@ -45,15 +45,15 @@ public class HeroDetailEquipmentPage : MonoBehaviour, IUpdatablePanel
                 int equippableCount = 0;
                 if (slot.EquipSlot == EquipSlotType.OFF_HAND)
                 {
-                    equippableCount = GameManager.Instance.PlayerStats.EquipmentInventory.Where(x => HeroEquipmentSlot.OffhandFilter(x)).Count();
+                    equippableCount = GameManager.Instance.PlayerStats.EquipmentInventory.Where(x => hero.CanEquipItem(x) && HeroEquipmentSlot.OffhandFilter(x)).Count();
                 }
                 else if (slot.EquipSlot == EquipSlotType.RING_SLOT_1 || slot.EquipSlot == EquipSlotType.RING_SLOT_2)
                 {
-                    equippableCount = GameManager.Instance.PlayerStats.EquipmentInventory.Where(x => !x.IsEquipped && x.Base.equipSlot == EquipSlotType.RING).Count();
-                } else
+                    equippableCount = GameManager.Instance.PlayerStats.EquipmentInventory.Where(x => !x.IsEquipped && x.Base.equipSlot == EquipSlotType.RING && hero.CanEquipItem(x)).Count();
+                }
+                else
                 {
-                    equippableCount = GameManager.Instance.PlayerStats.EquipmentInventory.Where(x => !x.IsEquipped && x.Base.equipSlot == slot.EquipSlot).Count();
-
+                    equippableCount = GameManager.Instance.PlayerStats.EquipmentInventory.Where(x => !x.IsEquipped && x.Base.equipSlot == slot.EquipSlot && hero.CanEquipItem(x)).Count();
                 }
                 slot.slotBase.groupText.text = equippableCount + " Equippable Items";
             }

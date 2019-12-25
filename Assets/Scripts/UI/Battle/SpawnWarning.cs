@@ -19,29 +19,32 @@ public class SpawnWarning : MonoBehaviour
 
     private void Update()
     {
-        if (currentTimeInfo == null || timeLeft < 0)
+        if (StageManager.Instance.BattleManager.startedSpawn)
         {
-            if (!GetNextTimeInfo())
-                return;
-        }
-
-        if (currentTimeInfo != null && timeLeft > 0)
-        {
-            if (currentTimeInfo.waveNum == StageManager.Instance.BattleManager.currentWave)
+            if (currentTimeInfo == null || timeLeft < 0)
             {
-                warningImage.color = redColor;
-                waveText.text = "Incoming";
-            }
-            else
-            {
-                warningImage.color = yellowColor;
-                waveText.text = "Wave " + (currentTimeInfo.waveNum+1);
+                if (!GetNextTimeInfo())
+                    return;
             }
 
-            timeLeft -= Time.deltaTime;
+            if (currentTimeInfo != null && timeLeft > 0)
+            {
+                if (currentTimeInfo.waveNum == StageManager.Instance.BattleManager.currentWave)
+                {
+                    warningImage.color = redColor;
+                    waveText.text = "Incoming";
+                }
+                else
+                {
+                    warningImage.color = yellowColor;
+                    waveText.text = "Wave " + (currentTimeInfo.waveNum + 1);
+                }
 
-            image.fillAmount = timeLeft / currentTimeInfo.adjustedTime;
-            timerText.text = timeLeft.ToString("N2");
+                timeLeft -= Time.deltaTime;
+
+                image.fillAmount = timeLeft / currentTimeInfo.adjustedTime;
+                timerText.text = timeLeft.ToString("N2");
+            }
         }
     }
 
@@ -57,7 +60,7 @@ public class SpawnWarning : MonoBehaviour
         {
             TimeInfo oldTimeInfo = currentTimeInfo;
             timeQueue[0].adjustedTime -= oldTimeInfo.overallTime;
-        } 
+        }
 
         currentTimeInfo = timeQueue[0];
         timeQueue.RemoveAt(0);
@@ -72,7 +75,7 @@ public class SpawnWarning : MonoBehaviour
     {
         timeQueue = timeQueue.OrderBy(x => x.overallTime).ToList();
         if (timeQueue.Count > 0)
-        this.gameObject.SetActive(true);
+            this.gameObject.SetActive(true);
     }
 
     public void AddTimeInfo(TimeInfo timeInfo)

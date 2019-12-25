@@ -147,7 +147,6 @@ public abstract class Equipment : AffixedItem
         else
             return false;
         UpdateName();
-        AddRandomAffix();
         return true;
     }
 

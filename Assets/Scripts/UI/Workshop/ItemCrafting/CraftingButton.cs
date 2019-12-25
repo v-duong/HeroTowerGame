@@ -35,11 +35,11 @@ public class CraftingButton : MonoBehaviour
         else
         {
             int itemFragments = GameManager.Instance.PlayerStats.ItemFragments;
-            int cost;
+            float cost;
             switch (optionType)
             {
                 case CraftingOptionType.REROLL_AFFIX when currentItem.Rarity != RarityType.NORMAL && currentItem.Rarity != RarityType.UNIQUE:
-                    cost = AffixedItem.GetRerollAffixCost(currentItem);
+                    cost = AffixedItem.GetRerollAffixCost(currentItem) * UIManager.Instance.ItemCraftingPanel.costModifier;
                     break;
 
                 case CraftingOptionType.REROLL_VALUES when currentItem.Rarity != RarityType.NORMAL:
@@ -47,7 +47,7 @@ public class CraftingButton : MonoBehaviour
                     break;
 
                 case CraftingOptionType.ADD_AFFIX when currentItem.GetRandomOpenAffixType() != null:
-                    cost = AffixedItem.GetAddAffixCost(currentItem);
+                    cost = AffixedItem.GetAddAffixCost(currentItem) * UIManager.Instance.ItemCraftingPanel.costModifier;
                     break;
 
                 case CraftingOptionType.REMOVE_AFFIX when currentItem.GetRandomAffix() != null:
@@ -55,7 +55,7 @@ public class CraftingButton : MonoBehaviour
                     break;
 
                 case CraftingOptionType.UPGRADE_RARITY when currentItem.Rarity != RarityType.UNIQUE && currentItem.Rarity != RarityType.EPIC:
-                    cost = AffixedItem.GetUpgradeCost(currentItem);
+                    cost = AffixedItem.GetUpgradeCost(currentItem) * UIManager.Instance.ItemCraftingPanel.costModifier;
                     break;
 
                 case CraftingOptionType.TO_NORMAL when currentItem.Rarity != RarityType.NORMAL && currentItem.Rarity != RarityType.UNIQUE:
@@ -70,6 +70,8 @@ public class CraftingButton : MonoBehaviour
                     DisableButton(button);
                     return;
             }
+
+            cost = (int)(cost);
 
             costText = cost.ToString("N0") + " <sprite=10>";
 
@@ -125,7 +127,7 @@ public class CraftingButton : MonoBehaviour
         }
 
         confirmAction = delegate { UIManager.Instance.ItemCraftingPanel.ModifyItem(optionType); UIManager.Instance.CloseCurrentWindow(); };
-        popUpWindow.OpenTextWindow(text, 400, 150);
+        popUpWindow.OpenTextWindow(text, 380, 150);
         popUpWindow.textField.fontSize = 27;
         popUpWindow.textField.paragraphSpacing = 0;
         popUpWindow.textField.alignment = TextAlignmentOptions.Center;

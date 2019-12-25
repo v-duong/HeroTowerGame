@@ -89,24 +89,28 @@ public class InventorySlot : MonoBehaviour
             case ItemType.ACCESSORY:
                 Accessory accessory = item as Accessory;
                 groupText.text = LocalizationManager.Instance.GetLocalizationText(accessory.Base.group);
+
                 if (!UIManager.Instance.InvScrollContent.showItemAffixes)
                 {
                     if (accessory.prefixes.Count > 0)
                     {
-                        foreach (var x in accessory.prefixes)
+                        foreach (Affix prefix in accessory.prefixes)
                         {
-                            infoText1.text += "○ " + Affix.BuildAffixString(x.Base, 0, x, x.GetAffixValues(), x.GetEffectValues());
+                            infoText1.text += "○ " + Affix.BuildAffixString(prefix.Base, 0, prefix, prefix.GetAffixValues(), prefix.GetEffectValues());
                         }
                     }
 
                     if (accessory.suffixes.Count > 0)
                     {
-                        foreach (var x in accessory.suffixes)
+                        foreach (Affix suffix in accessory.suffixes)
                         {
-                            infoText2.text += "○ " + Affix.BuildAffixString(x.Base, 0, x, x.GetAffixValues(), x.GetEffectValues());
+                            infoText2.text += "○ " + Affix.BuildAffixString(suffix.Base, 0, suffix, suffix.GetAffixValues(), suffix.GetEffectValues());
                         }
                     }
                 }
+
+
+
                 break;
 
             default:

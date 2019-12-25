@@ -20,6 +20,7 @@ public class ArchetypeUITreeWindow : MonoBehaviour
     public UILineRenderer secondaryTreeParent;
     public ScrollRect ScrollView;
     private float largestX = 0, largestY = 0;
+    private bool isPreviewMode = false;
 
     private void Awake()
     {
@@ -29,8 +30,11 @@ public class ArchetypeUITreeWindow : MonoBehaviour
 
     private void OnDisable()
     {
-        SaveManager.CurrentSave.SaveHeroData(hero);
-        SaveManager.Save();
+        if (!isPreviewMode)
+        {
+            SaveManager.CurrentSave.SaveHeroData(hero);
+            SaveManager.Save();
+        }
     }
 
     public void ResetTreeView()
@@ -221,6 +225,7 @@ public class ArchetypeUITreeWindow : MonoBehaviour
 
     public void OpenArchetypeTree(HeroData hero, bool rebuildTree, int treeIndex)
     {
+        isPreviewMode = false;
         UIManager.Instance.ArchetypeNodeInfoPanel.SetPreviewMode(false);
         UIManager.Instance.ArchetypeNodeInfoPanel.hero = hero;
 
@@ -249,6 +254,7 @@ public class ArchetypeUITreeWindow : MonoBehaviour
 
     public void OpenPreviewTree(ArchetypeBase archetype)
     {
+        isPreviewMode = true;
         UIManager.Instance.ArchetypeNodeInfoPanel.SetPreviewMode(true);
         secondaryTreeParent.gameObject.SetActive(false);
         primaryTreeParent.gameObject.SetActive(true);

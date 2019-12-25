@@ -82,6 +82,8 @@ public class HeroAbilityPage : MonoBehaviour, IUpdatablePanel
         if (ability == null)
             return;
 
+        abilitySlot.abilityLevel = hero.GetAbilityLevel(ability.abilityBase);
+
         if (abilitySelected == 0 || abilitySelected == 1)
         {
             abilitySlot.infoText.text = GetAbilityDetailString(ability, false);
@@ -100,14 +102,14 @@ public class HeroAbilityPage : MonoBehaviour, IUpdatablePanel
             }
 
             abilitySlot.ability = ability.abilityBase;
-            abilitySlot.CommonUpdate();
+            abilitySlot.CommonUpdate(false);
         }
         else
         {
             abilitySlot.ability = ability.abilityBase;
-            abilitySlot.CommonUpdate();
-            abilitySlot.infoText.text = GetAbilityDetailString(ability, false);
 
+            abilitySlot.infoText.text = GetAbilityDetailString(ability, false);
+            abilitySlot.CommonUpdate(false);
             if (ability.abilityBase.abilityType != AbilityType.AURA && ability.abilityBase.abilityType != AbilityType.SELF_BUFF && ability.abilityBase.abilityType != AbilityType.AREA_BUFF)
             {
                 mainText.text = GetMainHandText(ability);

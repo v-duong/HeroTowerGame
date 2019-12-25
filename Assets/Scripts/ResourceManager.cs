@@ -28,6 +28,9 @@ public class ResourceManager : MonoBehaviour
     [SerializeField]
     private TargetingCircle targetingCirclePrefab;
 
+    [SerializeField]
+    private SpriteAtlas heroesSpriteAtlas;
+
     private Dictionary<string, AbilityBase> abilityList;
     private Dictionary<string, EquipmentBase> equipmentList;
     private Dictionary<string, UniqueBase> uniqueList;
@@ -43,6 +46,8 @@ public class ResourceManager : MonoBehaviour
     private Dictionary<string, Sprite> abilitySpriteList;
     private Dictionary<string, Sprite> enemySpriteList;
     private Dictionary<string, SpriteAtlas> loadedSpriteAtlases;
+
+    private Sprite[] heroSprites;
 
     public List<ArchetypeBase> ArchetypeBasesList => archetypeList.Values.ToList();
 
@@ -613,6 +618,21 @@ public class ResourceManager : MonoBehaviour
         callback(atlas);
     }
 
+    public Sprite GetHeroSprite(string name)
+    {
+        return heroesSpriteAtlas.GetSprite(name);
+    }
+
+    public Sprite[] GetHeroSprites()
+    {
+        if (heroSprites == null)
+        {
+            heroSprites = new Sprite[heroesSpriteAtlas.spriteCount];
+            heroesSpriteAtlas.GetSprites(heroSprites);
+        }
+        return heroSprites;
+    }
+
     private void Initialize()
     {
         //jsonBundle = AssetBundle.LoadFromFile(Path.Combine(Application.streamingAssetsPath,"jsonfiles"));
@@ -649,5 +669,6 @@ public class ResourceManager : MonoBehaviour
         uncommonMaterialBlock.SetColor("_GlowColor", new Color32(11, 234, 251, 255));
         rareMaterialBlock.SetColor("_GlowColor", new Color32(245, 246, 13, 255));
         bossMaterialBlock.SetColor("_GlowColor", new Color32(225, 73, 46, 255));
+
     }
 }

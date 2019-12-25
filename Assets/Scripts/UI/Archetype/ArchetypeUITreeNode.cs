@@ -67,7 +67,7 @@ public class ArchetypeUITreeNode : MonoBehaviour
             }
             foreach(TriggeredEffectBonusProperty nodeTrigger in node.triggeredEffects)
             {
-                nodeText.text += LocalizationManager.Instance.GetLocalizationText_TriggeredEffect(nodeTrigger, nodeTrigger.effectMaxValue);
+                nodeText.text += LocalizationManager.Instance.GetLocalizationText_TriggeredEffect(nodeTrigger, nodeTrigger.effectMaxValue) + "\n";
             }
         }
 

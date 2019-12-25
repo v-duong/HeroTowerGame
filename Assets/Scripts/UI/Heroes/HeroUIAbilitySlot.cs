@@ -44,11 +44,12 @@ public class HeroUIAbilitySlot : MonoBehaviour
             return;
         }
 
-        CommonUpdate();
+        
 
         if (source != null)
         {
-            sourceText.text = "From " + source.AbilitySourceType + " " + source.SourceName;
+
+            sourceText.text = "From " + LocalizationManager.Instance.GetLocalizationText(source.AbilitySourceType) + " " + source.SourceName;
 
             Tuple<HeroData, int> equippedInfo = source.GetEquippedHeroAndSlot(ability);
             if (equippedInfo == null)
@@ -65,7 +66,7 @@ public class HeroUIAbilitySlot : MonoBehaviour
         }
         string restrictionString = "Requires ";
         bool hasRestriction = false;
-        foreach(GroupType groupType in ability.requiredRestrictions)
+        foreach (GroupType groupType in ability.requiredRestrictions)
         {
             hasRestriction = true;
             restrictionString += LocalizationManager.Instance.GetLocalizationText(groupType) + " + ";
@@ -80,44 +81,25 @@ public class HeroUIAbilitySlot : MonoBehaviour
             restrictionString = restrictionString.Trim(' ', '/', '+');
             infoText.text = restrictionString + '\n';
         }
+        infoText.text += ability.LocalizationStrings[1] + "\n";
         infoText.text += LocalizationManager.Instance.GetLocalizationText_AbilityBaseDamage(abilityLevel, ability) + "\n";
+        
 
-        foreach (AbilityScalingBonusProperty bonusProperty in ability.bonusProperties)
-        {
-            infoText.text += "○ " + LocalizationManager.Instance.GetLocalizationText_BonusType(bonusProperty.bonusType,
-                                                                                        bonusProperty.modifyType,
-                                                                                        bonusProperty.initialValue + bonusProperty.growthValue * abilityLevel,
-                                                                                        bonusProperty.restriction);
-        }
-
-        foreach (AbilityScalingAddedEffect appliedEffect in ability.appliedEffects)
-        {
-            if (appliedEffect.effectType == EffectType.BUFF || appliedEffect.effectType == EffectType.DEBUFF)
-            {
-                infoText.text += "○ " + LocalizationManager.Instance.GetLocalizationText_BonusType(appliedEffect.bonusType,
-                                                                             appliedEffect.modifyType,
-                                                                             appliedEffect.initialValue + appliedEffect.growthValue * abilityLevel,
-                                                                             GroupType.NO_GROUP);
-            }
-        }
-
-        foreach (var x in ability.triggeredEffects)
-        {
-            infoText.text += LocalizationManager.Instance.GetLocalizationText_TriggeredEffect(x, x.effectMaxValue);
-        }
-
-
+        CommonUpdate(true);
     }
 
-    public void CommonUpdate()
+    public void CommonUpdate(bool getBonusTexts)
     {
-        nameText.text = ability.LocalizedName;
+        nameText.text = "Lv" + abilityLevel + " " + ability.LocalizedName;
         abilityText.text = LocalizationManager.Instance.GetLocalizationText("abilityType." + ability.abilityType);
 
         if (ability.abilityType != AbilityType.AURA && ability.abilityType != AbilityType.SELF_BUFF)
             abilityText.text = LocalizationManager.Instance.GetLocalizationText("abilityShotType." + ability.abilityShotType) + " " + abilityText.text;
 
         targetText.text = LocalizationManager.Instance.GetLocalizationText("targetType." + ability.targetType);
+
+        if (getBonusTexts)
+        infoText.text += ability.GetAbilityBonusTexts(abilityLevel);
     }
 
     public void SetSlot(AbilityBase ability, IAbilitySource source, int level)

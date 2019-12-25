@@ -72,8 +72,11 @@ public abstract class Actor : MonoBehaviour
 
     protected virtual void Update()
     {
-        UpdateStatusEffects();
-        ApplyRegenEffects();
+        if (StageManager.Instance.BattleManager.startedSpawn)
+        {
+            UpdateStatusEffects();
+            ApplyRegenEffects();
+        }
 
         if (Data.IsDead)
             Death();

@@ -8,9 +8,11 @@ using UnityEngine.UI;
 public class ItemCraftingPanel : MonoBehaviour
 {
     public AffixedItem currentItem;
+    public float costModifier = 1.0f;
     private Func<bool> selectedOption = null;
     private Button currentSelectedButton = null;
     private bool showAffixDetails = false;
+    public Dictionary<GroupType, float> modifiers = new Dictionary<GroupType, float>();
 
     [SerializeField]
     private ItemCraftingSlot itemSlot;
@@ -46,6 +48,9 @@ public class ItemCraftingPanel : MonoBehaviour
     private List<UIKeyButton> craftingButtons;
 
     [SerializeField]
+    private UIKeyButton modifierButton;
+
+    [SerializeField]
     private CraftingPanelAffixHeader innateHeader;
 
     [SerializeField]
@@ -53,6 +58,9 @@ public class ItemCraftingPanel : MonoBehaviour
 
     [SerializeField]
     private CraftingPanelAffixHeader suffixHeader;
+
+    [SerializeField]
+    public CraftingModifierWindow craftingModifierWindow;
 
     private void OnDisable()
     {
@@ -149,7 +157,6 @@ public class ItemCraftingPanel : MonoBehaviour
                 innateHeader.gameObject.SetActive(false);
             }
 
-
             //itemSlot.itemBaseText.text = equip.Base.idName;
             if (equip.Rarity != RarityType.UNIQUE)
                 itemSlot.text.text += "\n<i><size=80%>" + equip.Base.LocalizedName + "</size></i>";
@@ -172,7 +179,8 @@ public class ItemCraftingPanel : MonoBehaviour
         if (currentItem.GetItemType() == ItemType.WEAPON)
         {
             UpdateInfo_Weapon(currentItem as Weapon);
-        } else if (currentItem.GetItemType() == ItemType.ARMOR)
+        }
+        else if (currentItem.GetItemType() == ItemType.ARMOR)
         {
             UpdateInfo_Armor(currentItem as Armor);
         }
@@ -193,6 +201,10 @@ public class ItemCraftingPanel : MonoBehaviour
         {
             button.GetComponent<CraftingButton>().UpdateButton(currentItem);
         }
+
+        if (!modifierButton.initialized)
+            modifierButton.Initialize();
+        modifierButton.GetComponentInChildren<TextMeshProUGUI>().text = modifierButton.localizedString + "\nx" + costModifier.ToString("N2");
     }
 
     public void UpdateInfo_Weapon(Weapon weaponItem)
@@ -263,7 +275,7 @@ public class ItemCraftingPanel : MonoBehaviour
     public void UpdateInfo_Armor(Armor armorItem)
     {
         if (armorItem.armor > 0)
-            leftInfo.text += "Armor: " + armorItem.armor +"\n";
+            leftInfo.text += "Armor: " + armorItem.armor + "\n";
         if (armorItem.shield > 0)
             leftInfo.text += "Mana Shield: " + armorItem.shield + "\n";
         if (armorItem.dodgeRating > 0)
@@ -278,9 +290,7 @@ public class ItemCraftingPanel : MonoBehaviour
             rightInfo.text += "Block Chance\n<b>" + armorItem.blockChance + "%</b>\n";
             rightInfo.text += "Block Protection\n<b>" + armorItem.blockProtection + "%</b>";
         }
-
     }
-
 
     public void ShowAllPossibleAffixes()
     {
@@ -295,11 +305,10 @@ public class ItemCraftingPanel : MonoBehaviour
         popUpWindow.textField.alignment = TextAlignmentOptions.Left;
 
         WeightList<AffixBase> possibleAffixes;
-        Dictionary<GroupType, float> weightModifiers = null;
 
         if (currentItem.GetAffixCap() > currentItem.prefixes.Count)
         {
-            possibleAffixes = currentItem.GetAllPossiblePrefixes(weightModifiers);
+            possibleAffixes = currentItem.GetAllPossiblePrefixes(modifiers);
             if (possibleAffixes.Count > 0)
             {
                 popUpWindow.textField.text += "<b>Prefixes</b>\n";
@@ -315,7 +324,7 @@ public class ItemCraftingPanel : MonoBehaviour
 
         if (currentItem.GetAffixCap() > currentItem.suffixes.Count)
         {
-            possibleAffixes = currentItem.GetAllPossibleSuffixes(weightModifiers);
+            possibleAffixes = currentItem.GetAllPossibleSuffixes(modifiers);
             if (possibleAffixes.Count > 0)
             {
                 popUpWindow.textField.text += "<b>Suffixes</b>\n";
@@ -339,48 +348,57 @@ public class ItemCraftingPanel : MonoBehaviour
     {
         if (currentItem == null)
             return;
+
+        int cost = 0;
+
         switch (optionType)
         {
             case CraftingButton.CraftingOptionType.REROLL_AFFIX:
-                currentItem.RerollAffixesAtRarity();
+                currentItem.RerollAffixesAtRarity(modifiers);
                 currentItem.RemoveAllAffixLocks();
-                GameManager.Instance.PlayerStats.ModifyItemFragments(-AffixedItem.GetRerollAffixCost(currentItem));
+                cost = (int)(-AffixedItem.GetRerollAffixCost(currentItem) * costModifier);
                 break;
+
             case CraftingButton.CraftingOptionType.REROLL_VALUES:
                 currentItem.RerollValues();
                 currentItem.RemoveAllAffixLocks();
-                GameManager.Instance.PlayerStats.ModifyItemFragments(-AffixedItem.GetRerollValuesCost(currentItem));
+                cost = -AffixedItem.GetRerollValuesCost(currentItem);
                 break;
+
             case CraftingButton.CraftingOptionType.ADD_AFFIX:
-                currentItem.AddRandomAffix();
-                GameManager.Instance.PlayerStats.ModifyItemFragments(-AffixedItem.GetAddAffixCost(currentItem));
+                currentItem.AddRandomAffix(modifiers);
+                cost = (int)(-AffixedItem.GetAddAffixCost(currentItem) * costModifier);
                 break;
+
             case CraftingButton.CraftingOptionType.REMOVE_AFFIX:
-                GameManager.Instance.PlayerStats.ModifyItemFragments(-AffixedItem.GetRemoveAffixCost(currentItem));
+                cost = -AffixedItem.GetRemoveAffixCost(currentItem);
                 currentItem.RemoveRandomAffix();
                 currentItem.RemoveAllAffixLocks();
                 break;
+
             case CraftingButton.CraftingOptionType.UPGRADE_RARITY:
-                GameManager.Instance.PlayerStats.ModifyItemFragments(-AffixedItem.GetUpgradeCost(currentItem));
+                cost = (int)(-AffixedItem.GetUpgradeCost(currentItem) * costModifier);
                 currentItem.UpgradeRarity();
+                currentItem.AddRandomAffix(modifiers);
                 break;
+
             case CraftingButton.CraftingOptionType.TO_NORMAL:
-                GameManager.Instance.PlayerStats.ModifyItemFragments(-AffixedItem.GetToNormalCost(currentItem));
+                cost = -AffixedItem.GetToNormalCost(currentItem);
                 currentItem.SetRarityToNormal();
                 currentItem.RemoveAllAffixLocks();
                 break;
+
             case CraftingButton.CraftingOptionType.LOCK_AFFIX:
                 LockAffixOnClick();
                 return;
         }
-
+        GameManager.Instance.PlayerStats.ModifyItemFragments(cost);
         SaveManager.CurrentSave.SavePlayerData();
         SaveManager.CurrentSave.SaveEquipmentData(currentItem as Equipment);
         SaveManager.Save();
 
         UpdatePanels();
     }
-
 
     public void LockAffixOnClick()
     {
@@ -423,5 +441,10 @@ public class ItemCraftingPanel : MonoBehaviour
             return;
         selectedOption?.Invoke();
         UpdatePanels();
+    }
+
+    public void OpenModifierWindowOnClick()
+    {
+        craftingModifierWindow.gameObject.SetActive(true);
     }
 }

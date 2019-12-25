@@ -65,7 +65,7 @@ public class PopUpWindow : MonoBehaviour
         }
     }
 
-    public void OpenTextWindow(string text, int width = 400, int height = 700)
+    public void OpenTextWindow(string text, int width = 380, int height = 700)
     {
         ((RectTransform)popUpWindowMain.transform).sizeDelta = new Vector2(width, height);
         UIManager.Instance.OpenWindow(this.gameObject, false);
@@ -80,7 +80,7 @@ public class PopUpWindow : MonoBehaviour
         textField.text = text;
     }
 
-    public void OpenVerticalWindow(int width = 400, int height = 700)
+    public void OpenVerticalWindow(int width = 380, int height = 700)
     {
         ((RectTransform)popUpWindowMain.transform).sizeDelta = new Vector2(width, height);
         UIManager.Instance.OpenWindow(this.gameObject, false);
@@ -92,7 +92,7 @@ public class PopUpWindow : MonoBehaviour
         isGrid = false;
     }
 
-    public void OpenGridWindow(int width = 400, int height = 700)
+    public void OpenGridWindow(int width = 380, int height = 700)
     {
         ((RectTransform)popUpWindowMain.transform).sizeDelta = new Vector2(width, height);
         UIManager.Instance.OpenWindow(this.gameObject, false);
@@ -104,7 +104,7 @@ public class PopUpWindow : MonoBehaviour
         isGrid = true;
     }
 
-    public void OpenTextInput(string defaultString, int width = 400, int height = 150)
+    public void OpenTextInput(string defaultString, int width = 380, int height = 150)
     {
         ((RectTransform)popUpWindowMain.transform).sizeDelta = new Vector2(width, height);
         UIManager.Instance.OpenWindow(this.gameObject, false);
@@ -120,7 +120,7 @@ public class PopUpWindow : MonoBehaviour
 
     public void OpenSettingsWindow()
     {
-        ((RectTransform)popUpWindowMain.transform).sizeDelta = new Vector2(400, 700);
+        ((RectTransform)popUpWindowMain.transform).sizeDelta = new Vector2(380, 700);
 
         UIManager.Instance.OpenWindow(this.gameObject, false);
 

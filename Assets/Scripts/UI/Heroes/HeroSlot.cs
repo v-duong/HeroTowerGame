@@ -8,6 +8,7 @@ public class HeroSlot : MonoBehaviour
     public HeroData hero;
     public Image slotImage;
     public Image levelImage;
+    public Image heroSprite;
     public TextMeshProUGUI nameText;
     public TextMeshProUGUI archetypeText;
     public TextMeshProUGUI ability1Text;
@@ -25,6 +26,7 @@ public class HeroSlot : MonoBehaviour
     {
         this.hero = hero;
         nameText.text = hero.Name;
+        heroSprite.sprite = ResourceManager.Instance.GetHeroSprite(hero.spriteName);
 
         archetypeText.text = hero.PrimaryArchetype.Base.LocalizedName;
         if (hero.SecondaryArchetype != null)
@@ -35,7 +37,7 @@ public class HeroSlot : MonoBehaviour
 
         if (hero.GetAbilityFromSlot(0) != null)
         {
-            ability1Text.text = hero.GetAbilityFromSlot(0).abilityBase.idName;
+            ability1Text.text = hero.GetAbilityFromSlot(0).abilityBase.LocalizedName;
 
             if (!hero.GetAbilityFromSlot(0).IsUsable)
                 ability1Text.text = "<color=#b00000>" + ability1Text.text + " (Unusable)</color>";
@@ -46,7 +48,7 @@ public class HeroSlot : MonoBehaviour
 
         if (hero.GetAbilityFromSlot(1) != null)
         {
-            ability2Text.text = hero.GetAbilityFromSlot(1).abilityBase.idName;
+            ability2Text.text = hero.GetAbilityFromSlot(1).abilityBase.LocalizedName;
 
 
             if (!hero.GetAbilityFromSlot(1).IsUsable)

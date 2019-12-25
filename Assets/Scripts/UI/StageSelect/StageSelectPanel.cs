@@ -89,12 +89,15 @@ public class StageSelectPanel : MonoBehaviour
                 {
                     teamSelectionHeroSlot.nameText.text = hero.Name;
                     teamSelectionHeroSlot.levelText.text = "Lv" + hero.Level.ToString("N0");
+                    teamSelectionHeroSlot.sprite.sprite = ResourceManager.Instance.GetHeroSprite(hero.spriteName);
+                    teamSelectionHeroSlot.sprite.color = Color.white;
                     heroCount++;
                 }
                 else
                 {
                     teamSelectionHeroSlot.nameText.text = "";
                     teamSelectionHeroSlot.levelText.text = "";
+                    teamSelectionHeroSlot.sprite.color = new Color(1f,1f,1f,0f);
                 }
             }
 
@@ -148,7 +151,7 @@ public class StageSelectPanel : MonoBehaviour
             if (heroesWithoutSkills > 0)
             {
                 PopUpWindow popUpWindow = UIManager.Instance.PopUpWindow;
-                popUpWindow.OpenTextWindow("One or more Heroes have no usable Abilities.\nContinue anyway?", 400, 200);
+                popUpWindow.OpenTextWindow("One or more Heroes have no usable Abilities.\nContinue anyway?", 380, 200);
                 popUpWindow.textField.fontSize = 24;
                 popUpWindow.textField.paragraphSpacing = 0;
                 popUpWindow.textField.alignment = TextAlignmentOptions.Center;

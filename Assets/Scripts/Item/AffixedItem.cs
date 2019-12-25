@@ -200,7 +200,7 @@ public abstract class AffixedItem : Item
         if (additionalGroupTypes != null)
             groupTypes.UnionWith(additionalGroupTypes);
 
-        return AddAffix(ResourceManager.Instance.GetRandomAffixBase((AffixType)affixType, ItemLevel, groupTypes, GetBonusTagTypeList((AffixType)affixType)));
+        return AddAffix(ResourceManager.Instance.GetRandomAffixBase((AffixType)affixType, ItemLevel, groupTypes, GetBonusTagTypeList((AffixType)affixType), weightModifiers, affixLevelSkewFactor));
     }
 
     public List<string> GetBonusTagTypeList(AffixType type)

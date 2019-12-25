@@ -19,6 +19,9 @@ public class SummonScrollSlot : MonoBehaviour
     [SerializeField]
     private Image recallFill;
 
+    [SerializeField]
+    private Image heroSprite;
+
 
 
     public HeroActor actor;
@@ -34,6 +37,7 @@ public class SummonScrollSlot : MonoBehaviour
         nameText.text = actor.Data.Name;
         actor.gameObject.SetActive(false);
         this.actor = actor;
+        heroSprite.sprite = this.actor.GetComponent<SpriteRenderer>().sprite;
     }
 
     private void Update()

@@ -22,7 +22,11 @@ public class HeroScrollWindow : MonoBehaviour
     {
         GridLayoutGroup grid = GetComponent<GridLayoutGroup>();
         float ySize = 150;
-        if (GameManager.Instance.aspectRatio >= 1.85)
+        if (GameManager.Instance.aspectRatio >= 1.92)
+        {
+            grid.cellSize = new Vector2(180, ySize);
+        }
+        else if (GameManager.Instance.aspectRatio >= 1.85)
         {
             grid.cellSize = new Vector2(200, ySize);
         }

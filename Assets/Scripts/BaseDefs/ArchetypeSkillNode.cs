@@ -63,10 +63,18 @@ public class ArchetypeSkillNode
             if (bonus.bonusType < (BonusType)HeroArchetypeData.SpecialBonusStart
                 && value == 0
                 && (bonus.modifyType != ModifyType.MULTIPLY && bonus.modifyType != ModifyType.FIXED_TO))
+            {
                 continue;
+            }
 
             s += "○ " + LocalizationManager.Instance.GetLocalizationText_BonusType(bonus.bonusType, bonus.modifyType, value, bonus.restriction);
         }
+
+        foreach (var x in triggeredEffects)
+        {
+            s += "○ " + LocalizationManager.Instance.GetLocalizationText_TriggeredEffect(x, x.effectMinValue);
+        }
+
         return s;
     }
 }

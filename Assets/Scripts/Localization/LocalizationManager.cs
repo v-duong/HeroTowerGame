@@ -88,6 +88,21 @@ public class LocalizationManager : MonoBehaviour
         }
     }
 
+    public string GetLocalizationText(AbilitySourceType sourceType)
+    {
+        string stringId = "sourceType." + sourceType.ToString();
+        if (commonLocalizationData.TryGetValue(stringId, out string value))
+        {
+            if (value == "")
+                return stringId;
+            return value;
+        }
+        else
+        {
+            return stringId;
+        }
+    }
+
     public string GetLocalizationText(AbilityTargetType targetType)
     {
         string stringId = "targetType." + targetType.ToString();
@@ -400,7 +415,7 @@ public class LocalizationManager : MonoBehaviour
         return s;
     }
 
-    public string GetLocalizationText_BonusType(BonusType type, ModifyType modifyType, float value, GroupType restriction)
+    public string GetLocalizationText_BonusType(BonusType type, ModifyType modifyType, float value, GroupType restriction, float duration = 0)
     {
         string output = GetBonusTypeString(type);
 
@@ -439,6 +454,11 @@ public class LocalizationManager : MonoBehaviour
             case ModifyType.FIXED_TO:
                 output += "is " + value;
                 break;
+        }
+
+        if (duration > 0)
+        {
+            output += " for " + duration.ToString("N1") + "s";
         }
 
         output += "</nobr>\n";

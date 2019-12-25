@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -38,9 +39,8 @@ public class GameManager : MonoBehaviour
 
         currentSceneName = "mainMenu";
 
-#if !UNITY_EDITOR
-        SceneManager.LoadScene("mainMenu", LoadSceneMode.Additive);
-#endif
+        StartCoroutine(StartRoutine());
+
         isInBattle = false;
         isInMainMenu = true;
 
@@ -56,14 +56,34 @@ public class GameManager : MonoBehaviour
 
 #if UNITY_EDITOR
         CheckForBonuses();
+
+        GameManager.Instance.PlayerStats.AddEquipmentToInventory(Equipment.CreateUniqueFromBase( ResourceManager.Instance.GetUniqueBase("Frostfire"), 100));
 #endif
 
+
+    }
+
+    private IEnumerator StartRoutine()
+    {
         PlayerStats = new PlayerStats();
         if (!SaveManager.Load())
         {
             AddStartingData();
             SaveManager.SaveAll();
         }
+
+#if !UNITY_EDITOR
+        AsyncOperation asyncOperation = SceneManager.LoadSceneAsync("mainMenu", LoadSceneMode.Additive);
+        while (!asyncOperation.isDone)
+        {
+            yield return null;
+        }
+#endif
+
+        if (!PlayerStats.hasSeenStartingMessage)
+            OpenTutorialMessage();
+
+        yield break;
     }
 
     public void InitializePlayerStats()
@@ -82,6 +102,9 @@ public class GameManager : MonoBehaviour
             yield return null;
         }
         SceneManager.LoadScene("mainMenu", LoadSceneMode.Additive);
+        yield return null;
+        if (!PlayerStats.hasSeenStartingMessage)
+            OpenTutorialMessage();
     }
 
     private void AddStartingData()
@@ -110,6 +133,10 @@ public class GameManager : MonoBehaviour
         HeroData startingRanger = HeroData.CreateNewHero("Ranger", ResourceManager.Instance.GetArchetypeBase("Ranger"), ResourceManager.Instance.GetArchetypeBase("Novice"));
         HeroData startingMage = HeroData.CreateNewHero("Mage", ResourceManager.Instance.GetArchetypeBase("Mage"), ResourceManager.Instance.GetArchetypeBase("Novice"));
 
+        startingSoldier.spriteName = "hero2";
+        startingRanger.spriteName = "hero1";
+        startingMage.spriteName = "hero4";
+
         PlayerStats.AddHeroToList(startingSoldier);
         PlayerStats.AddHeroToList(startingRanger);
         PlayerStats.AddHeroToList(startingMage);
@@ -117,6 +144,23 @@ public class GameManager : MonoBehaviour
         PlayerStats.SetHeroToTeamSlot(startingSoldier, 0, 0);
         PlayerStats.SetHeroToTeamSlot(startingRanger, 0, 1);
         PlayerStats.SetHeroToTeamSlot(startingMage, 0, 2);
+        PlayerStats.hasSeenStartingMessage = false;
+    }
+
+    private void OpenTutorialMessage()
+    {
+        PopUpWindow popUpWindow = UIManager.Instance.PopUpWindow;
+        popUpWindow.OpenTextWindow("");
+        popUpWindow.SetButtonValues(null, null, "Close", delegate {
+            UIManager.Instance.CloseCurrentWindow();
+            PlayerStats.hasSeenStartingMessage = true;
+            SaveManager.CurrentSave.SavePlayerData();
+            SaveManager.Save();
+        });
+        popUpWindow.textField.text = "You should start by assigning each hero their starting ability and weapons. You'll find them by tapping the Heroes button.\n\nIn the corner of some windows, there is a question mark you can tap to bring up a help page.";
+        popUpWindow.textField.fontSize = 18;
+        popUpWindow.textField.paragraphSpacing = 8;
+        popUpWindow.textField.alignment = TextAlignmentOptions.Left;
     }
 
     private void CheckForBonuses()

@@ -53,7 +53,7 @@ public class AbilityExtractPanel : MonoBehaviour
     {
         UIManager.Instance.CloseCurrentWindow();
         abilitySlot.ClearSlot();
-        archetypeSlot.GetComponentInChildren<TextMeshProUGUI>().text = "SELECT ARCHETYPE";
+        archetypeSlot.GetComponentInChildren<TextMeshProUGUI>().text = "Select Archetype";
         confirmButton.interactable = false;
         ClearSlotsInUse();
 
@@ -87,7 +87,7 @@ public class AbilityExtractPanel : MonoBehaviour
         }
         slot.transform.SetParent(scrollViewContent.transform, true);
         slot.GetComponent<Button>().onClick.RemoveAllListeners();
-        slot.textField.text = ability.idName;
+        slot.textField.text = ability.LocalizedName;
         slot.GetComponent<Button>().onClick.AddListener(delegate { ExtractableSlotOnClick(ability); });
         slotsInUse.Add(slot);
         return slot;

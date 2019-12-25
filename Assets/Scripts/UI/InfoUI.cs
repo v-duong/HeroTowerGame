@@ -3,18 +3,12 @@ using UnityEngine;
 
 public class InfoUI : MonoBehaviour
 {
-    public TextMeshProUGUI statsText;
+    public TextMeshProUGUI fragText;
+    public TextMeshProUGUI xpText;
 
     private void Update()
     {
-        //string s = "";
-        /*
-        if (GameManager.Instance.PlayerStats.consumables != null)
-            foreach (KeyValuePair<ConsumableType, int> pair in GameManager.Instance.PlayerStats.consumables)
-            {
-                s += pair.Key + ": " + pair.Value + "\n";
-            }
-            */
-        //statsText.text = s;
+        fragText.text = GameManager.Instance.PlayerStats.ItemFragments.ToString("N0") + " <sprite=10>";
+        xpText.text = GameManager.Instance.PlayerStats.ExpStock.ToString("N0") + " XP";
     }
 }

@@ -10,6 +10,7 @@ public class ArchetypeNodeInfoPanel : MonoBehaviour
     public TextMeshProUGUI nextInfoText;
     public TextMeshProUGUI topApText;
     public ArchetypeUITreeNode uiNode;
+    public GameObject buttonsParent;
     public Button levelButton;
     public Button delevelButton;
     public HeroData hero;
@@ -20,14 +21,12 @@ public class ArchetypeNodeInfoPanel : MonoBehaviour
         ClearPanel();
         if (isPreviewMode)
         {
-            levelButton.gameObject.SetActive(false);
-            delevelButton.gameObject.SetActive(false);
+            buttonsParent.SetActive(false);
             topApText.text = "";
         }
         else
         {
-            levelButton.gameObject.SetActive(true);
-            delevelButton.gameObject.SetActive(true);
+            buttonsParent.SetActive(true);
             topApText.text = "AP: " + hero.ArchetypePoints;
         }
     }
@@ -84,6 +83,7 @@ public class ArchetypeNodeInfoPanel : MonoBehaviour
             string[] strings = LocalizationManager.Instance.GetLocalizationText_Ability(node.abilityId);
             infoText.text += "<b>" + strings[0] + " Lv" + hero.GetAbilityLevel() + "</b>\n";
             infoText.text += LocalizationManager.Instance.GetLocalizationText_AbilityBaseDamage(hero.GetAbilityLevel(), node.GetAbility());
+            infoText.text += node.GetAbility().GetAbilityBonusTexts(hero.GetAbilityLevel());
             infoText.text += strings[1];
         }
         else
@@ -117,39 +117,31 @@ public class ArchetypeNodeInfoPanel : MonoBehaviour
     public void UpdatePanel_Preview()
     {
         infoText.text = "";
-        float bonusValue;
         if (node.type == NodeType.ABILITY)
         {
             string[] strings = LocalizationManager.Instance.GetLocalizationText_Ability(node.abilityId);
             infoText.text += "<b>" + strings[0] + "</b>\n";
             infoText.text += "Lv0: " + LocalizationManager.Instance.GetLocalizationText_AbilityBaseDamage(0, node.GetAbility());
-            infoText.text += "Lv50: " + LocalizationManager.Instance.GetLocalizationText_AbilityBaseDamage(50, node.GetAbility());
+            infoText.text += node.GetAbility().GetAbilityBonusTexts(0);
+            nextInfoText.gameObject.SetActive(true);
+            nextInfoText.text = "Lv50: " + LocalizationManager.Instance.GetLocalizationText_AbilityBaseDamage(50, node.GetAbility());
+            nextInfoText.text += node.GetAbility().GetAbilityBonusTexts(50);
             infoText.text += strings[1];
         }
         else
         {
             infoText.text += "<b>Level 1: </b>\n";
 
-            foreach (NodeScalingBonusProperty bonusProperty in node.bonuses)
-            {
-                bonusValue = bonusProperty.growthValue;
-                if (bonusValue == 0 && (bonusProperty.modifyType != ModifyType.MULTIPLY || bonusProperty.modifyType != ModifyType.FIXED_TO))
-                    continue;
-
-                infoText.text += LocalizationManager.Instance.GetLocalizationText_BonusType(bonusProperty.bonusType, bonusProperty.modifyType, bonusValue, bonusProperty.restriction);
-            }
+            infoText.text += node.GetBonusInfoString(1);
             if (node.maxLevel != 1)
             {
-                infoText.text += "<b>Level " + node.maxLevel + ":</b>\n";
+                nextInfoText.gameObject.SetActive(true);
+                nextInfoText.text = "<b>Level " + node.maxLevel + ":</b>\n";
 
-                foreach (NodeScalingBonusProperty bonusProperty in node.bonuses)
-                {
-                    bonusValue = bonusProperty.growthValue * (node.maxLevel - 1) + bonusProperty.finalLevelValue;
-                    if (bonusValue == 0 && (bonusProperty.modifyType != ModifyType.MULTIPLY || bonusProperty.modifyType != ModifyType.FIXED_TO))
-                        continue;
-
-                    infoText.text += LocalizationManager.Instance.GetLocalizationText_BonusType(bonusProperty.bonusType, bonusProperty.modifyType, bonusValue, bonusProperty.restriction);
-                }
+                nextInfoText.text += node.GetBonusInfoString(node.maxLevel);
+            } else
+            {
+                nextInfoText.gameObject.SetActive(false);
             }
         }
     }

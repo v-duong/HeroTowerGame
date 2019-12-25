@@ -104,6 +104,19 @@ public class BattleManager : MonoBehaviour
             spawnWarnings.Add(spawnWarning);
         }
 
+        foreach (EnemyWaveItem waveItem in Waves[0].enemyList)
+        {
+            float timeUntilEnemy = waveItem.startDelay + Waves[0].delayUntilNextWave;
+            SpawnWarning spawnWarning = spawnWarnings[waveItem.spawnerIndex];
+
+            spawnWarning.AddTimeInfo(new SpawnWarning.TimeInfo(0, currentWave + 1));
+        }
+
+        foreach (SpawnWarning s in spawnWarnings)
+        {
+            s.StartWarning();
+        }
+
         battleInfo.InitializeNextWaveInfo(Waves[0].enemyList, null, 0, 1, true);
     }
 
@@ -419,9 +432,9 @@ public class BattleManager : MonoBehaviour
 
     private void CalculateExpGain(BattleEndWindow battleEndWindow)
     {
-        double multiplier = System.Math.Pow(1.15f, survivalLoopCount);
+        double multiplier = System.Math.Pow(1.1f, survivalLoopCount);
         if (perfectBonus)
-            multiplier *= 1.25f;
+            multiplier *= 1.15f;
         gainedExpThisLoop = (int)(stageInfo.baseExperience * (multiplier));
         gainedExp += gainedExpThisLoop;
     }
@@ -524,11 +537,11 @@ public class BattleManager : MonoBehaviour
             int totalWaveCount = survivalLoopCount * Waves.Count + (currentWave + 1);
 
             StatBonus healthBonus = new StatBonus();
-            healthBonus.AddBonus(ModifyType.MULTIPLY, 10 * survivalLoopCount);
+            healthBonus.AddBonus(ModifyType.MULTIPLY, 15 * survivalLoopCount);
             bonuses.Add(BonusType.MAX_HEALTH, healthBonus);
 
             StatBonus damageBonus = new StatBonus();
-            damageBonus.AddBonus(ModifyType.MULTIPLY, 10 * survivalLoopCount);
+            damageBonus.AddBonus(ModifyType.MULTIPLY, 15 * survivalLoopCount);
             bonuses.Add(BonusType.GLOBAL_DAMAGE, damageBonus);
         }
 
@@ -551,7 +564,15 @@ public class BattleManager : MonoBehaviour
 
         for (int j = 0; j < enemyWaveItem.enemyCount; j++)
         {
-            SpawnEnemy(enemyWaveItem, bonuses, rarity);
+            int rarityMod = 0;
+            if (survivalLoopCount > 0 && rarity < RarityType.RARE)
+            {
+                if (UnityEngine.Random.Range(0, 1f) < survivalLoopCount * 0.08f)
+                {
+                    rarityMod = 1;
+                }
+            }
+            SpawnEnemy(enemyWaveItem, bonuses, rarity + rarityMod);
             yield return new WaitForSeconds(delayBetween);
         }
         spawnCoroutinesRunning--;

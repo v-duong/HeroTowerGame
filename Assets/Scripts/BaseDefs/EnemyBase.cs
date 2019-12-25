@@ -31,6 +31,8 @@ public class EnemyBase
     [JsonProperty]
     public readonly List<EnemyAbilityBase> abilitiesList;
     [JsonProperty]
+    public readonly List<AbilityScalingBonusProperty> leveledBonusProperties;
+    [JsonProperty]
     public readonly string spriteName;
     [JsonProperty]
     public readonly float attackTargetRange;

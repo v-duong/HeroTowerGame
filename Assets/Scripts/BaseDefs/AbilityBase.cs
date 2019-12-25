@@ -137,6 +137,36 @@ public class AbilityBase
     {
         return groupTypes.AsReadOnly();
     }
+
+    public string GetAbilityBonusTexts(int abilityLevel)
+    {
+        string infoText = "";
+        foreach (AbilityScalingBonusProperty bonusProperty in bonusProperties)
+        {
+            infoText += "○ " + LocalizationManager.Instance.GetLocalizationText_BonusType(bonusProperty.bonusType,
+                                                                                        bonusProperty.modifyType,
+                                                                                        bonusProperty.initialValue + bonusProperty.growthValue * abilityLevel,
+                                                                                        bonusProperty.restriction);
+        }
+
+        foreach (AbilityScalingAddedEffect appliedEffect in appliedEffects)
+        {
+            if (appliedEffect.effectType == EffectType.BUFF || appliedEffect.effectType == EffectType.DEBUFF)
+            {
+                infoText += "○ " + LocalizationManager.Instance.GetLocalizationText_BonusType(appliedEffect.bonusType,
+                                                                             appliedEffect.modifyType,
+                                                                             appliedEffect.initialValue + appliedEffect.growthValue * abilityLevel,
+                                                                             GroupType.NO_GROUP, appliedEffect.duration);
+            }
+        }
+
+        foreach (TriggeredEffectBonusProperty triggeredEffect in triggeredEffects)
+        {
+            infoText += "○ " + LocalizationManager.Instance.GetLocalizationText_TriggeredEffect(triggeredEffect, triggeredEffect.effectMaxValue);
+        }
+
+        return infoText;
+    }
 }
 
 

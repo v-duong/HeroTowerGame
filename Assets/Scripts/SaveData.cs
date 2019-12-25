@@ -23,6 +23,7 @@ public class SaveData
     public int itemFragments;
     public int archetypeFragments;
     public int lastPlayedWorld;
+    public bool hasSeenStartingMessage;
 
     public void SaveAll()
     {
@@ -62,6 +63,7 @@ public class SaveData
         stageClearInfo = ps.stageClearInfo;
         worldUnlockInfo = ps.worldUnlockInfo;
         lastPlayedWorld = ps.lastPlayedWorld;
+        hasSeenStartingMessage = ps.hasSeenStartingMessage;
 
         Array.Clear(heroTeamList, 0, PlayerStats.HERO_TEAM_MAX_NUM);
         for (int i = 0; i < PlayerStats.HERO_TEAM_MAX_NUM; i++)
@@ -89,6 +91,7 @@ public class SaveData
         ps.stageClearInfo = stageClearInfo;
         ps.worldUnlockInfo = worldUnlockInfo;
         ps.lastPlayedWorld = lastPlayedWorld;
+        ps.hasSeenStartingMessage = hasSeenStartingMessage;
 
         if (heroTeamList != null)
         {
@@ -340,6 +343,7 @@ public class SaveData
         heroSaveData.baseAgility = hero.BaseAgility;
         heroSaveData.baseWill = hero.BaseWill;
         heroSaveData.killCount = hero.killCount;
+        heroSaveData.spriteName = hero.spriteName;
 
         foreach (EquipSlotType equipSlot in Enum.GetValues(typeof(EquipSlotType)))
         {
@@ -442,6 +446,7 @@ public class SaveData
     public class HeroSaveData
     {
         public Guid id;
+        public string spriteName;
         public string name;
         public int level;
         public int experience;

@@ -46,6 +46,12 @@ public class EnemyData : ActorData
         }
 
         CurrentShieldDelay = 0f;
+
+
+        foreach(AbilityScalingBonusProperty bonusProp in enemyBase.leveledBonusProperties)
+        {
+            AddStatBonus(bonusProp.bonusType, bonusProp.restriction, bonusProp.modifyType, bonusProp.initialValue + bonusProp.growthValue*level);
+        }
     }
 
     public override void UpdateActorData()

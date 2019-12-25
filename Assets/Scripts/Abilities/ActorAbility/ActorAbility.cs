@@ -1465,7 +1465,7 @@ public partial class ActorAbility
             }
             else
             {
-                s += "○ " + LocalizationManager.Instance.GetLocalizationText_BonusType(bonus.bonusType, bonus.modifyType, (float)Math.Round(bonus.effectValue, 3), GroupType.NO_GROUP);
+                s += "○ " + LocalizationManager.Instance.GetLocalizationText_BonusType(bonus.bonusType, bonus.modifyType, (float)Math.Round(bonus.effectValue, 3), GroupType.NO_GROUP, bonus.effectDuration);
             }
 
             i++;

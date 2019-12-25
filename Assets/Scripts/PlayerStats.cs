@@ -29,6 +29,7 @@ public class PlayerStats
     public Dictionary<string, int> stageClearInfo;
     public Dictionary<int, bool> worldUnlockInfo;
     public int lastPlayedWorld;
+    public bool hasSeenStartingMessage;
 
     public IList<Equipment> EquipmentInventory
     {
