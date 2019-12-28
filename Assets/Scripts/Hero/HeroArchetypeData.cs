@@ -273,6 +273,19 @@ public class HeroArchetypeData : IAbilitySource
         return true;
     }
 
+    public void ResetArchetypeTree()
+    {
+        foreach(ArchetypeSkillNode node in Base.nodeList)
+        {
+            while(GetNodeLevel(node) > node.initialLevel)
+            {
+                DelevelNode(node);
+                hero.ModifyArchetypePoints(1);
+            }
+        }
+        UIManager.Instance.CloseCurrentWindow();
+    }
+
     public bool ContainsAbility(AbilityBase abilityBase)
     {
         foreach (var leveledAbility in AvailableAbilityList)

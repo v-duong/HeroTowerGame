@@ -10,7 +10,7 @@ public class CraftingModifierWindow : MonoBehaviour
 
     public void OnClickCloseWindow()
     {
-        gameObject.SetActive(false);
+        UIManager.Instance.CloseCurrentWindow();
         ItemCraftingPanel craftingPanel = UIManager.Instance.ItemCraftingPanel;
         craftingPanel.modifiers.Clear();
         float costMulti = 1f;

@@ -322,7 +322,10 @@ public class LocalizationManager : MonoBehaviour
         if (commonLocalizationData.TryGetValue("groupType." + stringId + ".restriction", out string value))
         {
             if (value == "")
+            {
+                Debug.Log("NOT FOUND " + groupType);
                 return stringId;
+            }
 
             if (value.Contains("{plural}"))
                 value = value.Replace("{plural}", GetLocalizationText_GroupTypePlural(stringId));

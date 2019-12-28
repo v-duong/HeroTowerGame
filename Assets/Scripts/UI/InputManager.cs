@@ -25,7 +25,6 @@ public class InputManager : MonoBehaviour
     private Queue<TargetingCircle> targetingCirclesAvailable = new Queue<TargetingCircle>();
     private List<TargetingCircle> targetingCirclesInUse = new List<TargetingCircle>();
 
-
     public void SetSummoning(HeroActor actor, Action summonCallback)
     {
         SetTileHighlight(true);
@@ -50,8 +49,6 @@ public class InputManager : MonoBehaviour
             circle.gameObject.SetActive(false);
             targetingCirclesAvailable.Enqueue(circle);
         }
-
-
     }
 
     public void SetCameraBounds()
@@ -60,8 +57,8 @@ public class InputManager : MonoBehaviour
         float ratio = (float)Screen.width / Screen.height;
         maxNegativeX = bounds.center.x - bounds.extents.x + mainCamera.orthographicSize * ratio;
         maxPositiveX = bounds.center.x + bounds.extents.x - mainCamera.orthographicSize * ratio;
-        maxNegativeY = bounds.center.y - bounds.extents.y + mainCamera.orthographicSize /1.4f;
-        maxPositiveY = bounds.center.y + bounds.extents.y - mainCamera.orthographicSize /1.4f;
+        maxNegativeY = bounds.center.y - bounds.extents.y + mainCamera.orthographicSize / 1.4f;
+        maxPositiveY = bounds.center.y + bounds.extents.y - mainCamera.orthographicSize / 1.4f;
         if (maxNegativeY > maxPositiveY)
         {
             maxNegativeY = -1;
@@ -116,7 +113,7 @@ public class InputManager : MonoBehaviour
 
         var correctedPosition = Helpers.ReturnTilePosition(highlightTilemap, position, -3);
 
-        if (StageManager.Instance.BattleManager.activeHeroes.FindAll(x => Vector2.Distance(x.transform.position ,correctedPosition) < 0.2f).Count > 0)
+        if (StageManager.Instance.BattleManager.activeHeroes.FindAll(x => Vector2.Distance(x.transform.position, correctedPosition) < 0.2f).Count > 0)
             return false;
 
         return true;
@@ -132,11 +129,13 @@ public class InputManager : MonoBehaviour
                 UIManager.Instance.CloseCurrentWindow();
             }
 
-            if (Input.mouseScrollDelta.y != 0
-            || (Input.touchCount == 2 && Input.GetTouch(0).phase == TouchPhase.Moved && Input.GetTouch(1).phase == TouchPhase.Moved))
+            if (UIManager.Instance.ArchetypeCanvas != null && (UIManager.Instance.currentWindow == UIManager.Instance.ArchetypeUITreeWindow.gameObject))
             {
-                if (UIManager.Instance.ArchetypeCanvas != null && (UIManager.Instance.currentWindow.gameObject == UIManager.Instance.ArchetypeUITreeWindow.gameObject))
+                if (Input.mouseScrollDelta.y != 0
+                || (Input.touchCount == 2 && Input.GetTouch(0).phase == TouchPhase.Moved && Input.GetTouch(1).phase == TouchPhase.Moved))
                 {
+                    UIManager.Instance.ArchetypeUITreeWindow.ScrollView.enabled = false;
+
                     float scrollValue;
 
                     if (Input.touchCount == 2)
@@ -156,7 +155,11 @@ public class InputManager : MonoBehaviour
                     contentRect.transform.localScale = new Vector2(scaleValue, scaleValue);
                     contentRect.anchoredPosition = new Vector2(contentRect.anchoredPosition.x * scaleMultiplier, contentRect.anchoredPosition.y * scaleMultiplier);
                 }
-            }
+                else
+                {
+                    UIManager.Instance.ArchetypeUITreeWindow.ScrollView.enabled = true;
+                }
+            } 
 
             return;
         }
@@ -221,7 +224,6 @@ public class InputManager : MonoBehaviour
         }
         else
         {
-
             if (Input.GetMouseButtonDown(0))
             {
                 OnMouseDownHandler();
@@ -327,6 +329,8 @@ public class InputManager : MonoBehaviour
             int i = 0;
             foreach (ActorAbility ability in actor.GetInstancedAbilities())
             {
+                if (ability.abilityBase.abilityType == AbilityType.SELF_BUFF)
+                    continue;
                 TargetingCircle circle = targetingCirclesAvailable.Dequeue();
                 targetingCirclesInUse.Add(circle);
                 circle.transform.localScale = new Vector3(ability.TargetRange * 2, ability.TargetRange * 2, 1);

@@ -67,11 +67,11 @@ public abstract class ActorEffect
         switch (effectType)
         {
             case EffectType.BLEED:
-                target.AddStatusEffect(new BleedEffect(target, source, effectPower * auraEffectiveness * target.Data.OnHitData.effectData[EffectType.BLEED].Resistance, duration));
+                target.AddStatusEffect(new BleedEffect(target, source, effectPower * auraEffectiveness, duration));
                 break;
 
             case EffectType.BURN:
-                target.AddStatusEffect(new BurnEffect(target, source, effectPower * auraEffectiveness * target.Data.OnHitData.effectData[EffectType.BURN].Resistance, duration));
+                target.AddStatusEffect(new BurnEffect(target, source, effectPower * auraEffectiveness , duration));
                 break;
 
             case EffectType.CHILL:
@@ -79,7 +79,7 @@ public abstract class ActorEffect
                 break;
 
             case EffectType.ELECTROCUTE:
-                target.AddStatusEffect(new ElectrocuteEffect(target, source, effectPower * auraEffectiveness * target.Data.OnHitData.effectData[EffectType.ELECTROCUTE].Resistance, duration));
+                target.AddStatusEffect(new ElectrocuteEffect(target, source, effectPower * auraEffectiveness, duration));
                 break;
 
             case EffectType.FRACTURE:
@@ -91,11 +91,11 @@ public abstract class ActorEffect
                 break;
 
             case EffectType.RADIATION:
-                target.AddStatusEffect(new RadiationEffect(target, source, effectPower * auraEffectiveness * target.Data.OnHitData.effectData[EffectType.RADIATION].Resistance, duration));
+                target.AddStatusEffect(new RadiationEffect(target, source, effectPower * auraEffectiveness , duration));
                 break;
 
             case EffectType.POISON:
-                target.AddStatusEffect(new PoisonEffect(target, source, effectPower * auraEffectiveness * target.Data.OnHitData.effectData[EffectType.POISON].Resistance, duration));
+                target.AddStatusEffect(new PoisonEffect(target, source, effectPower * auraEffectiveness, duration));
                 break;
 
             case EffectType.STUN:

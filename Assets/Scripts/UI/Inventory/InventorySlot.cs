@@ -1,10 +1,13 @@
 ﻿using System;
+using System.Text;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
 public class InventorySlot : MonoBehaviour
 {
+    private static StringBuilder stringBuilder = new StringBuilder(128);
+    private static StringBuilder stringBuilder2 = new StringBuilder(128);
     public Item item;
     public Image slotImage;
     public Image lockImage;
@@ -20,9 +23,15 @@ public class InventorySlot : MonoBehaviour
     public TextMeshProUGUI equippedToText;
     public GameObject affixParent;
     public Action<Item> onClickAction;
+    public GameObject allTextParent;
     public bool multiSelectMode = false;
     public bool alreadySelected = false;
     public bool showItemValue = false;
+
+    public void SetTextVisiblity(bool visible)
+    {
+        allTextParent.SetActive(visible);
+    }
 
     public void ClearSlot()
     {
@@ -41,14 +50,14 @@ public class InventorySlot : MonoBehaviour
 
     public void UpdateSlot(bool isHeroEquipSlot = false)
     {
-        infoText1.text = "";
-        infoText2.text = "";
         groupText.text = "";
         slotText.text = "";
         prefixText.text = "";
         suffixText.text = "";
         baseItemText.text = "";
         equippedToText.text = "";
+        stringBuilder.Clear();
+        stringBuilder2.Clear();
         lockImage.gameObject.SetActive(false);
         if (item == null)
         {
@@ -64,26 +73,28 @@ public class InventorySlot : MonoBehaviour
                 Armor armor = item as Armor;
                 groupText.text = LocalizationManager.Instance.GetLocalizationText(armor.Base.group);
                 slotText.text = LocalizationManager.Instance.GetLocalizationText(armor.Base.equipSlot);
-                infoText1.text += "AR: " + armor.armor + "\n";
-                infoText1.text += "MS: " + armor.shield;
-                infoText2.text += "DR: " + armor.dodgeRating + "\n";
-                infoText2.text += "RR: " + armor.resolveRating;
+                stringBuilder.AppendFormat("AR: {0} \n", armor.armor);
+                stringBuilder.AppendFormat("MS: {0}", armor.shield);
+                stringBuilder2.AppendFormat("DR: {0}\n", armor.dodgeRating);
+                stringBuilder2.AppendFormat("RR: {0}", armor.resolveRating);
                 if (armor.GetGroupTypes().Contains(GroupType.SHIELD))
                 {
-                    infoText1.text += "\nBlock%: " + armor.blockChance + "%";
-                    infoText2.text += "\nBlockDmg: " + armor.blockProtection + "%";
+                    stringBuilder.AppendFormat("\nBlock%: {0}%", armor.blockChance);
+                    stringBuilder2.AppendFormat("\nBlockDmg: {0}%", armor.blockProtection);
                 }
                 break;
 
             case ItemType.WEAPON:
                 Weapon weapon = item as Weapon;
                 groupText.text = LocalizationManager.Instance.GetLocalizationText(weapon.Base.group);
-                infoText1.text += "<sprite=0> DPS: " + weapon.GetPhysicalDPS().ToString("n1") + "\n";
-                infoText1.text += "<sprite=7> DPS: " + weapon.GetElementalDPS().ToString("n1") + "\n";
-                infoText1.text += "<sprite=8> DPS: " + weapon.GetPrimordialDPS().ToString("n1");
-                infoText2.text += "Crit: " + weapon.CriticalChance.ToString("n2") + "%\n";
-                infoText2.text += "APS: " + weapon.AttackSpeed.ToString("n2") + "/s\n";
-                infoText2.text += "Range: " + weapon.WeaponRange.ToString("n2");
+
+                stringBuilder.AppendFormat("<sprite=0> DPS: {0:n1} \n", weapon.GetPhysicalDPS());
+                stringBuilder.AppendFormat("<sprite=7> DPS: {0:n1} \n", weapon.GetElementalDPS());
+                stringBuilder.AppendFormat("<sprite=8> DPS: {0:n1}", weapon.GetPrimordialDPS());
+
+                stringBuilder2.AppendFormat("Crit: {0:n2}%\n", weapon.CriticalChance);
+                stringBuilder2.AppendFormat("APS: {0:n2}/s\n", weapon.AttackSpeed);
+                stringBuilder2.AppendFormat("Range: {0:n2}", weapon.WeaponRange);
                 break;
 
             case ItemType.ACCESSORY:
@@ -96,7 +107,7 @@ public class InventorySlot : MonoBehaviour
                     {
                         foreach (Affix prefix in accessory.prefixes)
                         {
-                            infoText1.text += "○ " + Affix.BuildAffixString(prefix.Base, 0, prefix, prefix.GetAffixValues(), prefix.GetEffectValues());
+                            stringBuilder.Append("○ " + Affix.BuildAffixString(prefix.Base, 0, prefix, prefix.GetAffixValues(), prefix.GetEffectValues()));
                         }
                     }
 
@@ -104,18 +115,19 @@ public class InventorySlot : MonoBehaviour
                     {
                         foreach (Affix suffix in accessory.suffixes)
                         {
-                            infoText2.text += "○ " + Affix.BuildAffixString(suffix.Base, 0, suffix, suffix.GetAffixValues(), suffix.GetEffectValues());
+                            stringBuilder2.Append("○ " + Affix.BuildAffixString(suffix.Base, 0, suffix, suffix.GetAffixValues(), suffix.GetEffectValues()));
                         }
                     }
                 }
-
-
 
                 break;
 
             default:
                 break;
         }
+
+        infoText1.text = stringBuilder.ToString();
+        infoText2.text = stringBuilder2.ToString();
 
         if (item is Equipment equip)
         {

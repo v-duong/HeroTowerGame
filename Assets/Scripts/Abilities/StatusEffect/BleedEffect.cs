@@ -52,12 +52,12 @@ public class BleedEffect : ActorEffect
             lastPosition = position;
             additionalDamage = distance * damagePerSecond * bonusDamageMultiplier;
         }
-        target.ApplySingleElementDamage(ElementType.PHYSICAL, (damagePerSecond + additionalDamage) * tick, Source.Data.OnHitData, false, true);
+        target.ApplySingleElementDamage(ElementType.PHYSICAL, (damagePerSecond + additionalDamage) * tick * target.Data.OnHitData.effectData[EffectType.BLEED].Resistance, Source.Data.OnHitData, false, true);
     }
 
     public override float GetEffectValue()
     {
-        return damagePerSecond * (target.Data.GetResistance(ElementType.PHYSICAL) - Source.Data.GetNegation(ElementType.PHYSICAL)) / 100f;
+        return damagePerSecond * (1 - (target.Data.GetResistance(ElementType.PHYSICAL) - Source.Data.GetNegation(ElementType.PHYSICAL)) / 100f);
     }
 
     public override float GetSimpleEffectValue()

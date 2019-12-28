@@ -279,7 +279,31 @@ public class HeroData : ActorData
         int level = GetAbilityLevel();
         int levelBonuses = 0;
 
-        levelBonuses += GetMultiStatBonus(GroupTypes, BonusType.ALL_ABILITY_LEVEL).CalculateStat(0);
+        HashSet<BonusType> bonusTypes = new HashSet<BonusType>
+        {
+            BonusType.ALL_ABILITY_LEVEL
+        };
+
+        var groupTypes = ability.GetGroupTypes();
+        if (groupTypes.Contains(GroupType.FIRE))
+            bonusTypes.Add(BonusType.FIRE_ABILITY_LEVEL);
+        if (groupTypes.Contains(GroupType.COLD))
+            bonusTypes.Add(BonusType.COLD_ABILITY_LEVEL);
+        if (groupTypes.Contains(GroupType.LIGHTNING))
+            bonusTypes.Add(BonusType.LIGHTNING_ABILITY_LEVEL);
+        if (groupTypes.Contains(GroupType.EARTH))
+            bonusTypes.Add(BonusType.EARTH_ABILITY_LEVEL);
+        if (groupTypes.Contains(GroupType.DIVINE))
+            bonusTypes.Add(BonusType.DIVINE_ABILITY_LEVEL);
+        if (groupTypes.Contains(GroupType.VOID))
+            bonusTypes.Add(BonusType.VOID_ABILITY_LEVEL);
+
+        if (ability.abilityType == AbilityType.ATTACK)
+            bonusTypes.Add(BonusType.ATTACK_ABILITY_LEVEL);
+        if (ability.abilityType == AbilityType.SPELL)
+            bonusTypes.Add(BonusType.SPELL_ABILITY_LEVEL);
+
+        levelBonuses += GetMultiStatBonus(GroupTypes, bonusTypes.ToArray()).CalculateStat(0);
 
         return level + levelBonuses;
     }

@@ -445,6 +445,6 @@ public class ItemCraftingPanel : MonoBehaviour
 
     public void OpenModifierWindowOnClick()
     {
-        craftingModifierWindow.gameObject.SetActive(true);
+        UIManager.Instance.OpenWindow(craftingModifierWindow.gameObject, false);
     }
 }

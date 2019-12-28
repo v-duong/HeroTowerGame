@@ -13,6 +13,7 @@ public class ArchetypeNodeInfoPanel : MonoBehaviour
     public GameObject buttonsParent;
     public Button levelButton;
     public Button delevelButton;
+    public Button resetTreeButton;
     public HeroData hero;
     private bool isPreviewMode;
 
@@ -21,11 +22,13 @@ public class ArchetypeNodeInfoPanel : MonoBehaviour
         ClearPanel();
         if (isPreviewMode)
         {
+            resetTreeButton.gameObject.SetActive(false);
             buttonsParent.SetActive(false);
             topApText.text = "";
         }
         else
         {
+            resetTreeButton.gameObject.SetActive(true);
             buttonsParent.SetActive(true);
             topApText.text = "AP: " + hero.ArchetypePoints;
         }
@@ -194,6 +197,11 @@ public class ArchetypeNodeInfoPanel : MonoBehaviour
         hero.ModifyArchetypePoints(1);
         UpdatePanel();
         uiNode.UpdateNode();
+    }
+
+    public void ResetTree()
+    {
+        UIManager.Instance.ArchetypeUITreeWindow.ResetCurrentTree();
     }
 
     private bool IsChildrenIndependent()

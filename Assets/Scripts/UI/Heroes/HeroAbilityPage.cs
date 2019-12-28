@@ -102,14 +102,33 @@ public class HeroAbilityPage : MonoBehaviour, IUpdatablePanel
             }
 
             abilitySlot.ability = ability.abilityBase;
-            abilitySlot.CommonUpdate(false);
+
+            if (ability.abilityBase.abilityType == AbilityType.AURA || ability.abilityBase.abilityType == AbilityType.SELF_BUFF || ability.abilityBase.abilityType == AbilityType.AREA_BUFF)
+            {
+                abilitySlot.CommonUpdate(false);
+            } else
+            {
+                abilitySlot.infoText.text += '\n';
+                abilitySlot.CommonUpdate(true);
+                abilitySlot.infoText.text += '\n';
+            }
+
         }
         else
         {
             abilitySlot.ability = ability.abilityBase;
 
             abilitySlot.infoText.text = GetAbilityDetailString(ability, false);
-            abilitySlot.CommonUpdate(false);
+            if (ability.abilityBase.abilityType == AbilityType.AURA || ability.abilityBase.abilityType == AbilityType.SELF_BUFF || ability.abilityBase.abilityType == AbilityType.AREA_BUFF)
+            {
+                abilitySlot.CommonUpdate(false);
+            } else
+            {
+                abilitySlot.infoText.text += '\n';
+                abilitySlot.CommonUpdate(true);
+                abilitySlot.infoText.text += '\n';
+            }
+
             if (ability.abilityBase.abilityType != AbilityType.AURA && ability.abilityBase.abilityType != AbilityType.SELF_BUFF && ability.abilityBase.abilityType != AbilityType.AREA_BUFF)
             {
                 mainText.text = GetMainHandText(ability);

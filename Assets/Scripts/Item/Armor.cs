@@ -48,6 +48,8 @@ public class Armor : Equipment
         {
             Base.group
         };
+        if (Rarity == RarityType.UNIQUE)
+            tags.Add(GroupType.UNIQUE);
         switch (Base.equipSlot)
         {
             case EquipSlotType.BODY_ARMOR:

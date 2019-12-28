@@ -56,11 +56,7 @@ public class GameManager : MonoBehaviour
 
 #if UNITY_EDITOR
         CheckForBonuses();
-
-        GameManager.Instance.PlayerStats.AddEquipmentToInventory(Equipment.CreateUniqueFromBase( ResourceManager.Instance.GetUniqueBase("Frostfire"), 100));
 #endif
-
-
     }
 
     private IEnumerator StartRoutine()
@@ -151,7 +147,8 @@ public class GameManager : MonoBehaviour
     {
         PopUpWindow popUpWindow = UIManager.Instance.PopUpWindow;
         popUpWindow.OpenTextWindow("");
-        popUpWindow.SetButtonValues(null, null, "Close", delegate {
+        popUpWindow.SetButtonValues(null, null, "Close", delegate
+        {
             UIManager.Instance.CloseCurrentWindow();
             PlayerStats.hasSeenStartingMessage = true;
             SaveManager.CurrentSave.SavePlayerData();
@@ -179,6 +176,8 @@ public class GameManager : MonoBehaviour
                 foreach (var y in x.bonuses)
                 {
                     LocalizationManager.Instance.GetBonusTypeString(y.bonusType);
+                    if (y.restriction != GroupType.NO_GROUP)
+                        LocalizationManager.Instance.GetLocalizationText_GroupTypeRestriction(y.restriction);
                 }
             }
         }

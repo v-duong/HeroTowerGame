@@ -60,10 +60,10 @@ public class ElectrocuteEffect : ActorEffect
             Actor secondaryTarget = collidedActors[index];
 
             if (secondaryTarget != null)
-                secondaryTarget.ApplySingleElementDamage(ElementType.LIGHTNING, damage * timeElapsed, Source.Data.OnHitData, false, true);
+                secondaryTarget.ApplySingleElementDamage(ElementType.LIGHTNING, damage * timeElapsed * secondaryTarget.Data.OnHitData.effectData[EffectType.ELECTROCUTE].Resistance, Source.Data.OnHitData, false, true);
         }
 
-        target.ApplySingleElementDamage(ElementType.LIGHTNING, damage * timeElapsed * 1.5f, Source.Data.OnHitData, false, true);
+        target.ApplySingleElementDamage(ElementType.LIGHTNING, damage * timeElapsed * 1.5f * target.Data.OnHitData.effectData[EffectType.ELECTROCUTE].Resistance, Source.Data.OnHitData, false, true);
 
         /*
         foreach(Collider2D c in hits)
@@ -82,7 +82,7 @@ public class ElectrocuteEffect : ActorEffect
 
     public override float GetEffectValue()
     {
-        return damage * (target.Data.GetResistance(ElementType.LIGHTNING) - Source.Data.GetNegation(ElementType.LIGHTNING)) / 100f;
+        return damage * (1-(target.Data.GetResistance(ElementType.LIGHTNING) - Source.Data.GetNegation(ElementType.LIGHTNING)) / 100f);
     }
 
     public override float GetSimpleEffectValue()

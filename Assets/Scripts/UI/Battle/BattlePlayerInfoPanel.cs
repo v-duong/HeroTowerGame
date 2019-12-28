@@ -21,7 +21,7 @@ public class BattlePlayerInfoPanel : MonoBehaviour
     private void Update()
     {
         lifeText.text = "<sprite=11> " + StageManager.Instance.BattleManager.playerHealth;
-        soulPointText.text = "<sprite=12> " + StageManager.Instance.BattleManager.playerSoulpoints;
+        //soulPointText.text = "<sprite=12> " + StageManager.Instance.BattleManager.playerSoulpoints;
     }
 
     public void InitializeNextWaveInfo(List<EnemyWaveItem> nextWave, List<EnemyWaveItem> waveAfter, float timeUntil, int waveNum, bool isStartWave = false)

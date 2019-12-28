@@ -58,15 +58,20 @@ public class ParticleManager : MonoBehaviour
     {
         if (!hasParticleEffect.ContainsKey(abilityId))
         {
+            
             AbilityParticleSystem abs = ResourceManager.Instance.GetAbilityParticleSystem(abilityId);
             if (abs == null)
             {
-                hasParticleEffect.Add(abilityId, false);
+                AbilityBase abilityBase = ResourceManager.Instance.GetAbilityBase(abilityId);
+                abs = ResourceManager.Instance.GetAbilityParticleSystem(abilityBase.effectSprite);
             }
-            else
+            if (abs != null)
             {
                 particleSystems.Add(abilityId, abs);
                 hasParticleEffect.Add(abilityId, true);
+            } else
+            {
+                hasParticleEffect.Add(abilityId, false);
             }
         }
 
@@ -78,15 +83,6 @@ public class ParticleManager : MonoBehaviour
             return abilityPs;
         else
             return null;
-    }
-
-    public AbilityParticleSystem GetParticleSystem(string abilityId, string fallbackId)
-    {
-        AbilityParticleSystem returnVal = GetParticleSystem(abilityId);
-        if (returnVal != null)
-            return returnVal;
-        else
-            return GetParticleSystem(fallbackId);
     }
 
     public void InitializeHitEffectInstances()

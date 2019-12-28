@@ -35,7 +35,8 @@ public class BattleEndWindow : MonoBehaviour
         this.gameObject.SetActive(true);
         headerText.text = "Winner";
         bodyText.text = "";
-        nextLoopButton.gameObject.SetActive(true);
+
+        nextLoopButton.gameObject.SetActive(GameManager.Instance.PlayerStats.EquipmentInventory.Count < PlayerStats.maxEquipInventory);
     }
 
     public void ShowLoseWindow()

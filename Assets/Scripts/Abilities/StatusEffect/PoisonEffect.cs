@@ -26,12 +26,12 @@
     public override void Update(float deltaTime)
     {
         float tick = DurationUpdate(deltaTime);
-        target.ApplySingleElementDamage(ElementType.PHYSICAL, damagePerSecond * tick, Source.Data.OnHitData, false, true, EffectType.POISON);
+        target.ApplySingleElementDamage(ElementType.PHYSICAL, damagePerSecond * tick * target.Data.OnHitData.effectData[EffectType.POISON].Resistance, Source.Data.OnHitData, false, true, EffectType.POISON);
     }
 
     public override float GetEffectValue()
     {
-        return damagePerSecond * (target.Data.GetResistance(ElementType.PHYSICAL) - Source.Data.GetNegation(ElementType.PHYSICAL)) / 100f;
+        return damagePerSecond * (1-(target.Data.GetResistance(ElementType.PHYSICAL) - Source.Data.GetNegation(ElementType.PHYSICAL)) / 100f);
     }
 
     public override float GetSimpleEffectValue()

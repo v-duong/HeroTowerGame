@@ -1270,10 +1270,6 @@ public partial class ActorAbility
     private void SetProjectileEffects(Projectile pooledProjectile, float scaleFactor)
     {
         AbilityParticleSystem particleSystem = ParticleManager.Instance.GetParticleSystem(abilityBase.idName);
-        if (particleSystem == null)
-        {
-            particleSystem = ParticleManager.Instance.GetParticleSystem(abilityBase.effectSprite);
-        }
         if (particleSystem != null)
         {
             GameObject particle = GameObject.Instantiate(particleSystem.gameObject, pooledProjectile.transform, false);

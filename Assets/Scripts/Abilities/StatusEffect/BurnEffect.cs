@@ -25,12 +25,12 @@
     public override void Update(float deltaTime)
     {
         float tick = DurationUpdate(deltaTime);
-        target.ApplySingleElementDamage(ElementType.FIRE, damagePerSecond * tick, Source.Data.OnHitData, isHit: false, isFromSecondaryEffect: true);
+        target.ApplySingleElementDamage(ElementType.FIRE, damagePerSecond * tick * target.Data.OnHitData.effectData[EffectType.BURN].Resistance, Source.Data.OnHitData, isHit: false, isFromSecondaryEffect: true);
     }
 
     public override float GetEffectValue()
     {
-        return damagePerSecond * (target.Data.GetResistance(ElementType.FIRE) - Source.Data.GetNegation(ElementType.FIRE)) / 100f;
+        return damagePerSecond * (1 - (target.Data.GetResistance(ElementType.FIRE) - Source.Data.GetNegation(ElementType.FIRE)) / 100f) ;
     }
 
     public override float GetSimpleEffectValue()

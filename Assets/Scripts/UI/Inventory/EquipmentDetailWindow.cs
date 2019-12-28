@@ -69,6 +69,16 @@ public class EquipmentDetailWindow : MonoBehaviour
         }
         else
         {
+            if (equip.Base.equipSlot == EquipSlotType.WEAPON)
+            {
+                if (equip.GetGroupTypes().Contains(GroupType.MELEE_WEAPON))
+                {
+                    equipTypeString = "Melee " + equipTypeString;
+                } else if (equip.GetGroupTypes().Contains(GroupType.RANGED_WEAPON))
+                {
+                    equipTypeString = "Ranged " + equipTypeString;
+                }
+            }
             topLineText.text += groupTypeString + " (" + equipTypeString + ")\n";
         }
 

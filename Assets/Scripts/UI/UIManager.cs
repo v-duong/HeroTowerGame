@@ -101,7 +101,7 @@ public class UIManager : MonoBehaviour
         get
         {
             if (_archetypeCanvas == null)
-                _archetypeCanvas = GameObject.FindGameObjectWithTag("ArchetypeCanvas").GetComponent<Canvas>();
+                _archetypeCanvas = GameObject.FindGameObjectWithTag("ArchetypeCanvas")?.GetComponent<Canvas>();
             return _archetypeCanvas;
         }
     }
@@ -341,6 +341,7 @@ public class UIManager : MonoBehaviour
         Instance = this;
         DontDestroyOnLoad(this.gameObject);
     }
+
 
     public void CloseAllWindows()
     {

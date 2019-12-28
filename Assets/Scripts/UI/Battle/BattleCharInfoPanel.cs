@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using System.Text;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -21,33 +22,36 @@ public class BattleCharInfoPanel : MonoBehaviour
     public Button unsummonButton;
     public Button movementButton;
     private bool confirmUnsummon = false;
+    private static StringBuilder stringBuilder = new StringBuilder(128);
 
     public void Update()
     {
+        stringBuilder.Clear();
         if (actor == null || actor.Data.IsDead || !actor.isActiveAndEnabled)
         {
             this.gameObject.SetActive(false);
             targetName = null;
             actor = null;
             infoText.text = "";
+            statusText.text = "";
             SoulAbilityPanel.UpdateTarget(null);
             return;
         }
-        infoText.text = "Lv" + actor.Data.Level + " " + targetName + "\n";
+        stringBuilder.AppendFormat("Lv{0} {1}\n", actor.Data.Level, targetName);
         if (actor.Data.CurrentHealth < 1 && actor.Data.CurrentHealth > 0)
-            infoText.text += "Health: " + actor.Data.CurrentHealth.ToString("F2") + "/" + actor.Data.MaximumHealth;
+            stringBuilder.AppendFormat("Health: {0:N2}/{1}", actor.Data.CurrentHealth, actor.Data.MaximumHealth);
         else
-            infoText.text += "Health: " + actor.Data.CurrentHealth.ToString("F0") + "/" + actor.Data.MaximumHealth;
+            stringBuilder.AppendFormat("Health: {0:N0}/{1}", actor.Data.CurrentHealth, actor.Data.MaximumHealth);
 
         if (actor.Data.MaximumManaShield > 0)
         {
-            infoText.text += "\nShield: " + actor.Data.CurrentManaShield.ToString("F0") + "/" + actor.Data.MaximumManaShield;
+            stringBuilder.AppendFormat("\nShield: {0:N0}/{1}", actor.Data.CurrentManaShield, actor.Data.MaximumManaShield);
         }
         statusText.text = "";
 
         if (actor is HeroActor hero)
         {
-            infoText.text += "\nSP: " + actor.Data.CurrentSoulPoints.ToString("F0") + "/" + actor.Data.MaximumSoulPoints;
+            stringBuilder.AppendFormat("\nSP: {0:N0}/{1}", actor.Data.CurrentSoulPoints, actor.Data.MaximumSoulPoints);
 
             if (hero.isBeingRecalled)
             {
@@ -83,6 +87,63 @@ public class BattleCharInfoPanel : MonoBehaviour
                     soulAbilityButton.interactable = false;
                 }
             }
+        }
+
+        infoText.text = stringBuilder.ToString();
+        UpdateStatuses();
+    }
+
+    private void UpdateStatuses()
+    {
+        System.Collections.Generic.List<ActorEffect> bleedList = actor.GetStatusEffectAll(EffectType.BLEED);
+        if (bleedList.Count > 0)
+        {
+            statusText.text += "<sprite=13>";
+            if (bleedList.Count > 1)
+                statusText.text += "x" + bleedList.Count + "\n";
+            else
+                statusText.text += bleedList[0].GetEffectValue().ToString("N0") + "/s " + bleedList[0].duration.ToString("F1") + "\n";
+        }
+        System.Collections.Generic.List<ActorEffect> poisonList = actor.GetStatusEffectAll(EffectType.BLEED);
+        if (poisonList.Count > 0)
+        {
+            statusText.text += "<sprite=14>";
+            if (poisonList.Count > 1)
+                statusText.text += "x" + poisonList.Count + "\n";
+            else
+                statusText.text += "\n";
+        }
+
+        ActorEffect burn = actor.GetStatusEffect(EffectType.BURN);
+        if (burn != null)
+        {
+            statusText.text += "<sprite=1> " + burn.GetEffectValue().ToString("N0") + "/s " + burn.duration.ToString("F1") + "s\n";
+        }
+
+        ActorEffect chill = actor.GetStatusEffect(EffectType.CHILL);
+        if (chill != null)
+        {
+            statusText.text += "<sprite=2> " + chill.GetEffectValue().ToString("N0") + "% " + chill.duration.ToString("F1") + "s\n";
+        }
+
+        if (actor.GetStatusEffect(EffectType.ELECTROCUTE) is ElectrocuteEffect electrocute)
+        {
+            statusText.text += "<sprite=3> " + electrocute.GetEffectValue().ToString("N0") + "/s " + electrocute.duration.ToString("F1") + "s\n";
+        }
+
+        if (actor.GetStatusEffect(EffectType.FRACTURE) is FractureEffect fracture)
+        {
+            statusText.text += "<sprite=4> " + fracture.GetEffectValue().ToString("N0") + "% " + fracture.duration.ToString("F1") + "s\n";
+        }
+
+        if (actor.GetStatusEffect(EffectType.PACIFY) is PacifyEffect pacify)
+        {
+            statusText.text += "<sprite=5> " + pacify.GetEffectValue().ToString("N0") + "% " + pacify.duration.ToString("F1") + "s\n";
+        }
+
+        if (actor.GetStatusEffect(EffectType.RADIATION) is RadiationEffect radiation)
+        {
+            statusText.text += "<sprite=6> " + radiation.GetEffectValue().ToString("N0") + "/s " + radiation.duration.ToString("F1") + "s\n";
         }
     }
 

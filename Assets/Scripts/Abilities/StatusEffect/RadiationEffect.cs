@@ -48,19 +48,19 @@ public class RadiationEffect : ActorEffect
         }
 
 
-        target.ApplySingleElementDamage(ElementType.VOID, damagePerSecond * timeElapsed, Source.Data.OnHitData, false, true);
+        target.ApplySingleElementDamage(ElementType.VOID, damagePerSecond * timeElapsed * target.Data.OnHitData.effectData[EffectType.RADIATION].Resistance, Source.Data.OnHitData, false, true);
 
         foreach (Collider2D c in hits)
         {
             Actor actor = c.gameObject.GetComponent<Actor>();
             if (actor != null && actor != target)
-                actor.ApplySingleElementDamage(ElementType.VOID, damagePerSecond * timeElapsed, Source.Data.OnHitData, false, true);
+                actor.ApplySingleElementDamage(ElementType.VOID, damagePerSecond * timeElapsed * actor.Data.OnHitData.effectData[EffectType.RADIATION].Resistance, Source.Data.OnHitData, false, true);
         }
     }
 
     public override float GetEffectValue()
     {
-        return damagePerSecond * (target.Data.GetResistance(ElementType.VOID) - Source.Data.GetNegation(ElementType.VOID)) / 100f;
+        return damagePerSecond * (1-(target.Data.GetResistance(ElementType.VOID) - Source.Data.GetNegation(ElementType.VOID)) / 100f);
     }
 
     public override float GetSimpleEffectValue()

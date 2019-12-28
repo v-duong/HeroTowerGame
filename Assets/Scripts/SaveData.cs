@@ -267,10 +267,13 @@ public class SaveData
             if (equipData.rarity == RarityType.UNIQUE)
             {
                 UniqueBase uniqueBase = equipment.Base as UniqueBase;
-                for (int i = 0; i < uniqueBase.fixedUniqueAffixes.Count; i++)
+                if (uniqueBase.uniqueVersion == equipData.uniqueVersion)
                 {
-                    AffixBase affixBase = uniqueBase.fixedUniqueAffixes[i];
-                    equipment.prefixes.Add(new Affix(affixBase, equipData.prefixes[i].affixValues, equipData.prefixes[i].triggerValues, false, false));
+                    for (int i = 0; i < uniqueBase.fixedUniqueAffixes.Count; i++)
+                    {
+                        AffixBase affixBase = uniqueBase.fixedUniqueAffixes[i];
+                        equipment.prefixes.Add(new Affix(affixBase, equipData.prefixes[i].affixValues, equipData.prefixes[i].triggerValues, false, false));
+                    }
                 }
             }
             else

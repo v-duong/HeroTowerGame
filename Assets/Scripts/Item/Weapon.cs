@@ -102,6 +102,8 @@ public class Weapon : Equipment
             GroupType.WEAPON,
             Base.group
         };
+        if (Rarity == RarityType.UNIQUE)
+            tags.Add(GroupType.UNIQUE);
         switch (Base.group)
         {
             case GroupType.ONE_HANDED_AXE:

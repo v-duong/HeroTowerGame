@@ -86,7 +86,7 @@ public abstract class StackObjectPool<T> where T : Component
             }
     }
 
-    protected T Get()
+    protected T Get(bool active=true)
     {
         T item;
 
@@ -94,7 +94,7 @@ public abstract class StackObjectPool<T> where T : Component
             item = GameObject.Instantiate(prefab);
         else
             item = pool.Pop();
-        item.gameObject.SetActive(true);
+        item.gameObject.SetActive(active);
         inUseObjects.Add(item);
         return item;
     }

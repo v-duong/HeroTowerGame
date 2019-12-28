@@ -19,6 +19,7 @@ public class ArchetypeUITreeWindow : MonoBehaviour
     public UILineRenderer primaryTreeParent;
     public UILineRenderer secondaryTreeParent;
     public ScrollRect ScrollView;
+    public int selectedTree;
     private float largestX = 0, largestY = 0;
     private bool isPreviewMode = false;
 
@@ -228,11 +229,12 @@ public class ArchetypeUITreeWindow : MonoBehaviour
         isPreviewMode = false;
         UIManager.Instance.ArchetypeNodeInfoPanel.SetPreviewMode(false);
         UIManager.Instance.ArchetypeNodeInfoPanel.hero = hero;
+        selectedTree = treeIndex;
 
         if (treeIndex == 0)
         {
-            secondaryTreeParent.gameObject.SetActive(false);
             primaryTreeParent.gameObject.SetActive(true);
+            secondaryTreeParent.gameObject.SetActive(false);
             ScrollView.content = primaryTreeParent.rectTransform;
         }
         else
@@ -250,6 +252,12 @@ public class ArchetypeUITreeWindow : MonoBehaviour
         }
 
         SetTreeStartingView(treeIndex);
+    }
+
+    public void ResetCurrentTree()
+    {
+        archetypeData[selectedTree].ResetArchetypeTree();
+        InitializeTree(hero);
     }
 
     public void OpenPreviewTree(ArchetypeBase archetype)

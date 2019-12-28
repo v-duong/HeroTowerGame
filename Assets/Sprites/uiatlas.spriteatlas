@@ -1,0 +1,72 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!687078895 &4343727234628468602
+SpriteAtlas:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: uiatlas
+  m_EditorData:
+    serializedVersion: 2
+    textureSettings:
+      serializedVersion: 2
+      anisoLevel: 1
+      compressionQuality: 50
+      maxTextureSize: 2048
+      textureCompression: 0
+      filterMode: 1
+      generateMipMaps: 0
+      readable: 0
+      crunchedCompression: 0
+      sRGB: 1
+    platformSettings: []
+    packingSettings:
+      serializedVersion: 2
+      padding: 4
+      blockOffset: 1
+      allowAlphaSplitting: 0
+      enableRotation: 1
+      enableTightPacking: 0
+    variantMultiplier: 1
+    packables:
+    - {fileID: 21300000, guid: 4073e80283e583049a2c99cf5d6e79b7, type: 3}
+    - {fileID: 21300000, guid: d08ac897a970bd848af8e218e212246c, type: 3}
+    - {fileID: 21300000, guid: 062d3c95039c9fd4db167d910e703010, type: 3}
+    - {fileID: 21300000, guid: 4c3cdeaed5988354da6d607ab60995b2, type: 3}
+    - {fileID: 21300000, guid: 9d15478b543a2e64ea344ba519cbcf8d, type: 3}
+    - {fileID: 21300000, guid: 66ead72031a825147ad171872e8f214b, type: 3}
+    - {fileID: 21300000, guid: 076ad84ad9011f94c8a84b284c38e9b7, type: 3}
+    - {fileID: 21300000, guid: 98998a9eaafd39740ab2c4cc90ae6632, type: 3}
+    - {fileID: 21300000, guid: 6806223396a9e4d46a4b35f616ec6630, type: 3}
+    - {fileID: 21300000, guid: c9a873bffd424114980cf3103989af0c, type: 3}
+    totalSpriteSurfaceArea: 1769488
+    bindAsDefault: 1
+    storedHash:
+      serializedVersion: 2
+      Hash: 1d1311b43f8a5629ffb1e5cd9e6c2d51
+  m_MasterAtlas: {fileID: 0}
+  m_PackedSprites:
+  - {fileID: 21300000, guid: 66ead72031a825147ad171872e8f214b, type: 3}
+  - {fileID: 21300000, guid: 4073e80283e583049a2c99cf5d6e79b7, type: 3}
+  - {fileID: 21300000, guid: 6806223396a9e4d46a4b35f616ec6630, type: 3}
+  - {fileID: 21300000, guid: 062d3c95039c9fd4db167d910e703010, type: 3}
+  - {fileID: 21300000, guid: d08ac897a970bd848af8e218e212246c, type: 3}
+  - {fileID: 21300000, guid: 076ad84ad9011f94c8a84b284c38e9b7, type: 3}
+  - {fileID: 21300000, guid: 9d15478b543a2e64ea344ba519cbcf8d, type: 3}
+  - {fileID: 21300000, guid: 98998a9eaafd39740ab2c4cc90ae6632, type: 3}
+  - {fileID: 21300000, guid: 4c3cdeaed5988354da6d607ab60995b2, type: 3}
+  - {fileID: 21300000, guid: c9a873bffd424114980cf3103989af0c, type: 3}
+  m_PackedSpriteNamesToIndex:
+  - gon8
+  - Gon2
+  - gon10
+  - Gon4
+  - Gon3
+  - Gon7
+  - Gon6
+  - Gon9
+  - Gon5
+  - PixelSquare
+  m_Tag: uiatlas
+  m_IsVariant: 0

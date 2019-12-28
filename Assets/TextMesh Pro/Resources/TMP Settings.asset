@@ -31,13 +31,15 @@ MonoBehaviour:
   m_autoSizeTextContainer: 0
   m_fallbackFontAssets: []
   m_matchMaterialPreset: 1
-  m_defaultSpriteAsset: {fileID: 11400000, guid: a37cb7b2aea0b554d85079c514036f86,
+  m_defaultSpriteAsset: {fileID: 11400000, guid: 2ca472277f9301a47973a957dae773be,
     type: 2}
   m_defaultSpriteAssetPath: Sprite Assets/
-  m_defaultColorGradientPresetsPath: Color Gradient Presets/
   m_enableEmojiSupport: 1
+  m_defaultColorGradientPresetsPath: Color Gradient Presets/
   m_defaultStyleSheet: {fileID: 11400000, guid: f952c082cb03451daed3ee968ac6c63e,
     type: 2}
+  m_StyleSheetsResourcePath: "\u01D6"
   m_leadingCharacters: {fileID: 4900000, guid: d82c1b31c7e74239bff1220585707d2b, type: 3}
   m_followingCharacters: {fileID: 4900000, guid: fade42e8bc714b018fac513c043d323b,
     type: 3}
+  m_UseModernHangulLineBreakingRules: 0

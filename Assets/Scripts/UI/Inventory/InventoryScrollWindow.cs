@@ -19,6 +19,12 @@ public class InventoryScrollWindow : MonoBehaviour
     [SerializeField]
     private Button toggleEquippedButton;
 
+    [SerializeField]
+    private Button typeFilterButton;
+
+    [SerializeField]
+    public InventoryFilterWindow filterWindow;
+
     public Button confirmButton;
     private Action<List<Item>> confirmOnClick = null;
 
@@ -30,21 +36,34 @@ public class InventoryScrollWindow : MonoBehaviour
     public bool showItemValues = false;
     public bool showItemAffixes = false;
     public bool hideEquipped = false;
+    private float currentY = 120;
 
     private void Start()
     {
-        SetGridCellSize();
+        //SetGridCellSize(ViewType.EQUIPMENT);
     }
 
-    private void SetGridCellSize()
+    private void SetGridCellSize(ViewType viewType)
     {
         GridLayoutGroup grid = GetComponent<GridLayoutGroup>();
         float ySize = 350;
-        if (!showItemAffixes)
-            ySize = 155;
+
+        switch (viewType)
+        {
+            case ViewType.EQUIPMENT:
+                if (!showItemAffixes)
+                    ySize = 155;
+                break;
+            case ViewType.ARCHETYPE:
+            case ViewType.ABILITY_CORE:
+                    ySize = 85;
+                break;
+        }
+
+
         if (GameManager.Instance.aspectRatio >= 1.92)
         {
-            grid.cellSize = new Vector2(180, ySize);
+            grid.cellSize = new Vector2(185, ySize);
         }
         else if (GameManager.Instance.aspectRatio >= 1.85)
         {
@@ -54,6 +73,9 @@ public class InventoryScrollWindow : MonoBehaviour
         {
             grid.cellSize = new Vector2(230, ySize);
         }
+
+        currentY = ySize;
+
     }
 
     private void OnEnable()
@@ -75,20 +97,23 @@ public class InventoryScrollWindow : MonoBehaviour
         }
     }
 
+
     private void InitializeInventorySlots<T>(IList<T> itemInventory, Action<Item> callback = null) where T : Item
     {
-        foreach (Item item in itemInventory)
+        for (int i = 0; i < itemInventory.Count; i++)
         {
-            AddInventorySlot(item, callback);
+            Item item = itemInventory[i];
+            AddInventorySlot(item, callback, i);
         }
         DeactivateSlotsInPool();
     }
 
     private void InitializeInventorySlots(IList<Equipment> equipmentInventory, Action<Item> callback = null)
     {
-        foreach (Equipment item in equipmentInventory)
+        for (int i = 0; i < equipmentInventory.Count; i++)
         {
-            AddInventorySlot(item, callback);
+            Equipment item = equipmentInventory[i];
+            AddInventorySlot(item, callback, i);
         }
     }
 
@@ -99,7 +124,7 @@ public class InventoryScrollWindow : MonoBehaviour
         ClearSlots();
 
         toggleAffixesButton.gameObject.SetActive(true);
-
+        SetGridCellSize(ViewType.EQUIPMENT);
         InitializeInventorySlots(GameManager.Instance.PlayerStats.EquipmentInventory, currentCallback);
         UIManager.Instance.ItemCategoryPanel.SetEquipmentSelected();
     }
@@ -110,11 +135,11 @@ public class InventoryScrollWindow : MonoBehaviour
             currentCallback = null;
         ClearSlots();
         if (addNullSlot)
-            AddInventorySlot(null);
+            AddInventorySlot(null, null, 0);
 
         toggleAffixesButton.gameObject.SetActive(false);
         showItemAffixes = false;
-        SetGridCellSize();
+        SetGridCellSize(ViewType.ARCHETYPE);
 
         InitializeInventorySlots(GameManager.Instance.PlayerStats.ArchetypeInventory, currentCallback);
         UIManager.Instance.ItemCategoryPanel.SetArchetypeSelected();
@@ -126,11 +151,11 @@ public class InventoryScrollWindow : MonoBehaviour
             currentCallback = null;
         ClearSlots();
         if (addNullSlot)
-            AddInventorySlot(null);
+            AddInventorySlot(null, null, 0);
 
         toggleAffixesButton.gameObject.SetActive(false);
         showItemAffixes = false;
-        SetGridCellSize();
+        SetGridCellSize(ViewType.ABILITY_CORE);
 
         InitializeInventorySlots(GameManager.Instance.PlayerStats.AbilityInventory, currentCallback);
         UIManager.Instance.ItemCategoryPanel.SetAbilitySelected();
@@ -142,17 +167,18 @@ public class InventoryScrollWindow : MonoBehaviour
             currentCallback = null;
         ClearSlots();
         if (addNullSlot)
-            AddInventorySlot(null);
+            AddInventorySlot(null,null,0);
 
         toggleAffixesButton.gameObject.SetActive(false);
         showItemAffixes = false;
-        SetGridCellSize();
+        SetGridCellSize(ViewType.ARCHETYPE);
 
-        foreach (ArchetypeItem item in GameManager.Instance.PlayerStats.ArchetypeInventory)
+        for (int i = 0; i < GameManager.Instance.PlayerStats.ArchetypeInventory.Count; i++)
         {
+            ArchetypeItem item = GameManager.Instance.PlayerStats.ArchetypeInventory[i];
             if (filter.Contains(item.Base))
                 continue;
-            AddInventorySlot(item, currentCallback);
+            AddInventorySlot(item, currentCallback,i+1);
         }
         DeactivateSlotsInPool();
     }
@@ -163,12 +189,17 @@ public class InventoryScrollWindow : MonoBehaviour
             currentCallback = null;
         ClearSlots();
         if (addNullSlot)
-            AddInventorySlot(null);
+            AddInventorySlot(null, null, 0);
 
         toggleAffixesButton.gameObject.SetActive(true);
+
+        SetGridCellSize(ViewType.EQUIPMENT);
+
+        int i = 1;
         foreach (Equipment item in GameManager.Instance.PlayerStats.EquipmentInventory.Where(filter))
         {
-            AddInventorySlot(item, currentCallback);
+            AddInventorySlot(item, currentCallback, i);
+            i++;
         }
         DeactivateSlotsInPool();
     }
@@ -190,9 +221,9 @@ public class InventoryScrollWindow : MonoBehaviour
         InventorySlotPool.DeactivateObjectsInPool();
     }
 
-    public void AddInventorySlot(Item item, Action<Item> callback = null)
+    public void AddInventorySlot(Item item, Action<Item> callback, int index)
     {
-        InventorySlot slot = InventorySlotPool.GetSlot();
+        InventorySlot slot = InventorySlotPool.GetSlot(false);
         slot.gameObject.transform.SetParent(transform, false);
         slot.gameObject.transform.SetAsLastSibling();
         SlotsInUse.Add(slot);
@@ -209,6 +240,20 @@ public class InventoryScrollWindow : MonoBehaviour
         bool slotIsSelected = selectedItems.Contains(item);
         slot.selectedImage.gameObject.SetActive(slotIsSelected);
         slot.alreadySelected = slotIsSelected;
+        slot.SetTextVisiblity(index < 2100/currentY && slot.item != null);
+        slot.gameObject.SetActive(true);
+    }
+
+    public void OnScrollChange(Vector2 vector2)
+    {
+        float invY = (transform as RectTransform).anchoredPosition.y;
+        foreach (InventorySlot i in SlotsInUse)
+        {
+            if (i.item == null)
+                i.SetTextVisiblity(false);
+            float slotY = -(i.transform as RectTransform).anchoredPosition.y;
+            i.SetTextVisiblity(invY-170 < slotY && slotY < invY + 840);
+        }
     }
 
     public void ToggleItemMultiSelect(Item item)
@@ -250,6 +295,28 @@ public class InventoryScrollWindow : MonoBehaviour
                 }
             }
         }
+    }
+
+    public void FilterTypeButtonOnClick()
+    {
+        UIManager.Instance.OpenWindow(filterWindow.gameObject,false);
+    }
+
+    public void FilterShownSlotsByType(HashSet<GroupType> groupTypes)
+    {
+        UIManager.Instance.CloseCurrentWindow();
+        foreach(InventorySlot slot in SlotsInUse)
+        {
+            if (groupTypes.Count == 0 || (slot.item is Equipment e && e.GetGroupTypes().IsSupersetOf(groupTypes)))
+            {
+                slot.gameObject.SetActive(true);
+            } else
+            {
+                slot.gameObject.SetActive(false);
+            }
+        }
+
+        ((RectTransform)transform).anchoredPosition = Vector3.zero;
     }
 
     public void FilterButtonOnClick()
@@ -320,7 +387,7 @@ public class InventoryScrollWindow : MonoBehaviour
     public void ToggleAffixInfoOnClick()
     {
         showItemAffixes = !showItemAffixes;
-        SetGridCellSize();
+        SetGridCellSize(ViewType.EQUIPMENT);
         foreach (var x in SlotsInUse)
         {
             x.UpdateSlot();
@@ -335,17 +402,24 @@ public class InventoryScrollWindow : MonoBehaviour
                 inventorySlot.lockImage.gameObject.SetActive(true);
         }
     }
+
+    private enum ViewType
+    {
+        EQUIPMENT,
+        ARCHETYPE,
+        ABILITY_CORE
+    }
 }
 
 public class InventorySlotPool : StackObjectPool<InventorySlot>
 {
-    public InventorySlotPool(InventorySlot prefab, int i) : base(prefab, 0)
+    public InventorySlotPool(InventorySlot prefab, int i) : base(prefab, 75)
     {
     }
 
-    public InventorySlot GetSlot()
+    public InventorySlot GetSlot(bool activeState)
     {
-        return Get();
+        return Get(activeState);
     }
 
     public override void ReturnToPool(InventorySlot item)

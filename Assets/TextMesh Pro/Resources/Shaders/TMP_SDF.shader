@@ -12,7 +12,7 @@ Properties {
 	_OutlineUVSpeedX	("Outline UV Speed X", Range(-5, 5)) = 0.0
 	_OutlineUVSpeedY	("Outline UV Speed Y", Range(-5, 5)) = 0.0
 	_OutlineWidth		("Outline Thickness", Range(0, 1)) = 0
-	_OutlineSoftness	("Outline Softness", Range(-1,1)) = 0
+	_OutlineSoftness	("Outline Softness", Range(0,1)) = 0
 
 	_Bevel				("Bevel", Range(0,1)) = 0.5
 	_BevelOffset		("Bevel Offset", Range(-0.5,0.5)) = 0
@@ -80,6 +80,7 @@ Properties {
 	_StencilWriteMask	("Stencil Write Mask", Float) = 255
 	_StencilReadMask	("Stencil Read Mask", Float) = 255
 
+	_CullMode			("Cull Mode", Float) = 0
 	_ColorMask			("Color Mask", Float) = 15
 }
 

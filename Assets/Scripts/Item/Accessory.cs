@@ -27,6 +27,8 @@ public class Accessory : Equipment
             GroupType.ALL_ACCESSORY,
             Base.group
         };
+        if (Rarity == RarityType.UNIQUE)
+            tags.Add(GroupType.UNIQUE);
         return tags;
     }
 }
