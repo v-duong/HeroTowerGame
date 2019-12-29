@@ -6,12 +6,12 @@ public class PlayerStats
     public const float EXP_STOCK_RATE = 1f;
     public const int HERO_TEAM_MAX_NUM = 5;
     public const int HERO_TEAM_MAX_HEROES = 5;
-    public readonly static int maxEquipInventory = 250;
+    public readonly static int maxEquipInventory = 350;
     public readonly static int maxArchetypeInventory = 100;
     public readonly static int maxAbilityInventory = 100;
     public readonly static int maxHeroes = 100;
-    public readonly static int maxExpStock = 3000000;
-    public readonly static int maxItemFragments = 5000000;
+    public readonly static int maxExpStock = 3500000;
+    public readonly static int maxItemFragments = 20000000;
     public readonly static int maxArchetypeFragments = 1000;
 
     public int ItemFragments { get; private set; }

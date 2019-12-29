@@ -13,13 +13,31 @@ public class ParticleManager : MonoBehaviour
 
     public static ParticleManager Instance { get; private set; }
     private Dictionary<string, AbilityParticleSystem> particleSystems = new Dictionary<string, AbilityParticleSystem>();
-    private Dictionary<string, bool> hasParticleEffect = new Dictionary<string, bool>();
     private Dictionary<ElementType, ParticleSystem> hitEffectSystems = new Dictionary<ElementType, ParticleSystem>();
+    private Dictionary<string, Stack<AbilityParticleSystem>> perActorParticleSystems = new Dictionary<string, Stack<AbilityParticleSystem>>();
+    private List<AbilityParticleSystem> inUseParticlesSystems = new List<AbilityParticleSystem>();
 
     private void Awake()
     {
         Instance = this;
         DontDestroyOnLoad(this.gameObject);
+    }
+
+    private void LateUpdate()
+    {
+        for (int i = inUseParticlesSystems.Count-1; i > 0; i--)
+        {
+            AbilityParticleSystem abs = inUseParticlesSystems[i];
+            if (abs == null)
+            {
+                inUseParticlesSystems.Remove(abs);
+            }
+            else if (!abs.ps.IsAlive()) {
+                perActorParticleSystems[abs.abilityId].Push(abs);
+                inUseParticlesSystems.Remove(abs);
+            }
+            
+        }
     }
 
     public bool DoesAbilityEmitOnSelf(string abilityId)
@@ -33,6 +51,17 @@ public class ParticleManager : MonoBehaviour
     public float EmitAbilityParticle(string abilityId, ParticleSystem.EmitParams emitParams, float scaling, Transform parent)
     {
         AbilityParticleSystem abilityPs = GetParticleSystem(abilityId);
+        if (abilityPs == null)
+            return 0;
+
+        emitParams.applyShapeToPosition = true;
+
+        abilityPs.Emit(emitParams, abilityPs.emitCount, scaling);
+        return abilityPs.waitUntilNextEmit;
+    }
+
+    public float EmitAbilityParticle(AbilityParticleSystem abilityPs, ParticleSystem.EmitParams emitParams, float scaling, Transform parent)
+    {
         if (abilityPs == null)
             return 0;
 
@@ -56,9 +85,8 @@ public class ParticleManager : MonoBehaviour
 
     public AbilityParticleSystem GetParticleSystem(string abilityId)
     {
-        if (!hasParticleEffect.ContainsKey(abilityId))
+        if (!particleSystems.ContainsKey(abilityId))
         {
-            
             AbilityParticleSystem abs = ResourceManager.Instance.GetAbilityParticleSystem(abilityId);
             if (abs == null)
             {
@@ -67,20 +95,32 @@ public class ParticleManager : MonoBehaviour
             }
             if (abs != null)
             {
+                abs.abilityId = abilityId;
                 particleSystems.Add(abilityId, abs);
-                hasParticleEffect.Add(abilityId, true);
-            } else
+                if (abs.useDifferentForSameFrame)
+                {
+                    perActorParticleSystems.Add(abilityId, new Stack<AbilityParticleSystem>());
+                    perActorParticleSystems[abilityId].Push(abs);
+                }
+            }
+            else
             {
-                hasParticleEffect.Add(abilityId, false);
+                particleSystems.Add(abilityId, null);
             }
         }
 
-        if (hasParticleEffect[abilityId] == false)
-            return null;
-
         particleSystems.TryGetValue(abilityId, out AbilityParticleSystem abilityPs);
         if (abilityPs != null)
+        {
+            if (abilityPs.useDifferentForSameFrame)
+            {
+                abilityPs = perActorParticleSystems[abilityId].Pop();
+                inUseParticlesSystems.Add(abilityPs);
+                if (perActorParticleSystems[abilityId].Count == 0)
+                    perActorParticleSystems[abilityId].Push(Instantiate(abilityPs));
+            }
             return abilityPs;
+        }
         else
             return null;
     }
@@ -109,6 +149,7 @@ public class ParticleManager : MonoBehaviour
     public void ClearParticleSystems()
     {
         particleSystems.Clear();
-        hasParticleEffect.Clear();
+        perActorParticleSystems.Clear();
+        inUseParticlesSystems.Clear();
     }
 }

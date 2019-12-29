@@ -671,7 +671,8 @@ public partial class ActorAbility
             switch (abilityBase.abilityType)
             {
                 case AbilityType.AURA:
-                    ApplyAuraBuff(AbilityOwner, 0.75f);
+                    if (abilityBase.targetType != AbilityTargetType.ENEMY)
+                        ApplyAuraBuff(AbilityOwner, 0.75f);
                     foreach (Actor target in targetList)
                         ApplyAuraBuff(target, 0.75f);
                     break;
@@ -750,7 +751,7 @@ public partial class ActorAbility
                     break;
 
                 case AbilityShotType.PROJECTILE_NOVA:
-                    AbilityOwner.StartCoroutine(FireProjectile(AbilityOwner.transform.position, null, AbilityOwner.transform.position + new Vector3(UnityEngine.Random.Range(0.1f,0.5f), UnityEngine.Random.Range(0.1f, 0.5f), 0)));
+                    AbilityOwner.StartCoroutine(FireProjectile(AbilityOwner.transform.position, null, AbilityOwner.transform.position + new Vector3(UnityEngine.Random.Range(0.1f, 0.5f), UnityEngine.Random.Range(0.1f, 0.5f), 0)));
                     break;
 
                 case AbilityShotType.ARC_AOE:
@@ -962,8 +963,9 @@ public partial class ActorAbility
             }
         }
 
-        foreach (var specialEffect in auraBuffBonus.cachedAuraSpecialEffects)
+        for (int i = 0; i < auraBuffBonus.cachedAuraSpecialEffects.Count; i++)
         {
+            TempEffectBonusContainer.SpecialBonus specialEffect = auraBuffBonus.cachedAuraSpecialEffects[i];
             ActorEffect.ApplyEffectToTarget(target, AbilityOwner, specialEffect.effectType, specialEffect.effectValue, 0.75f, auraBuffBonus.auraEffectMultiplier);
         }
     }
@@ -1003,14 +1005,16 @@ public partial class ActorAbility
 
         yield return new WaitForSeconds(HitscanDelay);
 
-        if (ParticleManager.Instance.DoesAbilityEmitOnSelf(abilityBase.idName))
+        AbilityParticleSystem abilityParticleSystem = ParticleManager.Instance.GetParticleSystem(abilityBase.idName);
+
+        if (abilityParticleSystem != null && abilityParticleSystem.extraEmitOnSelf)
         {
             emitParams.position = AbilityOwner.transform.position;
-            ParticleManager.Instance.EmitAbilityParticle(abilityBase.idName, emitParams, 1, AbilityOwner.transform);
+            ParticleManager.Instance.EmitAbilityParticle(abilityParticleSystem, emitParams, 1, AbilityOwner.transform);
         }
 
         emitParams.position = target.transform.position;
-        ParticleManager.Instance.EmitAbilityParticle(abilityBase.idName, emitParams, 1, AbilityOwner.transform);
+        ParticleManager.Instance.EmitAbilityParticle(abilityParticleSystem, emitParams, 1, AbilityOwner.transform);
         ApplyDamageToActor(target, true);
 
         List<Actor> hitList;
@@ -1041,7 +1045,7 @@ public partial class ActorAbility
                 ApplyDamageToActor(actor, true);
 
                 emitParams.position = actor.transform.position;
-                ParticleManager.Instance.EmitAbilityParticle(abilityBase.idName, emitParams, 1, AbilityOwner.transform);
+                ParticleManager.Instance.EmitAbilityParticle(abilityParticleSystem, emitParams, 1, AbilityOwner.transform);
 
                 lastHitTarget = actor;
                 hitList.Add(actor);
@@ -1071,7 +1075,7 @@ public partial class ActorAbility
                 int index = UnityEngine.Random.Range(0, possibleTargets.Count);
                 if (possibleTargets[index] != null)
                 {
-                    AbilityOwner.StartCoroutine(FireHitscan_Chained(origin, possibleTargets[index], ProjectileChain - 1, hitList));
+                    AbilityOwner.StartCoroutine(FireHitscan_Chained(origin, possibleTargets[index], ProjectileChain - 1, hitList, abilityParticleSystem));
                 }
             }
         }
@@ -1079,13 +1083,13 @@ public partial class ActorAbility
         yield break;
     }
 
-    protected IEnumerator FireHitscan_Chained(Vector3 origin, Actor target, int remainingChainCount, List<Actor> hitList)
+    protected IEnumerator FireHitscan_Chained(Vector3 origin, Actor target, int remainingChainCount, List<Actor> hitList, AbilityParticleSystem abilityParticleSystem)
     {
         emitParams.position = target.transform.position;
 
         yield return new WaitForSeconds(HitscanDelay / 2);
 
-        ParticleManager.Instance.EmitAbilityParticle(abilityBase.idName, emitParams, 1, AbilityOwner.transform);
+        ParticleManager.Instance.EmitAbilityParticle(abilityParticleSystem, emitParams, 1, AbilityOwner.transform);
         ApplyDamageToActor(target, true);
         hitList.Add(target);
 
@@ -1107,7 +1111,7 @@ public partial class ActorAbility
                 int index = UnityEngine.Random.Range(0, possibleTargets.Count);
                 if (possibleTargets[index] != null)
                 {
-                    AbilityOwner.StartCoroutine(FireHitscan_Chained(origin, possibleTargets[index], remainingChainCount - 1, hitList));
+                    AbilityOwner.StartCoroutine(FireHitscan_Chained(origin, possibleTargets[index], remainingChainCount - 1, hitList, abilityParticleSystem));
                 }
             }
         }

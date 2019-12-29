@@ -99,6 +99,21 @@ public abstract class Equipment : AffixedItem
         return equip;
     }
 
+    public static Equipment CreateRandomEquipment_EvenSlotWeight(int ilvl, GroupType? group = null, RarityType rarity = RarityType.NORMAL)
+    {
+        EquipSlotType slot = (EquipSlotType)UnityEngine.Random.Range(0, 9);
+        if (slot == EquipSlotType.RING_SLOT_1)
+            slot = EquipSlotType.RING;
+
+        Equipment equip = CreateEquipmentFromBase(ResourceManager.Instance.GetRandomEquipmentBase(ilvl, group, slot), ilvl);
+        if (rarity > RarityType.NORMAL)
+        {
+            equip.Rarity = rarity;
+            equip.RerollAffixesAtRarity();
+        }
+        return equip;
+    }
+
     public static Equipment CreateRandomUnique(int ilvl, GroupType? group = null)
     {
         UniqueBase uniqueBase = ResourceManager.Instance.GetRandomUniqueBase(ilvl, group);

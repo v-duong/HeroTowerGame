@@ -39,19 +39,19 @@ public class BattleCharInfoPanel : MonoBehaviour
         }
         stringBuilder.AppendFormat("Lv{0} {1}\n", actor.Data.Level, targetName);
         if (actor.Data.CurrentHealth < 1 && actor.Data.CurrentHealth > 0)
-            stringBuilder.AppendFormat("Health: {0:N2}/{1}", actor.Data.CurrentHealth, actor.Data.MaximumHealth);
+            stringBuilder.AppendFormat("Health: {0:N2}/{1:N0}", actor.Data.CurrentHealth, actor.Data.MaximumHealth);
         else
-            stringBuilder.AppendFormat("Health: {0:N0}/{1}", actor.Data.CurrentHealth, actor.Data.MaximumHealth);
+            stringBuilder.AppendFormat("Health: {0:N0}/{1:N0}", actor.Data.CurrentHealth, actor.Data.MaximumHealth);
 
         if (actor.Data.MaximumManaShield > 0)
         {
-            stringBuilder.AppendFormat("\nShield: {0:N0}/{1}", actor.Data.CurrentManaShield, actor.Data.MaximumManaShield);
+            stringBuilder.AppendFormat("\nShield: {0:N0}/{1:N0}", actor.Data.CurrentManaShield, actor.Data.MaximumManaShield);
         }
         statusText.text = "";
 
         if (actor is HeroActor hero)
         {
-            stringBuilder.AppendFormat("\nSP: {0:N0}/{1}", actor.Data.CurrentSoulPoints, actor.Data.MaximumSoulPoints);
+            stringBuilder.AppendFormat("\nSP: {0:N0}/{1:N0}", actor.Data.CurrentSoulPoints, actor.Data.MaximumSoulPoints);
 
             if (hero.isBeingRecalled)
             {
@@ -104,14 +104,11 @@ public class BattleCharInfoPanel : MonoBehaviour
             else
                 statusText.text += bleedList[0].GetEffectValue().ToString("N0") + "/s " + bleedList[0].duration.ToString("F1") + "\n";
         }
-        System.Collections.Generic.List<ActorEffect> poisonList = actor.GetStatusEffectAll(EffectType.BLEED);
+
+        System.Collections.Generic.List<ActorEffect> poisonList = actor.GetStatusEffectAll(EffectType.POISON);
         if (poisonList.Count > 0)
         {
-            statusText.text += "<sprite=14>";
-            if (poisonList.Count > 1)
-                statusText.text += "x" + poisonList.Count + "\n";
-            else
-                statusText.text += "\n";
+            statusText.text += "<sprite=14>x" + poisonList.Count + "\n";
         }
 
         ActorEffect burn = actor.GetStatusEffect(EffectType.BURN);

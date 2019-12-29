@@ -6,7 +6,6 @@ public class InventoryFilterButton : MonoBehaviour
     public int category;
     public GroupType groupType;
 
-
     private void Start()
     {
         if (groupType != GroupType.NO_GROUP)

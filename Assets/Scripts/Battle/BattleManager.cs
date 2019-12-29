@@ -378,7 +378,7 @@ public class BattleManager : MonoBehaviour
         Equipment equip;
         if (rarity != RarityType.UNIQUE)
         {
-            equip = Equipment.CreateRandomEquipment(stageLevel + survivalLoopCount);
+            equip = Equipment.CreateRandomEquipment_EvenSlotWeight(stageLevel + survivalLoopCount);
             RollEquipmentRarity(equip, rarity, affixLevelSkew);
         }
         else
@@ -386,7 +386,7 @@ public class BattleManager : MonoBehaviour
             equip = Equipment.CreateRandomUnique(stageLevel + survivalLoopCount);
             if (equip == null)
             {
-                equip = Equipment.CreateRandomEquipment(stageLevel + survivalLoopCount);
+                equip = Equipment.CreateRandomEquipment_EvenSlotWeight(stageLevel + survivalLoopCount);
                 RollEquipmentRarity(equip, RarityType.EPIC, affixLevelSkew);
             }
         }
@@ -421,7 +421,7 @@ public class BattleManager : MonoBehaviour
 
     private void CalculateItemFragmentDrops(BattleEndWindow battleEndWindow)
     {
-        double multiplier = System.Math.Pow(1.18f, survivalLoopCount);
+        double multiplier = System.Math.Pow(1.15f, survivalLoopCount);
         if (perfectBonus)
             multiplier *= 1.25f;
         int minDrop = (int)(stageInfo.consumableDropCountMin * multiplier);
@@ -432,7 +432,7 @@ public class BattleManager : MonoBehaviour
 
     private void CalculateExpGain(BattleEndWindow battleEndWindow)
     {
-        double multiplier = System.Math.Pow(1.1f, survivalLoopCount);
+        double multiplier = System.Math.Pow(1.08f, survivalLoopCount);
         if (perfectBonus)
             multiplier *= 1.15f;
         gainedExpThisLoop = (int)(stageInfo.baseExperience * (multiplier));
@@ -529,7 +529,7 @@ public class BattleManager : MonoBehaviour
         yield return new WaitForSeconds(enemyWaveItem.startDelay);
 
         Dictionary<BonusType, StatBonus> bonuses = new Dictionary<BonusType, StatBonus>();
-        
+
         RarityType rarity = enemyWaveItem.enemyRarity;
 
         if (isSurvivalBattle)
@@ -567,9 +567,20 @@ public class BattleManager : MonoBehaviour
             int rarityMod = 0;
             if (survivalLoopCount > 0 && rarity < RarityType.RARE)
             {
-                if (UnityEngine.Random.Range(0, 1f) < survivalLoopCount * 0.08f)
+                float rarityBoostIncrement = 0.05f;
+                if (rarity == RarityType.NORMAL)
                 {
-                    rarityMod = 1;
+                    rarityBoostIncrement = 0.08f;
+                }
+
+                float totalRarityBoostChance = survivalLoopCount * rarityBoostIncrement;
+                if (Random.Range(0, 1f) < totalRarityBoostChance)
+                {
+                    rarityMod++;
+                    if (rarity == RarityType.NORMAL && totalRarityBoostChance > 1f && Random.Range(0, 1f) < (1f - totalRarityBoostChance))
+                    {
+                        rarityMod++;
+                    }
                 }
             }
             SpawnEnemy(enemyWaveItem, bonuses, rarity + rarityMod);

@@ -69,7 +69,6 @@ public class HeroData : ActorData
         BaseIntelligence = heroSaveData.baseIntelligence;
         BaseAgility = heroSaveData.baseAgility;
         BaseWill = heroSaveData.baseWill;
-        
 
         archetypeList[0] = new HeroArchetypeData(heroSaveData.primaryArchetypeData, this);
 
@@ -335,6 +334,11 @@ public class HeroData : ActorData
                          || (mainWeapon.GetGroupTypes().Contains(GroupType.RANGED_WEAPON) && !equip.GetGroupTypes().Contains(GroupType.RANGED_WEAPON)))
                     return false;
             }
+            else if (GetEquipmentGroupTypes(equip).Contains(GroupType.SPEAR) && HasSpecialBonus(BonusType.CAN_USE_SPEARS_WITH_SHIELDS) && slot == EquipSlotType.WEAPON)
+            {
+                if (equipList[(int)EquipSlotType.OFF_HAND].equip == null || !equipList[(int)EquipSlotType.OFF_HAND].equip.GetGroupTypes().Contains(GroupType.SHIELD))
+                    UnequipFromSlot(EquipSlotType.OFF_HAND);
+            }
             else if (GetEquipmentGroupTypes(equip).Contains(GroupType.TWO_HANDED_WEAPON) && !HasSpecialBonus(BonusType.TWO_HANDED_WEAPONS_ARE_ONE_HANDED))
             {
                 if (slot == EquipSlotType.WEAPON && equipList[(int)EquipSlotType.OFF_HAND].equip != null)
@@ -518,7 +522,8 @@ public class HeroData : ActorData
             HashSet<GroupType> mainTypes = GetEquipmentGroupTypes(mainHand);
             if (mainTypes.Contains(GroupType.TWO_HANDED_WEAPON) && !HasSpecialBonus(BonusType.TWO_HANDED_WEAPONS_ARE_ONE_HANDED))
             {
-                UnequipFromSlot(EquipSlotType.OFF_HAND);
+                if (!mainTypes.Contains(GroupType.SPEAR) || !offHand.GetGroupTypes().Contains(GroupType.SHIELD) || !HasSpecialBonus(BonusType.CAN_USE_SPEARS_WITH_SHIELDS))
+                    UnequipFromSlot(EquipSlotType.OFF_HAND);
             }
             else if (offHand is Weapon)
             {
@@ -615,6 +620,18 @@ public class HeroData : ActorData
         if (!attributeStatBonuses.ContainsKey(BonusType.ATTACK_DAMAGE))
             attributeStatBonuses.Add(BonusType.ATTACK_DAMAGE, new StatBonus());
         attributeStatBonuses[BonusType.ATTACK_DAMAGE].SetAdditive(attackDamageMod);
+
+
+        int physMin = (int)(GetMultiStatBonus(null, BonusType.STR_GIVES_FLAT_PHYSICAL_MIN).CalculateStat(0) / 5f * Strength);
+        int physMax = (int)(GetMultiStatBonus(null, BonusType.STR_GIVES_FLAT_PHYSICAL_MAX).CalculateStat(0) / 5f * Strength);
+
+        if (!attributeStatBonuses.ContainsKey(BonusType.ATTACK_PHYSICAL_DAMAGE_MIN))
+            attributeStatBonuses.Add(BonusType.ATTACK_PHYSICAL_DAMAGE_MIN, new StatBonus());
+        attributeStatBonuses[BonusType.ATTACK_PHYSICAL_DAMAGE_MIN].SetFlat(physMin);
+
+        if (!attributeStatBonuses.ContainsKey(BonusType.ATTACK_PHYSICAL_DAMAGE_MAX))
+            attributeStatBonuses.Add(BonusType.ATTACK_PHYSICAL_DAMAGE_MAX, new StatBonus());
+        attributeStatBonuses[BonusType.ATTACK_PHYSICAL_DAMAGE_MAX].SetFlat(physMax);
     }
 
     private void ApplyIntelligenceBonuses()

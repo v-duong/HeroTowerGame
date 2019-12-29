@@ -25,6 +25,9 @@ public class InventoryScrollWindow : MonoBehaviour
     [SerializeField]
     public InventoryFilterWindow filterWindow;
 
+    [SerializeField]
+    public ItemSelectionWindow selectionWindow;
+
     public Button confirmButton;
     private Action<List<Item>> confirmOnClick = null;
 
@@ -54,12 +57,12 @@ public class InventoryScrollWindow : MonoBehaviour
                 if (!showItemAffixes)
                     ySize = 155;
                 break;
+
             case ViewType.ARCHETYPE:
             case ViewType.ABILITY_CORE:
-                    ySize = 85;
+                ySize = 85;
                 break;
         }
-
 
         if (GameManager.Instance.aspectRatio >= 1.92)
         {
@@ -75,7 +78,6 @@ public class InventoryScrollWindow : MonoBehaviour
         }
 
         currentY = ySize;
-
     }
 
     private void OnEnable()
@@ -96,7 +98,6 @@ public class InventoryScrollWindow : MonoBehaviour
             return _inventorySlotPool;
         }
     }
-
 
     private void InitializeInventorySlots<T>(IList<T> itemInventory, Action<Item> callback = null) where T : Item
     {
@@ -167,7 +168,7 @@ public class InventoryScrollWindow : MonoBehaviour
             currentCallback = null;
         ClearSlots();
         if (addNullSlot)
-            AddInventorySlot(null,null,0);
+            AddInventorySlot(null, null, 0);
 
         toggleAffixesButton.gameObject.SetActive(false);
         showItemAffixes = false;
@@ -178,7 +179,7 @@ public class InventoryScrollWindow : MonoBehaviour
             ArchetypeItem item = GameManager.Instance.PlayerStats.ArchetypeInventory[i];
             if (filter.Contains(item.Base))
                 continue;
-            AddInventorySlot(item, currentCallback,i+1);
+            AddInventorySlot(item, currentCallback, i + 1);
         }
         DeactivateSlotsInPool();
     }
@@ -240,7 +241,7 @@ public class InventoryScrollWindow : MonoBehaviour
         bool slotIsSelected = selectedItems.Contains(item);
         slot.selectedImage.gameObject.SetActive(slotIsSelected);
         slot.alreadySelected = slotIsSelected;
-        slot.SetTextVisiblity(index < 2100/currentY && slot.item != null);
+        slot.SetTextVisiblity(index < 2100 / currentY && slot.item != null);
         slot.gameObject.SetActive(true);
     }
 
@@ -250,9 +251,12 @@ public class InventoryScrollWindow : MonoBehaviour
         foreach (InventorySlot i in SlotsInUse)
         {
             if (i.item == null)
+            {
                 i.SetTextVisiblity(false);
+                continue;
+            }
             float slotY = -(i.transform as RectTransform).anchoredPosition.y;
-            i.SetTextVisiblity(invY-170 < slotY && slotY < invY + 840);
+            i.SetTextVisiblity(invY - 170 < slotY && slotY < invY + 890);
         }
     }
 
@@ -282,14 +286,15 @@ public class InventoryScrollWindow : MonoBehaviour
     {
         SetHideEquippedToggle(!hideEquipped);
 
-        foreach(InventorySlot slot in SlotsInUse)
+        foreach (InventorySlot slot in SlotsInUse)
         {
             if (slot.item is Equipment e)
             {
                 if (hideEquipped && e.IsEquipped)
                 {
                     slot.gameObject.SetActive(false);
-                } else
+                }
+                else
                 {
                     slot.gameObject.SetActive(true);
                 }
@@ -299,18 +304,21 @@ public class InventoryScrollWindow : MonoBehaviour
 
     public void FilterTypeButtonOnClick()
     {
-        UIManager.Instance.OpenWindow(filterWindow.gameObject,false);
+        UIManager.Instance.OpenWindow(filterWindow.gameObject, false);
     }
 
-    public void FilterShownSlotsByType(HashSet<GroupType> groupTypes)
+    public void FilterShownSlotsByType(HashSet<GroupType> groupTypes, HashSet<GroupType> optionalTypes)
     {
-        UIManager.Instance.CloseCurrentWindow();
-        foreach(InventorySlot slot in SlotsInUse)
+        
+        foreach (InventorySlot slot in SlotsInUse)
         {
-            if (groupTypes.Count == 0 || (slot.item is Equipment e && e.GetGroupTypes().IsSupersetOf(groupTypes)))
+            if (groupTypes.Count == 0 || (slot.item is Equipment e
+                                          && e.GetGroupTypes().IsSupersetOf(groupTypes)
+                                          && (optionalTypes.Count == 0 || e.GetGroupTypes().Intersect(optionalTypes).Any())))
             {
                 slot.gameObject.SetActive(true);
-            } else
+            }
+            else
             {
                 slot.gameObject.SetActive(false);
             }
@@ -319,31 +327,24 @@ public class InventoryScrollWindow : MonoBehaviour
         ((RectTransform)transform).anchoredPosition = Vector3.zero;
     }
 
-    public void FilterButtonOnClick()
+    public void SelectByILvlButtonOnClick()
     {
-        UIManager.Instance.PopUpWindow.OpenTextInput("0");
-        UIManager.Instance.PopUpWindow.textInput.characterLimit = 3;
-        UIManager.Instance.PopUpWindow.textInput.contentType = TMP_InputField.ContentType.IntegerNumber;
-        UIManager.Instance.PopUpWindow.textInput.lineType = TMP_InputField.LineType.SingleLine;
-        UIManager.Instance.PopUpWindow.SetButtonValues("Confirm", delegate
+        UIManager.Instance.OpenWindow(selectionWindow.gameObject, false);
+    }
+
+    public void SelectByCriteria(Func<Item, bool> criteriaFunction)
+    {
+        foreach (InventorySlot inventorySlot in SlotsInUse)
         {
-            UIManager.Instance.CloseCurrentWindow();
-            if (!string.IsNullOrWhiteSpace(UIManager.Instance.PopUpWindow.textInput.text))
+            if (inventorySlot.alreadySelected || !criteriaFunction(inventorySlot.item))
+                continue;
+            else
             {
-                int iLvl = int.Parse(UIManager.Instance.PopUpWindow.textInput.text);
-                foreach (InventorySlot inventorySlot in SlotsInUse)
-                {
-                    if (inventorySlot.alreadySelected || inventorySlot.item.ItemLevel >= iLvl)
-                        continue;
-                    else
-                    {
-                        selectedItems.Add(inventorySlot.item);
-                        inventorySlot.alreadySelected = true;
-                        inventorySlot.selectedImage.gameObject.SetActive(true);
-                    }
-                }
+                selectedItems.Add(inventorySlot.item);
+                inventorySlot.alreadySelected = true;
+                inventorySlot.selectedImage.gameObject.SetActive(true);
             }
-        }, "Cancel", UIManager.Instance.CloseCurrentWindow);
+        }
     }
 
     public void ResetMultiSelectList()

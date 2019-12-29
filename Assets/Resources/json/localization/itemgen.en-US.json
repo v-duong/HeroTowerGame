@@ -76,24 +76,44 @@
       "Bold",
       "Purifying",
       "Obsidian",
-      "Fortified"
+			"Fortified",
+			"Nebula",
+			"Vicious",
+			"Craven",
+			"Scrupulous",
+			"Miraculous",
+			"Apathetic",
+			"Expert",
+			"Precise",
+			"Obsidian",
+			"Swamp",
+			"Contrary",
+			"Negative",
+			"Occult"
     ]
 
   },
   "suffix": {
-    "NO_GROUP": [
-      "Squire",
-      "Pawn",
-      "Star",
-      "Bile",
-      "Guidance",
-      "Tempest",
-      "Shard",
-      "Retribution",
-      "Rise",
-      "Knell",
-      "Augur"
-    ],
+		"NO_GROUP": [
+			"Squire",
+			"Pawn",
+			"Star",
+			"Bile",
+			"Guidance",
+			"Tempest",
+			"Shard",
+			"Retribution",
+			"Rise",
+			"Knell",
+			"Augur",
+			"Revenge",
+			"Chain",
+			"Crest",
+			"Crescent",
+			"Fragment",
+			"Opposition",
+			"Dynasty"
+		],
     "WEAPON": [
       "Bane",
       "Crasher",
@@ -103,13 +123,24 @@
       "Gale",
       "Vortex",
       "Killer",
-      "Siphon"
+			"Siphon",
+			"Force",
+			"Severance",
+			"Furor",
+			"Rage",
+			"Destruction",
+			"Destroyer"
     ],
-    "SWORD_TYPE": [
-      "Blade",
-      "Razor",
-      "Edge"
-    ],
+		"SWORD_TYPE": [
+			"Blade",
+			"Razor",
+			"Edge"
+		],
+		"RANGED_WEAPON": [
+			"Shooter",
+			"Shot",
+			"Sling"
+		],
     "ALL_ARMOR": [
       "Protector",
       "Expanse",
@@ -119,7 +150,9 @@
       "Scale",
       "Hide",
       "Shelter",
-      "Shell"
+			"Shell",
+			"Zone",
+			"Defense"
     ],
     "BODY_ARMOR": [
       "Sanctuary",
@@ -141,7 +174,9 @@
       "Trinket",
       "Loop",
       "Gyre",
-      "Spiral"
+			"Spiral",
+			"Ward",
+			"Relic"
     ],
     "RING": [
       "Whorl",

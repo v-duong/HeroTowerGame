@@ -2,6 +2,7 @@
 
 public class AbilityParticleSystem : MonoBehaviour
 {
+    public bool useDifferentForSameFrame;
     public bool extraEmitOnSelf;
     public int emitCount;
     public ParticleSystem ps;
@@ -14,6 +15,7 @@ public class AbilityParticleSystem : MonoBehaviour
     public bool scaleShapeSize;
     public bool rotateVelocity;
     public bool rotateParticles;
+    public string abilityId;
     private float baseConstant;
     private float baseShapeSize;
     private Vector3 baseShapePosition;

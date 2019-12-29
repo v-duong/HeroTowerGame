@@ -47,11 +47,11 @@ public class HeroCreationPanel : MonoBehaviour
             return;
         HeroData hero = HeroData.CreateNewHero(HeroName, primaryArchetype.Base, secondaryArchetype?.Base);
         PlayerStats player = GameManager.Instance.PlayerStats;
+        hero.spriteName = ResourceManager.Instance.GetHeroSprites()[currentSpriteIndex].name.Replace("(Clone)", "");
         player.AddHeroToList(hero);
         player.RemoveArchetypeFromInventory(primaryArchetype);
-        primaryArchetype = null;
 
-        hero.spriteName = ResourceManager.Instance.GetHeroSprites()[currentSpriteIndex].name.Replace("(Clone)", "");
+        primaryArchetype = null;
 
         if (secondaryArchetype != null)
         {

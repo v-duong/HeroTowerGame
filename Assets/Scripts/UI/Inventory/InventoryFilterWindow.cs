@@ -120,13 +120,43 @@ public class InventoryFilterWindow : MonoBehaviour
     public void FilterInventoryOnClick()
     {
         HashSet<GroupType> groupTypes = new HashSet<GroupType>();
-
+        HashSet<GroupType> optionalGroupTypes = new HashSet<GroupType>();
         foreach (InventoryFilterButton button in selectedButtons)
         {
-            groupTypes.Add(button.groupType);
+            switch (button.groupType)
+            {
+                case GroupType.STR_ARMOR:
+                    optionalGroupTypes.Add(GroupType.STR_ARMOR);
+                    optionalGroupTypes.Add(GroupType.STR_AGI_ARMOR);
+                    optionalGroupTypes.Add(GroupType.STR_INT_ARMOR);
+                    optionalGroupTypes.Add(GroupType.STR_WILL_ARMOR);
+                    break;
+                case GroupType.INT_ARMOR:
+                    optionalGroupTypes.Add(GroupType.INT_ARMOR);
+                    optionalGroupTypes.Add(GroupType.INT_AGI_ARMOR);
+                    optionalGroupTypes.Add(GroupType.INT_WILL_ARMOR);
+                    optionalGroupTypes.Add(GroupType.STR_INT_ARMOR);
+                    break;
+                case GroupType.AGI_ARMOR:
+                    optionalGroupTypes.Add(GroupType.AGI_ARMOR);
+                    optionalGroupTypes.Add(GroupType.AGI_WILL_ARMOR);
+                    optionalGroupTypes.Add(GroupType.INT_AGI_ARMOR);
+                    optionalGroupTypes.Add(GroupType.STR_AGI_ARMOR);
+                    break;
+                case GroupType.WILL_ARMOR:
+                    optionalGroupTypes.Add(GroupType.WILL_ARMOR);
+                    optionalGroupTypes.Add(GroupType.STR_WILL_ARMOR);
+                    optionalGroupTypes.Add(GroupType.AGI_WILL_ARMOR);
+                    optionalGroupTypes.Add(GroupType.INT_WILL_ARMOR);
+                    break;
+                default:
+                    groupTypes.Add(button.groupType);
+                    break;
+            }
         }
 
-        UIManager.Instance.InvScrollContent.FilterShownSlotsByType(groupTypes);
+        UIManager.Instance.InvScrollContent.FilterShownSlotsByType(groupTypes, optionalGroupTypes);
+        UIManager.Instance.CloseCurrentWindow();
     }
 
     private enum CategoryType

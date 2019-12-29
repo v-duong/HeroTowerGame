@@ -1,6 +1,5 @@
-﻿using UnityEngine;
-using UnityEngine.UI;
-using TMPro;
+﻿using TMPro;
+using UnityEngine;
 
 public class HeroEquipmentSlot : MonoBehaviour
 {
@@ -45,6 +44,11 @@ public class HeroEquipmentSlot : MonoBehaviour
 
         if (HeroDetailWindow.hero.GetEquipmentInSlot(EquipSlotType.WEAPON) is Weapon mainWeapon)
         {
+            if (mainWeapon.GetGroupTypes().Contains(GroupType.SPEAR) && HeroDetailWindow.hero.HasSpecialBonus(BonusType.CAN_USE_SPEARS_WITH_SHIELDS) && e.GetGroupTypes().Contains(GroupType.SHIELD))
+                return true;
+            else if (HeroDetailWindow.hero.GetEquipmentGroupTypes(mainWeapon).Contains(GroupType.TWO_HANDED_WEAPON) && !HeroDetailWindow.hero.HasSpecialBonus(BonusType.TWO_HANDED_WEAPONS_ARE_ONE_HANDED))
+                return false;
+
             if (mainWeapon.GetGroupTypes().Contains(GroupType.MELEE_WEAPON))
                 weaponType = GroupType.MELEE_WEAPON;
             else if (mainWeapon.GetGroupTypes().Contains(GroupType.RANGED_WEAPON))
