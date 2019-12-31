@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 public abstract class Equipment : AffixedItem
 {
-    public static readonly int MaxLevelReq = 95;
+    public const int MAX_LEVEL_REQ = 95;
     public EquipmentBase Base;
     public float costModifier;
     public int levelRequirement;
@@ -35,7 +35,7 @@ public abstract class Equipment : AffixedItem
         intRequirement = e.intelligenceReq;
         agiRequirement = e.agilityReq;
         willRequirement = e.willReq;
-        levelRequirement = Math.Min(e.dropLevel, MaxLevelReq);
+        levelRequirement = Math.Min(e.dropLevel, MAX_LEVEL_REQ);
         Rarity = RarityType.NORMAL;
         ItemLevel = ilvl;
         prefixes = new List<Affix>();
@@ -88,29 +88,20 @@ public abstract class Equipment : AffixedItem
         return equip;
     }
 
-    public static Equipment CreateRandomEquipment(int ilvl, GroupType? group = null, RarityType rarity = RarityType.NORMAL)
+    public static Equipment CreateRandomEquipment(int ilvl, GroupType? group = null)
     {
         Equipment equip = CreateEquipmentFromBase(ResourceManager.Instance.GetRandomEquipmentBase(ilvl, group), ilvl);
-        if (rarity > RarityType.NORMAL)
-        {
-            equip.Rarity = rarity;
-            equip.RerollAffixesAtRarity();
-        }
+
         return equip;
     }
 
-    public static Equipment CreateRandomEquipment_EvenSlotWeight(int ilvl, GroupType? group = null, RarityType rarity = RarityType.NORMAL)
+    public static Equipment CreateRandomEquipment_EvenSlotWeight(int ilvl, GroupType? group = null, float baseLevelSkew = 1f)
     {
         EquipSlotType slot = (EquipSlotType)UnityEngine.Random.Range(0, 9);
         if (slot == EquipSlotType.RING_SLOT_1)
             slot = EquipSlotType.RING;
 
-        Equipment equip = CreateEquipmentFromBase(ResourceManager.Instance.GetRandomEquipmentBase(ilvl, group, slot), ilvl);
-        if (rarity > RarityType.NORMAL)
-        {
-            equip.Rarity = rarity;
-            equip.RerollAffixesAtRarity();
-        }
+        Equipment equip = CreateEquipmentFromBase(ResourceManager.Instance.GetRandomEquipmentBase(ilvl, group, slot, baseLevelSkew), ilvl);
         return equip;
     }
 
@@ -194,7 +185,7 @@ public abstract class Equipment : AffixedItem
                 req = affix.Base.spawnLevel;
         }
 
-        levelRequirement = Math.Min(req, MaxLevelReq);
+        levelRequirement = Math.Min(req, MAX_LEVEL_REQ);
 
         return true;
     }

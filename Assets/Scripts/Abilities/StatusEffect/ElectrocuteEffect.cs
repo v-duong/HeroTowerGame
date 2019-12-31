@@ -19,6 +19,12 @@ public class ElectrocuteEffect : ActorEffect
         MaxStacks = source.Data.OnHitData.effectData[EffectType.ELECTROCUTE].MaxStacks;
     }
 
+    public override void RefreshDuration(float duration)
+    {
+        if (this.duration > duration)
+            this.duration = duration;
+    }
+
     public override void OnApply()
     {
     }

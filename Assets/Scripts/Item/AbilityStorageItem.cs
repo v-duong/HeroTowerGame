@@ -27,7 +27,7 @@ public class AbilityCoreItem : Item, IAbilitySource
 
     public static AbilityCoreItem CreateAbilityItemFromArchetype(ArchetypeItem archetypeItem, AbilityBase abilityBase)
     {
-        if (!archetypeItem.Base.GetArchetypeAbilities(true).Contains(abilityBase) || abilityBase != archetypeItem.Base.GetSoulAbility())
+        if (!archetypeItem.Base.GetArchetypeAbilities(true).Contains(abilityBase) && abilityBase != archetypeItem.Base.GetSoulAbility())
             return null;
         else
         {

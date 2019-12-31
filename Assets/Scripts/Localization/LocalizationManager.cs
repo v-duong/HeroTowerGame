@@ -132,11 +132,17 @@ public class LocalizationManager : MonoBehaviour
                 output[0] = stringId;
             else
                 output[0] = value;
+        } else
+        {
+            output[0] = stringId;
         }
 
         if (abilityLocalizationData.TryGetValue("ability." + stringId + ".text", out value))
         {
             output[1] = value;
+        } else
+        {
+            output[1] = "";
         }
 
         return output;

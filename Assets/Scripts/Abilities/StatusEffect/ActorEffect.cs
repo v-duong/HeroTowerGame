@@ -48,7 +48,7 @@ public abstract class ActorEffect
         }
     }
 
-    public void RefreshDuration(float duration)
+    public virtual void RefreshDuration(float duration)
     {
         if (this.duration < duration)
             this.duration = duration;

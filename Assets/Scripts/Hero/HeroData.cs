@@ -423,7 +423,10 @@ public class HeroData : ActorData
                 if (b.bonusType >= (BonusType)0x700)
                     continue;
                 else
-                    AddStatBonus(b.bonusType, b.restriction, b.modifyType, affix.GetAffixValue(i));
+                {
+                    if (affix.GetAffixValue(i) != 0 || b.modifyType == ModifyType.FIXED_TO)
+                        AddStatBonus(b.bonusType, b.restriction, b.modifyType, affix.GetAffixValue(i));
+                }
             }
             for (int i = 0; i < affix.Base.triggeredEffects.Count; i++)
             {
@@ -444,7 +447,8 @@ public class HeroData : ActorData
                 //ignore local mods
                 if (b.bonusType < (BonusType)0x700)
                 {
-                    RemoveStatBonus(b.bonusType, b.restriction, b.modifyType, affix.GetAffixValue(i));
+                    if (affix.GetAffixValue(i) != 0 || b.modifyType == ModifyType.FIXED_TO)
+                        RemoveStatBonus(b.bonusType, b.restriction, b.modifyType, affix.GetAffixValue(i));
                 }
             }
             for (int i = 0; i < affix.Base.triggeredEffects.Count; i++)
@@ -620,7 +624,6 @@ public class HeroData : ActorData
         if (!attributeStatBonuses.ContainsKey(BonusType.ATTACK_DAMAGE))
             attributeStatBonuses.Add(BonusType.ATTACK_DAMAGE, new StatBonus());
         attributeStatBonuses[BonusType.ATTACK_DAMAGE].SetAdditive(attackDamageMod);
-
 
         int physMin = (int)(GetMultiStatBonus(null, BonusType.STR_GIVES_FLAT_PHYSICAL_MIN).CalculateStat(0) / 5f * Strength);
         int physMax = (int)(GetMultiStatBonus(null, BonusType.STR_GIVES_FLAT_PHYSICAL_MAX).CalculateStat(0) / 5f * Strength);

@@ -197,7 +197,9 @@ public class Affix
         if (instancedAffix != null)
         {
             if (instancedAffix.IsLocked)
-                s = "<color=#A9942C>" + s.TrimEnd('\n') + "</color>\n";
+                s = "<sprite=15> <color=#00802b>" + s.TrimEnd('\n') + "</color>\n";
+            else
+                s = "○ " + s;
         }
 
         if (indent != 0)

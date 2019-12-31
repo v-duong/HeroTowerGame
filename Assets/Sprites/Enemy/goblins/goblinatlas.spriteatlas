@@ -65,11 +65,12 @@ SpriteAtlas:
     - {fileID: 21300000, guid: 03af7d35329ef444e873075bda2cc0ef, type: 3}
     - {fileID: 21300000, guid: 958250ab5b1871042bbad9320e4eaab3, type: 3}
     - {fileID: 21300000, guid: ed8b75c280a4996428a935f8dde9356f, type: 3}
-    totalSpriteSurfaceArea: 11264
+    - {fileID: 21300000, guid: 0833d1eda1d71ee498028c835d43c185, type: 3}
+    totalSpriteSurfaceArea: 12288
     bindAsDefault: 1
     storedHash:
       serializedVersion: 2
-      Hash: 4960b625b4e06bfbbda82f2895129a9d
+      Hash: 51d1d36ceddd7eb2297e78ca0a06d4ab
   m_MasterAtlas: {fileID: 0}
   m_PackedSprites:
   - {fileID: 21300000, guid: 9193543040e8fa847a847022709615d4, type: 3}
@@ -83,6 +84,7 @@ SpriteAtlas:
   - {fileID: 21300000, guid: 986f0f188bac7ce41aae70a4bf099580, type: 3}
   - {fileID: 21300000, guid: 958250ab5b1871042bbad9320e4eaab3, type: 3}
   - {fileID: 21300000, guid: 4381fc5db2316694eb235bc96fcfae2b, type: 3}
+  - {fileID: 21300000, guid: 0833d1eda1d71ee498028c835d43c185, type: 3}
   m_PackedSpriteNamesToIndex:
   - goblinshaman
   - goblinslasher
@@ -95,5 +97,6 @@ SpriteAtlas:
   - hoblin
   - goblinlongshot
   - speedgoblin
+  - goblinwarrior
   m_Tag: goblinatlas
   m_IsVariant: 0

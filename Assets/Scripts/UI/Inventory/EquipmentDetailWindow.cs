@@ -42,11 +42,27 @@ public class EquipmentDetailWindow : MonoBehaviour
     [SerializeField]
     public GameObject EquipButtonParent = null;
 
+    [SerializeField]
+    public Button craftButton;
+
     public Equipment equip;
 
     public Image NameBackground;
 
     public Action<Item> callback;
+
+    public void GoToCraftingWindow()
+    {
+        UIManager.Instance.CloseCurrentWindow();
+        UIManager.Instance.CloseCurrentWindow();
+
+        if (UIManager.Instance.currentWindow != null)
+        {
+            UIManager.Instance.SaveWindowState();
+        }
+
+        UIManager.Instance.WorkshopParentWindow.OpenItemCraftingPanel(equip);
+    }
 
     public void UpdateWindowEquipment(HeroData hero)
     {
@@ -56,6 +72,11 @@ public class EquipmentDetailWindow : MonoBehaviour
         topLineText.text = "";
         damageText.text = "";
         statsText.text = "";
+
+        if (equip.IsEquipped)
+            craftButton.gameObject.SetActive(false);
+        else
+            craftButton.gameObject.SetActive(true);
 
         string groupTypeString = LocalizationManager.Instance.GetLocalizationText("groupType." + equip.Base.group);
         string equipTypeString = LocalizationManager.Instance.GetLocalizationText("equipSlotType." + equip.Base.equipSlot);
@@ -74,7 +95,8 @@ public class EquipmentDetailWindow : MonoBehaviour
                 if (equip.GetGroupTypes().Contains(GroupType.MELEE_WEAPON))
                 {
                     equipTypeString = "Melee " + equipTypeString;
-                } else if (equip.GetGroupTypes().Contains(GroupType.RANGED_WEAPON))
+                }
+                else if (equip.GetGroupTypes().Contains(GroupType.RANGED_WEAPON))
                 {
                     equipTypeString = "Ranged " + equipTypeString;
                 }
@@ -103,7 +125,7 @@ public class EquipmentDetailWindow : MonoBehaviour
             innateHeader.gameObject.SetActive(true);
             foreach (Affix a in equip.innate)
             {
-                innateText.text += "○" + Affix.BuildAffixString(a.Base, Helpers.AFFIX_STRING_SPACING, a, a.GetAffixValues(), a.GetEffectValues());
+                innateText.text += Affix.BuildAffixString(a.Base, Helpers.AFFIX_STRING_SPACING, a, a.GetAffixValues(), a.GetEffectValues());
             }
         }
         else
@@ -120,7 +142,7 @@ public class EquipmentDetailWindow : MonoBehaviour
                 prefixHeader.headerText.text = "Prefixes";
             foreach (Affix a in equip.prefixes)
             {
-                prefixText.text += "○" + Affix.BuildAffixString(a.Base, Helpers.AFFIX_STRING_SPACING, a, a.GetAffixValues(), a.GetEffectValues());
+                prefixText.text += Affix.BuildAffixString(a.Base, Helpers.AFFIX_STRING_SPACING, a, a.GetAffixValues(), a.GetEffectValues());
             }
         }
         else
@@ -133,7 +155,7 @@ public class EquipmentDetailWindow : MonoBehaviour
             suffixHeader.gameObject.SetActive(true);
             foreach (Affix a in equip.suffixes)
             {
-                suffixText.text += "○" + Affix.BuildAffixString(a.Base, Helpers.AFFIX_STRING_SPACING, a, a.GetAffixValues(), a.GetEffectValues());
+                suffixText.text += Affix.BuildAffixString(a.Base, Helpers.AFFIX_STRING_SPACING, a, a.GetAffixValues(), a.GetEffectValues());
             }
         }
         else

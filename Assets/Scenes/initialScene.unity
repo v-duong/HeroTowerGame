@@ -150,6 +150,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   currentWindow: {fileID: 0}
+  textPrefab: {fileID: 5634576474451913202, guid: 20095a37ab1290e4eaa10a0d9f06bc3f,
+    type: 3}
   buttonPrefab: {fileID: 6996149431267155738, guid: 1b77f1c88c90c964cb31602cb33af627,
     type: 3}
 --- !u!4 &368173412

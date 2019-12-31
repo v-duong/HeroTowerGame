@@ -62,6 +62,9 @@ public class ItemCraftingPanel : MonoBehaviour
     [SerializeField]
     public CraftingModifierWindow craftingModifierWindow;
 
+    private int previousLockCount;
+    private List<Affix> selectedAffixesToLock = new List<Affix>();
+
     private void OnDisable()
     {
         selectedOption = null;
@@ -72,6 +75,7 @@ public class ItemCraftingPanel : MonoBehaviour
 
     private void OnEnable()
     {
+        craftingModifierWindow.ResetWindow();
         UpdatePanels();
     }
 
@@ -84,13 +88,18 @@ public class ItemCraftingPanel : MonoBehaviour
 
     public void ItemSlotOnClick_Callback(Item item)
     {
+        SetItem(item);
+        UIManager.Instance.CloseCurrentWindow();
+    }
+
+    public void SetItem(Item item)
+    {
         if (item?.GetItemType() == ItemType.ARCHETYPE)
         {
             return;
         }
         currentItem = item as AffixedItem;
         UpdatePanels();
-        UIManager.Instance.CloseCurrentWindow();
     }
 
     private void UpdatePanels()
@@ -149,7 +158,7 @@ public class ItemCraftingPanel : MonoBehaviour
                 //innates.text = "<b>Innate</b>\n";
                 foreach (Affix a in equip.innate)
                 {
-                    innates.text += "○" + Affix.BuildAffixString(a.Base, Helpers.AFFIX_STRING_SPACING, a, a.GetAffixValues(), a.GetEffectValues());
+                    innates.text += Affix.BuildAffixString(a.Base, Helpers.AFFIX_STRING_SPACING, a, a.GetAffixValues(), a.GetEffectValues());
                 }
             }
             else
@@ -165,13 +174,13 @@ public class ItemCraftingPanel : MonoBehaviour
 
         foreach (Affix a in currentItem.prefixes)
         {
-            string prefixText = "○" + Affix.BuildAffixString(a.Base, Helpers.AFFIX_STRING_SPACING, a, a.GetAffixValues(), a.GetEffectValues(), showAffixDetails, showAffixDetails && currentItem.Rarity != RarityType.UNIQUE);
+            string prefixText = Affix.BuildAffixString(a.Base, Helpers.AFFIX_STRING_SPACING, a, a.GetAffixValues(), a.GetEffectValues(), showAffixDetails, showAffixDetails && currentItem.Rarity != RarityType.UNIQUE);
             prefixes.text += prefixText;
         }
 
         foreach (Affix a in currentItem.suffixes)
         {
-            suffixes.text += "○" + Affix.BuildAffixString(a.Base, Helpers.AFFIX_STRING_SPACING, a, a.GetAffixValues(), a.GetEffectValues(), showAffixDetails, showAffixDetails && currentItem.Rarity != RarityType.UNIQUE);
+            suffixes.text += Affix.BuildAffixString(a.Base, Helpers.AFFIX_STRING_SPACING, a, a.GetAffixValues(), a.GetEffectValues(), showAffixDetails, showAffixDetails && currentItem.Rarity != RarityType.UNIQUE);
         }
 
         itemValue.text = "Item Value\n" + currentItem.GetItemValue() + " <sprite=10>";
@@ -303,12 +312,15 @@ public class ItemCraftingPanel : MonoBehaviour
         popUpWindow.textField.fontSize = 18;
         popUpWindow.textField.paragraphSpacing = 8;
         popUpWindow.textField.alignment = TextAlignmentOptions.Left;
+        float levelSkew = craftingModifierWindow.highLevelMod.currentModifier;
+
+        Debug.Log(levelSkew);
 
         WeightList<AffixBase> possibleAffixes;
 
         if (currentItem.GetAffixCap() > currentItem.prefixes.Count)
         {
-            possibleAffixes = currentItem.GetAllPossiblePrefixes(modifiers);
+            possibleAffixes = currentItem.GetAllPossiblePrefixes(modifiers, levelSkew);
             if (possibleAffixes.Count > 0)
             {
                 popUpWindow.textField.text += "<b>Prefixes</b>\n";
@@ -324,7 +336,7 @@ public class ItemCraftingPanel : MonoBehaviour
 
         if (currentItem.GetAffixCap() > currentItem.suffixes.Count)
         {
-            possibleAffixes = currentItem.GetAllPossibleSuffixes(modifiers);
+            possibleAffixes = currentItem.GetAllPossibleSuffixes(modifiers, levelSkew);
             if (possibleAffixes.Count > 0)
             {
                 popUpWindow.textField.text += "<b>Suffixes</b>\n";
@@ -407,32 +419,85 @@ public class ItemCraftingPanel : MonoBehaviour
         PopUpWindow popUpWindow = UIManager.Instance.PopUpWindow;
         popUpWindow.OpenVerticalWindow();
 
-        popUpWindow.SetButtonValues(null, null, "Cancel", delegate { UIManager.Instance.CloseCurrentWindow(); });
+        popUpWindow.SetButtonValues("Confirm", delegate { LockAffixConfirm(); }, "Cancel", delegate { UIManager.Instance.CloseCurrentWindow(); });
 
+        TextMeshProUGUI textSlot = Instantiate(UIManager.Instance.textPrefab);
+
+        popUpWindow.AddObjectToViewport(textSlot.gameObject);
+        previousLockCount = 0;
+        selectedAffixesToLock.Clear();
         foreach (Affix affix in currentItem.prefixes.Concat(currentItem.suffixes))
         {
-            if (affix.IsLocked)
-                continue;
             Button button = Instantiate(UIManager.Instance.buttonPrefab);
             button.GetComponentInChildren<TextMeshProUGUI>().fontSize = 18;
             button.GetComponentInChildren<TextMeshProUGUI>().text = Affix.BuildAffixString(affix.Base, 0, null, affix.GetAffixValues(), affix.GetEffectValues());
-            button.onClick.AddListener(delegate { LockAffixCallback(affix); });
+            button.onClick.AddListener(delegate { LockAffixCallback(affix, textSlot, button); });
             popUpWindow.AddObjectToViewport(button.gameObject);
+
+            if (affix.IsLocked)
+            {
+                previousLockCount++;
+                selectedAffixesToLock.Add(affix);
+                button.image.color = Helpers.SELECTION_COLOR;
+            }
+            else
+            {
+                button.image.color = new Color(0.8f, 0.8f, 0.8f);
+            }
         }
+
+        textSlot.text = "Current Cost: 0 <sprite=10>";
     }
 
-    public void LockAffixCallback(Affix affix)
+    public void LockAffixConfirm()
     {
         UIManager.Instance.CloseCurrentWindow();
         currentItem.RemoveAllAffixLocks();
-        affix.SetAffixLock(true);
-        GameManager.Instance.PlayerStats.ModifyItemFragments(-AffixedItem.GetLockCost(currentItem));
+        int cost = 0;
+        for (int i = 0; i < selectedAffixesToLock.Count; i++)
+        {
+            Affix affix = selectedAffixesToLock[i];
+
+            if (i >= previousLockCount)
+            cost += -AffixedItem.GetLockCost(currentItem);
+
+            affix.SetAffixLock(true);
+        }
+
+        Debug.Log(cost);
+
+        GameManager.Instance.PlayerStats.ModifyItemFragments(cost);
 
         SaveManager.CurrentSave.SavePlayerData();
         SaveManager.CurrentSave.SaveEquipmentData(currentItem as Equipment);
         SaveManager.Save();
 
         UpdatePanels();
+    }
+
+    public void LockAffixCallback(Affix affix, TextMeshProUGUI costText, Button button)
+    {
+        if (selectedAffixesToLock.Contains(affix))
+        {
+            selectedAffixesToLock.Remove(affix);
+            button.image.color = new Color(0.8f, 0.8f, 0.8f);
+        }
+        else if (selectedAffixesToLock.Count < 3)
+        {
+            selectedAffixesToLock.Add(affix);
+            button.image.color = Helpers.SELECTION_COLOR;
+        }
+
+        int cost = 0;
+
+        for (int i = 0; i < selectedAffixesToLock.Count; i++)
+        {
+            if (i < previousLockCount)
+                continue;
+            cost += AffixedItem.GetLockCost(currentItem, i);
+        }
+
+        costText.text = "Current Cost: " + cost + " <sprite=10>";
     }
 
     public void ApplyActionOnClick()

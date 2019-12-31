@@ -36,5 +36,5 @@
 	"addRemoveAffix": "<b>Add Affix</b>: Adds one new random affix. Does not remove affix locks.\n<b>Remove Affix</b>: Removes one random affix. Locked affixes are not included in the random selection. Removes all locks.",
 	"upgradeRarity": "<b>Upgrade Rarity</b>: Upgrade item rarity by one tier and adds one random affix.\n<margin=0.5em>Normal > Uncommon > Rare > Epic</margin>",
 	"toNormal": "<b>Clear Item and Set To Normal</b>: Removes all affixes from item and resets rarity tier to normal. If an affix is locked, then that affix will stay and the item will be set to uncommon instead. Removes all locks.",
-	"lockAffix": "<b>Lock Affix</b>: Applies a lock to an affix, preventing it from being modified or removed. Locks only last through one operation that would affect the affix. You may only add one affix lock on an item."
+	"lockAffix": "<b>Lock Affix</b>: Applies a lock to an affix, preventing it from being modified or removed. Locks only last through one operation that would affect the affix. You may add three affix locks on an item. When adding multiple locks, each one is more expensive than the previous."
 }

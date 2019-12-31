@@ -304,14 +304,14 @@ public abstract class AffixedItem : Item
         suffixes = suffixes.OrderBy(x => x.Base.affixBonuses.Count > 0 ? (int)x.Base.affixBonuses[0].bonusType : int.MaxValue).ToList();
     }
 
-    public WeightList<AffixBase> GetAllPossiblePrefixes(Dictionary<GroupType, float> weightModifiers)
+    public WeightList<AffixBase> GetAllPossiblePrefixes(Dictionary<GroupType, float> weightModifiers, float levelSkew)
     {
-        return ResourceManager.Instance.GetPossibleAffixes(AffixType.PREFIX, ItemLevel, GetGroupTypes(), GetBonusTagTypeList(AffixType.PREFIX), weightModifiers, 1f);
+        return ResourceManager.Instance.GetPossibleAffixes(AffixType.PREFIX, ItemLevel, GetGroupTypes(), GetBonusTagTypeList(AffixType.PREFIX), weightModifiers, levelSkew);
     }
 
-    public WeightList<AffixBase> GetAllPossibleSuffixes(Dictionary<GroupType, float> weightModifiers)
+    public WeightList<AffixBase> GetAllPossibleSuffixes(Dictionary<GroupType, float> weightModifiers, float levelSkew)
     {
-        return ResourceManager.Instance.GetPossibleAffixes(AffixType.SUFFIX, ItemLevel, GetGroupTypes(), GetBonusTagTypeList(AffixType.SUFFIX), weightModifiers, 1f);
+        return ResourceManager.Instance.GetPossibleAffixes(AffixType.SUFFIX, ItemLevel, GetGroupTypes(), GetBonusTagTypeList(AffixType.SUFFIX), weightModifiers, levelSkew);
     }
 
     public void RemoveAllAffixLocks()
@@ -427,24 +427,42 @@ public abstract class AffixedItem : Item
         }
     }
 
-    public static int GetLockCost(AffixedItem currentItem)
+    public static int GetLockCost(AffixedItem currentItem, int lockedAffixesCount = -1)
     {
-        if (currentItem.GetLockCount() >= 1)
+        int currentCostMod = 1;
+
+        if (lockedAffixesCount == -1)
+        {
+            lockedAffixesCount = 0;
+            foreach (Affix affix in currentItem.GetAllAffixes())
+            {
+                if (affix.IsLocked)
+                {
+                    lockedAffixesCount++;
+                }
+            }
+        }
+
+        if (lockedAffixesCount == 1)
+            currentCostMod = 2;
+        if (lockedAffixesCount == 2)
+            currentCostMod = 5;
+        if (lockedAffixesCount >= 3)
             return 0;
 
         switch (currentItem.Rarity)
         {
             case RarityType.UNCOMMON:
-                return currentItem.ItemLevel * 15;
+                return currentItem.ItemLevel * 15 * currentCostMod;
 
             case RarityType.RARE:
-                return currentItem.ItemLevel * 50;
+                return currentItem.ItemLevel * 50 * currentCostMod;
 
             case RarityType.EPIC:
-                return currentItem.ItemLevel * 300;
+                return currentItem.ItemLevel * 300 * currentCostMod;
 
             case RarityType.UNIQUE:
-                return currentItem.ItemLevel * 20;
+                return currentItem.ItemLevel * 20 * currentCostMod;
 
             default:
                 return 0;

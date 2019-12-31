@@ -57,8 +57,8 @@ public class InputManager : MonoBehaviour
         float ratio = (float)Screen.width / Screen.height;
         maxNegativeX = bounds.center.x - bounds.extents.x + mainCamera.orthographicSize * ratio;
         maxPositiveX = bounds.center.x + bounds.extents.x - mainCamera.orthographicSize * ratio;
-        maxNegativeY = bounds.center.y - bounds.extents.y + mainCamera.orthographicSize / 1.4f;
-        maxPositiveY = bounds.center.y + bounds.extents.y - mainCamera.orthographicSize / 1.4f;
+        maxNegativeY = bounds.center.y - bounds.extents.y + mainCamera.orthographicSize / 2.5f;
+        maxPositiveY = bounds.center.y + bounds.extents.y - mainCamera.orthographicSize / 1.5f;
         if (maxNegativeY > maxPositiveY)
         {
             maxNegativeY = -1;

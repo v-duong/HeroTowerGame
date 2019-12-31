@@ -1,33 +1,35 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class WorkshopParentWindow : MonoBehaviour
 {
-    public static WorkshopParentWindow Instance { get; private set; }
     [SerializeField]
-    private GameObject itemCraftingPanel;
+    private ItemCraftingPanel itemCraftingPanel;
+
     [SerializeField]
     private GameObject heroCreationPanel;
+
     [SerializeField]
     private GameObject XpStockPanel;
+
     [SerializeField]
     private GameObject AbilityExtractPanel;
+
     [SerializeField]
     private GameObject categoryPanel;
+
     [HideInInspector]
     public GameObject currentWorkshopPanel = null;
 
-    private void Awake()
+    public void OpenItemCraftingPanel(Item item)
     {
-        Instance = this;
-        currentWorkshopPanel = itemCraftingPanel;
+        OpenPanel(itemCraftingPanel.gameObject);
+        itemCraftingPanel.SetItem(item);
     }
-
 
     private void SetPanelActive(GameObject panel)
     {
-        currentWorkshopPanel.SetActive(false);
+        if (currentWorkshopPanel != null)
+            currentWorkshopPanel.SetActive(false);
         panel.SetActive(true);
         currentWorkshopPanel = panel;
     }

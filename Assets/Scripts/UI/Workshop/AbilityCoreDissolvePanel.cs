@@ -3,7 +3,7 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class ArchetypeDissolvePanel : MonoBehaviour
+public class AbilityCoreDissolvePanel : MonoBehaviour
 {
     public Button confirmButton;
     private bool alreadyOpenedOnce = false;
@@ -11,43 +11,43 @@ public class ArchetypeDissolvePanel : MonoBehaviour
     public TextMeshProUGUI textBox;
     public TextMeshProUGUI buttonText;
     public TextMeshProUGUI slotsText;
-    private List<Item> selectedArchetypes = new List<Item>();
+    private List<Item> selectedAbilities = new List<Item>();
 
     private void OnEnable()
     {
-        selectedArchetypes.Clear();
+        selectedAbilities.Clear();
         confirmButton.interactable = false;
         alreadyOpenedOnce = false;
-        buttonText.text = "Select Archetypes";
+        buttonText.text = "Select Ability Cores";
         textBox.text = "Current Fragments: " + GameManager.Instance.PlayerStats.ArchetypeFragments + "<sprite=9>";
-        slotsText.text = "Archetype Slots: " + GameManager.Instance.PlayerStats.ArchetypeInventory.Count + "/" + PlayerStats.maxArchetypeInventory;
+        slotsText.text = "Ability Core Slots: " + GameManager.Instance.PlayerStats.AbilityInventory.Count + "/" + PlayerStats.maxAbilityInventory;
     }
 
-    public void ArchetypeSelectOnClick()
+    public void AbilitySelectOnClick()
     {
         if (!alreadyOpenedOnce || !hasHitConfirm)
         {
-            UIManager.Instance.InvScrollContent.SetMultiSelectList(selectedArchetypes);
+            UIManager.Instance.InvScrollContent.SetMultiSelectList(selectedAbilities);
             alreadyOpenedOnce = true;
         }
 
         UIManager.Instance.OpenInventoryWindow(false, false, false, true);
-        UIManager.Instance.InvScrollContent.showItemValues = true;
-        UIManager.Instance.InvScrollContent.ShowAllArchetypes(true, false);
-        UIManager.Instance.InvScrollContent.SetConfirmCallback(ArchetypeSelectOnClick_Callback);
+        UIManager.Instance.InvScrollContent.showItemValues = false;
+        UIManager.Instance.InvScrollContent.ShowAbilityFiltered(x=>x.EquippedHero==null,true, false);
+        UIManager.Instance.InvScrollContent.SetConfirmCallback(AbilitySelectOnClick_Callback);
         hasHitConfirm = false;
     }
 
-    public void ArchetypeSelectOnClick_Callback(List<Item> items)
+    public void AbilitySelectOnClick_Callback(List<Item> items)
     {
         UIManager.Instance.CloseCurrentWindow();
         hasHitConfirm = true;
         int fragmentCount = 0;
         foreach (Item item in items)
         {
-            if (item is ArchetypeItem archetypeItem)
+            if (item is AbilityCoreItem archetypeItem)
             {
-                fragmentCount += archetypeItem.GetItemValue();
+                fragmentCount += 1;
             }
             else
             {
@@ -55,42 +55,42 @@ public class ArchetypeDissolvePanel : MonoBehaviour
             }
         }
 
-        selectedArchetypes.Clear();
-        selectedArchetypes.AddRange(items);
+        selectedAbilities.Clear();
+        selectedAbilities.AddRange(items);
 
-        if (selectedArchetypes.Count > 0)
+        if (selectedAbilities.Count > 0)
             confirmButton.interactable = true;
         else
             confirmButton.interactable = false;
 
-        buttonText.text = items.Count + " Archetypes Selected\n+" + fragmentCount + " <sprite=9>";
+        buttonText.text = items.Count + " Ability Cores Selected\n+" + fragmentCount + " <sprite=9>";
         textBox.text = "Current Fragments: " + GameManager.Instance.PlayerStats.ArchetypeFragments + "<sprite=9>\n";
         textBox.text += "Fragments After: " + (GameManager.Instance.PlayerStats.ArchetypeFragments + fragmentCount) + "<sprite=9>";
     }
 
-    public void DissolveArchetypeConfirm()
+    public void ConfirmOnClick()
     {
         int fragmentCount = 0;
 
-        if (selectedArchetypes == null || selectedArchetypes.Count == 0)
+        if (selectedAbilities == null || selectedAbilities.Count == 0)
             return;
 
-        foreach (ArchetypeItem item in selectedArchetypes)
+        foreach (AbilityCoreItem item in selectedAbilities)
         {
-            fragmentCount += item.GetItemValue();
-            GameManager.Instance.PlayerStats.RemoveArchetypeFromInventory(item);
+            fragmentCount += 1;
+            GameManager.Instance.PlayerStats.RemoveAbilityFromInventory(item);
         }
 
         
-        
+
         GameManager.Instance.PlayerStats.ModifyArchetypeFragments(fragmentCount);
-        selectedArchetypes.Clear();
+        selectedAbilities.Clear();
         UIManager.Instance.InvScrollContent.ResetMultiSelectList();
 
         SaveManager.Save();
-        buttonText.text = "Select Archetypes";
+        buttonText.text = "Select Ability Cores";
         textBox.text = "Current Fragments: " + GameManager.Instance.PlayerStats.ArchetypeFragments + "<sprite=9>";
-        slotsText.text = "Archetype Slots: " + GameManager.Instance.PlayerStats.ArchetypeInventory.Count + "/" + PlayerStats.maxArchetypeInventory;
+        slotsText.text = "Ability Core Slots: " + GameManager.Instance.PlayerStats.AbilityInventory.Count + "/" + PlayerStats.maxAbilityInventory;
         confirmButton.interactable = false;
     }
 }

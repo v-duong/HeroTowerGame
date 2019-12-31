@@ -38,6 +38,8 @@ public class ArchetypeBase
 
     [JsonProperty]
     public readonly List<ArchetypeSkillNode> nodeList;
+    [JsonProperty]
+    public readonly List<string> infusionAffixes;
 
     public string LocalizedName => LocalizationManager.Instance.GetLocalizationText_ArchetypeName(idName);
 

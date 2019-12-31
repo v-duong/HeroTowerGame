@@ -56,6 +56,7 @@ public class XpStockPanel : MonoBehaviour
         willStatLine.ClearValues();
         levelSlider.minValue = 2;
         selectedLevel = 2;
+        levelSlider.value = levelSlider.minValue;
         levelSlider.interactable = false;
         confirmButton.interactable = false;
         OnSliderChange();
@@ -81,9 +82,9 @@ public class XpStockPanel : MonoBehaviour
     public void UpdateSliderValues()
     {
         int level = Mathf.Min(selectedHero.Level + 1, 100);
-        levelSlider.value = level;
         selectedLevel = level;
         levelSlider.minValue = level;
+        levelSlider.value = level;
     }
 
     public void UpdatePanels()
@@ -127,7 +128,7 @@ public class XpStockPanel : MonoBehaviour
         agiStatLine.SetValues(selectedHero.BaseAgility, newAgility - selectedHero.BaseAgility, newAgility);
         willStatLine.SetValues(selectedHero.BaseWill, newWill - selectedHero.BaseWill, newWill);
 
-        heroSlot.GetComponentInChildren<TextMeshProUGUI>().text = selectedHero.Name + "\nCurrent Exp: " + selectedHero.Experience;
+        heroSlot.GetComponentInChildren<TextMeshProUGUI>().text = selectedHero.Name + "\nCurrent Exp: " + selectedHero.Experience.ToString("N0");
 
         int xpStock = GameManager.Instance.PlayerStats.ExpStock;
 

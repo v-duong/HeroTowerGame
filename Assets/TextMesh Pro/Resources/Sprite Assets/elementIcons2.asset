@@ -25,6 +25,7 @@ Material:
         m_Offset: {x: 0, y: 0}
     m_Floats:
     - _ColorMask: 15
+    - _CullMode: 0
     - _Stencil: 0
     - _StencilComp: 8
     - _StencilOp: 0
@@ -162,6 +163,12 @@ MonoBehaviour:
     m_Scale: 1
     m_Name: elementIcons2_14
     m_HashCode: 963153838
+  - m_ElementType: 2
+    m_Unicode: 0
+    m_GlyphIndex: 15
+    m_Scale: 0.6
+    m_Name: elementIcons2_15
+    m_HashCode: 963153839
   m_SpriteGlyphTable:
   - m_Index: 0
     m_Metrics:
@@ -396,6 +403,22 @@ MonoBehaviour:
       m_HorizontalAdvance: 128
     m_GlyphRect:
       m_X: 768
+      m_Y: 0
+      m_Width: 128
+      m_Height: 128
+    m_Scale: 1
+    m_AtlasIndex: 0
+    sprite: {fileID: 3978262221480544585, guid: 748664fa0ae8d734dbd4304619cf9f78,
+      type: 3}
+  - m_Index: 15
+    m_Metrics:
+      m_Width: 128
+      m_Height: 128
+      m_HorizontalBearingX: 0
+      m_HorizontalBearingY: 128
+      m_HorizontalAdvance: 128
+    m_GlyphRect:
+      m_X: 896
       m_Y: 0
       m_Width: 128
       m_Height: 128

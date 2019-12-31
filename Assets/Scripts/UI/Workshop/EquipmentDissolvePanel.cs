@@ -10,6 +10,7 @@ public class EquipmentDissolvePanel : MonoBehaviour
     private bool hasHitConfirm = false;
     public TextMeshProUGUI buttonText;
     public TextMeshProUGUI textBox;
+    public TextMeshProUGUI slotsText;
     private List<Item> selectedEquipment = new List<Item>();
 
     private void OnEnable()
@@ -18,7 +19,8 @@ public class EquipmentDissolvePanel : MonoBehaviour
         alreadyOpenedOnce = false;
         confirmButton.interactable = false;
         buttonText.text = "Select Equipment";
-        textBox.text = "";
+        textBox.text = "Current Fragments: " + GameManager.Instance.PlayerStats.ItemFragments.ToString("N0") + "<sprite=10>";
+        slotsText.text = "Equipment Slots: " + GameManager.Instance.PlayerStats.EquipmentInventory.Count + "/" + PlayerStats.maxEquipInventory;
     }
 
     public void EquipSelectOnClick()
@@ -74,7 +76,8 @@ public class EquipmentDissolvePanel : MonoBehaviour
         buttonText.text = items.Count + " Equipment Selected";
         buttonText.text += "\n+" + fragmentCount + " <sprite=10>";
 
-        textBox.text = "";
+        textBox.text = "Current Fragments: " + GameManager.Instance.PlayerStats.ItemFragments.ToString("N0") + "<sprite=10>\n";
+        textBox.text += "Fragments After: " + (GameManager.Instance.PlayerStats.ItemFragments + fragmentCount).ToString("N0") + "<sprite=10>\nSelected:\n";
         foreach (var keyValue in rarityCount)
         {
             if (keyValue.Value != 0)
@@ -97,13 +100,14 @@ public class EquipmentDissolvePanel : MonoBehaviour
         }
 
         buttonText.text = "Select Equipment";
-        textBox.text = "";
+        
         GameManager.Instance.PlayerStats.ModifyItemFragments(fragmentCount);
         selectedEquipment.Clear();
         UIManager.Instance.InvScrollContent.ResetMultiSelectList();
 
         SaveManager.Save();
-
+        textBox.text = "Current Fragments: " + GameManager.Instance.PlayerStats.ItemFragments.ToString("N0") + "<sprite=10>";
+        slotsText.text = "Equipment Slots: " + GameManager.Instance.PlayerStats.EquipmentInventory.Count + "/" + PlayerStats.maxEquipInventory;
         confirmButton.interactable = false;
     }
 }

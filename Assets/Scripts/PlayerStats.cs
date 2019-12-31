@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 public class PlayerStats
 {
-    public const float EXP_STOCK_RATE = 1f;
+    public const float EXP_STOCK_RATE = 0.75f;
     public const int HERO_TEAM_MAX_NUM = 5;
     public const int HERO_TEAM_MAX_HEROES = 5;
     public readonly static int maxEquipInventory = 350;
@@ -102,18 +102,30 @@ public class PlayerStats
 
     public void SetHeroToTeamSlot(HeroData hero, int selectedTeam, int selectedSlot)
     {
-        if (hero.assignedTeam != -1)
+        if (hero == null)
         {
-            for (int i = 0; i < 5; i++)
+            if (heroTeams[selectedTeam][selectedSlot] != null)
             {
-                if (heroTeams[hero.assignedTeam][i] == hero)
-                    heroTeams[hero.assignedTeam][i] = null;
+                heroTeams[selectedTeam][selectedSlot].assignedTeam = -1;
             }
+            heroTeams[selectedTeam][selectedSlot] = null;
         }
-        if (heroTeams[selectedTeam][selectedSlot] != null)
-            heroTeams[selectedTeam][selectedSlot].assignedTeam = -1;
-        heroTeams[selectedTeam][selectedSlot] = hero;
-        hero.assignedTeam = selectedTeam;
+        else
+        {
+
+            if (hero.assignedTeam != -1)
+            {
+                for (int i = 0; i < 5; i++)
+                {
+                    if (heroTeams[hero.assignedTeam][i] == hero)
+                        heroTeams[hero.assignedTeam][i] = null;
+                }
+            }
+            if (heroTeams[selectedTeam][selectedSlot] != null)
+                heroTeams[selectedTeam][selectedSlot].assignedTeam = -1;
+            heroTeams[selectedTeam][selectedSlot] = hero;
+            hero.assignedTeam = selectedTeam;
+        }
     }
 
     public bool AddEquipmentToInventory(Equipment newEquipment)

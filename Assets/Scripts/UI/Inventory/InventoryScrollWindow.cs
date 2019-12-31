@@ -146,7 +146,7 @@ public class InventoryScrollWindow : MonoBehaviour
         UIManager.Instance.ItemCategoryPanel.SetArchetypeSelected();
     }
 
-    public void ShowAllAbility(bool resetCallback = true, bool addNullSlot = false)
+    public void ShowAllAbility( bool resetCallback = true, bool addNullSlot = false)
     {
         if (resetCallback)
             currentCallback = null;
@@ -160,6 +160,27 @@ public class InventoryScrollWindow : MonoBehaviour
 
         InitializeInventorySlots(GameManager.Instance.PlayerStats.AbilityInventory, currentCallback);
         UIManager.Instance.ItemCategoryPanel.SetAbilitySelected();
+    }
+
+    public void ShowAbilityFiltered(Func<AbilityCoreItem, bool> filter, bool resetCallback = true, bool addNullSlot = false)
+    {
+        if (resetCallback)
+            currentCallback = null;
+        ClearSlots();
+        if (addNullSlot)
+            AddInventorySlot(null, null, 0);
+
+        toggleAffixesButton.gameObject.SetActive(false);
+        showItemAffixes = false;
+        SetGridCellSize(ViewType.ABILITY_CORE);
+
+        int i = 1;
+        foreach (AbilityCoreItem item in GameManager.Instance.PlayerStats.AbilityInventory.Where(filter))
+        {
+            AddInventorySlot(item, currentCallback, i);
+            i++;
+        }
+        DeactivateSlotsInPool();
     }
 
     public void ShowArchetypesFiltered(List<ArchetypeBase> filter, bool resetCallback = true, bool addNullSlot = false)
@@ -241,7 +262,7 @@ public class InventoryScrollWindow : MonoBehaviour
         bool slotIsSelected = selectedItems.Contains(item);
         slot.selectedImage.gameObject.SetActive(slotIsSelected);
         slot.alreadySelected = slotIsSelected;
-        slot.SetTextVisiblity(index < 2100 / currentY && slot.item != null);
+        slot.SetTextVisiblity(index < 2100 / currentY);
         slot.gameObject.SetActive(true);
     }
 
@@ -250,11 +271,6 @@ public class InventoryScrollWindow : MonoBehaviour
         float invY = (transform as RectTransform).anchoredPosition.y;
         foreach (InventorySlot i in SlotsInUse)
         {
-            if (i.item == null)
-            {
-                i.SetTextVisiblity(false);
-                continue;
-            }
             float slotY = -(i.transform as RectTransform).anchoredPosition.y;
             i.SetTextVisiblity(invY - 170 < slotY && slotY < invY + 890);
         }

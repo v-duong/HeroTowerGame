@@ -11,5 +11,6 @@ public class TeamMemberSlot : MonoBehaviour
     public TextMeshProUGUI ability1Text;
     public TextMeshProUGUI ability2Text;
     public TextMeshProUGUI ability3Text;
+    public Button removeButton;
     public Image sprite;
 }

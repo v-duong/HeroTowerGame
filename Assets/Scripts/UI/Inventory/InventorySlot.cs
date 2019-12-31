@@ -27,6 +27,9 @@ public class InventorySlot : MonoBehaviour
     public bool multiSelectMode = false;
     public bool alreadySelected = false;
     public bool showItemValue = false;
+    public bool isHeroSlot = false;
+    public DateTime lastModifyTime;
+
 
     public void SetTextVisiblity(bool visible)
     {
@@ -48,7 +51,7 @@ public class InventorySlot : MonoBehaviour
         slotImage.color = Helpers.NORMAL_COLOR;
     }
 
-    public void UpdateSlot(bool isHeroEquipSlot = false)
+    public void UpdateSlot()
     {
         groupText.text = "";
         slotText.text = "";
@@ -56,15 +59,19 @@ public class InventorySlot : MonoBehaviour
         suffixText.text = "";
         baseItemText.text = "";
         equippedToText.text = "";
+
         stringBuilder.Clear();
         stringBuilder2.Clear();
         lockImage.gameObject.SetActive(false);
         if (item == null)
         {
-            nameText.text = "REMOVE";
+            nameText.text = "Remove item";
+            infoText1.text = "";
+            infoText2.text = "";
             slotImage.color = Color.cyan;
             return;
         }
+
         nameText.text = item.Name + "\n";
 
         switch (item.GetItemType())
@@ -101,13 +108,13 @@ public class InventorySlot : MonoBehaviour
                 Accessory accessory = item as Accessory;
                 groupText.text = LocalizationManager.Instance.GetLocalizationText(accessory.Base.group);
 
-                if (!UIManager.Instance.InvScrollContent.showItemAffixes)
+                if (!UIManager.Instance.InvScrollContent.showItemAffixes || isHeroSlot)
                 {
                     if (accessory.prefixes.Count > 0)
                     {
                         foreach (Affix prefix in accessory.prefixes)
                         {
-                            stringBuilder.Append("○ " + Affix.BuildAffixString(prefix.Base, 0, prefix, prefix.GetAffixValues(), prefix.GetEffectValues()));
+                            stringBuilder.Append( Affix.BuildAffixString(prefix.Base, 0, prefix, prefix.GetAffixValues(), prefix.GetEffectValues()));
                         }
                     }
 
@@ -115,7 +122,7 @@ public class InventorySlot : MonoBehaviour
                     {
                         foreach (Affix suffix in accessory.suffixes)
                         {
-                            stringBuilder2.Append("○ " + Affix.BuildAffixString(suffix.Base, 0, suffix, suffix.GetAffixValues(), suffix.GetEffectValues()));
+                            stringBuilder2.Append(Affix.BuildAffixString(suffix.Base, 0, suffix, suffix.GetAffixValues(), suffix.GetEffectValues()));
                         }
                     }
                 }
@@ -150,7 +157,7 @@ public class InventorySlot : MonoBehaviour
                 }
             }
             */
-            if (UIManager.Instance.InvScrollContent.showItemAffixes && !isHeroEquipSlot)
+            if (UIManager.Instance.InvScrollContent.showItemAffixes && !isHeroSlot)
             {
                 ExpandItemSlot(equip);
             }
@@ -158,6 +165,15 @@ public class InventorySlot : MonoBehaviour
             {
                 DeflateItemSlot();
             }
+            slotImage.color = Helpers.ReturnRarityColor(item.Rarity);
+        } else if (item is ArchetypeItem archetypeItem)
+        {
+            slotImage.color = Helpers.GetArchetypeStatColor(archetypeItem.Base);
+        } else if (item is AbilityCoreItem abilityCoreItem)
+        {
+            if (abilityCoreItem.EquippedHero != null)
+                baseItemText.text = "Equipped to " + abilityCoreItem.EquippedHero.Name;
+            slotImage.color = Helpers.NORMAL_COLOR;
         }
 
         if (showItemValue)
@@ -176,7 +192,7 @@ public class InventorySlot : MonoBehaviour
             }
         }
 
-        slotImage.color = Helpers.ReturnRarityColor(item.Rarity);
+        
         //nameImage.color = Helpers.ReturnRarityColor(item.Rarity);
     }
 
@@ -197,7 +213,7 @@ public class InventorySlot : MonoBehaviour
             }
             foreach (var x in equip.prefixes)
             {
-                prefixText.text += "○ " + Affix.BuildAffixString(x.Base, 0, x, x.GetAffixValues(), x.GetEffectValues());
+                prefixText.text +=  Affix.BuildAffixString(x.Base, 0, x, x.GetAffixValues(), x.GetEffectValues());
             }
         }
 
@@ -207,7 +223,7 @@ public class InventorySlot : MonoBehaviour
             suffixText.text += "<b>Suffixes</b>\n";
             foreach (var x in equip.suffixes)
             {
-                suffixText.text += "○ " + Affix.BuildAffixString(x.Base, 0, x, x.GetAffixValues(), x.GetEffectValues());
+                suffixText.text +=  Affix.BuildAffixString(x.Base, 0, x, x.GetAffixValues(), x.GetEffectValues());
             }
         }
     }

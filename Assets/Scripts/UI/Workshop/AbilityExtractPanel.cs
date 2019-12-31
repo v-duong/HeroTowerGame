@@ -75,6 +75,9 @@ public class AbilityExtractPanel : MonoBehaviour
 
     private ExtractableAbilitySlot AddExtractSlot(AbilityBase ability)
     {
+        if (ability == null)
+            return null;
+
         ExtractableAbilitySlot slot;
         if (unusedSlots.Count > 0)
         {

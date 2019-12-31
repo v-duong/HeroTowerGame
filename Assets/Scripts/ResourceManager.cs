@@ -160,7 +160,7 @@ public class ResourceManager : MonoBehaviour
         return possibleArchetypeList.ReturnWeightedRandom();
     }
 
-    public EquipmentBase GetRandomEquipmentBase(int ilvl, GroupType? group = null, EquipSlotType? slot = null)
+    public EquipmentBase GetRandomEquipmentBase(int ilvl, GroupType? group = null, EquipSlotType? slot = null, float baseLevelSkew = 1f)
     {
         if (equipmentList == null)
             LoadEquipment();
@@ -177,7 +177,13 @@ public class ResourceManager : MonoBehaviour
 
             if (equipment.dropLevel <= ilvl)
             {
-                possibleEquipList.Add(equipment, equipment.spawnWeight);
+                float weight = 1f;
+                if (baseLevelSkew != 1f)
+                {
+                    weight *= Mathf.Lerp(1 / baseLevelSkew, baseLevelSkew, (float)equipment.dropLevel / ilvl);
+                }
+
+                possibleEquipList.Add(equipment, (int)(equipment.spawnWeight * weight));
             }
         }
         if (possibleEquipList.Count == 0)
@@ -338,7 +344,7 @@ public class ResourceManager : MonoBehaviour
                     }
 
                     if (affixLevelSkewFactor != 1f)
-                        weightMultiplier *= Mathf.Lerp(1 / affixLevelSkewFactor, affixLevelSkewFactor, affixBase.spawnLevel / ilvl);
+                        weightMultiplier *= Mathf.Lerp(1 / affixLevelSkewFactor, affixLevelSkewFactor, (float)affixBase.spawnLevel / ilvl);
 
                     if (weightMultiplier == 0)
                         continue;

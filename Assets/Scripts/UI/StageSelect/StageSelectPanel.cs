@@ -147,8 +147,17 @@ public class StageSelectPanel : MonoBehaviour
                         heroesWithoutSkills++;
                 }
             }
+            if (GameManager.Instance.PlayerStats.EquipmentInventory.Count >= PlayerStats.maxEquipInventory)
+            {
+                PopUpWindow popUpWindow = UIManager.Instance.PopUpWindow;
+                popUpWindow.OpenTextWindow("Number of items in inventory is over 350. Recycle unneeded equipment to continue.", 380, 200);
+                popUpWindow.textField.fontSize = 24;
+                popUpWindow.textField.paragraphSpacing = 0;
+                popUpWindow.textField.alignment = TextAlignmentOptions.Center;
 
-            if (heroesWithoutSkills > 0)
+                popUpWindow.SetButtonValues(null, null, "Confirm", delegate { UIManager.Instance.CloseCurrentWindow(); });
+            }
+            else if (heroesWithoutSkills > 0)
             {
                 PopUpWindow popUpWindow = UIManager.Instance.PopUpWindow;
                 popUpWindow.OpenTextWindow("One or more Heroes have no usable Abilities.\nContinue anyway?", 380, 200);
@@ -158,6 +167,7 @@ public class StageSelectPanel : MonoBehaviour
 
                 popUpWindow.SetButtonValues("Confirm", delegate { UIManager.Instance.CloseCurrentWindow(); GameManager.Instance.MoveToBattle(selectedStage); }, "Cancel", delegate { UIManager.Instance.CloseCurrentWindow(); });
             }
+
             else
             {
                 GameManager.Instance.MoveToBattle(selectedStage);

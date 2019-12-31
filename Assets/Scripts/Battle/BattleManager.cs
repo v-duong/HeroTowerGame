@@ -326,7 +326,7 @@ public class BattleManager : MonoBehaviour
         int additionalDrops = (int)(survivalLoopCount / 8);
         float rarityBoost = 1 + (0.25f * survivalLoopCount);
         float stageEpicBoost = 1 + (0.25f * survivalLoopCount * 4);
-        float affixLevelSkew = 1.1f + (survivalLoopCount * 0.15f);
+        float affixLevelSkew = 1.2f + (survivalLoopCount * 0.1f);
         int equipmentDrops = Random.Range(stageInfo.equipmentDropCountMin + additionalDrops, stageInfo.equipmentDropCountMax + 1 + additionalDrops);
 
         WeightList<RarityType> nonStageDropRarity = new WeightList<RarityType>();
@@ -378,7 +378,7 @@ public class BattleManager : MonoBehaviour
         Equipment equip;
         if (rarity != RarityType.UNIQUE)
         {
-            equip = Equipment.CreateRandomEquipment_EvenSlotWeight(stageLevel + survivalLoopCount);
+            equip = Equipment.CreateRandomEquipment_EvenSlotWeight(stageLevel + survivalLoopCount, null, 1.65f);
             RollEquipmentRarity(equip, rarity, affixLevelSkew);
         }
         else
@@ -386,7 +386,7 @@ public class BattleManager : MonoBehaviour
             equip = Equipment.CreateRandomUnique(stageLevel + survivalLoopCount);
             if (equip == null)
             {
-                equip = Equipment.CreateRandomEquipment_EvenSlotWeight(stageLevel + survivalLoopCount);
+                equip = Equipment.CreateRandomEquipment_EvenSlotWeight(stageLevel + survivalLoopCount, null, 2.2f);
                 RollEquipmentRarity(equip, RarityType.EPIC, affixLevelSkew);
             }
         }
@@ -421,7 +421,7 @@ public class BattleManager : MonoBehaviour
 
     private void CalculateItemFragmentDrops(BattleEndWindow battleEndWindow)
     {
-        double multiplier = System.Math.Pow(1.15f, survivalLoopCount);
+        double multiplier = System.Math.Pow(1.10f, survivalLoopCount);
         if (perfectBonus)
             multiplier *= 1.25f;
         int minDrop = (int)(stageInfo.consumableDropCountMin * multiplier);
@@ -608,13 +608,16 @@ public class BattleManager : MonoBehaviour
         else
             enemy.isBoss = false;
 
-        enemy.SetBase(enemyBase, rarity, stageInfo.monsterLevel + survivalLoopCount);
-
         Sprite enemySprite = ResourceManager.Instance.GetEnemySprite(enemyBase.idName);
         if (enemySprite != null)
         {
             enemy.GetComponent<SpriteRenderer>().sprite = enemySprite;
+        } else
+        {
+            Debug.Log("Could not find sprite: " + enemyBase.idName);
         }
+
+        enemy.SetBase(enemyBase, rarity, stageInfo.monsterLevel + survivalLoopCount);
 
         //Set bonuses from wave
         enemy.Data.SetMobBonuses(bonuses);

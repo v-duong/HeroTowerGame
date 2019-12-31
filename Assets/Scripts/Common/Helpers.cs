@@ -418,6 +418,68 @@ public static class Helpers
         return (int)exp;
     }
 
+    public static Color GetArchetypeStatColor(ArchetypeBase archetype)
+    {
+        List<float> growths = new List<float>() { archetype.strengthGrowth, archetype.intelligenceGrowth, archetype.agilityGrowth, archetype.willGrowth };
+        int sameCount = 0, sameGrowthIndex = 0, highestIndex = 0, secondHighestIndex = 0;
+        float highest = 0, secondHighest = 0, sum = 0;
+        for (int i = 0; i < growths.Count; i++)
+        {
+            if (growths[i] > highest)
+            {
+                highest = growths[i];
+                highestIndex = i;
+            }
+            sum += growths[i];
+        }
+
+        for (int j = 0; j < growths.Count; j++)
+        {
+            if (j == highestIndex)
+            {
+                continue;
+            }
+            else if (growths[j] == highest)
+            {
+                sameCount++;
+                sameGrowthIndex = j;
+            }
+            else if (growths[j] > secondHighest)
+            {
+                secondHighest = growths[j];
+                secondHighestIndex = j;
+            }
+        }
+
+        if (sameCount >= 2)
+            return NORMAL_COLOR;
+        else if (sameCount == 1)
+            return Color.Lerp(GetColorFromStatIndex(highestIndex), GetColorFromStatIndex(sameGrowthIndex), 0.5f);
+        else
+            return Color.Lerp(GetColorFromStatIndex(highestIndex), Color.Lerp(GetColorFromStatIndex(highestIndex), GetColorFromStatIndex(secondHighestIndex), 0.5f), 0.05f / (highest - growths[secondHighestIndex]));
+    }
+
+    public static Color GetColorFromStatIndex(int index)
+    {
+        switch (index)
+        {
+            case 0:
+                return STR_ARCHETYPE_COLOR;
+
+            case 1:
+                return INT_ARCHETYPE_COLOR;
+
+            case 2:
+                return AGI_ARCHETYPE_COLOR;
+
+            case 3:
+                return WILL_ARCHETYPE_COLOR;
+
+            default:
+                return NORMAL_COLOR;
+        }
+    }
+
     public static Color ReturnRarityColor(RarityType rarity)
     {
         switch (rarity)

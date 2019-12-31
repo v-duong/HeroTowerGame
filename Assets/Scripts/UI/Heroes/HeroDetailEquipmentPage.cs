@@ -60,7 +60,7 @@ public class HeroDetailEquipmentPage : MonoBehaviour, IUpdatablePanel
             else
             {
                 slot.slotBase.item = e;
-                slot.slotBase.UpdateSlot(true);
+                slot.slotBase.UpdateSlot();
             }
 
             if (slot.EquipSlot == EquipSlotType.WEAPON && e is Weapon)
@@ -75,7 +75,7 @@ public class HeroDetailEquipmentPage : MonoBehaviour, IUpdatablePanel
                 {
                     OffHandSlot.GetComponent<Button>().interactable = false;
                     OffHandSlot.slotBase.item = e;
-                    OffHandSlot.slotBase.UpdateSlot(true);
+                    OffHandSlot.slotBase.UpdateSlot();
                     skipOffhandUpdate = true;
                 }
             }

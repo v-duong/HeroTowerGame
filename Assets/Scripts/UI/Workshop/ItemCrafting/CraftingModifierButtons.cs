@@ -38,7 +38,7 @@ public class CraftingModifierButtons : MonoBehaviour
 
     public void OnClickSelectButton(Button button)
     {
-        foreach(Button listButton in buttons)
+        foreach (Button listButton in buttons)
         {
             listButton.image.color = Color.white;
         }
@@ -46,5 +46,23 @@ public class CraftingModifierButtons : MonoBehaviour
 
         button.image.color = Helpers.SELECTION_COLOR;
         UIManager.Instance.ItemCraftingPanel.craftingModifierWindow.UpdateCostText();
+    }
+
+    public void ResetButtons()
+    {
+        currentModifier = 1f;
+        currentCostMultiplier = 1f;
+
+        if (buttons.Count > 0)
+        {
+            selectedButton = buttons[0];
+
+            foreach (Button listButton in buttons)
+            {
+                listButton.image.color = Color.white;
+            }
+
+            selectedButton.image.color = Helpers.SELECTION_COLOR;
+        }
     }
 }

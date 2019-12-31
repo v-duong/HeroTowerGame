@@ -65,7 +65,14 @@ public class TeamWindow : MonoBehaviour
     {
         UIManager.Instance.CloseCurrentWindow();
         GameManager.Instance.PlayerStats.SetHeroToTeamSlot(hero, selectedTeam, selectedSlot);
-        members[selectedSlot].heroNameText.text = hero.Name;
+        //members[selectedSlot].heroNameText.text = hero.Name;
+        UpdateTeamSlots();
+    }
+
+    public void RemoveHeroFromSlot(int team, int slot)
+    {
+        Debug.Log(team+ "  " + slot);
+        GameManager.Instance.PlayerStats.SetHeroToTeamSlot(null, team, slot);
         UpdateTeamSlots();
     }
 
@@ -84,7 +91,11 @@ public class TeamWindow : MonoBehaviour
                 members[i].levelText.text = "Lv" + hero.Level;
                 members[i].sprite.sprite = ResourceManager.Instance.GetHeroSprite(hero.spriteName);
                 members[i].sprite.color = new Color(1f, 1f, 1f, 1f);
-
+                members[i].removeButton.gameObject.SetActive(true);
+                members[i].removeButton.onClick.RemoveAllListeners();
+                int slotNum = i;
+                members[i].removeButton.onClick.AddListener(delegate { RemoveHeroFromSlot(selectedTeam, slotNum); } );
+                
                 if (hero.GetAbilityFromSlot(0) != null)
                 {
                     members[i].ability1Text.text = "Ability 1\n<b>" + hero.GetAbilityFromSlot(0).abilityBase.LocalizedName + "</b>";
@@ -128,6 +139,7 @@ public class TeamWindow : MonoBehaviour
             {
                 members[i].heroNameText.text = "EMPTY";
                 members[i].sprite.color = new Color(1f, 1f, 1f, 0f);
+                members[i].removeButton.gameObject.SetActive(false);
             }
         }
     }

@@ -3,6 +3,7 @@ using System.Linq;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using TMPro;
 
 public class UIManager : MonoBehaviour
 {
@@ -41,7 +42,9 @@ public class UIManager : MonoBehaviour
 
     public GameObject currentWindow;
     public Stack<GameObject> previousWindows = new Stack<GameObject>();
+    private List<WindowState> savedWindows = new List<WindowState>();
 
+    public TextMeshProUGUI textPrefab;
     public Button buttonPrefab;
 
     public static HeroData selectedHero;
@@ -330,10 +333,33 @@ public class UIManager : MonoBehaviour
         {
             currentWindow = previousWindows.Pop();
             currentWindow.SetActive(true);
+        } else if (savedWindows.Count > 0)
+        {
+            LoadWindowState();
         } else
         {
             currentWindow = null;
         }
+    }
+    public void SaveWindowState()
+    {
+        foreach(GameObject g in previousWindows)
+        {
+            savedWindows.Add(new WindowState(g, g.activeSelf));
+        }
+        savedWindows.Add(new WindowState(currentWindow, true));
+        CloseAllWindows();
+    }
+    private void LoadWindowState()
+    {
+        previousWindows.Clear();
+        foreach (WindowState windowState in savedWindows)
+        {
+            windowState.window.SetActive(windowState.activeStatus);
+            previousWindows.Push(windowState.window);
+        }
+        currentWindow = previousWindows.Pop();
+        savedWindows.Clear();
     }
 
     private void Awake()
@@ -452,6 +478,18 @@ public class UIManager : MonoBehaviour
         if (type == 0)
         {
             InvWindowRect.GetComponent<RectTransform>().sizeDelta = fullWindowSize;
+        }
+    }
+
+    private struct WindowState
+    {
+        public GameObject window;
+        public bool activeStatus;
+
+        public WindowState(GameObject window, bool activeStatus)
+        {
+            this.window = window ?? throw new ArgumentNullException(nameof(window));
+            this.activeStatus = activeStatus;
         }
     }
 }

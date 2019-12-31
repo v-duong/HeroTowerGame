@@ -76,13 +76,13 @@ public class HeroDetailMainPage : MonoBehaviour, IUpdatablePanel
             lockButton.GetComponentInChildren<TextMeshProUGUI>().text = "Unlocked";
         }
 
-        primaryArchetypeHeader.GetComponentInChildren<TextMeshProUGUI>().text =hero.PrimaryArchetype.Base.LocalizedName;
-        primaryArchetypeHeader.color = GetArchetypeStatColor(hero.PrimaryArchetype.Base);
+        primaryArchetypeHeader.GetComponentInChildren<TextMeshProUGUI>().text = hero.PrimaryArchetype.Base.LocalizedName;
+        primaryArchetypeHeader.color = Helpers.GetArchetypeStatColor(hero.PrimaryArchetype.Base);
         if (hero.SecondaryArchetype != null)
         {
             secondaryArchetypeHeader.gameObject.SetActive(true);
             secondaryArchetypeHeader.GetComponentInChildren<TextMeshProUGUI>().text = hero.SecondaryArchetype.Base.LocalizedName;
-            secondaryArchetypeHeader.color = GetArchetypeStatColor(hero.SecondaryArchetype.Base);
+            secondaryArchetypeHeader.color = Helpers.GetArchetypeStatColor(hero.SecondaryArchetype.Base);
         }
         else
         {
@@ -133,71 +133,6 @@ public class HeroDetailMainPage : MonoBehaviour, IUpdatablePanel
                 resistanceBoxes[(int)element].statText.text += " (" + uncapResistance + ")";
             }
         }
-
-    }
-
-    
-
-    public Color GetArchetypeStatColor(ArchetypeBase archetype)
-    {
-        List<float> growths = new List<float>() { archetype.strengthGrowth, archetype.intelligenceGrowth, archetype.agilityGrowth, archetype.willGrowth };
-        int sameCount = 0, sameGrowthIndex = 0, highestIndex = 0, secondHighestIndex = 0;
-        float highest = 0, secondHighest = 0, sum = 0;
-        for (int i = 0; i < growths.Count; i++)
-        {
-            if (growths[i] > highest)
-            {
-                highest = growths[i];
-                highestIndex = i;
-            }
-            sum += growths[i];
-        }
-
-        for (int j = 0; j < growths.Count; j++)
-        {
-            if (j == highestIndex)
-            {
-                continue;
-            }
-            else if (growths[j] == highest)
-            {
-                sameCount++;
-                sameGrowthIndex = j;
-            }
-            else if (growths[j] > secondHighest)
-            {
-                secondHighest = growths[j];
-                secondHighestIndex = j;
-            }
-        }
-
-        if (sameCount >= 2)
-            return Helpers.NORMAL_COLOR;
-        else if (sameCount == 1)
-            return Color.Lerp(GetColorFromStatIndex(highestIndex), GetColorFromStatIndex(sameGrowthIndex), 0.5f);
-        else
-            return Color.Lerp(GetColorFromStatIndex(highestIndex), Color.Lerp(GetColorFromStatIndex(highestIndex), GetColorFromStatIndex(secondHighestIndex), 0.5f), 0.05f / (highest - growths[secondHighestIndex]));
-    }
-
-    public Color GetColorFromStatIndex(int index)
-    {
-        switch (index)
-        {
-            case 0:
-                return Helpers.STR_ARCHETYPE_COLOR;
-
-            case 1:
-                return Helpers.INT_ARCHETYPE_COLOR;
-
-            case 2:
-                return Helpers.AGI_ARCHETYPE_COLOR;
-
-            case 3:
-                return Helpers.WILL_ARCHETYPE_COLOR;
-
-            default:
-                return Helpers.NORMAL_COLOR;
-        }
     }
 
     public void DebugLevelUp()
@@ -221,8 +156,6 @@ public class HeroDetailMainPage : MonoBehaviour, IUpdatablePanel
             UpdateWindow();
         }, null, null);
     }
-
-
 
     public void SetHeroLocked()
     {
