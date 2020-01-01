@@ -127,7 +127,11 @@ public class PopUpWindow : MonoBehaviour
         DisableAllViews();
         settingsWindow.gameObject.SetActive(true);
 
-        SetButtonValues(null,null,"Close", UIManager.Instance.CloseCurrentWindow);
+        SetButtonValues(null,null,"Close", () => {
+            UIManager.Instance.CloseCurrentWindow();
+            SaveManager.CurrentSave.SavePlayerData();
+            SaveManager.Save();
+        });
     }
 
     public void OpenHelpWindow(List<string> helpStrings)

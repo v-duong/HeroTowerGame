@@ -13,7 +13,7 @@ public class PacifyEffect : ActorEffect
     public PacifyEffect(Actor target, Actor source, float effectiveness, float duration) : base(target, source)
     {
         effectType = EffectType.PACIFY;
-        effectPower = (int)effectiveness;
+        effectPower = -(int)effectiveness;
         effectPower = Math.Max(effectPower, -PACIFY_EFFECT_CAP);
         effectPower = Math.Min(effectPower, PACIFY_EFFECT_CAP);
         this.duration = duration;
@@ -21,14 +21,14 @@ public class PacifyEffect : ActorEffect
 
     public override void OnApply()
     {
-        target.Data.AddTemporaryBonus(effectPower, BonusType.GLOBAL_DAMAGE, ModifyType.MULTIPLY, true);
-        target.Data.AddTemporaryBonus(effectPower * 0.5f, BonusType.GLOBAL_ABILITY_SPEED, ModifyType.MULTIPLY, true);
+        target.Data.AddTemporaryBonus(-effectPower, BonusType.GLOBAL_DAMAGE, ModifyType.MULTIPLY, true);
+        target.Data.AddTemporaryBonus(-effectPower * 0.5f, BonusType.GLOBAL_ABILITY_SPEED, ModifyType.MULTIPLY, true);
     }
 
     public override void OnExpire()
     {
-        target.Data.RemoveTemporaryBonus(effectPower, BonusType.GLOBAL_DAMAGE, ModifyType.MULTIPLY, true);
-        target.Data.AddTemporaryBonus(effectPower * 0.5f, BonusType.GLOBAL_ABILITY_SPEED, ModifyType.MULTIPLY, true);
+        target.Data.RemoveTemporaryBonus(-effectPower, BonusType.GLOBAL_DAMAGE, ModifyType.MULTIPLY, true);
+        target.Data.AddTemporaryBonus(-effectPower * 0.5f, BonusType.GLOBAL_ABILITY_SPEED, ModifyType.MULTIPLY, true);
     }
 
     public override void Update(float deltaTime)

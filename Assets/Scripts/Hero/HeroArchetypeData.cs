@@ -336,6 +336,23 @@ public class HeroArchetypeData : IAbilitySource
         return new Tuple<HeroData, int>(hero, slot);
     }
 
+    public void UnequipFromCurrentHero(AbilityBase abilityBase)
+    {
+        foreach (var archetypeAbility in AvailableAbilityList)
+        {
+            if (archetypeAbility.abilityBase == abilityBase)
+            {
+                if (archetypeAbility.equippedHero == null)
+                    return;
+                else
+                {
+                    archetypeAbility.equippedHero.UnequipAbility(archetypeAbility.equippedSlot);
+                    return;
+                }
+            }
+        }
+    }
+
     public class ArchetypeLeveledAbilityList
     {
         public class ArchetypeLeveledAbility

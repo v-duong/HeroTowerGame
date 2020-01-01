@@ -125,16 +125,16 @@ public class HeroDissolvePanel : MonoBehaviour
         if (selectedHero == null)
             return;
 
-        foreach (EquipSlotType e in Enum.GetValues(typeof(EquipSlotType)))
-        {
-            selectedHero.UnequipFromSlot(e);
-        }
         for (int i = 0; i < 3; i++)
         {
             selectedHero.UnequipAbility(i);
         }
+        foreach (EquipSlotType e in Enum.GetValues(typeof(EquipSlotType)))
+        {
+            selectedHero.UnequipFromSlot(e);
+        }
 
-        float xp = 0;
+        float xp;
         if (archetypeToKeep == null)
         {
             xp = selectedHero.Experience * 0.4f;
@@ -152,6 +152,8 @@ public class HeroDissolvePanel : MonoBehaviour
 
         GameManager.Instance.PlayerStats.ModifyExpStock((int)xp);
         SaveManager.Save();
+        ArchetypeButton1.gameObject.SetActive(false);
+        ArchetypeButton2.gameObject.SetActive(false);
         buttonText.text = "Select Hero";
         helpText.text = "";
         textBox.text = "";

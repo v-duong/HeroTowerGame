@@ -49,13 +49,13 @@ public class InventoryScrollWindow : MonoBehaviour
     private void SetGridCellSize(ViewType viewType)
     {
         GridLayoutGroup grid = GetComponent<GridLayoutGroup>();
-        float ySize = 350;
+        float ySize = 370;
 
         switch (viewType)
         {
             case ViewType.EQUIPMENT:
                 if (!showItemAffixes)
-                    ySize = 155;
+                    ySize = 170;
                 break;
 
             case ViewType.ARCHETYPE:
@@ -352,8 +352,14 @@ public class InventoryScrollWindow : MonoBehaviour
     {
         foreach (InventorySlot inventorySlot in SlotsInUse)
         {
-            if (inventorySlot.alreadySelected || !criteriaFunction(inventorySlot.item))
+            if (inventorySlot.alreadySelected || !inventorySlot.gameObject.activeSelf)
                 continue;
+            else if (!criteriaFunction(inventorySlot.item))
+            {
+                selectedItems.Remove(inventorySlot.item);
+                inventorySlot.alreadySelected = false;
+                inventorySlot.selectedImage.gameObject.SetActive(false);
+            }
             else
             {
                 selectedItems.Add(inventorySlot.item);

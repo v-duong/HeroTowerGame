@@ -30,6 +30,7 @@ public class PlayerStats
     public Dictionary<int, bool> worldUnlockInfo;
     public int lastPlayedWorld;
     public bool hasSeenStartingMessage;
+    public bool showDamageNumbers;
 
     public IList<Equipment> EquipmentInventory
     {
@@ -79,6 +80,7 @@ public class PlayerStats
         equipmentInventory = new List<Equipment>();
         archetypeInventory = new List<ArchetypeItem>();
         abilityStorageInventory = new List<AbilityCoreItem>();
+        showDamageNumbers = false;
 
         heroList = new List<HeroData>();
         heroTeams = new List<HeroData[]>();

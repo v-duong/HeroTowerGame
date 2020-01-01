@@ -69,7 +69,7 @@ public class BerserkEffect : ActorEffect
             Stacks = 1;
             effectCooldown = BASE_COOLDOWN;
             duration = BASE_COOLDOWN;
-            target.AddStatusEffect(new StatBonusBuffEffect(target, Source, bonuses, 12f, "BERSERKER_BUFF", EffectType.BUFF));
+            target.AddStatusEffect(new StatBonusBuffEffect(target, Source, bonuses, 12f, "BERSERKER_BUFF", EffectType.BUFF, 1f));
         }
     }
 

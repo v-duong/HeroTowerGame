@@ -4,7 +4,7 @@ using UnityEngine;
 public class BleedEffect : ActorEffect
 {
     public const float BASE_DURATION = 2.0f;
-    public const float BASE_DAMAGE_MULTIPLIER = 0.1f;
+    public const float BASE_DAMAGE_MULTIPLIER = 0.15f;
     public float damagePerSecond;
     protected float bonusDamageMultiplier;
     protected Vector2 lastPosition;

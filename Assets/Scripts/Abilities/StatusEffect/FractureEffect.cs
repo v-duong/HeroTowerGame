@@ -17,7 +17,7 @@ public class FractureEffect : ActorEffect
     public FractureEffect(Actor target, Actor source, float effectiveness, float duration) : base(target, source)
     {
         effectType = EffectType.FRACTURE;
-        resistanceReduction = (int)effectiveness;
+        resistanceReduction = -(int)effectiveness;
         resistanceReduction = Math.Max(resistanceReduction, -FRACTURE_EFFECT_CAP);
         resistanceReduction = Math.Min(resistanceReduction, FRACTURE_EFFECT_CAP);
         physReduction = (int)(resistanceReduction * 0.4f);
@@ -26,14 +26,14 @@ public class FractureEffect : ActorEffect
 
     public override void OnApply()
     {
-        target.Data.AddTemporaryBonus(physReduction, BonusType.PHYSICAL_RESISTANCE, ModifyType.FLAT_ADDITION, true);
-        target.Data.AddTemporaryBonus(resistanceReduction, BonusType.ELEMENTAL_RESISTANCES, ModifyType.FLAT_ADDITION, true);
+        target.Data.AddTemporaryBonus(-physReduction, BonusType.PHYSICAL_RESISTANCE, ModifyType.FLAT_ADDITION, true);
+        target.Data.AddTemporaryBonus(-resistanceReduction, BonusType.ELEMENTAL_RESISTANCES, ModifyType.FLAT_ADDITION, true);
     }
 
     public override void OnExpire()
     {
-        target.Data.RemoveTemporaryBonus(physReduction, BonusType.PHYSICAL_RESISTANCE, ModifyType.FLAT_ADDITION, true);
-        target.Data.RemoveTemporaryBonus(resistanceReduction, BonusType.ELEMENTAL_RESISTANCES, ModifyType.FLAT_ADDITION, true);
+        target.Data.RemoveTemporaryBonus(-physReduction, BonusType.PHYSICAL_RESISTANCE, ModifyType.FLAT_ADDITION, true);
+        target.Data.RemoveTemporaryBonus(-resistanceReduction, BonusType.ELEMENTAL_RESISTANCES, ModifyType.FLAT_ADDITION, true);
     }
 
     public override void Update(float deltaTime)

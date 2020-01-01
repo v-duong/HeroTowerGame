@@ -226,24 +226,10 @@ public class HeroData : ActorData
         if (abilitySlotList[slot] != null)
             UnequipAbility(slot);
 
-        if (slot == 0)
-        {
-            if (abilitySlotList[1].Ability != null
-                && abilitySlotList[1].Ability.abilityBase == ability && abilitySlotList[1].source == source)
-            {
-                UnequipAbility(1);
-            }
-            abilitySlotList[slot].SetAbilityToSlot(ability, source);
-        }
-        else
-        {
-            if (abilitySlotList[0].Ability != null
-                && abilitySlotList[0].Ability.abilityBase == ability && abilitySlotList[0].source == source)
-            {
-                UnequipAbility(0);
-            }
-            abilitySlotList[slot].SetAbilityToSlot(ability, source);
-        }
+        source.UnequipFromCurrentHero(ability);
+
+        abilitySlotList[slot].SetAbilityToSlot(ability, source);
+
         source.OnAbilityEquip(ability, this, slot);
         UpdateActorData();
         return true;
@@ -265,6 +251,7 @@ public class HeroData : ActorData
         abilitySlot.Ability.ClearTriggeredEffects(this, abilitySlot.Ability.abilityBase.idName + slot);
 
         abilitySlot.ClearAbility();
+        UpdateActorData();
         return true;
     }
 

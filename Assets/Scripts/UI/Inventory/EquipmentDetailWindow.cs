@@ -104,7 +104,11 @@ public class EquipmentDetailWindow : MonoBehaviour
             topLineText.text += groupTypeString + " (" + equipTypeString + ")\n";
         }
 
-        topLineText.text += "Item Level " + equip.ItemLevel + "\n";
+        topLineText.text += "Item Level " + equip.ItemLevel;
+        if (equip.Rarity != RarityType.UNIQUE)
+            topLineText.text += " (Drop Level " + equip.Base.dropLevel + ")\n";
+        else
+            topLineText.text += '\n';
         topLineText.text += LocalizationManager.Instance.GetRequirementText(equip);
 
         if (equip.GetItemType() == ItemType.ARMOR)

@@ -8,7 +8,7 @@ public class StatBonusBuffEffect : SourcedActorBuffEffect
 
     protected List<TempEffectBonusContainer.StatusBonus> bonus;
 
-    public StatBonusBuffEffect(Actor target, Actor source, List<TempEffectBonusContainer.StatusBonus> bonuses, float duration, string buffName, EffectType effectType) : base(target, source)
+    public StatBonusBuffEffect(Actor target, Actor source, List<TempEffectBonusContainer.StatusBonus> bonuses, float duration, string buffName, EffectType effectType, float multiplier) : base(target, source)
     {
         this.effectType = effectType;
         this.duration = duration;
@@ -21,7 +21,7 @@ public class StatBonusBuffEffect : SourcedActorBuffEffect
         }
     }
 
-    public StatBonusBuffEffect(Actor target, Actor source, TempEffectBonusContainer.StatusBonus bonus, float duration, string buffName, EffectType effectType) : base(target, source)
+    public StatBonusBuffEffect(Actor target, Actor source, TempEffectBonusContainer.StatusBonus bonus, float duration, string buffName, EffectType effectType, float multiplier) : base(target, source)
     {
         this.effectType = effectType;
         this.duration = duration;

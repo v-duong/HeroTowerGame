@@ -44,7 +44,7 @@ public class BattlePlayerInfoPanel : MonoBehaviour
 
             foreach (EnemyWaveItem item in nextWave)
             {
-                nextWaveEnemyString += item.enemyName + ", ";
+                nextWaveEnemyString += LocalizationManager.Instance.GetLocalizationText_Enemy(item.enemyName, ".name") + ", ";
             }
             nextWaveEnemyString = nextWaveEnemyString.Trim(',', ' ');
             nextWavePanel.enemyNamesText.text = nextWaveEnemyString;
@@ -68,7 +68,7 @@ public class BattlePlayerInfoPanel : MonoBehaviour
 
             foreach (EnemyWaveItem item in waveAfter)
             {
-                waveAfterEnemyString += item.enemyName + ", ";
+                waveAfterEnemyString += LocalizationManager.Instance.GetLocalizationText_Enemy( item.enemyName, ".name") + ", ";
             }
             waveAfterEnemyString = waveAfterEnemyString.Trim(',', ' ');
             waveAfterPanel.enemyNamesText.text = waveAfterEnemyString;

@@ -147,6 +147,10 @@ public class InventorySlot : MonoBehaviour
             {
                 baseItemText.text += " " + equip.Base.LocalizedName;
             }
+            if (item.Rarity != RarityType.UNIQUE)
+            {
+                baseItemText.text +=  " (dLvl " + equip.Base.dropLevel + ")";
+            }
             /*
             if (equip.innate.Count > 0)
             {

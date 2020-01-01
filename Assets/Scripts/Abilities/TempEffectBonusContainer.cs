@@ -6,6 +6,7 @@ public class TempEffectBonusContainer
     public List<SpecialBonus> cachedAuraSpecialEffects;
     public float auraStrength = 0;
     public float auraEffectMultiplier = 1f;
+    public float selfAuraEffectMultiplier = 1f;
     public bool isOutdated = true;
 
     public class StatusBonus

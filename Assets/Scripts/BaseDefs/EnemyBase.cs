@@ -45,6 +45,8 @@ public class EnemyBase
     [JsonProperty]
     public readonly float attackCriticalChance;
 
+    public string LocalizedName => LocalizationManager.Instance.GetLocalizationText_Enemy(idName, ".name");
+
     public class EnemyAbilityBase
     {
         [JsonProperty]

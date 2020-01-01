@@ -550,10 +550,12 @@ public abstract class Actor : MonoBehaviour
                 Data.OnHitData.ApplyTriggerEffects(TriggerType.WHEN_HIT_BY, onHitData.SourceActor);
         }
 
-        if (isHit || sourceType == EffectType.RETALIATION_DAMAGE)
+        if ((GameManager.Instance.PlayerStats.showDamageNumbers) && (isHit || sourceType == EffectType.RETALIATION_DAMAGE))
         {
-            FloatingDamageText damageText = Instantiate(ResourceManager.Instance.DamageTextPrefab, StageManager.Instance.WorldCanvas.transform);
+            FloatingDamageText damageText = StageManager.Instance.BattleManager.DamageTextPool.GetDamageText();
+            damageText.transform.SetParent(StageManager.Instance.WorldCanvas.transform, false);
             damageText.transform.position = this.transform.position;
+
 
             if (sourceType == EffectType.RETALIATION_DAMAGE)
                 damageText.SetDamageText(actualDamageTaken, Color.gray);

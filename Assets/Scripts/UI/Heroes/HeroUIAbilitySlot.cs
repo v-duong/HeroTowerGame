@@ -44,11 +44,8 @@ public class HeroUIAbilitySlot : MonoBehaviour
             return;
         }
 
-        
-
         if (source != null)
         {
-
             sourceText.text = "From " + LocalizationManager.Instance.GetLocalizationText(source.AbilitySourceType) + " " + source.SourceName;
 
             Tuple<HeroData, int> equippedInfo = source.GetEquippedHeroAndSlot(ability);
@@ -83,7 +80,6 @@ public class HeroUIAbilitySlot : MonoBehaviour
         }
         infoText.text += ability.LocalizationStrings[1] + "\n";
         infoText.text += LocalizationManager.Instance.GetLocalizationText_AbilityBaseDamage(abilityLevel, ability) + "\n";
-        
 
         CommonUpdate(true);
     }
@@ -99,7 +95,7 @@ public class HeroUIAbilitySlot : MonoBehaviour
         targetText.text = LocalizationManager.Instance.GetLocalizationText("targetType." + ability.targetType);
 
         if (getBonusTexts)
-        infoText.text += ability.GetAbilityBonusTexts(abilityLevel);
+            infoText.text += ability.GetAbilityBonusTexts(abilityLevel);
     }
 
     public void SetSlot(AbilityBase ability, IAbilitySource source, int level)
@@ -117,7 +113,6 @@ public class HeroUIAbilitySlot : MonoBehaviour
         if (ability == null)
         {
             hero.UnequipAbility(slot);
-            hero.UpdateActorData();
         }
         else
         {

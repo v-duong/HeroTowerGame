@@ -68,9 +68,15 @@ public partial class ActorAbility
     private void UpdateAbilityBuffData(ActorData data, IEnumerable<GroupType> tags)
     {
         if (abilityBase.abilityType == AbilityType.AURA)
-            auraBuffBonus.auraEffectMultiplier = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.AURA_EFFECT).CalculateStat(1f);
+        {
+            auraBuffBonus.auraEffectMultiplier = Math.Max(data.GetMultiStatBonus(abilityBonuses, tags, BonusType.AURA_EFFECT).CalculateStat(1f),0f);
+            auraBuffBonus.selfAuraEffectMultiplier = Math.Max(data.GetMultiStatBonus(abilityBonuses, tags, BonusType.AURA_EFFECT_ON_SELF).CalculateStat(1f),0f);
+        }
         else
+        {
             auraBuffBonus.auraEffectMultiplier = 1f;
+            auraBuffBonus.selfAuraEffectMultiplier = 1f;
+        }
 
         if (abilityBase.abilityType == AbilityType.AURA || abilityBase.abilityType == AbilityType.SELF_BUFF || abilityBase.isSoulAbility)
         {
@@ -81,7 +87,7 @@ public partial class ActorAbility
             {
                 if (effect.effectType == EffectType.BUFF || effect.effectType == EffectType.DEBUFF)
                 {
-                    float buffValue = (effect.initialValue + effect.growthValue * abilityLevel) * auraBuffBonus.auraEffectMultiplier;
+                    float buffValue = (effect.initialValue + effect.growthValue * abilityLevel);
                     auraBuffBonus.cachedAuraBonuses.Add(new TempEffectBonusContainer.StatusBonus(effect.bonusType, effect.modifyType, buffValue, effect.duration));
                     auraBuffBonus.auraStrength += buffValue;
 
@@ -105,8 +111,8 @@ public partial class ActorAbility
                 if (!Enum.TryParse("GLOBAL_" + damagebase.Key + "_DAMAGE_MAX", out BonusType damageTypeMax))
                     continue;
 
-                float minVal = damagebase.Value.damage[abilityLevel].min * auraBuffBonus.auraEffectMultiplier;
-                float maxVal = damagebase.Value.damage[abilityLevel].max * auraBuffBonus.auraEffectMultiplier;
+                float minVal = damagebase.Value.damage[abilityLevel].min;
+                float maxVal = damagebase.Value.damage[abilityLevel].max;
 
                 auraBuffBonus.cachedAuraBonuses.Add(new TempEffectBonusContainer.StatusBonus(damageTypeMin, ModifyType.FLAT_ADDITION, minVal, 0));
                 auraBuffBonus.cachedAuraBonuses.Add(new TempEffectBonusContainer.StatusBonus(damageTypeMax, ModifyType.FLAT_ADDITION, maxVal, 0));

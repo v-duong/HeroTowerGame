@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -7,6 +8,8 @@ public class ItemSelectionWindow : MonoBehaviour
 {
     public TMP_InputField iLvlInput;
     public TMP_Dropdown iLvlDropdown;
+    public TMP_InputField dLvlInput;
+    public TMP_Dropdown dLvlDropdown;
     public List<Button> rarityButtons;
     public HashSet<RarityType> rarityTypes = new HashSet<RarityType>();
 
@@ -21,21 +24,45 @@ public class ItemSelectionWindow : MonoBehaviour
 
     public void ConfirmOnClick()
     {
+        Func<Item, bool> iLvlFunc = x => true;
+        Func<Item, bool> dLvlFunc = x => true;
         int iLvl = int.Parse(iLvlInput.text);
-        switch(iLvlDropdown.value)
+        switch (iLvlDropdown.value)
         {
-            case 0:
-                UIManager.Instance.InvScrollContent.SelectByCriteria(x=>x.ItemLevel < iLvl && (rarityTypes.Count == 0 || rarityTypes.Contains(x.Rarity)));
-                break;
             case 1:
-                UIManager.Instance.InvScrollContent.SelectByCriteria(x => x.ItemLevel == iLvl && (rarityTypes.Count == 0 || rarityTypes.Contains(x.Rarity)));
+                iLvlFunc = x => x.ItemLevel < iLvl;
                 break;
+
             case 2:
-                UIManager.Instance.InvScrollContent.SelectByCriteria(x => x.ItemLevel > iLvl && (rarityTypes.Count == 0 || rarityTypes.Contains(x.Rarity)));
+                iLvlFunc = x => x.ItemLevel == iLvl;
                 break;
+
+            case 3:
+                iLvlFunc = x => x.ItemLevel > iLvl;
+                break;
+
             default:
                 break;
         }
+        int dLvl = int.Parse(dLvlInput.text);
+        switch (dLvlDropdown.value)
+        {
+            case 1:
+                dLvlFunc = x => x is Equipment e && e.Base.dropLevel < dLvl && e.Rarity != RarityType.UNIQUE;
+                break;
+
+            case 2:
+                dLvlFunc = x => x is Equipment e && e.Base.dropLevel == dLvl && e.Rarity != RarityType.UNIQUE;
+                break;
+
+            case 3:
+                dLvlFunc = x => x is Equipment e && e.Base.dropLevel > dLvl && e.Rarity != RarityType.UNIQUE;
+                break;
+
+            default:
+                break;
+        }
+        UIManager.Instance.InvScrollContent.SelectByCriteria(x => iLvlFunc(x) && dLvlFunc(x) && (rarityTypes.Count == 0 || rarityTypes.Contains(x.Rarity)));
         UIManager.Instance.CloseCurrentWindow();
     }
 

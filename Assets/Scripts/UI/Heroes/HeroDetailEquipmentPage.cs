@@ -63,11 +63,15 @@ public class HeroDetailEquipmentPage : MonoBehaviour, IUpdatablePanel
                 slot.slotBase.UpdateSlot();
             }
 
-            if (slot.EquipSlot == EquipSlotType.WEAPON && e is Weapon)
+            if (slot.EquipSlot == EquipSlotType.WEAPON)
             {
-                if (!hero.GetEquipmentGroupTypes(e).Contains(GroupType.TWO_HANDED_WEAPON) ||
-                    hero.HasSpecialBonus(BonusType.TWO_HANDED_WEAPONS_ARE_ONE_HANDED) ||
-                    (hero.HasSpecialBonus(BonusType.CAN_USE_SPEARS_WITH_SHIELDS) && e.GetGroupTypes().Contains(GroupType.SPEAR)))
+                if (e == null)
+                {
+                    OffHandSlot.GetComponent<Button>().interactable = true;
+                }
+                else if (!hero.GetEquipmentGroupTypes(e).Contains(GroupType.TWO_HANDED_WEAPON) ||
+                  hero.HasSpecialBonus(BonusType.TWO_HANDED_WEAPONS_ARE_ONE_HANDED) ||
+                  (hero.HasSpecialBonus(BonusType.CAN_USE_SPEARS_WITH_SHIELDS) && e.GetGroupTypes().Contains(GroupType.SPEAR)))
                 {
                     OffHandSlot.GetComponent<Button>().interactable = true;
                 }

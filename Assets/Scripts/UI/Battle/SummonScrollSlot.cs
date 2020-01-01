@@ -83,7 +83,9 @@ public class SummonScrollSlot : MonoBehaviour
         if (!heroSummoned && !heroDead)
         {
             InputManager.Instance.SetSummoning(actor, SummonCallback);
-            
+        } else if (heroSummoned)
+        {
+            InputManager.Instance.OnTargetSelect(actor);
         }
     }
 

@@ -154,7 +154,7 @@ public class GameManager : MonoBehaviour
             SaveManager.CurrentSave.SavePlayerData();
             SaveManager.Save();
         });
-        popUpWindow.textField.text = "You should start by assigning each hero their starting ability and weapons. You'll find them by tapping the Heroes button.\n\nIn the corner of some windows, there is a question mark you can tap to bring up a help page.";
+        popUpWindow.textField.text = "You should start by assigning each hero their starting ability and weapons. You'll find them by tapping the Heroes button.\n\nIn the corner of some windows, there is a question mark you can tap to bring up a help page.\n\nThis game is still under development and only up to World 3 has been added.";
         popUpWindow.textField.fontSize = 18;
         popUpWindow.textField.paragraphSpacing = 8;
         popUpWindow.textField.alignment = TextAlignmentOptions.Left;
@@ -199,17 +199,23 @@ public class GameManager : MonoBehaviour
         PlayerStats.consumables[GetRandomConsumable()] += 1;
     }
 
-    public void MoveToMainMenu()
+    public IEnumerator MoveToMainMenu()
     {
         isInBattle = false;
+        SceneManager.LoadScene("loadingScene", LoadSceneMode.Additive);
 
         SaveManager.SaveAll();
+        AsyncOperation asyncOperation1 = SceneManager.UnloadSceneAsync(currentSceneName);
+        AsyncOperation asyncOperation2 = SceneManager.LoadSceneAsync("mainMenu", LoadSceneMode.Additive);
 
-        SceneManager.UnloadSceneAsync(currentSceneName);
-        SceneManager.LoadScene("mainMenu", LoadSceneMode.Additive);
-        Resources.UnloadUnusedAssets();
+        while (!asyncOperation1.isDone || !asyncOperation2.isDone)
+        {
+            yield return null;
+        }
+        UIManager.Instance.LoadingScreen.endLoadingScreen = true;
+        Resources.UnloadUnusedAssets(); 
 
-        isInMainMenu = true;
+         isInMainMenu = true;
     }
 
     /// <summary>
@@ -218,6 +224,7 @@ public class GameManager : MonoBehaviour
     /// <param name="stageInfoBase"></param>
     public void MoveToBattle(StageInfoBase stageInfoBase)
     {
+        UIManager.Instance.CloseAllWindows();
         SetTimescale(1);
         SaveManager.SaveAll();
         SceneManager.LoadScene("loadingScene", LoadSceneMode.Additive);
@@ -226,7 +233,6 @@ public class GameManager : MonoBehaviour
         StartCoroutine(LoadBattleRoutine(currentSceneName, stageInfoBase));
 
         Camera.main.transform.position = new Vector3(0, 0, -10);
-        SceneManager.UnloadSceneAsync("mainMenu");
 
         isInMainMenu = false;
     }
@@ -259,7 +265,7 @@ public class GameManager : MonoBehaviour
         ParticleManager.Instance.ClearParticleSystems();
         ParticleManager.Instance.InitializeHitEffectInstances();
         isInBattle = true;
-
+        SceneManager.UnloadSceneAsync("mainMenu");
         yield return null;
 
         UIManager.Instance.LoadingScreen.endLoadingScreen = true;

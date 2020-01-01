@@ -32,3 +32,28 @@ public class EnemyPool : QueueObjectPool<EnemyActor>
         ReturnAllActive();
     }
 }
+
+public class DamageTextPool : QueueObjectPool<FloatingDamageText>
+{
+
+    public DamageTextPool(FloatingDamageText prefab) : base(prefab, 60)
+    {
+    }
+
+    public FloatingDamageText GetDamageText()
+    {
+        FloatingDamageText ret = Get();
+        ret.ResetDuration();
+        return ret;
+    }
+
+    public override void ReturnToPool(FloatingDamageText item)
+    {
+        Return(item);
+    }
+
+    public void ReturnAll()
+    {
+        ReturnAllActive();
+    }
+}

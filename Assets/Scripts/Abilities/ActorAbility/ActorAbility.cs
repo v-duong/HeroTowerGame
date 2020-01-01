@@ -862,7 +862,7 @@ public partial class ActorAbility
             }
         }
 
-        target.AddStatusEffect(new StatBonusBuffEffect(target, AbilityOwner, statusBonus, statusBonus.effectDuration, buffName, BuffType));
+        target.AddStatusEffect(new StatBonusBuffEffect(target, AbilityOwner, statusBonus, statusBonus.effectDuration, buffName, BuffType, 1f));
     }
 
     protected void ApplySourcedBuffToTarget(List<TempEffectBonusContainer.StatusBonus> statusBonus, Actor target, string buffName, float buffPower, float duration)
@@ -890,7 +890,7 @@ public partial class ActorAbility
             }
         }
 
-        target.AddStatusEffect(new StatBonusBuffEffect(target, AbilityOwner, statusBonus, duration, buffName, BuffType));
+        target.AddStatusEffect(new StatBonusBuffEffect(target, AbilityOwner, statusBonus, duration, buffName, BuffType, 1f));
     }
 
     private void AddTriggeredEffectsAsBuffs(Actor target, float soulEffectMulti)
@@ -935,6 +935,13 @@ public partial class ActorAbility
 
     protected void ApplyAuraBuff(Actor target, float duration)
     {
+        float auraMultiplier = auraBuffBonus.auraEffectMultiplier;
+        if (target == AbilityOwner)
+            auraMultiplier *= auraBuffBonus.selfAuraEffectMultiplier;
+
+        if (auraMultiplier <= 0f)
+            return;
+
         if (auraBuffBonus.cachedAuraBonuses.Count > 0)
         {
             SourcedActorBuffEffect buff = null;
@@ -954,19 +961,19 @@ public partial class ActorAbility
                 else
                 {
                     target.RemoveStatusEffect(buff, true);
-                    target.AddStatusEffect(new StatBonusBuffEffect(target, AbilityOwner, auraBuffBonus.cachedAuraBonuses, duration, abilityBase.idName, BuffType));
+                    target.AddStatusEffect(new StatBonusBuffEffect(target, AbilityOwner, auraBuffBonus.cachedAuraBonuses, duration, abilityBase.idName, BuffType, auraMultiplier));
                 }
             }
             else
             {
-                target.AddStatusEffect(new StatBonusBuffEffect(target, AbilityOwner, auraBuffBonus.cachedAuraBonuses, duration, abilityBase.idName, BuffType));
+                target.AddStatusEffect(new StatBonusBuffEffect(target, AbilityOwner, auraBuffBonus.cachedAuraBonuses, duration, abilityBase.idName, BuffType, auraMultiplier));
             }
         }
 
         for (int i = 0; i < auraBuffBonus.cachedAuraSpecialEffects.Count; i++)
         {
             TempEffectBonusContainer.SpecialBonus specialEffect = auraBuffBonus.cachedAuraSpecialEffects[i];
-            ActorEffect.ApplyEffectToTarget(target, AbilityOwner, specialEffect.effectType, specialEffect.effectValue, 0.75f, auraBuffBonus.auraEffectMultiplier);
+            ActorEffect.ApplyEffectToTarget(target, AbilityOwner, specialEffect.effectType, specialEffect.effectValue, 0.75f, auraMultiplier);
         }
     }
 

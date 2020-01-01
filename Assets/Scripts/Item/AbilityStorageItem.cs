@@ -68,4 +68,12 @@ public class AbilityCoreItem : Item, IAbilitySource
         else
             return new Tuple<HeroData, int>(EquippedHero, EquippedSlot);
     }
+
+    public void UnequipFromCurrentHero(AbilityBase abilityBase)
+    {
+        if (EquippedHero != null)
+        {
+            EquippedHero.UnequipAbility(EquippedSlot);
+        }
+    }
 }

@@ -8,14 +8,14 @@ public class FloatingDamageText : MonoBehaviour
     [SerializeField]
     private TextMeshProUGUI text;
 
-    private float durationLeft = TEXT_DURATION;
+    public float durationLeft = TEXT_DURATION;
 
     private void Update()
     {
         durationLeft -= Time.deltaTime;
 
         if (durationLeft <= 0)
-            Destroy(this.gameObject);
+            StageManager.Instance.BattleManager.DamageTextPool.ReturnToPool(this);
 
         text.color = new Color(text.color.r, text.color.g, text.color.b, durationLeft / (TEXT_DURATION / 2));
         text.outlineColor = new Color(0, 0, 0, durationLeft / (TEXT_DURATION / 2));
@@ -30,5 +30,10 @@ public class FloatingDamageText : MonoBehaviour
     {
         text.text = damage.ToString("N0");
         text.color = color;
+        this.gameObject.SetActive(true);
+    }
+    public void ResetDuration()
+    {
+        durationLeft = TEXT_DURATION;
     }
 }

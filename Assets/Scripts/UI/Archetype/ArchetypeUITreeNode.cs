@@ -123,7 +123,24 @@ public class ArchetypeUITreeNode : MonoBehaviour
     public void UpdateNodePreview()
     {
         int level = 0;
-        nodeText.text = node.idName;
+        nodeText.text = "";
+
+        if (node.type == NodeType.ABILITY)
+        {
+            nodeText.text = LocalizationManager.Instance.GetLocalizationText_Ability(node.abilityId)[0];
+        }
+        else
+        {
+            foreach (NodeScalingBonusProperty nodeBonus in node.bonuses)
+            {
+                nodeText.text += LocalizationManager.Instance.GetBonusTypeString(nodeBonus.bonusType) + "\n";
+            }
+            foreach (TriggeredEffectBonusProperty nodeTrigger in node.triggeredEffects)
+            {
+                nodeText.text += LocalizationManager.Instance.GetLocalizationText_TriggeredEffect(nodeTrigger, nodeTrigger.effectMaxValue) + "\n";
+            }
+        }
+
         levelText.text = level + "/" + node.maxLevel;
         if (level > 0)
         {

@@ -7,6 +7,9 @@ using UnityEngine.UI;
 public class HeroDetailMainPage : MonoBehaviour, IUpdatablePanel
 {
     [SerializeField]
+    private RectTransform contentBox;
+
+    [SerializeField]
     private TextMeshProUGUI nameText;
 
     [SerializeField]
@@ -54,11 +57,30 @@ public class HeroDetailMainPage : MonoBehaviour, IUpdatablePanel
     [SerializeField]
     private List<HeroStatBox> resistanceBoxes;
 
+    [SerializeField]
+    private List<HeroStatBox> shieldBoxes;
+
+    [SerializeField]
+    private GameObject shieldBoxParent;
+
+    [SerializeField]
+    private List<HeroStatBox> manaShieldBoxes;
+
+    [SerializeField]
+    private GameObject manaShieldBoxParent;
+
+    [SerializeField]
+    private List<HeroStatBox> approxDefensesBoxes;
+
+    [SerializeField]
+    private GameObject approxDefensesBoxParent;
+
     private HeroData hero;
     public Button lockButton;
 
     private void OnEnable()
     {
+        contentBox.anchoredPosition = Vector2.zero;
         UpdateWindow();
     }
 
@@ -132,6 +154,42 @@ public class HeroDetailMainPage : MonoBehaviour, IUpdatablePanel
             {
                 resistanceBoxes[(int)element].statText.text += " (" + uncapResistance + ")";
             }
+        }
+
+        if (hero.BlockChance > 0)
+        {
+            shieldBoxParent.SetActive(true);
+            shieldBoxes[0].statText.text = (hero.BlockChance * 100).ToString("F1") + "%";
+            shieldBoxes[1].statText.text = (hero.BlockProtection * 100).ToString("F1") + "%";
+        }
+        else
+        {
+            shieldBoxParent.SetActive(false);
+        }
+
+        if (hero.MaximumManaShield > 0)
+        {
+            manaShieldBoxParent.SetActive(true);
+            manaShieldBoxes[0].statText.text = (hero.ShieldRegenRate).ToString("F1") + "/s";
+            manaShieldBoxes[1].statText.text = (Math.Max(Actor.BASE_SHIELD_RESTORE_DELAY * hero.ShieldRestoreDelayModifier, 1f)).ToString("F1") + "s";
+            manaShieldBoxes[2].statText.text = (hero.ShieldRestoreRate).ToString("F1") + "/s";
+        }
+        else
+        {
+            manaShieldBoxParent.SetActive(false);
+        }
+
+        if (hero.Armor > 0 || hero.DodgeRating > 0)
+        {
+            approxDefensesBoxParent.SetActive(true);
+            float baseDamageAtLevel = (float)Helpers.GetEnemyDamageScaling(hero.Level) * 1.2f;
+            float baseAccuracyAtLevel = (float)Helpers.GetEnemyAccuracyScaling(hero.Level);
+            approxDefensesBoxes[0].statText.text = ((hero.Armor / (hero.Armor + baseDamageAtLevel)) * 100).ToString("F1") + "%";
+            approxDefensesBoxes[1].statText.text = ((1f - (baseAccuracyAtLevel / (baseAccuracyAtLevel + hero.DodgeRating / 2f))) * 100).ToString("F1") + "%";
+        }
+        else
+        {
+            approxDefensesBoxParent.SetActive(false);
         }
     }
 

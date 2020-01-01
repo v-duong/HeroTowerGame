@@ -1,7 +1,7 @@
 ﻿public class BurnEffect : ActorEffect
 {
     public const float BASE_DURATION = 3.0f;
-    public const float BASE_DAMAGE_MULTIPLIER = 0.15f;
+    public const float BASE_DAMAGE_MULTIPLIER = 0.25f;
     protected float damagePerSecond;
 
     public override GroupType StatusTag => GroupType.SELF_IS_BURNING;

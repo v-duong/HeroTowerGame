@@ -31,7 +31,7 @@ public class SoulAbilityPanel : MonoBehaviour
 
     private void Update()
     {
-        if (currentSoulAbility == null)
+        if (currentSoulAbility == null || currentSoulAbility.AbilityOwner.Data.IsDead || !currentSoulAbility.AbilityOwner.gameObject.activeSelf)
         {
             this.gameObject.SetActive(false);
         }

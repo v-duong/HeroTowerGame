@@ -24,6 +24,7 @@ public class SaveData
     public int archetypeFragments;
     public int lastPlayedWorld;
     public bool hasSeenStartingMessage;
+    public bool showDamageNumbers;
 
     public void SaveAll()
     {
@@ -64,6 +65,8 @@ public class SaveData
         worldUnlockInfo = ps.worldUnlockInfo;
         lastPlayedWorld = ps.lastPlayedWorld;
         hasSeenStartingMessage = ps.hasSeenStartingMessage;
+        showDamageNumbers = ps.showDamageNumbers;
+        
 
         Array.Clear(heroTeamList, 0, PlayerStats.HERO_TEAM_MAX_NUM);
         for (int i = 0; i < PlayerStats.HERO_TEAM_MAX_NUM; i++)
@@ -92,6 +95,7 @@ public class SaveData
         ps.worldUnlockInfo = worldUnlockInfo;
         ps.lastPlayedWorld = lastPlayedWorld;
         ps.hasSeenStartingMessage = hasSeenStartingMessage;
+        ps.showDamageNumbers = showDamageNumbers;
 
         if (heroTeamList != null)
         {

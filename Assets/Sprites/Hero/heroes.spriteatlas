@@ -50,8 +50,8 @@ SpriteAtlas:
       padding: 4
       blockOffset: 1
       allowAlphaSplitting: 0
-      enableRotation: 1
-      enableTightPacking: 1
+      enableRotation: 0
+      enableTightPacking: 0
     variantMultiplier: 1
     packables:
     - {fileID: 21300000, guid: 42ebc8f386890314d9a50946cfb00214, type: 3}
@@ -63,29 +63,44 @@ SpriteAtlas:
     - {fileID: 21300000, guid: 67345429f91308a4c87420121e642b8f, type: 3}
     - {fileID: 21300000, guid: 77e4b4544ea494e4083e9791cd46b571, type: 3}
     - {fileID: 21300000, guid: e0863943a5a87b347b0dbbb043bf5166, type: 3}
-    totalSpriteSurfaceArea: 9216
+    - {fileID: 21300000, guid: 7ab7332d4d80276449986f49b188c286, type: 3}
+    - {fileID: 21300000, guid: dad9a293b88ae91498bc2353b0fe6483, type: 3}
+    - {fileID: 21300000, guid: ac455455b5392da4ab1ed0fa8c42ca3c, type: 3}
+    - {fileID: 2800000, guid: cb4331583f4290444aee0e6639d0e29d, type: 3}
+    - {fileID: 2800000, guid: f11a74ab2f5168f44a7ceb28458469fe, type: 3}
+    totalSpriteSurfaceArea: 14336
     bindAsDefault: 1
     storedHash:
       serializedVersion: 2
-      Hash: c6c1221da8ad9203f03b20ac43aa56cc
+      Hash: 4833064f92c42d44ec55f62d3627c45c
   m_MasterAtlas: {fileID: 0}
   m_PackedSprites:
   - {fileID: 21300000, guid: a67b23e2e5f9cdc4185a0465a66bbb7f, type: 3}
   - {fileID: 21300000, guid: e0863943a5a87b347b0dbbb043bf5166, type: 3}
+  - {fileID: 21300000, guid: dad9a293b88ae91498bc2353b0fe6483, type: 3}
   - {fileID: 21300000, guid: 42ebc8f386890314d9a50946cfb00214, type: 3}
   - {fileID: 21300000, guid: 77e4b4544ea494e4083e9791cd46b571, type: 3}
+  - {fileID: 21300000, guid: ac455455b5392da4ab1ed0fa8c42ca3c, type: 3}
   - {fileID: 21300000, guid: d33dc995a7b9bf2458f5e487ba18f9f0, type: 3}
+  - {fileID: 21300000, guid: cb4331583f4290444aee0e6639d0e29d, type: 3}
   - {fileID: 21300000, guid: 67345429f91308a4c87420121e642b8f, type: 3}
+  - {fileID: 21300000, guid: f11a74ab2f5168f44a7ceb28458469fe, type: 3}
+  - {fileID: 21300000, guid: 7ab7332d4d80276449986f49b188c286, type: 3}
   - {fileID: 21300000, guid: 3952e61ee57e3ac4382d35c56f7a1d46, type: 3}
   - {fileID: 21300000, guid: 8ceb1adf89e68bc419b852e2847d149b, type: 3}
   - {fileID: 21300000, guid: 38b168ffe9bad1143a633010b86a4bac, type: 3}
   m_PackedSpriteNamesToIndex:
   - hero4
   - hero9
+  - hero11
   - hero2
   - hero8
+  - hero12
   - hero3
+  - hero13
   - hero7
+  - hero14
+  - hero10
   - hero6
   - hero1
   - hero5

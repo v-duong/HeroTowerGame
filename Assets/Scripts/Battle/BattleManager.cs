@@ -7,10 +7,10 @@ public class BattleManager : MonoBehaviour
 {
     private const int STARTING_LIFE = 25;
 
-    private const int BASE_UNCOMMON_DROP_WEIGHT = 140;
-    private const int BASE_RARE_DROP_WEIGHT = 50;
-    private const int BASE_EPIC_DROP_WEIGHT = 6;
-    private const int BASE_UNIQUE_DROP_WEIGHT = 4;
+    private const int BASE_UNCOMMON_DROP_WEIGHT = 110;
+    private const int BASE_RARE_DROP_WEIGHT = 75;
+    private const int BASE_EPIC_DROP_WEIGHT = 8;
+    private const int BASE_UNIQUE_DROP_WEIGHT = 7;
 
     private const int BASE_UNCOMMON_DROP_WEIGHT_STAGE_DROP = 20;
     private const int BASE_RARE_DROP_WEIGHT_STAGE_DROP = 75;
@@ -31,6 +31,7 @@ public class BattleManager : MonoBehaviour
     private StageInfoBase stageInfo;
 
     public EnemyPool EnemyPool { get; private set; }
+    public DamageTextPool DamageTextPool { get; private set; }
 
     public ProjectilePool ProjectilePool { get; private set; }
     public ProjectilePool BoxProjectilePool { get; private set; }
@@ -124,7 +125,13 @@ public class BattleManager : MonoBehaviour
     {
         if (value < 0 && causedByGoal)
         {
-            playerHealth += value * (survivalLoopCount + 1);
+            if (survivalLoopCount > 0)
+            {
+                playerHealth += value * 2;
+            } else
+            {
+                playerHealth += value;
+            }
         }
         else
             playerHealth += value;
@@ -155,6 +162,7 @@ public class BattleManager : MonoBehaviour
         Waves = stage.enemyWaves;
         stageLevel = stage.monsterLevel;
         EnemyPool = new EnemyPool(ResourceManager.Instance.EnemyPrefab);
+        DamageTextPool = new DamageTextPool(ResourceManager.Instance.DamageTextPrefab);
     }
 
     public void InitializeProjectilePool()
@@ -258,17 +266,25 @@ public class BattleManager : MonoBehaviour
         if (gainedEquipment.Count > 0)
         {
             string gainEquipString = "Equipment:\n";
-            Dictionary<string, int> equipmentCount = new Dictionary<string, int>();
+            Dictionary<EquipmentBase, int> equipmentCount = new Dictionary<EquipmentBase, int>();
             foreach (Equipment equipment in gainedEquipment)
             {
-                if (!equipmentCount.ContainsKey(equipment.Base.LocalizedName))
-                    equipmentCount.Add(equipment.Base.LocalizedName, 0);
-                equipmentCount[equipment.Base.LocalizedName]++;
+                if (!equipmentCount.ContainsKey(equipment.Base))
+                {
+                    equipmentCount.Add(equipment.Base, 0);
+                }
+                equipmentCount[equipment.Base]++;
             }
 
-            foreach (KeyValuePair<string, int> equipEntry in equipmentCount)
+            foreach (KeyValuePair<EquipmentBase, int> equipEntry in equipmentCount)
             {
-                gainEquipString += "<indent=10%>" + equipEntry.Key + " x" + equipEntry.Value + "</indent>\n";
+                if (equipEntry.Key is UniqueBase)
+                {
+                    gainEquipString += "<indent=10%><color=#ff7d28>" + equipEntry.Key.LocalizedName + "</color> x" + equipEntry.Value + "</indent>\n";
+                } else
+                {
+                    gainEquipString += "<indent=10%>" + equipEntry.Key.LocalizedName + " x" + equipEntry.Value + "</indent>\n";
+                }
             }
 
             battleEndWindow.AddToBodyText(gainEquipString);
@@ -323,17 +339,18 @@ public class BattleManager : MonoBehaviour
     private void AddEquipmentDrops(BattleEndWindow battleEndWindow)
     {
         //Get Equipment
-        int additionalDrops = (int)(survivalLoopCount / 8);
+        int additionalDrops = (int)(survivalLoopCount / 5);
         float rarityBoost = 1 + (0.25f * survivalLoopCount);
-        float stageEpicBoost = 1 + (0.25f * survivalLoopCount * 4);
+        float nonStageEpicBoost = 1 + (0.4f * survivalLoopCount);
+        float stageEpicBoost = 1 + (0.25f * survivalLoopCount * 5);
         float affixLevelSkew = 1.2f + (survivalLoopCount * 0.1f);
         int equipmentDrops = Random.Range(stageInfo.equipmentDropCountMin + additionalDrops, stageInfo.equipmentDropCountMax + 1 + additionalDrops);
 
         WeightList<RarityType> nonStageDropRarity = new WeightList<RarityType>();
         nonStageDropRarity.Add(RarityType.UNCOMMON, (int)(BASE_UNCOMMON_DROP_WEIGHT / rarityBoost));
         nonStageDropRarity.Add(RarityType.RARE, (int)(BASE_RARE_DROP_WEIGHT * rarityBoost));
-        nonStageDropRarity.Add(RarityType.EPIC, (int)(BASE_EPIC_DROP_WEIGHT * rarityBoost));
-        nonStageDropRarity.Add(RarityType.UNIQUE, (int)(BASE_UNIQUE_DROP_WEIGHT * rarityBoost));
+        nonStageDropRarity.Add(RarityType.EPIC, (int)(BASE_EPIC_DROP_WEIGHT * nonStageEpicBoost));
+        nonStageDropRarity.Add(RarityType.UNIQUE, (int)(BASE_UNIQUE_DROP_WEIGHT * nonStageEpicBoost));
 
         WeightList<RarityType> stageDropRarity = new WeightList<RarityType>();
         stageDropRarity.Add(RarityType.UNCOMMON, (int)(BASE_UNCOMMON_DROP_WEIGHT_STAGE_DROP / rarityBoost));
@@ -378,7 +395,7 @@ public class BattleManager : MonoBehaviour
         Equipment equip;
         if (rarity != RarityType.UNIQUE)
         {
-            equip = Equipment.CreateRandomEquipment_EvenSlotWeight(stageLevel + survivalLoopCount, null, 1.65f);
+            equip = Equipment.CreateRandomEquipment_EvenSlotWeight(stageLevel + survivalLoopCount, null, 1.85f);
             RollEquipmentRarity(equip, rarity, affixLevelSkew);
         }
         else
@@ -386,7 +403,7 @@ public class BattleManager : MonoBehaviour
             equip = Equipment.CreateRandomUnique(stageLevel + survivalLoopCount);
             if (equip == null)
             {
-                equip = Equipment.CreateRandomEquipment_EvenSlotWeight(stageLevel + survivalLoopCount, null, 2.2f);
+                equip = Equipment.CreateRandomEquipment_EvenSlotWeight(stageLevel + survivalLoopCount, null, 4f);
                 RollEquipmentRarity(equip, RarityType.EPIC, affixLevelSkew);
             }
         }

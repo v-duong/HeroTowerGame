@@ -15,6 +15,10 @@ public class BattleEndWindow : MonoBehaviour
     public float addedExp;
     public float totalFrag;
     public float addedFrag;
+
+    public GameObject battleHelpWindow;
+    public TextMeshProUGUI helpWindowText;
+
     private float expChangePerSecond;
     private float fragChangePerSecond;
     private float timePassed;
@@ -33,7 +37,7 @@ public class BattleEndWindow : MonoBehaviour
     public void ShowVictoryWindow()
     {
         this.gameObject.SetActive(true);
-        headerText.text = "Winner";
+        headerText.text = "Victory";
         bodyText.text = "";
 
         nextLoopButton.gameObject.SetActive(GameManager.Instance.PlayerStats.EquipmentInventory.Count < PlayerStats.maxEquipInventory);
@@ -42,7 +46,7 @@ public class BattleEndWindow : MonoBehaviour
     public void ShowLoseWindow()
     {
         this.gameObject.SetActive(true);
-        headerText.text = "Lose";
+        headerText.text = "Defeat";
         bodyText.text = "";
         nextLoopButton.gameObject.SetActive(false);
     }
@@ -141,12 +145,18 @@ public class BattleEndWindow : MonoBehaviour
     public void LoadMainMenu()
     {
         StageManager.Instance.BattleManager.AllocateRewards();
-        GameManager.Instance.MoveToMainMenu();
+        GameManager.Instance.StartCoroutine(GameManager.Instance.MoveToMainMenu());
     }
 
     public void StartNextLoop()
     {
         StageManager.Instance.BattleManager.StartSurvivalBattle();
         this.gameObject.SetActive(false);
+    }
+
+    public void ShowHelp()
+    {
+        helpWindowText.text = LocalizationManager.Instance.GetLocalizationText_HelpString("battleEndHelp");
+        battleHelpWindow.SetActive(true);
     }
 }

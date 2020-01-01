@@ -94,6 +94,6 @@ public class TriggeredEffect
                 new TempEffectBonusContainer.StatusBonus(BaseEffect.statBonusType, BaseEffect.statModifyType, Value, BaseEffect.effectDuration)
             };
 
-        target.AddStatusEffect(new StatBonusBuffEffect(target, source, bonuses, BaseEffect.effectDuration, buffName, BaseEffect.effectType));
+        target.AddStatusEffect(new StatBonusBuffEffect(target, source, bonuses, BaseEffect.effectDuration, buffName, BaseEffect.effectType, 1f));
     }
 }
