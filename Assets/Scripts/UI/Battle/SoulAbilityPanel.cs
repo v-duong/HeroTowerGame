@@ -60,8 +60,9 @@ public class SoulAbilityPanel : MonoBehaviour
                 {
                     ActiveAbilityTargeting.transform.SetParent(target.transform, false);
                     activeAbilityTargeting.transform.localPosition = Vector3.zero;
-                    ActiveAbilityTargeting.transform.localScale = new Vector2(currentSoulAbility.AreaRadius*2, currentSoulAbility.AreaRadius*2);
+                    ActiveAbilityTargeting.SetScale(currentSoulAbility.AreaRadius*2);
                     ActiveAbilityTargeting.gameObject.SetActive(true);
+                    ActiveAbilityTargeting.SetText(currentSoulAbility.abilityBase.LocalizedName);
                 }
                 else
                 {

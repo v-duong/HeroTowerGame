@@ -11,10 +11,10 @@ public static class InstantEffects
     {
         yield return null;
         string s = "";
-        foreach(var x in damageDict)
+        foreach (var x in damageDict)
         {
-            if (x.Value.min  > 0 || x.Value.max > 0)
-            s += x.Key + " " + x.Value.min + "~" + x.Value.max +", ";
+            if (x.Value.min > 0 || x.Value.max > 0)
+                s += x.Key + " " + x.Value.min + "~" + x.Value.max + ", ";
         }
         target.ApplyDamage(source.ScaleSecondaryDamageValue(target, damageDict, RetaliationDamageTags), source.Data.OnHitData, isHit: false, false, EffectType.RETALIATION_DAMAGE);
     }
@@ -81,6 +81,14 @@ public static class InstantEffects
                     };
 
             aoeTarget.ApplyDamage(source.ScaleSecondaryDamageValue(aoeTarget, damageDict, ExplosionTags), source.Data.OnHitData, isHit: true, true, statusToExplode, restrictionFlags);
+        }
+    }
+
+    public static void ClearStatusEffects(Actor target, Actor source)
+    {
+        foreach (ActorEffect x in target.GetStatusEffectAll(EffectType.BLEED, EffectType.BURN, EffectType.CHILL, EffectType.ELECTROCUTE, EffectType.FRACTURE, EffectType.PACIFY, EffectType.RADIATION, EffectType.POISON))
+        {
+            target.RemoveStatusEffect(x, true);
         }
     }
 

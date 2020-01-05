@@ -31,6 +31,7 @@
     SPREAD_RADIATION,
     CLEAR_STATUSES,
     RETALIATION_DAMAGE,
+    GENERIC_DAMAGE_OVER_TIME,
 }
 [System.Flags]
 public enum EffectApplicationFlags

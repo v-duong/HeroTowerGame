@@ -51,6 +51,7 @@ public class BattleCharInfoPanel : MonoBehaviour
 
         if (actor is HeroActor hero)
         {
+            
             stringBuilder.AppendFormat("\nSP: {0:N0}/{1:N0}", actor.Data.CurrentSoulPoints, actor.Data.MaximumSoulPoints);
 
             if (hero.isBeingRecalled)
@@ -155,6 +156,7 @@ public class BattleCharInfoPanel : MonoBehaviour
             if (actor.GetActorType() == ActorType.ALLY)
             {
                 heroControls.SetActive(true);
+                movementButton.GetComponentInChildren<TextMeshProUGUI>().text = "Move Hero";
                 targetText.text = LocalizationManager.Instance.GetLocalizationText("primaryTargetingType." + actor.targetingPriority.ToString());
                 confirmUnsummon = false;
                 SetUnsummonButtonText();
@@ -229,9 +231,18 @@ public class BattleCharInfoPanel : MonoBehaviour
 
     public void MoveHero()
     {
-        InputManager.Instance.selectedHero = actor as HeroActor;
-        InputManager.Instance.IsMovementMode = true;
-        InputManager.Instance.SetTileHighlight(true);
+        if (!InputManager.Instance.IsMovementMode)
+        {
+            InputManager.Instance.selectedHero = actor as HeroActor;
+            InputManager.Instance.IsMovementMode = true;
+            InputManager.Instance.SetTileHighlight(true);
+            movementButton.GetComponentInChildren<TextMeshProUGUI>().text = "Cancel Move";
+        } else
+        {
+            InputManager.Instance.IsMovementMode = false;
+            InputManager.Instance.SetTileHighlight(false);
+            movementButton.GetComponentInChildren<TextMeshProUGUI>().text = "Move Hero";
+        }
     }
 
     public void TargetSelectionOnClick(int i)

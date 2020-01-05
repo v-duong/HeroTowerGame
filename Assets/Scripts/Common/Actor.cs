@@ -11,7 +11,7 @@ public abstract class Actor : MonoBehaviour
     public ActorData Data { get; protected set; }
     public float actorTimeScale = 1f;
     private readonly List<ActorEffect> statusEffects = new List<ActorEffect>();
-    private readonly List<SourcedActorBuffEffect> buffEffects = new List<SourcedActorBuffEffect>();
+    private readonly List<SourcedActorEffect> buffEffects = new List<SourcedActorEffect>();
     private readonly List<TemporaryTriggerEffectBuff> temporaryTriggerEffectBuffs = new List<TemporaryTriggerEffectBuff>();
     protected UIHealthBar healthBar;
     protected List<ActorAbility> instancedAbilitiesList = new List<ActorAbility>();
@@ -132,7 +132,7 @@ public abstract class Actor : MonoBehaviour
     {
         if (statusEffect.effectType == EffectType.BUFF || statusEffect.effectType == EffectType.DEBUFF)
         {
-            if (statusEffect is SourcedActorBuffEffect namedEffect)
+            if (statusEffect is SourcedActorEffect namedEffect)
             {
                 buffEffects.Add(namedEffect);
                 statusEffect.OnApply();
@@ -226,6 +226,11 @@ public abstract class Actor : MonoBehaviour
         return statusEffects.FindAll(x => x.effectType == effect);
     }
 
+    public List<ActorEffect> GetStatusEffectAll(params EffectType[] effects)
+    {
+        return statusEffects.FindAll(x => effects.Contains(x.effectType));
+    }
+
     public void ClearStatusEffects(bool useExpireEffects)
     {
         if (useExpireEffects)
@@ -245,9 +250,9 @@ public abstract class Actor : MonoBehaviour
         buffEffects.Clear();
     }
 
-    public List<SourcedActorBuffEffect> GetBuffStatusEffect(string statusName)
+    public List<SourcedActorEffect> GetBuffStatusEffect(string statusName)
     {
-        List<SourcedActorBuffEffect> buffs = buffEffects.FindAll(x => x.BuffName.Equals(statusName));
+        List<SourcedActorEffect> buffs = buffEffects.FindAll(x => x.EffectName.Equals(statusName));
         return buffs;
     }
 
@@ -364,6 +369,14 @@ public abstract class Actor : MonoBehaviour
             if (Data.CurrentShieldDelay <= 0f && Data.CurrentManaShield < Data.MaximumManaShield)
                 shieldModifier += -Data.ShieldRestoreRate;
             ModifyCurrentShield(shieldModifier * Time.deltaTime, false);
+        } else if (Data.MaximumManaShield == 0)
+        {
+            if (Data.CurrentManaShield > 0)
+            {
+                Data.CurrentManaShield = 0;
+                if (healthBar != null)
+                    healthBar.UpdateHealthBar(Data.MaximumHealth, Data.CurrentHealth, Data.MaximumManaShield, Data.CurrentManaShield, true);
+            }
         }
         ModifyCurrentHealth(-Data.HealthRegenRate * Time.deltaTime);
         ModifyCurrentSoulpoints(-Data.SoulRegenRate * Time.deltaTime);

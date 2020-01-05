@@ -8,7 +8,7 @@ public class SummonScrollSlot : MonoBehaviour
     private TextMeshProUGUI nameText;
 
     [SerializeField]
-    private Image image;
+    public Image image;
 
     [SerializeField]
     private Slider respawnTimer;
@@ -80,9 +80,10 @@ public class SummonScrollSlot : MonoBehaviour
 
     public void OnClickSlot()
     {
-        if (!heroSummoned && !heroDead)
+        if (!heroSummoned && !heroDead && currentRespawnTime <= 0)
         {
-            InputManager.Instance.SetSummoning(actor, SummonCallback);
+            image.color = Helpers.SELECTION_COLOR;
+            InputManager.Instance.SetSummoning(actor, this, SummonCallback);
         } else if (heroSummoned)
         {
             InputManager.Instance.OnTargetSelect(actor);

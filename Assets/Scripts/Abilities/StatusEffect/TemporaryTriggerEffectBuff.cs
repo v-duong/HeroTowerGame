@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-public class TemporaryTriggerEffectBuff : SourcedActorBuffEffect
+public class TemporaryTriggerEffectBuff : SourcedActorEffect
 {
 
     public GroupType buffType;
@@ -13,14 +13,14 @@ public class TemporaryTriggerEffectBuff : SourcedActorBuffEffect
     {
         this.effectType = effectType;
         this.duration = duration;
-        BuffName = buffName;
+        EffectName = buffName;
         this.bonus = bonus;
-        BuffPower = value;
+        EffectPower = value;
     }
 
     public override void OnApply()
     {
-        TriggeredEffect t = new TriggeredEffect(bonus, BuffPower, BuffName);
+        TriggeredEffect t = new TriggeredEffect(bonus, EffectPower, EffectName);
         target.Data.AddTriggeredEffect(bonus, t);
     }
 
@@ -36,11 +36,11 @@ public class TemporaryTriggerEffectBuff : SourcedActorBuffEffect
 
     public override float GetEffectValue()
     {
-        return BuffPower;
+        return EffectPower;
     }
 
     public override float GetSimpleEffectValue()
     {
-        return BuffPower;
+        return EffectPower;
     }
 }

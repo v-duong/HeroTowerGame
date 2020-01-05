@@ -23,6 +23,7 @@ public class GameManager : MonoBehaviour
     public List<HeroData> inBattleHeroes = new List<HeroData>();
 
     private string currentSceneName = "";
+    private Coroutine currentCoroutine;
 
     private WeightList<ConsumableType> consumableWeightList;
 
@@ -213,9 +214,9 @@ public class GameManager : MonoBehaviour
             yield return null;
         }
         UIManager.Instance.LoadingScreen.endLoadingScreen = true;
-        Resources.UnloadUnusedAssets(); 
+        Resources.UnloadUnusedAssets();
 
-         isInMainMenu = true;
+        isInMainMenu = true;
     }
 
     /// <summary>
@@ -226,11 +227,16 @@ public class GameManager : MonoBehaviour
     {
         UIManager.Instance.CloseAllWindows();
         SetTimescale(1);
+
         SaveManager.SaveAll();
-        SceneManager.LoadScene("loadingScene", LoadSceneMode.Additive);
         currentSceneName = "stage" + stageInfoBase.sceneAct + '-' + stageInfoBase.sceneStage;
 
-        StartCoroutine(LoadBattleRoutine(currentSceneName, stageInfoBase));
+        if (currentCoroutine == null)
+            currentCoroutine = StartCoroutine(LoadBattleRoutine(currentSceneName, stageInfoBase));
+        else
+        {
+            return;
+        }
 
         Camera.main.transform.position = new Vector3(0, 0, -10);
 
@@ -245,6 +251,8 @@ public class GameManager : MonoBehaviour
     /// <returns></returns>
     private IEnumerator LoadBattleRoutine(string sceneName, StageInfoBase stageInfoBase)
     {
+        SceneManager.LoadScene("loadingScene", LoadSceneMode.Additive);
+        yield return null;
         AsyncOperation asyncOperation = SceneManager.LoadSceneAsync("battleUI", LoadSceneMode.Additive);
         AsyncOperation asyncOperation2 = SceneManager.LoadSceneAsync(sceneName, LoadSceneMode.Additive);
         while (!asyncOperation.isDone || !asyncOperation2.isDone)
@@ -267,6 +275,7 @@ public class GameManager : MonoBehaviour
         isInBattle = true;
         SceneManager.UnloadSceneAsync("mainMenu");
         yield return null;
+        currentCoroutine = null;
 
         UIManager.Instance.LoadingScreen.endLoadingScreen = true;
     }

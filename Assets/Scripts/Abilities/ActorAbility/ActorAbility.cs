@@ -816,10 +816,9 @@ public partial class ActorAbility
         for (int i = 0; i < abilityBase.appliedEffects.Count; i++)
         {
             AbilityScalingAddedEffect appliedEffect = abilityBase.appliedEffects[i];
-
+            string buffName = abilityBase.idName + ".soulBuff" + i;
             if (appliedEffect.effectType == EffectType.BUFF || appliedEffect.effectType == EffectType.DEBUFF)
             {
-                string buffName = abilityBase.idName + ".soulBuff" + i;
                 float buffPower = soulEffectMultiplier * (appliedEffect.initialValue + appliedEffect.growthValue * abilityLevel);
 
                 TempEffectBonusContainer.StatusBonus newBonus = new TempEffectBonusContainer.StatusBonus(appliedEffect.bonusType, appliedEffect.modifyType, buffPower, appliedEffect.duration);
@@ -837,8 +836,8 @@ public partial class ActorAbility
 
     protected void ApplySourcedBuffToTarget(TempEffectBonusContainer.StatusBonus statusBonus, Actor target, string buffName)
     {
-        SourcedActorBuffEffect buff = null;
-        List<SourcedActorBuffEffect> buffs = target.GetBuffStatusEffect(buffName);
+        SourcedActorEffect buff = null;
+        List<SourcedActorEffect> buffs = target.GetBuffStatusEffect(buffName);
 
         if (buffs.Count > 0)
             buff = buffs[0];
@@ -847,12 +846,12 @@ public partial class ActorAbility
 
         if (buff != null)
         {
-            if (buffPower == buff.BuffPower)
+            if (buffPower == buff.EffectPower)
             {
                 buff.RefreshDuration(statusBonus.effectDuration);
                 return;
             }
-            else if (buffPower < buff.BuffPower)
+            else if (buffPower < buff.EffectPower)
             {
                 return;
             }
@@ -867,20 +866,20 @@ public partial class ActorAbility
 
     protected void ApplySourcedBuffToTarget(List<TempEffectBonusContainer.StatusBonus> statusBonus, Actor target, string buffName, float buffPower, float duration)
     {
-        SourcedActorBuffEffect buff = null;
-        List<SourcedActorBuffEffect> buffs = target.GetBuffStatusEffect(buffName);
+        SourcedActorEffect buff = null;
+        List<SourcedActorEffect> buffs = target.GetBuffStatusEffect(buffName);
 
         if (buffs.Count > 0)
             buff = buffs[0];
 
         if (buff != null)
         {
-            if (buffPower == buff.BuffPower)
+            if (buffPower == buff.EffectPower)
             {
                 buff.RefreshDuration(duration);
                 return;
             }
-            else if (buffPower < buff.BuffPower)
+            else if (buffPower < buff.EffectPower)
             {
                 return;
             }
@@ -898,9 +897,9 @@ public partial class ActorAbility
         for (int i = 0; i < abilityBase.triggeredEffects.Count; i++)
         {
             TriggeredEffectBonusProperty triggeredEffectProp = abilityBase.triggeredEffects[i];
-            SourcedActorBuffEffect triggeredEffect = null;
+            SourcedActorEffect triggeredEffect = null;
             string triggeredEffectName = abilityBase.idName + "." + triggeredEffectProp.triggerType + "." + triggeredEffectProp.triggerType;
-            List<SourcedActorBuffEffect> buffs = target.GetBuffStatusEffect(triggeredEffectName);
+            List<SourcedActorEffect> buffs = target.GetBuffStatusEffect(triggeredEffectName);
             if (buffs.Count > 0)
                 triggeredEffect = buffs[0];
 
@@ -908,12 +907,12 @@ public partial class ActorAbility
 
             if (triggeredEffect != null)
             {
-                if (effectPower == triggeredEffect.BuffPower)
+                if (effectPower == triggeredEffect.EffectPower)
                 {
                     triggeredEffect.RefreshDuration(soulAbilityDuration);
                     continue;
                 }
-                else if (effectPower < triggeredEffect.BuffPower)
+                else if (effectPower < triggeredEffect.EffectPower)
                 {
                     continue;
                 }
@@ -937,26 +936,29 @@ public partial class ActorAbility
     {
         float auraMultiplier = auraBuffBonus.auraEffectMultiplier;
         if (target == AbilityOwner)
+        {
             auraMultiplier *= auraBuffBonus.selfAuraEffectMultiplier;
+        }
 
         if (auraMultiplier <= 0f)
             return;
 
         if (auraBuffBonus.cachedAuraBonuses.Count > 0)
         {
-            SourcedActorBuffEffect buff = null;
-            List<SourcedActorBuffEffect> buffs = target.GetBuffStatusEffect(abilityBase.idName);
+            SourcedActorEffect buff = null;
+            List<SourcedActorEffect> buffs = target.GetBuffStatusEffect(abilityBase.idName);
             if (buffs.Count > 0)
                 buff = buffs[0];
 
             if (buff != null)
             {
-                if (auraBuffBonus.auraStrength == buff.BuffPower)
+                if ((auraBuffBonus.auraStrength * auraMultiplier) - buff.EffectPower <= float.Epsilon)
                 {
                     buff.RefreshDuration(0.75f);
                 }
-                else if (auraBuffBonus.auraStrength < buff.BuffPower)
+                else if (auraBuffBonus.auraStrength * auraMultiplier < buff.EffectPower)
                 {
+                    Debug.Log((auraBuffBonus.auraStrength * auraMultiplier) + " " + buff.EffectPower);
                 }
                 else
                 {

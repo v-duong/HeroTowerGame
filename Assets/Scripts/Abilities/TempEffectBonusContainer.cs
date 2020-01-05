@@ -11,10 +11,10 @@ public class TempEffectBonusContainer
 
     public class StatusBonus
     {
-        public BonusType bonusType;
-        public ModifyType modifyType;
-        public float effectValue;
-        public float effectDuration;
+        public readonly BonusType bonusType;
+        public readonly ModifyType modifyType;
+        public readonly float effectValue;
+        public readonly float effectDuration;
 
         public StatusBonus(BonusType bonusType, ModifyType modifyType, float effectValue, float effectDuration)
         {
@@ -27,9 +27,9 @@ public class TempEffectBonusContainer
 
     public class SpecialBonus
     {
-        public EffectType effectType;
-        public float effectValue;
-        public float effectDuration;
+        public readonly EffectType effectType;
+        public readonly float effectValue;
+        public readonly float effectDuration;
 
         public SpecialBonus(EffectType effectType, float effectValue, float effectDuration)
         {

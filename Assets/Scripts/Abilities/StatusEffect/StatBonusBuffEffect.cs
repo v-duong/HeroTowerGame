@@ -1,23 +1,25 @@
 ﻿using System.Collections.Generic;
 
-public class StatBonusBuffEffect : SourcedActorBuffEffect
+public class StatBonusBuffEffect : SourcedActorEffect
 {
     public GroupType buffType;
 
     public override GroupType StatusTag => buffType;
 
     protected List<TempEffectBonusContainer.StatusBonus> bonus;
+    protected float effectMultiplier;
 
     public StatBonusBuffEffect(Actor target, Actor source, List<TempEffectBonusContainer.StatusBonus> bonuses, float duration, string buffName, EffectType effectType, float multiplier) : base(target, source)
     {
         this.effectType = effectType;
         this.duration = duration;
-        BuffName = buffName;
+        EffectName = buffName;
         bonus = bonuses;
-        BuffPower = 0;
+        EffectPower = 0;
+        effectMultiplier = multiplier;
         foreach (var tuple in bonus)
         {
-            BuffPower += tuple.effectValue;
+            EffectPower += tuple.effectValue * multiplier;
         }
     }
 
@@ -25,19 +27,20 @@ public class StatBonusBuffEffect : SourcedActorBuffEffect
     {
         this.effectType = effectType;
         this.duration = duration;
-        BuffName = buffName;
+        EffectName = buffName;
+        effectMultiplier = multiplier;
         this.bonus = new List<TempEffectBonusContainer.StatusBonus>
         {
             bonus
         };
-        BuffPower = bonus.effectValue;
+        EffectPower = bonus.effectValue * multiplier;
     }
 
     public override void OnApply()
     {
         foreach (var tuple in bonus)
         {
-            target.Data.AddTemporaryBonus(tuple.effectValue, tuple.bonusType, tuple.modifyType, true);
+            target.Data.AddTemporaryBonus(tuple.effectValue * effectMultiplier, tuple.bonusType, tuple.modifyType, true);
         }
     }
 
@@ -45,7 +48,7 @@ public class StatBonusBuffEffect : SourcedActorBuffEffect
     {
         foreach (var tuple in bonus)
         {
-            target.Data.RemoveTemporaryBonus(tuple.effectValue, tuple.bonusType, tuple.modifyType, true);
+            target.Data.RemoveTemporaryBonus(tuple.effectValue * effectMultiplier, tuple.bonusType, tuple.modifyType, true);
         }
     }
 
@@ -56,11 +59,11 @@ public class StatBonusBuffEffect : SourcedActorBuffEffect
 
     public override float GetEffectValue()
     {
-        return BuffPower;
+        return EffectPower;
     }
 
     public override float GetSimpleEffectValue()
     {
-        return BuffPower;
+        return EffectPower;
     }
 }

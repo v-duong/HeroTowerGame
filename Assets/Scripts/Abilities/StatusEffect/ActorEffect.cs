@@ -61,7 +61,7 @@ public abstract class ActorEffect
         Stacks = 1;
     }
 
-    public static void ApplyEffectToTarget(Actor target, Actor source, EffectType effectType, float effectPower, float duration, float auraEffectiveness = 1.0f, ElementType element = ElementType.PHYSICAL)
+    public static void ApplyEffectToTarget(Actor target, Actor source, EffectType effectType, float effectPower, float duration, float auraEffectiveness = 1.0f, ElementType element = ElementType.PHYSICAL, string sourceName = "")
     {
         LayerMask mask = target.GetActorType() == ActorType.ALLY ? (LayerMask)LayerMask.GetMask("Hero") : (LayerMask)LayerMask.GetMask("Enemy");
         switch (effectType)
@@ -125,6 +125,7 @@ public abstract class ActorEffect
                 break;
 
             case EffectType.CLEAR_STATUSES:
+                InstantEffects.ClearStatusEffects(target, source);
                 break;
 
             case EffectType.BUFF:
@@ -149,7 +150,10 @@ public abstract class ActorEffect
                 target.AddStatusEffect(new RepeatOffenderBuffEffect(target, source, effectPower, duration));
                 break;
             case EffectType.RETALIATION_DAMAGE:
+                // Retaliation damage is handled as a special case
                 //source.StartCoroutine(InstantEffects.ApplyRetaliationDamageEffect(target, source, mask, effectPower, element));
+                break;
+            case EffectType.GENERIC_DAMAGE_OVER_TIME:
                 break;
             default:
                 return;
@@ -162,12 +166,12 @@ public abstract class ActorEffect
     }
 }
 
-public abstract class SourcedActorBuffEffect : ActorEffect
+public abstract class SourcedActorEffect : ActorEffect
 {
-    public string BuffName;
-    public float BuffPower;
+    public string EffectName;
+    public float EffectPower;
 
-    public SourcedActorBuffEffect(Actor target, Actor source) : base(target, source)
+    public SourcedActorEffect(Actor target, Actor source) : base(target, source)
     {
     }
 }

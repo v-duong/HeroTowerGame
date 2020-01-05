@@ -61,6 +61,7 @@ public abstract partial class ActorData
     public float SpellParryChance { get; protected set; }
 
     public float PoisonResistance { get; protected set; }
+    public float DamageOverTimeResistance { get; protected set; }
 
     public bool RechargeCannotBeStopped { get; set; }
 

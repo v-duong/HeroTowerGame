@@ -82,7 +82,7 @@ public class TriggeredEffect
 
     public void ApplyBuffEffect(Actor target, Actor source, string buffName)
     {
-        List<SourcedActorBuffEffect> buffs = target.GetBuffStatusEffect(buffName);
+        List<SourcedActorEffect> buffs = target.GetBuffStatusEffect(buffName);
 
         if (buffs.Count > 0)
         {

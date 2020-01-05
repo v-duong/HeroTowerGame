@@ -69,8 +69,8 @@ public partial class ActorAbility
     {
         if (abilityBase.abilityType == AbilityType.AURA)
         {
-            auraBuffBonus.auraEffectMultiplier = Math.Max(data.GetMultiStatBonus(abilityBonuses, tags, BonusType.AURA_EFFECT).CalculateStat(1f),0f);
-            auraBuffBonus.selfAuraEffectMultiplier = Math.Max(data.GetMultiStatBonus(abilityBonuses, tags, BonusType.AURA_EFFECT_ON_SELF).CalculateStat(1f),0f);
+            auraBuffBonus.auraEffectMultiplier = Math.Max(data.GetMultiStatBonus(abilityBonuses, tags, BonusType.AURA_EFFECT).CalculateStat(1f), 0f);
+            auraBuffBonus.selfAuraEffectMultiplier = Math.Max(data.GetMultiStatBonus(abilityBonuses, tags, BonusType.AURA_EFFECT_ON_SELF).CalculateStat(1f), 0f);
         }
         else
         {
@@ -83,25 +83,6 @@ public partial class ActorAbility
             auraBuffBonus.cachedAuraBonuses.Clear();
             auraBuffBonus.cachedAuraSpecialEffects.Clear();
             auraBuffBonus.auraStrength = 0;
-            foreach (AbilityScalingAddedEffect effect in abilityBase.appliedEffects)
-            {
-                if (effect.effectType == EffectType.BUFF || effect.effectType == EffectType.DEBUFF)
-                {
-                    float buffValue = (effect.initialValue + effect.growthValue * abilityLevel);
-                    auraBuffBonus.cachedAuraBonuses.Add(new TempEffectBonusContainer.StatusBonus(effect.bonusType, effect.modifyType, buffValue, effect.duration));
-                    auraBuffBonus.auraStrength += buffValue;
-
-                    if (!GameManager.Instance.isInBattle && !abilityBase.isSoulAbility)
-                    {
-                        if ((abilityBase.abilityType == AbilityType.AURA && abilityBase.targetType == AbilityTargetType.ALLY) || abilityBase.abilityType == AbilityType.SELF_BUFF)
-                            data.AddTemporaryBonus(buffValue, effect.bonusType, effect.modifyType, true);
-                    }
-                }
-                else
-                {
-                    auraBuffBonus.cachedAuraSpecialEffects.Add(new TempEffectBonusContainer.SpecialBonus(effect.effectType, effect.initialValue + effect.growthValue * abilityLevel, effect.duration));
-                }
-            }
 
             foreach (var damagebase in abilityBase.damageLevels)
             {
@@ -125,6 +106,26 @@ public partial class ActorAbility
                         data.AddTemporaryBonus(minVal, damageTypeMin, ModifyType.FLAT_ADDITION, true);
                         data.AddTemporaryBonus(maxVal, damageTypeMax, ModifyType.FLAT_ADDITION, true);
                     }
+                }
+            }
+
+            foreach (AbilityScalingAddedEffect effect in abilityBase.appliedEffects)
+            {
+                if (effect.effectType == EffectType.BUFF || effect.effectType == EffectType.DEBUFF)
+                {
+                    float buffValue = (effect.initialValue + effect.growthValue * abilityLevel);
+                    auraBuffBonus.cachedAuraBonuses.Add(new TempEffectBonusContainer.StatusBonus(effect.bonusType, effect.modifyType, buffValue, effect.duration));
+                    auraBuffBonus.auraStrength += buffValue;
+
+                    if (!GameManager.Instance.isInBattle && !abilityBase.isSoulAbility)
+                    {
+                        if ((abilityBase.abilityType == AbilityType.AURA && abilityBase.targetType == AbilityTargetType.ALLY) || abilityBase.abilityType == AbilityType.SELF_BUFF)
+                            data.AddTemporaryBonus(buffValue, effect.bonusType, effect.modifyType, true);
+                    }
+                }
+                else
+                {
+                    auraBuffBonus.cachedAuraSpecialEffects.Add(new TempEffectBonusContainer.SpecialBonus(effect.effectType, effect.initialValue + effect.growthValue * abilityLevel, effect.duration));
                 }
             }
         }
@@ -219,7 +220,10 @@ public partial class ActorAbility
 
         if (abilityBase.abilityShotType == AbilityShotType.PROJECTILE)
         {
-            ProjectileHoming = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.PROJECTILE_HOMING).CalculateStat(15f);
+            if (data is HeroData)
+                ProjectileHoming = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.PROJECTILE_HOMING).CalculateStat(15f);
+            else
+                ProjectileHoming = data.GetMultiStatBonus(abilityBonuses, tags, BonusType.PROJECTILE_HOMING).CalculateStat(0f);
         }
         else
         {

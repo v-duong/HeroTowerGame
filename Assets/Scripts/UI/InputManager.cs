@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using TMPro;
 using UnityEngine;
 using UnityEngine.EventSystems;
 
@@ -16,6 +17,7 @@ public class InputManager : MonoBehaviour
 
     private float maxNegativeX, maxPositiveX;
     private float maxNegativeY, maxPositiveY;
+    private SummonScrollSlot selectedSummonSlot;
 
     private bool isDragging;
     private static float dragspeed = 0.35f;
@@ -25,10 +27,26 @@ public class InputManager : MonoBehaviour
     private Queue<TargetingCircle> targetingCirclesAvailable = new Queue<TargetingCircle>();
     private List<TargetingCircle> targetingCirclesInUse = new List<TargetingCircle>();
 
-    public void SetSummoning(HeroActor actor, Action summonCallback)
+    public void SetSummoning(HeroActor actor, SummonScrollSlot summonSlot, Action summonCallback)
     {
+        if (IsSummoningMode)
+        {
+            if (selectedSummonSlot == summonSlot)
+            {
+                summonSlot.image.color = Color.white;
+                IsSummoningMode = false;
+                SetTileHighlight(false);
+                return;
+            }
+            else
+            {
+                selectedSummonSlot.image.color = Color.white;
+            }
+        }
+
         SetTileHighlight(true);
         IsSummoningMode = true;
+        selectedSummonSlot = summonSlot;
         selectedHero = actor;
         onSummonCallback = summonCallback;
     }
@@ -159,7 +177,7 @@ public class InputManager : MonoBehaviour
                 {
                     UIManager.Instance.ArchetypeUITreeWindow.ScrollView.enabled = true;
                 }
-            } 
+            }
 
             return;
         }
@@ -220,6 +238,7 @@ public class InputManager : MonoBehaviour
                 SetTileHighlight(false);
                 IsMovementMode = false;
                 selectedHero = null;
+                UIManager.Instance.BattleCharInfoPanel.movementButton.GetComponentInChildren<TextMeshProUGUI>().text = "Move Hero";
             }
         }
         else
@@ -333,11 +352,12 @@ public class InputManager : MonoBehaviour
                     continue;
                 TargetingCircle circle = targetingCirclesAvailable.Dequeue();
                 targetingCirclesInUse.Add(circle);
-                circle.transform.localScale = new Vector3(ability.TargetRange * 2, ability.TargetRange * 2, 1);
+                circle.SetScale(ability.TargetRange * 2 / actor.transform.localScale.x);
                 circle.gameObject.SetActive(true);
                 circle.transform.SetParent(actor.transform, false);
                 circle.transform.localPosition = Vector3.zero;
-                circle.transform.eulerAngles = new Vector3(0, 0, i * 12);
+                circle.transform.eulerAngles = new Vector3(0, 0, i * 53);
+                circle.SetText(ability.abilityBase.LocalizedName);
 
                 switch (i)
                 {
