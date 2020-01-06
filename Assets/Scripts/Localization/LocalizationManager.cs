@@ -1,4 +1,5 @@
 ﻿using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 using UnityEngine;
@@ -61,7 +62,7 @@ public class LocalizationManager : MonoBehaviour
             MatchCollection regexMatches = Regex.Matches(value, @"{([^}]*)}");
             if (regexMatches.Count > 0)
             {
-                foreach(Match y in regexMatches)
+                foreach (Match y in regexMatches)
                 {
                     if (y.Groups[1].Value == helpId)
                         continue;
@@ -132,7 +133,8 @@ public class LocalizationManager : MonoBehaviour
                 output[0] = stringId;
             else
                 output[0] = value;
-        } else
+        }
+        else
         {
             output[0] = stringId;
         }
@@ -140,7 +142,8 @@ public class LocalizationManager : MonoBehaviour
         if (abilityLocalizationData.TryGetValue("ability." + stringId + ".text", out value))
         {
             output[1] = value;
-        } else
+        }
+        else
         {
             output[1] = "";
         }
@@ -235,7 +238,7 @@ public class LocalizationManager : MonoBehaviour
         {
             if (damageData.Value.calculatedRange.IsZero())
                 continue;
-            s += string.Format(damageText, BuildElementalDamageString( "<b>" + damageData.Value.calculatedRange.min + "~" + damageData.Value.calculatedRange.max + "</b>", damageData.Key)) + "\n";
+            s += string.Format(damageText, BuildElementalDamageString("<b>" + damageData.Value.calculatedRange.min + "~" + damageData.Value.calculatedRange.max + "</b>", damageData.Key)) + "\n";
         }
         return s;
     }
@@ -271,9 +274,9 @@ public class LocalizationManager : MonoBehaviour
             output[0] = stringId;
         }
 
-        if (uniqueLocalizationData.TryGetValue("unique." + stringId +".text", out string desc))
+        if (uniqueLocalizationData.TryGetValue("unique." + stringId + ".text", out string desc))
         {
-                output[1] = desc;
+            output[1] = desc;
         }
 
         return output;
@@ -367,6 +370,32 @@ public class LocalizationManager : MonoBehaviour
         return b.ToLower();
     }
 
+    public string GetLocalizationText_EffectType_Aura(EffectType effectType, float value, float duration, float auraEffectiveness, float selfAuraEffectiveness)
+    {
+        commonLocalizationData.TryGetValue("effectType.bonusProp." + effectType.ToString(), out string s);
+
+        switch (effectType)
+        {
+            case EffectType.BODYGUARD_AURA:
+                s = string.Format(s, Math.Min(BodyguardAura.BASE_DAMAGE_TRANSFER * auraEffectiveness, 1f) * 100, ((BodyguardAura.BASE_DAMAGE_MITIGATION + (BodyguardAura.DAMAGE_MITIGATION_GROWTH * value)) * auraEffectiveness) * 100);
+                break;
+
+            case EffectType.CLEAR_STATUSES:
+                break;
+
+            case EffectType.MASS_SHIELD_AURA:
+                s = string.Format(s, Math.Min(MassShieldAura.BASE_DAMAGE_TRANSFER * auraEffectiveness, 1f) * 100, ((MassShieldAura.BASE_DAMAGE_MITIGATION + (MassShieldAura.DAMAGE_MITIGATION_GROWTH * value)) * auraEffectiveness) * 100);
+                break;
+
+            default:
+                break;
+        }
+
+        s += '\n';
+
+        return s;
+    }
+
     public string GetLocalizationText_TriggeredEffect(TriggeredEffectBonusProperty triggeredEffect, float value, float? maxValue = null)
     {
         commonLocalizationData.TryGetValue("triggerType." + triggeredEffect.triggerType.ToString(), out string s);
@@ -424,6 +453,45 @@ public class LocalizationManager : MonoBehaviour
         return s;
     }
 
+    public string GetLocalizationText_BonusType(BonusType type, ModifyType modifyType, float value, GroupType restriction, float duration, float auraModifier, float selfAuraModifier)
+    {
+        string output = GetLocalizationText_BonusType(type, modifyType, (float)System.Math.Round(value * auraModifier, 3), restriction, duration);
+
+        if (selfAuraModifier != 1f)
+        {
+            output = output.Trim('\n');
+            value = (float)System.Math.Round(value * auraModifier * selfAuraModifier, 3);
+            output += " (";
+            switch (modifyType)
+            {
+                case ModifyType.FLAT_ADDITION:
+                    if (value >= 0)
+                        output += "+" + value;
+                    else
+                        output += value;
+                    break;
+
+                case ModifyType.ADDITIVE:
+                    if (value >= 0)
+                        output += "+" + value + "%";
+                    else
+                        output += value + "%";
+                    break;
+
+                case ModifyType.MULTIPLY:
+                    output += "x" + (1 + value / 100d).ToString("0.00##");
+                    break;
+
+                case ModifyType.FIXED_TO:
+                    output += "is " + value;
+                    break;
+            }
+            output += " on Self)\n";
+        }
+
+        return output;
+    }
+
     public string GetLocalizationText_BonusType(BonusType type, ModifyType modifyType, float value, GroupType restriction, float duration = 0)
     {
         string output = GetBonusTypeString(type);
@@ -435,7 +503,7 @@ public class LocalizationManager : MonoBehaviour
 
         if (type >= (BonusType)HeroArchetypeData.SpecialBonusStart)
         {
-            return output +"\n";
+            return output + "\n";
         }
 
         output += " <nobr>";
@@ -443,14 +511,14 @@ public class LocalizationManager : MonoBehaviour
         switch (modifyType)
         {
             case ModifyType.FLAT_ADDITION:
-                if (value > 0)
+                if (value >= 0)
                     output += "+" + value;
                 else
-                    output +=  value;
+                    output += value;
                 break;
 
             case ModifyType.ADDITIVE:
-                if (value > 0)
+                if (value >= 0)
                     output += "+" + value + "%";
                 else
                     output += value + "%";
@@ -583,8 +651,8 @@ public class LocalizationManager : MonoBehaviour
 
         string s = "";
 
-        s += prefixes[Random.Range(0, prefixes.Count)] + " ";
-        s += suffixes[Random.Range(0, suffixes.Count)];
+        s += prefixes[UnityEngine.Random.Range(0, prefixes.Count)] + " ";
+        s += suffixes[UnityEngine.Random.Range(0, suffixes.Count)];
 
         return s;
     }

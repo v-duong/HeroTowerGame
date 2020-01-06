@@ -103,8 +103,8 @@ public partial class ActorAbility
                 {
                     if ((abilityBase.abilityType == AbilityType.AURA && abilityBase.targetType == AbilityTargetType.ALLY) || abilityBase.abilityType == AbilityType.SELF_BUFF)
                     {
-                        data.AddTemporaryBonus(minVal, damageTypeMin, ModifyType.FLAT_ADDITION, true);
-                        data.AddTemporaryBonus(maxVal, damageTypeMax, ModifyType.FLAT_ADDITION, true);
+                        data.AddTemporaryBonus(minVal * auraBuffBonus.auraEffectMultiplier * auraBuffBonus.selfAuraEffectMultiplier, damageTypeMin, ModifyType.FLAT_ADDITION, true);
+                        data.AddTemporaryBonus(maxVal * auraBuffBonus.auraEffectMultiplier * auraBuffBonus.selfAuraEffectMultiplier, damageTypeMax, ModifyType.FLAT_ADDITION, true);
                     }
                 }
             }
@@ -120,7 +120,7 @@ public partial class ActorAbility
                     if (!GameManager.Instance.isInBattle && !abilityBase.isSoulAbility)
                     {
                         if ((abilityBase.abilityType == AbilityType.AURA && abilityBase.targetType == AbilityTargetType.ALLY) || abilityBase.abilityType == AbilityType.SELF_BUFF)
-                            data.AddTemporaryBonus(buffValue, effect.bonusType, effect.modifyType, true);
+                            data.AddTemporaryBonus(buffValue * auraBuffBonus.auraEffectMultiplier * auraBuffBonus.selfAuraEffectMultiplier, effect.bonusType, effect.modifyType, true);
                     }
                 }
                 else

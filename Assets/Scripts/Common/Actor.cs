@@ -369,14 +369,10 @@ public abstract class Actor : MonoBehaviour
             if (Data.CurrentShieldDelay <= 0f && Data.CurrentManaShield < Data.MaximumManaShield)
                 shieldModifier += -Data.ShieldRestoreRate;
             ModifyCurrentShield(shieldModifier * Time.deltaTime, false);
-        } else if (Data.MaximumManaShield == 0)
+        } 
+        if (Data.CurrentManaShield > Data.MaximumManaShield)
         {
-            if (Data.CurrentManaShield > 0)
-            {
-                Data.CurrentManaShield = 0;
-                if (healthBar != null)
-                    healthBar.UpdateHealthBar(Data.MaximumHealth, Data.CurrentHealth, Data.MaximumManaShield, Data.CurrentManaShield, true);
-            }
+            Data.CurrentManaShield = Data.MaximumManaShield;
         }
         ModifyCurrentHealth(-Data.HealthRegenRate * Time.deltaTime);
         ModifyCurrentSoulpoints(-Data.SoulRegenRate * Time.deltaTime);

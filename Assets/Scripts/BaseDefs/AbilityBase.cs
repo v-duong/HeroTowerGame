@@ -157,6 +157,13 @@ public class AbilityBase
                                                                              appliedEffect.modifyType,
                                                                              appliedEffect.initialValue + appliedEffect.growthValue * abilityLevel,
                                                                              GroupType.NO_GROUP, appliedEffect.duration);
+            } else
+            {
+                infoText += LocalizationManager.Instance.GetLocalizationText_EffectType_Aura(appliedEffect.effectType,
+                                                                                             appliedEffect.initialValue + appliedEffect.growthValue * abilityLevel,
+                                                                                             appliedEffect.duration,
+                                                                                             1,
+                                                                                             1);
             }
         }
 

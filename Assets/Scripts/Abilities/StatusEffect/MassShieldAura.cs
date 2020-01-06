@@ -2,8 +2,8 @@
 
 public class MassShieldAura : ActorEffect
 {
-    public const float BASE_DAMAGE_TRANSFER = 0.5f;
-    public const float BASE_DAMAGE_MITIGATION = 0.1f;
+    public const float BASE_DAMAGE_TRANSFER = 0.4f;
+    public const float BASE_DAMAGE_MITIGATION = 0.05f;
     public const float DAMAGE_MITIGATION_GROWTH = 0.001f;
     public float DamageTransferRate { get; private set; }
     public float DamageMitigation { get; private set; }

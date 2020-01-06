@@ -1463,7 +1463,7 @@ public partial class ActorAbility
             {
                 BonusType maxType = (BonusType)Enum.Parse(typeof(BonusType), bonusString.Replace("_MIN", "_MAX"));
                 int matchedIndex = auraBuffBonus.cachedAuraBonuses.FindIndex(x => x.bonusType == maxType);
-
+                
                 if (matchedIndex > 0 && auraBuffBonus.cachedAuraBonuses[matchedIndex].modifyType == ModifyType.FLAT_ADDITION)
                 {
                     bonusesToSkip.Add(matchedIndex);
@@ -1474,11 +1474,17 @@ public partial class ActorAbility
             }
             else
             {
-                s += "○ " + LocalizationManager.Instance.GetLocalizationText_BonusType(bonus.bonusType, bonus.modifyType, (float)Math.Round(bonus.effectValue, 3), GroupType.NO_GROUP, bonus.effectDuration);
+                s += "○ " + LocalizationManager.Instance.GetLocalizationText_BonusType(bonus.bonusType, bonus.modifyType, (float)Math.Round(bonus.effectValue, 3), GroupType.NO_GROUP, bonus.effectDuration, auraBuffBonus.auraEffectMultiplier, auraBuffBonus.selfAuraEffectMultiplier);
             }
 
             i++;
         }
+
+        foreach(var specialbonus in auraBuffBonus.cachedAuraSpecialEffects)
+        {
+            s += LocalizationManager.Instance.GetLocalizationText_EffectType_Aura(specialbonus.effectType, specialbonus.effectValue, specialbonus.effectDuration, auraBuffBonus.auraEffectMultiplier, auraBuffBonus.selfAuraEffectMultiplier);
+        }
+
         return s;
     }
 

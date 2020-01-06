@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class BodyguardAura : ActorEffect
 {
-    public const float BASE_DAMAGE_TRANSFER = 0.75f;
+    public const float BASE_DAMAGE_TRANSFER = 0.60f;
     public const float BASE_DAMAGE_MITIGATION = 0.00f;
     public const float DAMAGE_MITIGATION_GROWTH = 0.001f;
     public float DamageTransferRate { get; private set; }
